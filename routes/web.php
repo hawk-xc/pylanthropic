@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin;
+use App\Http\Controllers\Guest;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -14,9 +15,15 @@ use App\Http\Controllers\Admin;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Route::get('/', function () { return view('welcome'); });
+Route::get('/', [Guest\HomeController::class, 'index'])->name('index');
+Route::get('/programs', [Guest\ProgramController::class, 'list'])->name('program.list');
+Route::get('/{slug}', [Guest\ProgramController::class, 'index'])->name('program.index');
+Route::get('/{slug}/donate', [Guest\DonateController::class, 'amount'])->name('donate.amount');
+Route::get('/{slug}/payment', [Guest\DonateController::class, 'payment'])->name('donate.payment');
+Route::get('/{slug}/checkout', [Guest\DonateController::class, 'checkout'])->name('donate.checkout');
+Route::get('/{slug}/payment-info', [Guest\DonateController::class, 'paymentInfo'])->name('donate.payment_info');
+
 
 Route::group([
     'as'     => 'adm.',   // for route(adm.xx)
@@ -35,7 +42,7 @@ Route::group([
         Route::group([
         'middleware' => ['auth']
     ], function() {
-        Route::get('/', [Admin\DashboardController::class, 'index'])->name('index');
+        Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('index');
         Route::get('/donatur-datatables', [Admin\DonaturController::class, 'datatablesDonatur'])->name('donatur.datatables');
         Route::resources([
             'program'          => Admin\ProgramController::class,
