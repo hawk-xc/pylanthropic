@@ -29,8 +29,8 @@
     <div class="custom-container">
       <form class="auth-form search-head" target="_blank">
         <div class="form-group">
-          <a href="{{ url('/') }}">
-            <img class="img-fluid" src="{{ asset('public') }}/images/logo/bantubersama-logo-light.png">
+          <a href="{{ url('/') }}" class="logo-navbar">
+            <img class="" src="{{ asset('Logo Bantubersama.png') }}">
           </a>
           <div class="form-input">
             <input type="text" class="form-control search typewrite" id="inputkey" placeholder="" />
@@ -54,186 +54,48 @@
         <span class="badge-search">Terbaru</span>
       </div>
       <div class="row gy-3 mt-2">
-        <div class="col-12">
-          <div class="vertical-product-box">
-            <div class="vertical-box-img">
-              <a href="/judul-campaign">
-                <img class="img-fluid img" src="{{ asset('public') }}/images/program/a.jpeg" alt="vp5" />
-              </a>
-            </div>
+        @foreach($program as $vn)
+          <div class="col-12">
+            <div class="vertical-product-box">
+              <div class="vertical-box-img">
+                <a href="{{ url('/').'/'.$vn->slug }}">
+                  <img class="img-fluid img" src="{{ asset('public/images/program').'/'.$vn->thumbnail }}" alt="{{ ucwords($vn->title) }}" />
+                </a>
+              </div>
+              <div class="vertical-box-details">
+                <a href="{{ url('/').'/'.$vn->slug }}">
+                  <div class="vertical-box-head">
+                    <div class="restaurant">
+                      <h5 class="two-line fs-13">{{ ucwords($vn->title) }}</h5>
+                    </div>
 
-            <div class="vertical-box-details">
-              <a href="/judul-campaign">
-                <div class="vertical-box-head">
-                  <div class="restaurant">
-                    <h5 class="two-line fs-13">Penuhi Kebutuhan Beras Untuk Santri Yatim, Dhuafa, Difabel Dipedalaman</h5>
-                  </div>
+                    <h6 class="rating-star mt-2 mb-3">
+                      {{ ucwords($vn->name) }} 
+                      @if($vn->status=='verified' || $vn->status=='verif_org')
+                        <span class="star"><i class="ri-star-s-fill"></i></span>
+                      @endif
+                    </h6>
 
-                  <h6 class="rating-star mt-2 mb-3">
-                    Yayasan Jamhariyah <span class="star"><i class="ri-star-s-fill"></i></span>
-                  </h6>
+                    <div class="progress mt-1 mb-2" role="progressbar" aria-label="Basic example" aria-valuenow="89" aria-valuemin="0" aria-valuemax="100" style="height: 5px">
+                      <div class="progress-bar" style="width: 85%"></div>
+                    </div>
 
-                  <div class="progress mt-1 mb-2" role="progressbar" aria-label="Basic example" aria-valuenow="89" aria-valuemin="0" aria-valuemax="100" style="height: 5px">
-                    <div class="progress-bar" style="width: 85%"></div>
+                    <div class="d-flex justify-content-between mt-2">
+                      <div class="fw-semibold fs-11 pe-0 lh-20">Rp 2.812.758.634</div>
+                      <div class="fw-semibold fs-11 text-end ps-1 lh-20">
+                        {{ now()->diffInDays(substr($vn->end_date, 0,10)) }}
+                      </div>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                      <div class="fw-light fs-10 pe-0">Donasi Terkumpul</div>
+                      <div class="fw-light fs-10 text-end ps-1">Hari Lagi</div>
+                    </div>
                   </div>
-
-                  <div class="d-flex justify-content-between mt-2">
-                    <div class="fw-semibold fs-11 pe-0 lh-20">Rp 2.812.758.634</div>
-                    <div class="fw-semibold fs-11 text-end ps-1 lh-20">56</div>
-                  </div>
-                  <div class="d-flex justify-content-between">
-                    <div class="fw-light fs-10 pe-0">Donasi Terkumpul</div>
-                    <div class="fw-light fs-10 text-end ps-1">Hari Lagi</div>
-                  </div>
-                </div>
-              </a>
-            </div>
-          </div>
-        </div>
-        <div class="col-12">
-          <div class="vertical-product-box">
-            <div class="vertical-box-img">
-              <a href="/judul-campaign">
-                <img class="img-fluid img" src="{{ asset('public') }}/images/program/b.jpg" alt="vp5" />
-              </a>
-            </div>
-
-            <div class="vertical-box-details">
-              <a href="/judul-campaign">
-                <div class="vertical-box-head">
-                  <div class="restaurant">
-                    <h5 class="two-line fs-13">Penuhi Kebutuhan Beras Untuk Santri Yatim, Dhuafa, Difabel Dipedalaman</h5>
-                  </div>
-
-                  <h6 class="rating-star mt-2 mb-3">
-                    Yayasan Jamhariyah <span class="star"><i class="ri-star-s-fill"></i></span>
-                  </h6>
-
-                  <div class="progress mt-1 mb-2" role="progressbar" aria-label="Basic example" aria-valuenow="89" aria-valuemin="0" aria-valuemax="100" style="height: 5px">
-                    <div class="progress-bar" style="width: 65%"></div>
-                  </div>
-
-                  <div class="d-flex justify-content-between mt-2">
-                    <div class="fw-semibold fs-11 pe-0 lh-20">Rp 2.812.758.634</div>
-                    <div class="fw-semibold fs-11 text-end ps-1 lh-20">56</div>
-                  </div>
-                  <div class="d-flex justify-content-between">
-                    <div class="fw-light fs-10 pe-0">Donasi Terkumpul</div>
-                    <div class="fw-light fs-10 text-end ps-1">Hari Lagi</div>
-                  </div>
-                </div>
-              </a>
+                </a>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="col-12">
-          <div class="vertical-product-box">
-            <div class="vertical-box-img">
-              <a href="/judul-campaign">
-                <img class="img-fluid img" src="{{ asset('public') }}/images/program/c.jpg" alt="vp5" />
-              </a>
-            </div>
-
-            <div class="vertical-box-details">
-              <a href="/judul-campaign">
-                <div class="vertical-box-head">
-                  <div class="restaurant">
-                    <h5 class="two-line fs-13">Penuhi Kebutuhan Beras Untuk Santri Yatim, Dhuafa, Difabel Dipedalaman</h5>
-                  </div>
-
-                  <h6 class="rating-star mt-2 mb-3">
-                    Yayasan Jamhariyah <span class="star"><i class="ri-star-s-fill"></i></span>
-                  </h6>
-
-                  <div class="progress mt-1 mb-2" role="progressbar" aria-label="Basic example" aria-valuenow="89" aria-valuemin="0" aria-valuemax="100" style="height: 5px">
-                    <div class="progress-bar" style="width: 35%"></div>
-                  </div>
-
-                  <div class="d-flex justify-content-between mt-2">
-                    <div class="fw-semibold fs-11 pe-0 lh-20">Rp 2.812.758.634</div>
-                    <div class="fw-semibold fs-11 text-end ps-1 lh-20">56</div>
-                  </div>
-                  <div class="d-flex justify-content-between">
-                    <div class="fw-light fs-10 pe-0">Donasi Terkumpul</div>
-                    <div class="fw-light fs-10 text-end ps-1">Hari Lagi</div>
-                  </div>
-                </div>
-              </a>
-            </div>
-          </div>
-        </div>
-        <div class="col-12">
-          <div class="vertical-product-box">
-            <div class="vertical-box-img">
-              <a href="/judul-campaign">
-                <img class="img-fluid img" src="{{ asset('public') }}/images/program/d.jpeg" alt="vp5" />
-              </a>
-            </div>
-
-            <div class="vertical-box-details">
-              <a href="/judul-campaign">
-                <div class="vertical-box-head">
-                  <div class="restaurant">
-                    <h5 class="two-line fs-13">Penuhi Kebutuhan Beras Untuk Santri Yatim, Dhuafa, Difabel Dipedalaman</h5>
-                  </div>
-
-                  <h6 class="rating-star mt-2 mb-3">
-                    Yayasan Jamhariyah <span class="star"><i class="ri-star-s-fill"></i></span>
-                  </h6>
-
-                  <div class="progress mt-1 mb-2" role="progressbar" aria-label="Basic example" aria-valuenow="89" aria-valuemin="0" aria-valuemax="100" style="height: 5px">
-                    <div class="progress-bar" style="width: 75%"></div>
-                  </div>
-
-                  <div class="d-flex justify-content-between mt-2">
-                    <div class="fw-semibold fs-11 pe-0 lh-20">Rp 2.812.758.634</div>
-                    <div class="fw-semibold fs-11 text-end ps-1 lh-20">56</div>
-                  </div>
-                  <div class="d-flex justify-content-between">
-                    <div class="fw-light fs-10 pe-0">Donasi Terkumpul</div>
-                    <div class="fw-light fs-10 text-end ps-1">Hari Lagi</div>
-                  </div>
-                </div>
-              </a>
-            </div>
-          </div>
-        </div>
-        <div class="col-12">
-          <div class="vertical-product-box">
-            <div class="vertical-box-img">
-              <a href="/judul-campaign">
-                <img class="img-fluid img" src="{{ asset('public') }}/images/program/e.jpg" alt="vp5" />
-              </a>
-            </div>
-
-            <div class="vertical-box-details">
-              <a href="/judul-campaign">
-                <div class="vertical-box-head">
-                  <div class="restaurant">
-                    <h5 class="two-line fs-13">Penuhi Kebutuhan Beras Untuk Santri Yatim, Dhuafa, Difabel Dipedalaman</h5>
-                  </div>
-
-                  <h6 class="rating-star mt-2 mb-3">
-                    Yayasan Jamhariyah <span class="star"><i class="ri-star-s-fill"></i></span>
-                  </h6>
-
-                  <div class="progress mt-1 mb-2" role="progressbar" aria-label="Basic example" aria-valuenow="89" aria-valuemin="0" aria-valuemax="100" style="height: 5px">
-                    <div class="progress-bar" style="width: 55%"></div>
-                  </div>
-
-                  <div class="d-flex justify-content-between mt-2">
-                    <div class="fw-semibold fs-11 pe-0 lh-20">Rp 2.812.758.634</div>
-                    <div class="fw-semibold fs-11 text-end ps-1 lh-20">56</div>
-                  </div>
-                  <div class="d-flex justify-content-between">
-                    <div class="fw-light fs-10 pe-0">Donasi Terkumpul</div>
-                    <div class="fw-light fs-10 text-end ps-1">Hari Lagi</div>
-                  </div>
-                </div>
-              </a>
-            </div>
-          </div>
-        </div>
+        @endforeach
       </div>
     </div>
   </section>
@@ -241,8 +103,8 @@
 
   <!-- Footer section start -->
   <section class="empty-section section-t-space section-b-space pb-0">
-    <div class="custom-container footer pb-4 pt-4">
-      <div class="fw-medium text-grey pt-2">
+    <div class="custom-container footer pb-3 pt-3">
+      <div class="fw-medium text-grey pt-2 fs-14">
         <a class="text-grey" href="">Tentang Kami</a> | 
         <a class="text-grey" href="">Syarat & Ketentuan</a> | 
         <a class="text-grey" href="">Pusat Bantuan</a>
@@ -250,13 +112,13 @@
       <div class="mt-4 text-grey">
         Temukan kami di <br>
         <div class="socmed mb-4 mt-2">
-          <a rel="noreferrer" href="https://www.facebook.com/bantubersama/" target="_blank" class="me-2 socmed-item rounded-circle">
+          <a rel="noreferrer" href="https://www.facebook.com/bantubersamacom" target="_blank" class="me-2 socmed-item rounded-circle">
               <svg class="mx-auto" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M9 .002L7.443 0C5.695 0 4.565 1.16 4.565 2.953v1.362H3.001a.245.245 0 00-.245.245v1.973c0 .135.11.244.245.244h1.564v4.978c0 .135.11.245.245.245h2.041c.136 0 .245-.11.245-.245V6.777h1.83c.135 0 .244-.11.244-.244V4.56a.245.245 0 00-.244-.245h-1.83V3.16c0-.555.132-.837.855-.837h1.048c.135 0 .245-.11.245-.245V.247A.245.245 0 009 .002z" fill="currentColor"></path>
               </svg>
               <span class="screen-reader-text">Facebook</span>
           </a>
-          <a rel="noreferrer" href="https://www.instagram.com/bantubersama" target="_blank" class="me-2 socmed-item rounded-circle">
+          <a rel="noreferrer" href="https://www.instagram.com/bantubersamacom/" target="_blank" class="me-2 socmed-item rounded-circle">
               <svg class="mx-auto" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path
                       d="M8.688 0H3.311A3.315 3.315 0 000 3.312v5.376A3.315 3.315 0 003.311 12h5.377A3.315 3.315 0 0012 8.688V3.312A3.315 3.315 0 008.688 0zm2.247 8.688a2.25 2.25 0 01-2.247 2.247H3.311a2.25 2.25 0 01-2.246-2.247V3.312A2.25 2.25 0 013.31 1.065h5.377a2.25 2.25 0 012.247 2.247v5.376z"
@@ -269,7 +131,7 @@
               </svg>
               <span class="screen-reader-text">Instagram</span>
           </a>
-          <a rel="noreferrer" href="https://twitter.com/bantubersama" target="_blank" class="me-2 socmed-item rounded-circle">
+          <a rel="noreferrer" href="https://twitter.com/BantubersamaCom" target="_blank" class="me-2 socmed-item rounded-circle">
               <svg class="mx-auto" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
                   <g>
                       <path
@@ -292,8 +154,8 @@
       </div>
 
       </div>
-      <div class="fw-normal text-grey mt-3">
-        Copyright © 2023 Yayasan Bantu Bersama Indonesia
+      <div class="fs-14 fw-normal text-grey mt-3">
+        Copyright © 2023 Yayasan Bantu Bersama Sejahtera
       </div>
     </div>
   </section>

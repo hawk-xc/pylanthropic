@@ -16,7 +16,7 @@
   <!-- header start -->
   <header class="section-t-space pt-0">
     <div class="header-panel bg-me header-title">
-      <a href="{{ route('donate.amount', $slug) }}">
+      <a href="{{ route('donate.amount', $program->slug) }}">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="#fff">
           <line x1="19" y1="12" x2="5" y2="12"></line>
           <polyline points="12 19 5 12 12 5"></polyline>
@@ -30,255 +30,67 @@
   <!-- payment method section start -->
   <section class="payment method section-lg-b-space pt-0">
     <div class="custom-container">
-      <h3 class="fw-semibold section-t-space mb-2 pb-1 fs-15">Transfer Bank (Verifikasi manual 1x24jam)</h3>
-      <ul class="payment-list">
-        <li class="cart-add-box payment-card-box gap-0 mt-2">
-          <a href="{{ route('donate.checkout', $slug) }}" class="w-100">
-            <div class="payment-detail">
-              <div class="add-img">
-                <img class="img" src="{{ asset('public') }}/images/payment/bca.png" alt="mastercard" />
-              </div>
-              <div class="add-content">
-                <div>
-                  <h5 class="fw-medium fs-15">Transfer BCA</h5>
+        <input type="hidden" name="payment_type" value="" id="payment_type">
+        <h3 class="fw-semibold section-t-space mb-2 pb-1 fs-15">Transfer Bank (Verifikasi manual 1x24jam)</h3>
+        <ul class="payment-list">
+          @foreach($payment_transfer as $pt)
+          <li class="cart-add-box payment-card-box gap-0 mt-2">
+            <a href="#" class="w-100 payment-type" data-payment="{{ $pt->key }}">
+              <div class="payment-detail">
+                <div class="add-img">
+                  <img class="img" src="{{ asset('public/images/payment').'/'.$pt->img }}" alt="{{ $pt->name }}" />
+                </div>
+                <div class="add-content">
+                  <div>
+                    <h5 class="fw-medium fs-15">{{ $pt->name }}</h5>
+                  </div>
                 </div>
               </div>
-            </div>
-          </a>
-        </li>
-        <li class="cart-add-box payment-card-box gap-0 mt-2">
-          <a href="{{ route('donate.checkout', $slug) }}" class="w-100">
-            <div class="payment-detail">
-              <div class="add-img">
-                <img class="img" src="{{ asset('public') }}/images/payment/bsi.png" alt="mastercard" />
-              </div>
-              <div class="add-content">
-                <div>
-                  <h5 class="fw-medium fs-15">Transfer BSI</h5>
-                </div>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li class="cart-add-box payment-card-box gap-0 mt-2">
-          <a href="{{ route('donate.checkout', $slug) }}" class="w-100">
-            <div class="payment-detail">
-              <div class="add-img">
-                <img class="img" src="{{ asset('public') }}/images/payment/mandiri.png" alt="mastercard" />
-              </div>
-              <div class="add-content">
-                <div>
-                  <h5 class="fw-medium fs-15">Transfer Mandiri</h5>
-                </div>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li class="cart-add-box payment-card-box gap-0 mt-2">
-          <a href="{{ route('donate.checkout', $slug) }}" class="w-100">
-            <div class="payment-detail">
-              <div class="add-img">
-                <img class="img" src="{{ asset('public') }}/images/payment/bri.png" alt="mastercard" />
-              </div>
-              <div class="add-content">
-                <div>
-                  <h5 class="fw-medium fs-15">Transfer BRI</h5>
-                </div>
-              </div>
-            </div>
-          </a>
-        </li>
-      </ul>
+            </a>
+          </li>
+          @endforeach
+        </ul>
 
-      <h3 class="fw-semibold mb-2 pb-1 fs-15 mt-4">Pembayaran Instan (Otomatis & Cepat)</h3>
-      <ul class="payment-list">
-        <li class="cart-add-box payment-card-box gap-0 mt-2">
-          <a href="{{ route('donate.checkout', $slug) }}" class="w-100">
-            <div class="payment-detail">
-              <div class="add-img">
-                <img class="img" src="{{ asset('public') }}/images/payment/qris.png" alt="mastercard" />
-              </div>
-              <div class="add-content">
-                <div>
-                  <h5 class="fw-medium fs-15">QRIS</h5>
+        <h3 class="fw-semibold mb-2 pb-1 fs-15 mt-4">Pembayaran Instan (Otomatis & Cepat)</h3>
+        <ul class="payment-list">
+          @foreach($payment_instant as $pi)
+          <li class="cart-add-box payment-card-box gap-0 mt-2">
+            <a href="#" class="w-100 payment-type" data-payment="{{ $pi->key }}">
+              <div class="payment-detail">
+                <div class="add-img">
+                  <img class="img" src="{{ asset('public/images/payment').'/'.$pi->img }}" alt="{{ $pi->name }}" />
+                </div>
+                <div class="add-content">
+                  <div>
+                    <h5 class="fw-medium fs-15">{{ $pi->name }}</h5>
+                  </div>
                 </div>
               </div>
-            </div>
-          </a>
-        </li>
-        <li class="cart-add-box payment-card-box gap-0 mt-2">
-          <a href="{{ route('donate.checkout', $slug) }}" class="w-100">
-            <div class="payment-detail">
-              <div class="add-img">
-                <img class="img" src="{{ asset('public') }}/images/payment/gopay.png" alt="mastercard" />
-              </div>
-              <div class="add-content">
-                <div>
-                  <h5 class="fw-medium fs-15">GO-PAY</h5>
-                </div>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li class="cart-add-box payment-card-box gap-0 mt-2">
-          <a href="{{ route('donate.checkout', $slug) }}" class="w-100">
-            <div class="payment-detail">
-              <div class="add-img">
-                <img class="img" src="{{ asset('public') }}/images/payment/shopeepayqris.png" alt="mastercard" />
-              </div>
-              <div class="add-content">
-                <div>
-                  <h5 class="fw-medium fs-15">ShopeePay</h5>
-                </div>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li class="cart-add-box payment-card-box gap-0 mt-2">
-          <a href="{{ route('donate.checkout', $slug) }}" class="w-100">
-            <div class="payment-detail">
-              <div class="add-img">
-                <img class="img" src="{{ asset('public') }}/images/payment/dana.png" alt="mastercard" />
-              </div>
-              <div class="add-content">
-                <div>
-                  <h5 class="fw-medium fs-15">DANA</h5>
-                </div>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li class="cart-add-box payment-card-box gap-0 mt-2">
-          <a href="{{ route('donate.checkout', $slug) }}" class="w-100">
-            <div class="payment-detail">
-              <div class="add-img">
-                <img class="img" src="{{ asset('public') }}/images/payment/qris-ovo.png" alt="mastercard" />
-              </div>
-              <div class="add-content">
-                <div>
-                  <h5 class="fw-medium fs-15">OVO</h5>
-                </div>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li class="cart-add-box payment-card-box gap-0 mt-2">
-          <a href="{{ route('donate.checkout', $slug) }}" class="w-100">
-            <div class="payment-detail">
-              <div class="add-img">
-                <img class="img" src="{{ asset('public') }}/images/payment/linkaja.png" alt="mastercard" />
-              </div>
-              <div class="add-content">
-                <div>
-                  <h5 class="fw-medium fs-15">LinkAja</h5>
-                </div>
-              </div>
-            </div>
-          </a>
-        </li>
-      </ul>
+            </a>
+          </li>
+          @endforeach
+        </ul>
 
-      <h3 class="fw-semibold mb-2 pb-1 fs-15 mt-4">Virtual Account (Verifikasi otomatis)</h3>
-      <ul class="payment-list">
-        <li class="cart-add-box payment-card-box gap-0 mt-2">
-          <a href="{{ route('donate.checkout', $slug) }}" class="w-100">
-            <div class="payment-detail">
-              <div class="add-img">
-                <img class="img" src="{{ asset('public') }}/images/payment/bca.png" alt="mastercard" />
-              </div>
-              <div class="add-content">
-                <div>
-                  <h5 class="fw-medium fs-15">BCA Virtual Account</h5>
+        <h3 class="fw-semibold mb-2 pb-1 fs-15 mt-4">Virtual Account (Verifikasi otomatis)</h3>
+        <ul class="payment-list">
+          @foreach($payment_va as $va)
+          <li class="cart-add-box payment-card-box gap-0 mt-2">
+            <a href="#" class="w-100 payment-type" data-payment="{{ $va->key }}">
+              <div class="payment-detail">
+                <div class="add-img">
+                  <img class="img" src="{{ asset('public/images/payment').'/'.$va->img }}" alt="{{ $va->name }}" />
+                </div>
+                <div class="add-content">
+                  <div>
+                    <h5 class="fw-medium fs-15">{{ $va->name }}</h5>
+                  </div>
                 </div>
               </div>
-            </div>
-          </a>
-        </li>
-        <li class="cart-add-box payment-card-box gap-0 mt-2">
-          <a href="{{ route('donate.checkout', $slug) }}" class="w-100">
-            <div class="payment-detail">
-              <div class="add-img">
-                <img class="img" src="{{ asset('public') }}/images/payment/bri.png" alt="mastercard" />
-              </div>
-              <div class="add-content">
-                <div>
-                  <h5 class="fw-medium fs-15">BRI Virtual Account</h5>
-                </div>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li class="cart-add-box payment-card-box gap-0 mt-2">
-          <a href="{{ route('donate.checkout', $slug) }}" class="w-100">
-            <div class="payment-detail">
-              <div class="add-img">
-                <img class="img" src="{{ asset('public') }}/images/payment/mandiri.png" alt="mastercard" />
-              </div>
-              <div class="add-content">
-                <div>
-                  <h5 class="fw-medium fs-15">Mandiri Virtual Account</h5>
-                </div>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li class="cart-add-box payment-card-box gap-0 mt-2">
-          <a href="{{ route('donate.checkout', $slug) }}" class="w-100">
-            <div class="payment-detail">
-              <div class="add-img">
-                <img class="img" src="{{ asset('public') }}/images/payment/bni.png" alt="mastercard" />
-              </div>
-              <div class="add-content">
-                <div>
-                  <h5 class="fw-medium fs-15">BNI Virtual Account</h5>
-                </div>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li class="cart-add-box payment-card-box gap-0 mt-2">
-          <a href="{{ route('donate.checkout', $slug) }}" class="w-100">
-            <div class="payment-detail">
-              <div class="add-img">
-                <img class="img" src="{{ asset('public') }}/images/payment/bsi.png" alt="mastercard" />
-              </div>
-              <div class="add-content">
-                <div>
-                  <h5 class="fw-medium fs-15">BSI Virtual Account</h5>
-                </div>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li class="cart-add-box payment-card-box gap-0 mt-2">
-          <a href="{{ route('donate.checkout', $slug) }}" class="w-100">
-            <div class="payment-detail">
-              <div class="add-img">
-                <img class="img" src="{{ asset('public') }}/images/payment/permata.png" alt="mastercard" />
-              </div>
-              <div class="add-content">
-                <div>
-                  <h5 class="fw-medium fs-15">Permata Virtual Account</h5>
-                </div>
-              </div>
-            </div>
-          </a>
-        </li>
-        <li class="cart-add-box payment-card-box gap-0 mt-2">
-          <a href="{{ route('donate.checkout', $slug) }}" class="w-100">
-            <div class="payment-detail">
-              <div class="add-img">
-                <img class="img" src="{{ asset('public') }}/images/payment/cimb.png" alt="mastercard" />
-              </div>
-              <div class="add-content">
-                <div>
-                  <h5 class="fw-medium fs-15">CIMB Virtual Account</h5>
-                </div>
-              </div>
-            </div>
-          </a>
-        </li>
-      </ul>
+            </a>
+          </li>
+          @endforeach
+        </ul>
+      <!-- </form> -->
     </div>
   </section>
   <!-- payment method section end -->
@@ -291,10 +103,19 @@
 
 
 @section('js_plugins')
-
+  <!-- JQuery -->
+  <script src="{{ asset('public/js/jquery-3.6.4.min.js') }}"></script>
 @endsection
 
 
 @section('js_inline')
-    
+  <script type="text/javascript">
+    $(".payment-type").on("click", function() {
+      payment = $(this).attr("data-payment");
+      // $("#payment_type").val(payment);
+      // $("#frm-checkout").trigger('submit');
+
+      window.location.href = "{{ url('/').'/'.$program->slug.'/checkout/'.$nominal }}/"+payment;
+    });
+  </script>
 @endsection

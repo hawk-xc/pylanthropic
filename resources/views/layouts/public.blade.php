@@ -18,22 +18,22 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
     <meta name="apple-mobile-web-app-title" content="bantubersama" />
-    <meta name="msapplication-TileImage" content="{{ asset('public') }}/images/logo/favicon-16x16.png" />
-    <meta name="msapplication-TileColor" content="#F7BC00" />
+    <meta name="msapplication-TileImage" content="{{ asset('favicon-16x16.png') }}" />
+    <meta name="msapplication-TileColor" content="#3BA8DD" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
     <!-- favicons
     ================================================== -->
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('public') }}/images/logo/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('public') }}/images/logo/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('public') }}/images/logo/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
 
     <!-- Chrome, Firefox OS and Opera -->
-    <meta name="theme-color" content="#F7BC00">
+    <meta name="theme-color" content="#3BA8DD">
     <!-- Windows Phone -->
-    <meta name="msapplication-navbutton-color" content="#F7BC00">
+    <meta name="msapplication-navbutton-color" content="#3BA8DD">
     <!-- iOS Safari -->
-    <meta name="apple-mobile-web-app-status-bar-style" content="#F7BC00">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#3BA8DD">
 
     <!-- font link -->
     <link rel="stylesheet" href="{{ asset('public') }}/css/vendors/metropolis.min.css" />
@@ -46,6 +46,15 @@
 
     <!-- Theme css -->
     <link rel="stylesheet" id="change-link" type="text/css" href="{{ asset('public') }}/css/style.css" />
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JSYTWE48K4"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-JSYTWE48K4');
+    </script>
 
     @yield('css_plugins')
     @yield('css_inline')

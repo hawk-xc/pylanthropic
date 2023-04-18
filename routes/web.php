@@ -17,13 +17,6 @@ use App\Http\Controllers\Guest;
 
 // Route::get('/', function () { return view('welcome'); });
 Route::get('/', [Guest\HomeController::class, 'index'])->name('index');
-Route::get('/programs', [Guest\ProgramController::class, 'list'])->name('program.list');
-Route::get('/{slug}', [Guest\ProgramController::class, 'index'])->name('program.index');
-Route::get('/{slug}/donate', [Guest\DonateController::class, 'amount'])->name('donate.amount');
-Route::get('/{slug}/payment', [Guest\DonateController::class, 'payment'])->name('donate.payment');
-Route::get('/{slug}/checkout', [Guest\DonateController::class, 'checkout'])->name('donate.checkout');
-Route::get('/{slug}/payment-info', [Guest\DonateController::class, 'paymentInfo'])->name('donate.payment_info');
-
 
 Route::group([
     'as'     => 'adm.',   // for route(adm.xx)
@@ -44,6 +37,7 @@ Route::group([
     ], function() {
         Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('index');
         Route::get('/donatur-datatables', [Admin\DonaturController::class, 'datatablesDonatur'])->name('donatur.datatables');
+        Route::get('/donate-datatables', [Admin\DonateController::class, 'datatablesDonate'])->name('donate.datatables');
         Route::resources([
             'program'          => Admin\ProgramController::class,
             'organization'     => Admin\OrganizationController::class,
@@ -58,8 +52,10 @@ Route::group([
 
 
 
-
-
-    
-
+Route::get('/programs', [Guest\ProgramController::class, 'list'])->name('program.list');
+Route::get('/{slug}', [Guest\ProgramController::class, 'index'])->name('program.index');
+Route::get('/{slug}/donate', [Guest\DonateController::class, 'amount'])->name('donate.amount');
+Route::get('/{slug}/payment/{nominal}', [Guest\DonateController::class, 'payment'])->name('donate.payment');
+Route::get('/{slug}/checkout/{nominal}/{type}', [Guest\DonateController::class, 'checkout'])->name('donate.checkout');
+Route::post('/{slug}/payment-info', [Guest\DonateController::class, 'paymentInfo'])->name('donate.payment_info');
 

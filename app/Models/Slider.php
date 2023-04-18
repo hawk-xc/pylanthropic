@@ -7,7 +7,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Model;
 
-class Transaction extends Model
+class Slider extends Model
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -16,21 +16,16 @@ class Transaction extends Model
      *
      * @var array<int, string>
      */
-    protected $table    = 'transaction';
+    protected $table    = 'slider';
     protected $fillable = [
-        'program_id',
-        'donatur_id', 
-        'invoice_number',
-        'status',
-        'nominal',
-        'nominal_code',
-        'nominal_final',
-        'message',
-        'payment_type_id',
-        'paid_at',
-        'is_show_name',
+        'name',
+        'image', 
+        'url',
+        'sort_number',
+        'is_show',
         'created_at',
+        'craeted_by',
         'updated_at',
-        'user_agent'
+        'updated_by'
     ];
 }

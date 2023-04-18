@@ -12,7 +12,7 @@ var sliderThree = new Swiper(".banner1", {
   },
 });
 var sliderThree = new Swiper(".categories", {
-  slidesPerView: 3.4,
+  slidesPerView: 4.2,
   spaceBetween: 6,
   loop: false,
   autoplay: {

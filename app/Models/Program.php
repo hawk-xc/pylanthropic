@@ -25,6 +25,8 @@ class Program extends Model
         'image',
         'short_desc',
         'about',
+        'nominal_request',
+        'nominal_approved',
         'approved_at',
         'approved_by',
         'end_date',

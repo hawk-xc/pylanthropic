@@ -7,7 +7,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Model;
 
-class Transaction extends Model
+class PaymentType extends Model
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -16,21 +16,17 @@ class Transaction extends Model
      *
      * @var array<int, string>
      */
-    protected $table    = 'transaction';
+    protected $table    = 'payment_type';
     protected $fillable = [
-        'program_id',
-        'donatur_id', 
-        'invoice_number',
-        'status',
-        'nominal',
-        'nominal_code',
-        'nominal_final',
-        'message',
-        'payment_type_id',
-        'paid_at',
-        'is_show_name',
+        'key',
+        'name', 
+        'img',
+        'target_number',
+        'target_desc',
+        'is_active',
+        'sort_number',
+        'type',
         'created_at',
-        'updated_at',
-        'user_agent'
+        'updated_at'
     ];
 }

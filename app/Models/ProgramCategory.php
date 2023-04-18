@@ -20,6 +20,7 @@ class ProgramCategory extends Model
     protected $fillable = [
         'name',
         'sort_number', 
+        'icon',
         'is_show ',
         'created_at',
         'created_by',
