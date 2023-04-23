@@ -9,6 +9,7 @@ use App\Models\Transaction;
 use App\Models\PaymentType;
 use App\Models\Donatur;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class DonateController extends Controller
 {
@@ -93,19 +94,21 @@ class DonateController extends Controller
         if(isset($program->slug) && $nominal>=10000 && isset($payment->name)) {
             // insert donatur
             $telp    = $this->formatTelp($request->telp);
-            $donatur = Donatur::where('telp', $telp)->select('id')->first();
+            $donatur = Donatur::where('telp', $telp)->select('id', 'name')->first();
             if(isset($donatur->id)) {
-                $donatur = $donatur->id;
+                $donatur_id   = $donatur->id;
+                $donatur_name = $donatur->name;
             } else {
-                $donatur = Donatur::insertGetId([
+                $donatur_id = Donatur::insertGetId([
                     'telp'            => $telp,
                     'name'            => trim($request->fullname), 
                     'want_to_contact' => $request->has('want_to_contact')?1:0  ]
                 );
+                $donatur_name = trim($request->fullname);
             }
             
-            // insert transaction
-            $is_trans = Transaction::where('donatur_id', $donatur)->where('nominal', $nominal)
+            // check any transaction
+            $is_trans = Transaction::where('donatur_id', $donatur_id)->where('nominal', $nominal)
                         ->whereDate('created_at', date('Y-m-d'))->where('status', '!=', 'cancel')
                         ->where('payment_type_id', $payment->id)->first();
             if(isset($is_trans->status)) {
@@ -113,9 +116,80 @@ class DonateController extends Controller
             } else {
                 $id_increment = Transaction::select('id')->first();
                 $invoice      = 'INV-'.date('Ymd').(isset($id_increment->id)?$id_increment->id+1:1);
+
+                // Payment Gateway
+                $requestBody = array(
+                    'order' => array(
+                        'amount'              => $nominal,
+                        'invoice_number'      => $invoice,
+                        'currency'            => 'IDR',
+                        'callback_url'        => env('DOKU_NOTIFY_URL'),
+                        'callback_url_cancel' => env('DOKU_NOTIFY_URL')
+                    ),
+                    'payment' => array(
+                        'payment_due_date' => 1440,
+                        'payment_method_types' => [$payment->payment_code]
+                    ),
+                    'customer' => array(
+                        'id'    => $telp,
+                        'name'  => $donatur_name,
+                        'email' => 'bantubersamasejahtera@gmail.com',
+                        'phone' => $telp
+                    ),
+                );
+
+                $requestId     = Str::random(20); // Change to UUID or anything that can generate unique value
+                $dateTime      = gmdate("Y-m-d H:i:s");
+                $isoDateTime   = date(DATE_ISO8601, strtotime($dateTime));
+                $dateTimeFinal = substr($isoDateTime, 0, 19) . "Z";
+
+                // Generate digest
+                $digestValue = base64_encode(hash('sha256', json_encode($requestBody), true));
+                
+                // Prepare signature component
+                $componentSignature = "Client-Id:" . env('DOKU_PROD_CLIENT_ID') . "\n" .
+                    "Request-Id:" . $requestId . "\n" .
+                    "Request-Timestamp:" . $dateTimeFinal . "\n" .
+                    "Request-Target:" . env('DOKU_PROD_TARGET') . "\n" .
+                    "Digest:" . $digestValue;
+
+                // Generate signature
+                $signature = base64_encode(hash_hmac('sha256', $componentSignature, env('DOKU_PROD_SECRET_KEY'), true));
+
+                // Execute request
+                $ch = curl_init(env('DOKU_PROD_URL').env('DOKU_PROD_TARGET'));
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                    'Content-Type: application/json',
+                    'Client-Id:' . env('DOKU_PROD_CLIENT_ID'),
+                    'Request-Id:' . $requestId,
+                    'Request-Timestamp:' . $dateTimeFinal,
+                    'Signature:' . "HMACSHA256=" . $signature,
+                ));
+
+                // Set response json
+                $responseJson = curl_exec($ch);
+                $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+                $res = json_decode($responseJson, true);
+                // $res = $responseJson;
+                // print_r($requestBody);
+                // echo '<br><br>';
+                // print_r($res);
+                // yg akan digunakan jika VA 
+                $link = $res['response']['payment']['url'];
+                // die();
+
+
+
+
+                // insert table transaction
                 $transaction  = Transaction::create([
                     'program_id'      => $program->id,
-                    'donatur_id'      => $donatur,
+                    'donatur_id'      => $donatur_id,
                     'invoice_number'  => $invoice,
                     'nominal'         => $nominal,
                     'status'          => 'draft',

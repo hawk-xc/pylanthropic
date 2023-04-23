@@ -17,6 +17,7 @@ use App\Http\Controllers\Guest;
 
 // Route::get('/', function () { return view('welcome'); });
 Route::get('/', [Guest\HomeController::class, 'index'])->name('index');
+Route::get('/payment/callback-doku', [PaymentController::class, 'callbackDoku'])->name('payment.callback.doku');
 
 Route::group([
     'as'     => 'adm.',   // for route(adm.xx)
@@ -54,6 +55,7 @@ Route::group([
 
 Route::get('/programs', [Guest\ProgramController::class, 'list'])->name('program.list');
 Route::get('/{slug}', [Guest\ProgramController::class, 'index'])->name('program.index');
+Route::get('/{slug}/info', [Guest\ProgramController::class, 'info'])->name('program.info');
 Route::get('/{slug}/donate', [Guest\DonateController::class, 'amount'])->name('donate.amount');
 Route::get('/{slug}/payment/{nominal}', [Guest\DonateController::class, 'payment'])->name('donate.payment');
 Route::get('/{slug}/checkout/{nominal}/{type}', [Guest\DonateController::class, 'checkout'])->name('donate.checkout');

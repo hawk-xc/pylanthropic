@@ -1,11 +1,29 @@
 @extends('layouts.public', [
-    'second_title'    => 'Home'
+    'second_title'    => ''
 ])
 
 
 @section('css_plugins')
     <!-- swiper css -->
     <link rel="stylesheet" type="text/css" href="{{ asset('public') }}/css/vendors/swiper-bundle.min.css" />
+
+    <!-- Meta Pixel Code -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq.disablePushState = true;
+      fbq('init', '2596008717326722');
+    fbq('init', '586907076711934');
+      fbq('track', 'PageView');
+      window.loadedPixel = []
+    </script>
+    <!-- End Meta Pixel Code -->
 @endsection
 
 
@@ -142,7 +160,7 @@
     <section class="empty-section section-t-space section-b-space pt-3">
       <div class="custom-container">
         <a href="#" target="_blank">
-          <img class="img-fluid" src="{{ asset('public') }}/images/banner/banner1.jpg">
+          <img class="img-fluid" src="{{ asset('public/images/banner/Banner campaign 2 terang 580x280.jpg') }}">
         </a>
       </div>
     </section>
@@ -179,12 +197,12 @@
                     </h6>
 
                     <div class="progress mt-1 mb-2" role="progressbar" aria-label="Basic example" aria-valuenow="89" aria-valuemin="0" aria-valuemax="100" style="height: 5px">
-                      <div class="progress-bar" style="width: {{ ceil($vsl->sum_amount/$vn->nominal_approved*100) }}%"></div>
+                      <div class="progress-bar" style="width: {{ ceil($vn->sum_amount/$vn->nominal_approved*100) }}%"></div>
                     </div>
 
                     <div class="d-flex justify-content-between mt-2">
-                      <div class="fw-semibold fs-11 pe-0 lh-20">Rp {{ str_replace(',', '.', number_format($vn->sum_amount)) }}</div>
-                      <div class="fw-semibold fs-11 text-end ps-1 lh-20">
+                      <div class="fw-semibold fs-11 pe-0 lh-16">Rp {{ str_replace(',', '.', number_format($vn->sum_amount)) }}</div>
+                      <div class="fw-semibold fs-11 text-end ps-1 lh-16">
                         {{ now()->diffInDays(substr($vn->end_date, 0,10)) }}
                       </div>
                     </div>

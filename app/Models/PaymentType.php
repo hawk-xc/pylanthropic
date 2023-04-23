@@ -19,13 +19,14 @@ class PaymentType extends Model
     protected $table    = 'payment_type';
     protected $fillable = [
         'key',
-        'name', 
+        'name',
         'img',
         'target_number',
         'target_desc',
         'is_active',
         'sort_number',
         'type',
+        'payment_code',
         'created_at',
         'updated_at'
     ];
