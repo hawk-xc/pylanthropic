@@ -26,6 +26,8 @@ class Transaction extends Model
         'nominal_code',
         'nominal_final',
         'message',
+        'midtrans_token',
+        'midtrans_url',
         'payment_type_id',
         'paid_at',
         'is_show_name',

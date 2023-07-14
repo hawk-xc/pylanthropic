@@ -1,5 +1,7 @@
 @extends('layouts.public', [
-    'second_title'    => 'Detail Program'
+    'second_title' => ucwords($program->title),
+    'meta_desc'    => ucwords($program->short_desc),
+    'image'        => $program->image,
 ])
 
 
@@ -21,6 +23,22 @@
     window.loadedPixel = []
   </script>
   <!-- End Meta Pixel Code -->
+
+  <!-- Meta Pixel Code -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '');
+    fbq('track', 'ViewContent');
+  </script>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=3496745097262004&ev=ViewContent&noscript=1" /></noscript>
+  <!-- End Meta Pixel Code -->
 @endsection
 
 
@@ -29,27 +47,31 @@
 @endsection
 
 @section('content')
-  <header>
-    <div class="header-panel-lg" style="background-image: url({{ asset('public/images/program/'.$program->image) }});">
-      <div class="custom-container">
-        <div class="panel">
-          <a href="{{ url('/') }}"><i class="ri-arrow-left-s-line"></i></a>
-          <!-- <a href="search.html"><i class="ri-search-2-line"></i></a> -->
-        </div>
-      </div>
+  <header class="section-t-space pt-0">
+    <div class="header-panel header-title header-transparent">
+      <a href="{{ url('/') }}" aria-label="Back to Home">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="#fff">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+      </a>
     </div>
   </header>
+
+  <div class="">
+    <img alt="{{ ucwords($program->title) }}" class="h-auto w-100 lazyload" data-original="{{ asset('public/images/program/'.$program->image) }}">
+  </div>
   <!-- header end -->
 
   <!-- Detail section start  -->
   <section class="pt-3">
     <div class="custom-container">
       <h4 class="title-detail-program">{{ ucwords($program->title) }}</h4>
-      <h6 class="short-desc mt-2 pt-1">{{ $program->short_desc }}</h6>
+      <div class="short-desc mt-2 pt-1">{{ $program->short_desc }}</div>
       <div class="mt-3 donate-collect"> Rp {{ number_format($sum_amount) }}</div>
       <div class="row mt-1 pb-1 fs-15">
         <div class="col-8">
-          dari target <span class="fw-semibold">Rp {{ number_format($program->nominal_approved) }}</span>
+          Kebutuhan <span class="fw-semibold">Rp {{ number_format($program->nominal_approved) }}</span>
         </div>
         <div class="col-4 text-end">
           <span class="fw-semibold">{{ now()->diffInDays(substr($program->end_date, 0,10)) }}</span> hari
@@ -58,7 +80,7 @@
       <div class="progress mt-2" role="progressbar" aria-label="Basic example" aria-valuenow="89" aria-valuemin="0" aria-valuemax="100" style="height: 5px">
         <div class="progress-bar" it="{{$sum_amount}}" style="width: {{ ceil($sum_amount/$program->nominal_approved*100) }}%"></div>
       </div>
-      <div class="mt-3 row d-flex align-content-center text-center">
+      <div class="mt-2 row d-flex align-content-center text-center">
         <a href="#donasi" class="col-4 btn-donate-detail1">
           <div>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" role="img">
@@ -89,7 +111,7 @@
             </svg>
             <span class="fw-semibold fs-14">{{ number_format($count_payout) }} kali</span>
           </div>
-          <div class="fs-13">Penggunaan Dana</div>
+          <div class="fs-13">Salur Dana</div>
         </a>
       </div>
     </div>
@@ -97,7 +119,7 @@
   <!-- filter section end  -->
 
   <!-- Empty section start -->
-  <section class="empty-section section-t-space section-b-space pb-0 pt-4">
+  <section class="empty-section section-t-space section-b-space pb-0 pt-3">
     <div class="custom-container space-empty pb-2">
     </div>
   </section>
@@ -108,7 +130,7 @@
     <div class="custom-container">
       <div class="fw-bold fs-15 mb-2 pb-1">Info Penggalang Dana</div>
       <a class="d-flex mt-2" href="#">
-        <img class="img img-fundraiser-detail me-2" src="{{ asset('public/images/fundraiser/'.$program->logo) }}">
+        <img class="img img-fundraiser-detail me-2" src="{{ asset('public/images/fundraiser/'.$program->logo) }}" alt="{{ $program->name }}">
         <div class="ms-2">
           <h6 class="fs-14 lh-24 fw-semibold">{{ ucwords($program->name) }}</h6>
           <div class="verified-fundraiser d-inline-block mt-1">
@@ -141,17 +163,17 @@
   <section class="py-20">
     <div class="custom-container">
       <div class="fw-bold fs-16 mb-2 pb-1">Tentang Program</div>
-      <div class="content-preview" id="preview-about">
+      <div class="content-preview no-after" id="preview-about">
         <div class="content-mini expanded fs-15 text-center">
           {!! $program->about !!}
         </div>
       </div>
-      <div class="text-center pt-2 pb-2">
+      <!-- <div class="text-center pt-2 pb-2">
         <button class="btn-selengkapnya-about" id="about-more">Baca selengkapnya</button>
-      </div>
+      </div> -->
       
       <div class="alert alert-secondary disclaimer-detail mt-3 mb-2">
-        <strong class="">Disclaimer :</strong> Informasi, opini dan foto yang ada di halaman program ini adalah milik dan tanggung jawab penggalang dana dan tidak mewakili Bantubersama.com. Jika ada masalah/kecurigaan silahkan <a href="#">lapor kepada kami disini</a>
+        <strong class="">Disclaimer :</strong> Informasi, opini dan foto yang ada di halaman program ini adalah milik dan tanggung jawab penggalang dana dan tidak mewakili Bantubersama.com. Jika ada masalah/kecurigaan silahkan <a href="https://wa.me/6281352521934" target="_blank">lapor kepada kami disini</a>
       </div>
 
     </div>
@@ -191,7 +213,7 @@
               <div class="info-head">
                   <div class="info-box justify-content-start">
                       <div class="img-wrap">
-                          <img src="{{ asset('public/images/fundraiser/'.$program->logo) }}" />
+                          <img class="lazyload" data-original="{{ asset('public/images/fundraiser/'.$program->logo) }}" alt="{{ $program->name }}" />
                       </div>
                       <div class="pt-1">
                           <h4>{{ ucwords($info->title) }}</h4>
@@ -233,7 +255,7 @@
       @if(count($donate)>0)
         <div class="title mb-3 pb-1">
           <div class="fw-bold fs-16" id="donasi">Donatur</div>
-          <a href="" class="d-flex fs-15 align-items-center">
+          <a href="#" class="d-flex fs-15 align-items-center">
             <span class="fs-14 color-me">Lihat Semua</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ms-1"><polyline points="9 18 15 12 9 6"></polyline></svg>
           </a>
@@ -241,16 +263,21 @@
         <div class="row">
           @foreach($donate as $vd)
             <div class="col-12">
-              <div class="d-flex mb-3">
-                <div class="mr-3 rounded-full bg-coal relative" style="width: 50px; height: 50px;">
-                  <img alt="Orang Baik" src="{{ asset('public') }}/images/icons/user-anonim.png" width="50" height="50" decoding="async" data-nimg="1" class="w-full h-full rounded-full object-cover object-center" loading="lazy" style="color: transparent;" />
-                </div>
-                <div class="content-donatur ms-3">
-                  <div class="">
-                    <div class="fs-14 fw-semibold">{{ $vd->is_show_name==1 ? $vd->name : 'Orang Baik' }}</div>
-                    <div class="fs-13">2 menit yang lalu</div>
+              <div class="mb-3">
+                <div class="d-flex">
+                  <div class="me-3 rounded-full bg-coal relative" style="width: 50px; height: 50px;">
+                    <img alt="Orang Baik" data-original="{{ asset('public') }}/images/icons/user-anonim.png" width="50" height="50" decoding="async" data-nimg="1" class="w-full h-full rounded-full object-cover object-center lazyload" loading="lazy" style="color: transparent;" />
                   </div>
-                  <span class="fs-14 fw-semibold">Rp {{ str_replace(',','.',number_format($vd->nominal_final)) }}</span>
+                  <div class="w-100">
+                    <div class="content-donatur">
+                      <div class="">
+                        <div class="fs-14 fw-semibold">{{ $vd->is_show_name==1 ? $vd->name : 'Orang Baik' }}</div>
+                        <div class="fs-13">{{ $vd->date_string }}</div>
+                      </div>
+                      <div class="fs-14 fw-semibold">Rp {{ str_replace(',','.',number_format($vd->nominal_final)) }}</div>
+                    </div>
+                    <div class="fs-14 lh-18 text-grey-dark mt-2">{{ strip_tags($vd->message) }}</div>
+                  </div>
                 </div>
               </div>
               <hr class="mt-0 mb-3 line-donatur">
@@ -289,8 +316,7 @@
       </svg>
       Bagikan
     </button>
-    <!-- <a href="cart.html" class="btn theme-btn cart-btn mt-0">View Cart</a> -->
-    <a href="{{ route('donate.amount', $program->slug) }}" class="btn  donate-btn">Donasi Sekarang</a>
+    <a href="{{ route('donate.amount', $program->slug) }}" class="btn donate-btn">Donasi Sekarang</a>
   </div>
   <!-- cart popup end -->
 
@@ -361,7 +387,7 @@
             </svg>
             <span class="mt-2 fs-14 lh-24">Email</span>
         </button>
-        <button title="" type="button" class="btn-icon-share" data-clipboard-text="https://www.amalsholeh.com/mushafdaerahbencana?ref=4Z3pL">
+        <button title="" type="button" class="btn-icon-share" data-clipboard-text="{{ url('/').'/'.$program->slug }}">
             <div class="icon-copy-url" style="width: 36px; height: 36px; border-radius: 5px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -375,20 +401,34 @@
     </div>
   </div>
   <!-- pwa install app popup start -->
+
+  <div class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true" id="copyUrlToast">
+    <div class="d-flex">
+      <div class="toast-body">
+        <strong>URL</strong> berhasil disalin ke clipboard
+     </div>
+      <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+  </div>
 @endsection
 
 
 @section('js_plugins')
   <!-- JQuery -->
-  <script src="{{ asset('public/js/jquery-3.6.4.min.js') }}"></script>
-  
+  <!-- <script src="{-- asset('public/js/jquery-3.6.4.min.js') --}"></script> -->
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js" integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
   <!-- bootstrap js -->
   <script src="{{ asset('public') }}/js/bootstrap.bundle.min.js"></script>
+  <!-- lazy load -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery-lazyload@1.9.7/jquery.lazyload.min.js"></script>
 @endsection
 
 
 @section('js_inline')
   <script type="text/javascript">
+    $("img.lazyload").lazyload();
+    
     $(".share-btn").on("click", function() {
       var myOffcanvas = document.getElementById("offcanvas");
       var bsOffcanvas = new bootstrap.Offcanvas(myOffcanvas);
@@ -400,30 +440,44 @@
       let name = $(this).attr('aria-label');
       let uri  = "{{ url('/').'/'.$program->slug }}";
       let txt  = 'Jangan%20biarakan%20mereka%20merasa%20sendirian!%0AYuk%20berinfaq%20untuk%20memuliakan%20dan%20membahagiakan%20adik-adik%20yatim%20yang%20membutuhkan%20bantuan..%20Bantu%20Donasi%20dengan%20klik';
-      let utm  = 'utm_source%3Dsocialsharing_donor_web_null%26utm_medium%3Dshare_campaign_whatsapp%26utm_campaign%3Dshare_detail_campaign';
+      let txt2 = 'Jangan biarkan mereka merasa sendirian! Yuk bantu bersama yang membutuhkan bantuan, dengan klik';
+      let utm  = 'utm_source=';
+      let utm2 = 'utm_source%3Dsocialsharing_donor_web_null%26utm_medium%3Dshare_campaign_whatsapp%26utm_campaign%3Dshare_detail_campaign';
       if(name=='facebook'){
-        var url = encodeURI('https://www.facebook.com/sharer/sharer.php?u='+uri+'?'+utm+'&quote%3D'+txt);
+        var url = encodeURI('https://www.facebook.com/sharer/sharer.php?u='+uri+'?'+utm+'fb&quote%3D'+txt2);
         window.open(url, 'name', 'width=600,height=400');
       } else if(name=='twitter') {
-        let url = encodeURI('https://twitter.com/intent/tweet?url='+uri+'?'+utm+'&text='+txt);
+        let url = encodeURI('https://twitter.com/intent/tweet?url='+uri+'?'+utm+'tw&text='+txt2);
         window.open(url, 'name', 'width=600,height=400');
       } else if(name=='whatsapp') {
-        let url = encodeURI('https://web.whatsapp.com/send?text='+txt+' '+uri+'?'+utm);
+        let url = encodeURI('https://api.whatsapp.com/send?phone=&text='+txt2+' '+uri+'?'+utm+'wa');
         window.open(url, 'name', 'width=600,height=400');
       } else if(name=='telegram') {
         let url = encodeURI('https://telegram.me/share/url?url='+uri+'&text={{ $program->title }}');
         window.open(url, 'name', 'width=600,height=400');
       } else if(name=='line') {
-        let url = encodeURI('https://social-plugins.line.me/lineit/share?url='+uri+'?'+utm+'&text='+txt);
+        let url = encodeURI('https://social-plugins.line.me/lineit/share?url='+uri+'?'+utm+'line&text='+txt2);
         window.open(url, 'name', 'width=600,height=400');
       } else if(name=='linkedin') {
         let url = encodeURI('https://www.linkedin.com/shareArticle?url='+uri+'&mini=true&title={{ $program->title }}&summary={{ $program->short_desc }}&source={{ url("/") }}');
         window.open(url, 'name', 'width=600,height=400');
       } else if(name=='email') {
-        let url = encodeURI('mailto:Bantubersama.com<contact@bantubersama.com>?subject={{ $program->title }}&body='+txt+' '+uri);
+        let url = encodeURI('mailto:Bantubersama.com<contact@bantubersama.com>?subject={{ $program->title }}&body='+txt2+' '+uri);
         window.open(url);
       } else {
-        alert('copied');
+        let link_share = $(this).attr('data-clipboard-text');
+        navigator.clipboard.writeText(link_share);
+        $('#copyUrlToast').toast({
+          animation: false,
+          delay: 3000
+        });
+        $('#copyUrlToast').toast('show');
+
+        // var myAlert = document.getElementById('copyUrlToast');//select id of toast
+        // var bsAlert = new bootstrap.Toast(myAlert);//inizialize it
+        // bsAlert.show();//show it
+
+        // alert('ok');
       }
     });
 
@@ -433,6 +487,20 @@
       $('#preview-about').css('height', '100%');
       $('#preview-about').css('max-height', '100%');
       $(this).remove();
+
+      $.ajax({
+        type: "POST",
+        url: "{{ route('program.count.read_more', $program->slug) }}",
+        data: {
+          "_token": "{{ csrf_token() }}"
+        },
+        success: function(data){
+          console.log(data);
+          if(data=='success') {
+            // toast success  
+          }
+        }
+      });
     });
 
     // Baca selengkapnya Info

@@ -21,6 +21,22 @@
     window.loadedPixel = []
   </script>
   <!-- End Meta Pixel Code -->
+
+  <!-- Meta Pixel Code -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '');
+    fbq('track', 'Lead');
+  </script>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=3496745097262004&ev=Lead&noscript=1" /></noscript>
+  <!-- End Meta Pixel Code -->
 @endsection
 
 
@@ -55,7 +71,7 @@
         <!-- @csrf -->
         <input type="hidden" name="nominal" value="0" id="nominal">
         <ul class="payment-list section-lg-b-space">
-          <li class="cart-add-box payment-card-box gap-0 mt-2">
+          <!-- <li class="cart-add-box payment-card-box gap-0 mt-2">
             <a href="#" class="container-fluid pe-0 sub_amount" data-nominal="30000">
               <div class="payment-detail">
                 <div class="add-content">
@@ -68,7 +84,7 @@
                 </div>
               </div>
             </a>
-          </li>
+          </li> -->
           <li class="cart-add-box payment-card-box gap-0 mt-2">
             <a href="#" class="container-fluid pe-0 sub_amount" data-nominal="50000">
               <div class="payment-detail">

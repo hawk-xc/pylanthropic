@@ -4,9 +4,13 @@ namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+use App\Models;
 use App\Models\Program;
 use App\Models\Transaction;
 use App\Models\ProgramInfo;
+use App\Http\Controllers\FormatDateController;
 
 class ProgramController extends Controller
 {
@@ -20,6 +24,12 @@ class ProgramController extends Controller
                     ->join('organization', 'program.organization_id', 'organization.id')
                     ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
         if(isset($program->name)) {
+            // update count view
+            Program::where('id', $program->id)->update([
+                'count_view' => $program->count_view+1,
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+
             $transaction  = Transaction::where('program_id', $program->id)->where('status', 'success');
             $sum_amount   = $transaction->sum('nominal_final');
             $count_donate = $transaction->count();
@@ -29,7 +39,10 @@ class ProgramController extends Controller
                             ->orderBy('created_at', 'DESC')->first();
             $donate       = $transaction->join('donatur', 'donatur.id', 'transaction.donatur_id')
                             ->select('transaction.nominal_final', 'transaction.paid_at', 'transaction.is_show_name', 'transaction.message', 'donatur.name')
-                            ->limit(5)->get();
+                            ->orderBy('paid_at', 'DESC')->limit(5)->get();
+            $donate->map(function($donate, $key) {
+                        return $donate->date_string = (new FormatDateController)->timeDonate($donate->paid_at);
+                    });
             return view('public.program', 
                     compact('program', 'sum_amount', 'count_donate', 'sum_news', 'count_payout', 'info', 'donate'));
         } else {
@@ -45,7 +58,42 @@ class ProgramController extends Controller
         $program = Program::where('is_publish', 1)->select('program.*', 'organization.name', 'organization.status')
                     ->join('organization', 'program.organization_id', 'organization.id')
                     ->whereNotNull('program.approved_at')
-                    ->where('end_date', '>', date('Y-m-d'))->orderBy('program.created_at', 'DESC')->limit(8)->get();
+                    ->where('end_date', '>', date('Y-m-d'));
+
+        if($request->has('kategori')) {
+            if($request->kategori!='semua') {
+                $program->join('program_categories', 'program.id', 'program_categories.program_id');
+                $program->join('program_category', 'program_category.id', 'program_categories.program_category_id');
+                $program->where('program_category.slug', $request->kategori);
+            }
+            // else = semua kategori jadi tidak perlu di filter
+        }
+
+        if($request->has('key')) {
+            $program->where('program.title', 'like', '%'.trim($request->key).'%');
+        }
+
+        if($request->has('sort')) {
+            if($request->sort=='terbaru') {
+                $program = $program->orderBy('program.approved_at', 'DESC');
+            } elseif($request->sort=='segera_berakhir') {
+                $program = $program->orderBy('program.end_date', 'ASC');
+            } elseif($request->sort=='terbanyak') {
+                $program = $program->orderBy('program.end_date', 'DESC');
+            } elseif($request->sort=='sedikit') {
+                $program = $program->orderBy('program.end_date', 'DESC');
+            }
+        } else {
+            // Secara default = TERBARU
+            $program = $program->orderBy('program.approved_at', 'DESC');
+        }
+
+        $program = $program->limit(8)->get();
+        $program->map(function($program, $key) {
+                        $sum_amount = Models\Transaction::where('program_id', $program->id)->where('status', 'success')
+                                    ->sum('nominal_final');
+                        return $program->sum_amount = $sum_amount;
+                    });
         return view('public.program_list', compact('program'));
     }
 
@@ -67,4 +115,22 @@ class ProgramController extends Controller
         }
     }
 
+    /**
+     * Count click Baca Selengkapnya.
+     */
+    public function countReadMore(Request $request)
+    {
+        $program = Program::where('is_publish', 1)->select('slug', 'id', 'count_read_more')
+                    ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
+        if(isset($program->slug)) {
+            // update count_read_more
+            Program::where('id', $program->id)->update([
+                'count_read_more' => $program->count_read_more+1,
+                'updated_at'      => date('Y-m-d H:i:s')
+            ]);
+            return 'success';
+        } else {
+            return 'failed';
+        }
+    }
 }

@@ -4,7 +4,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0" />
     <title>{{ (isset($second_title) && !empty($second_title) ? $second_title.' - ' : '').($title ?? env('APP_NAME')).' - Bantu Bersama Kebaikan' }}</title>
     <!-- <link rel="manifest" href="manifest.json" /> -->
 
@@ -13,9 +13,9 @@
     <meta name="keywords" content="{{ isset($meta_desc) && !empty($meta_desc) ? $meta_desc.' - ' : 'bantubersama' }}" />
     <meta name="author" content="{{ isset($meta_desc) && !empty($meta_desc) ? $meta_desc.' - ' : 'bantubersama' }}" />
 
-    <meta name="og:site_name" content="{{ (isset($second_title) && !empty($second_title) ? $second_title.' - ' : ' Platform Penggalang Dana - ') }} Bantubersama.com"/>
-    <meta property="og:title" content="{{ (isset($second_title) && !empty($second_title) ? $second_title.' - ' : ' Platform Penggalang Dana - ') }} Bantubersama.com"/>
-    <meta name="og:image" content="{{ asset('public/images/logo/Bantubersama.png') }}"/>
+    <meta name="og:site_name" content="{{ (isset($second_title) && !empty($second_title) ? $second_title : ' Platform Penggalang Dana - Bantubersama.com') }}"/>
+    <meta property="og:title" content="{{ (isset($second_title) && !empty($second_title) ? $second_title : ' Platform Penggalang Dana - Bantubersama.com') }}"/>
+    <meta name="og:image" content="{{ isset($image) ? asset('public/images/program/'.$image) : asset('public/images/logo/Bantubersama.png') }}"/>
     <meta property="og:url" content="https://www.bantubersama.com"/>
     <meta property="og:description" content="{{ isset($meta_desc) && !empty($meta_desc) ? $meta_desc.' - ' : 'Bantubersama adalah platform penggalangan dana untuk membantu bersama secara online' }}"/>
 
@@ -48,21 +48,36 @@
     <link rel="stylesheet" href="{{ asset('public') }}/css/vendors/metropolis.min.css" />
 
     <!-- remixicon css -->
-    <link rel="stylesheet" type="text/css" href="{{ asset('public') }}/css/vendors/remixicon.css" />
+    <!-- <link rel="stylesheet" type="text/css" href="{-- asset('public') --}/css/vendors/remixicon.min.css" /> -->
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@2.2.0/fonts/remixicon.css" rel="stylesheet">
 
     <!-- bootstrap css -->
-    <link rel="stylesheet" id="rtl-link" type="text/css" href="{{ asset('public') }}/css/vendors/bootstrap.min.css" />
+    <!-- <link rel="stylesheet" id="rtl-link" type="text/css" href="{-- asset('public') --}/css/vendors/bootstrap.min.css" /> -->
+    <link rel="stylesheet" id="rtl-link" type="text/css" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" />
 
     <!-- Theme css -->
-    <link rel="stylesheet" id="change-link" type="text/css" href="{{ asset('public') }}/css/style.css" />
+    <link rel="stylesheet" id="change-link" type="text/css" href="{{ asset('public') }}/css/style.css?v=1234567" />
 
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-JSYTWE48K4"></script>
+    <!-- Google Tag Manager -->
     <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-JSYTWE48K4');
+      (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+      new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+      j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+      'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+      })(window,document,'script','dataLayer','GTM-PL9ZZZK');
+    </script>
+    <!-- End Google Tag Manager -->
+
+    <!-- Hotjar Tracking Code for https://bantubersama.com/ -->
+    <script>
+        (function(h,o,t,j,a,r){
+            h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+            h._hjSettings={hjid:3507888,hjsv:6};
+            a=o.getElementsByTagName('head')[0];
+            r=o.createElement('script');r.async=1;
+            r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+            a.appendChild(r);
+        })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
     </script>
 
     @yield('css_plugins')
@@ -71,6 +86,10 @@
 </head>
 
   <body>
+      <!-- Google Tag Manager (noscript) -->
+      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL9ZZZK"
+      height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+      <!-- End Google Tag Manager (noscript) -->
       @yield('content')
 
 

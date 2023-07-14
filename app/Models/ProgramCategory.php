@@ -19,6 +19,7 @@ class ProgramCategory extends Model
     protected $table    = 'program_category';
     protected $fillable = [
         'name',
+        'slug',
         'sort_number', 
         'icon',
         'is_show ',

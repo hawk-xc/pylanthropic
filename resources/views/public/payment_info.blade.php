@@ -1,5 +1,7 @@
 @extends('layouts.public', [
-    'second_title'    => 'Checkout'
+    'second_title' => ucwords($program->title),
+    'meta_desc'    => ucwords($program->short_desc),
+    'image'        => $program->image,
 ])
 
 
@@ -16,10 +18,26 @@
       'https://connect.facebook.net/en_US/fbevents.js');
       fbq.disablePushState = true;
       fbq('init', '2596008717326722');
-    fbq('init', '586907076711934');
-      fbq('track', 'Purchase');
+      fbq('init', '586907076711934');
+      fbq('track', 'Donate');
       window.loadedPixel = []
     </script>
+  <!-- End Meta Pixel Code -->
+
+  <!-- Meta Pixel Code -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '');
+    fbq('track', 'Donate');
+  </script>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=3496745097262004&ev=Donate&noscript=1" /></noscript>
   <!-- End Meta Pixel Code -->
 @endsection
 
@@ -46,7 +64,11 @@
   <!-- payment method section start -->
   <section class="payment method section-lg-b-space pt-0">
     <div class="custom-container">
-      <h5 class="fw-medium fs-15 mt-4">Selangkah lagi selesaikan donasi Anda</h5>
+      @if( $transaction->status=='success' )
+        <h5 class="fw-medium fs-15 mt-4" id="desc_title">Terimakasih atas donasi Anda</h5>
+      @else
+        <h5 class="fw-medium fs-15 mt-4" id="desc_title">Selangkah lagi selesaikan donasi Anda</h5>
+      @endif
       <ul class="payment-list">
         <li class="cart-add-box payment-card-box gap-0 mt-2">
           <div class="w-100">
@@ -58,39 +80,41 @@
                 <div class="add-content">
                   <h5 class="fw-medium fs-16">{{ $payment->target_number }}</h5>
                 </div>
-                <a href="#" class="fw-semibold color-me">Salin</a>
+                <a href="#" class="fw-semibold color-me copy" data-copy="{{ $payment->target_number }}">Salin</a>
               </div>
               <div class="fs-14 fw-medium text-secondary pb-1">Transfer a/n {{ $payment->target_desc }}</div>
-            @elseif($payment->type=='virtual_account')
-              <div class="payment-detail pb-0">
+            @elseif( ($payment->type=='virtual_account' || $payment->type=='instant') && $payment->key!='qris' )
+              <div class="payment-detail">
                 <div class="add-img">
                   <img class="img" src="{{ asset('public/images/payment/'.$payment->img) }}" alt="mastercard" />
                 </div>
                 <div class="add-content">
-                  <h5 class="fw-medium fs-16">{{ $va_number }}</h5>
+                  <h5 class="fw-medium fs-16">{{ $payment->name }}</h5>
                 </div>
-                <a href="#" class="fw-semibold color-me">Salin</a>
+                <!-- <a href="#" class="fw-semibold color-me">Salin</a> -->
               </div>
-              <div class="fs-14 fw-medium text-secondary pb-1">{{ $payment->name }}</div>
-            @elseif($payment->type=='instant')
+              <!-- <div class="fs-14 fw-medium text-secondary pb-1">{{ $payment->name }}</div> -->
+            @elseif($payment->key=='qris')
               <div class="py-2 text-center">
-                {{ $payment->name }}
+                <img src="{{ asset('public/images/payment/qris_bsi.png') }}">
+              </div>
+              <div class="text-center pb-1">
+                <a class="fw-semibold color-me" href="#" id="download_qris">Download QRIS</a>
               </div>
             @else
               <!-- debit / credit -->
             @endif
           </div>
         </li>
-        @if($payment->type=='transfer')
+        @if($payment->type=='transfer' || $payment->key=='qris')
           <div class="fs-15 fw-medium my-3">Donasi sebesar</div>
-          <li class="cart-add-box payment-card-box gap-0 mt-2">
+          <li class="cart-add-box payment-card-box gap-0 mt-1">
             <div class="w-100">
               <div class="payment-detail">
                   <div class="add-content">
-                    <h5 class="fw-semibold fs-18">{{ trim($nominal_show) }}<span class="highlight-digit">{{ $nominal_show2 }}</span>
-                    </h5>
+                    <h5 class="fw-semibold fs-18">{{ trim($nominal_show) }}<span class="highlight-digit">{{ $nominal_show2 }}</span></h5>
                   </div>
-                  <a href="#" class="fw-semibold color-me">Salin</a>
+                  <a href="#" class="fw-semibold color-me copy" data-copy="{{ $nominal }}">Salin</a>
               </div>
             </div>
           </li>
@@ -100,24 +124,37 @@
               <div class="payment-detail">
                 <div class="d-flex justify-content-between align-items-center w-100">
                   <div class="fs-16">Donasi sebesar</div>
-                  <h5 class="fw-semibold fs-18">{{ $nominal_show }}</h5>
+                  <h5 class="fw-semibold fs-18">{{ trim($nominal_show) }}<span class="highlight-digit">{{ $nominal_show2 }}</span></h5>
                 </div>
+              </div>
+            </div>
+          </li>
+          <div class="fs-16 mt-4 text-center">Atau bisa menggunakan QRIS untuk semua Jenis Bank dan E-Wallet</div>
+          <li class="cart-add-box payment-card-box gap-0 mt-2">
+            <div class="w-100">
+                <div class="py-2 text-center">
+                <img src="{{ asset('public/images/payment/qris_bsi.png') }}">
+              </div>
+              <div class="text-center pb-1">
+                <a class="fw-semibold color-me" href="#" id="download_qris">Download QRIS</a>
               </div>
             </div>
           </li>
         @endif
       </ul>
-      @if($payment->type=='transfer')
-        <div class="alert alert-warning disclaimer-detail mt-2 mb-1">
-          <strong class="">Penting!</strong> Pastikan nominal transfer hingga 3 digit terakhir
-        </div>
+      @if($payment->type!='transfer2')
+        @if( $transaction->status!='success' )
+          <div class="alert alert-warning disclaimer-detail mt-2 mb-1">
+            <strong class="">Penting!</strong> Pastikan nominal transfer hingga 3 digit terakhir
+          </div>
+        @endif
         <em class="fs-12 text-secondary">* Akan didonasikan hingga 3 digit terakhir</em>
       @endif
 
       <hr class="mb-4">
       <div class="fs-14 lh-16 d-flex justify-content-between">
-        <div>Waktu pembayaran sebelum</div>
-        <div><strong class="fs-15">{{ $paid_before }}</strong></div>
+        <div>Pembayaran sebelum</div>
+        <div><strong class="fs-15">{{ $paid_before==0 ? 'Selesai' : $paid_before }}</strong></div>
       </div>
       <div class="fs-14 lh-16 d-flex justify-content-between mt-2 pt-1">
         <div>Nomor Invoice</div>
@@ -125,7 +162,7 @@
       </div>
       <div class="fs-14 lh-16 d-flex justify-content-between mt-2 pt-1">
         <div>Status Pembayaran</div>
-        <div class="fs-15 fw-semibold">
+        <div class="fs-15 fw-semibold" id="status_paid">
           @if($transaction->status=='draft')
             Belum diterima
           @elseif($transaction->status=='success')
@@ -135,13 +172,17 @@
           @endif
         </div>
       </div>
-      <button class="btn share-btn mt-4 w-100">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
-          <polyline points="9 11 12 14 22 4"></polyline>
-          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
-        </svg>
-        Cek status pembayaran
-      </button>
+        @if( $transaction->status!='success' )
+            <button class="btn share-btn mt-4 w-100" id="checkStatus">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2">
+                    <polyline points="9 11 12 14 22 4"></polyline>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                Cek status pembayaran
+            </button>
+        @else
+            <br>
+        @endif
       <button class="btn donate-btn mt-2 w-100 share-btn" id="shareprogram">
         <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" class="mr-2 w-4">
           <path d="M17.5 10A3.5 3.5 0 1 0 14 6.5c0 .43-.203.86-.595 1.037L10.034 9.07c-.427.194-.924.052-1.283-.25a3.5 3.5 0 1 0-.2 5.517c.38-.275.885-.381 1.297-.156l3.585 1.955c.412.225.597.707.572 1.176a3.5 3.5 0 1 0 1.445-2.649c-.38.275-.886.381-1.298.156l-3.585-1.955c-.412-.225-.597-.707-.572-1.176.003-.062.005-.125.005-.188 0-.43.203-.86.595-1.037l3.371-1.533c.428-.194.924-.052 1.283.25.609.512 1.394.82 2.251.82Z" fill="#fff"></path>
@@ -149,7 +190,7 @@
         Bagikan Program Ini
       </button>
       <div class="alert alert-secondary disclaimer-detail mt-4">
-        Jika ada kendala pada transaksi ini bisa <a href="#">lapor pada kami</a>
+        Jika ada kendala pada transaksi ini bisa <a href="https://wa.me/6281352521934" target="_blank">lapor pada kami</a>
       </div>
       <a href="{{ url('/') }}" class="btn  donate-btn mt-2 w-100">
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-orange-400">
@@ -234,7 +275,7 @@
             </svg>
             <span class="mt-2 fs-14 lh-24">Email</span>
         </button>
-        <button title="" type="button" class="btn-icon-share" data-clipboard-text="https://www.amalsholeh.com/mushafdaerahbencana?ref=4Z3pL">
+        <button title="" type="button" class="btn-icon-share" data-clipboard-text="{{ url('/').'/'.$program->slug }}">
             <div class="icon-copy-url" style="width: 36px; height: 36px; border-radius: 5px;">
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -261,7 +302,70 @@
 
 
 @section('js_inline')
+  @if( ($payment->type=='virtual_account' || $payment->type=='instant') && $transaction->status=='draft' && $payment->key!='qris' )
+    <script type="text/javascript" src="https://app.midtrans.com/snap/snap.js" data-client-key="{{ env('MID_CLIENT_KEY') }}"></script>
+
+    <script type="text/javascript">
+      $(document).ready(function() {
+        snapPay();
+      })
+
+      setTimeout(function() {
+          snapPay()
+      }, 500)
+
+      function snapPay() {
+        snap.pay('{{ $token_midtrans }}', {
+          onSuccess: function(result) {
+              window.history.back();
+          },
+          onPending: function(result) {
+              window.history.back();
+          },
+          onError: function(result) {
+              window.history.back();
+          }
+        });
+      }
+    </script>
+  @endif
+
   <script type="text/javascript">
+    $("#download_qris").on("click", function() {
+      var link = document.createElement("a");
+      link.setAttribute('download', '');
+      link.href = "{{ asset('public/images/payment/qris_bsi.png') }}";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    });
+
+    $(".copy").on("click", function() {
+      let data_copy = $(this).attr('data-copy');
+      navigator.clipboard.writeText(data_copy);
+    });
+
+    $("#checkStatus").on("click", function() {
+      $.ajax({
+        type: "POST",
+        url: "{{ route('donate.status.check', $transaction->invoice_number) }}",
+        data: {
+          "_token": "{{ csrf_token() }}"
+        },
+        success: function(data)
+        {
+          console.log(data);
+          if(data!='no') {
+            $('#status_paid').html(data);
+            if(data=='Sudah Dibayar') {
+              $('#desc_title').html('Terimakasih atas donasi Anda');
+            }
+          }
+        }
+      });
+    });
+
+
     $("#shareprogram").on("click", function() {
       var myOffcanvas = document.getElementById("offcanvas");
       var bsOffcanvas = new bootstrap.Offcanvas(myOffcanvas);
@@ -272,31 +376,38 @@
     $(".btn-icon-share").on("click", function() {
       let name = $(this).attr('aria-label');
       let uri  = "{{ url('/').'/'.$program->slug }}";
-      let txt  = 'Jangan%20biarakan%20mereka%20merasa%20sendirian!%0AYuk%20berinfaq%20untuk%20memuliakan%20dan%20membahagiakan%20adik-adik%20yatim%20yang%20membutuhkan%20bantuan..%20Bantu%20Donasi%20dengan%20klik';
-      let utm  = 'utm_source%3Dsocialsharing_donor_web_null%26utm_medium%3Dshare_campaign_whatsapp%26utm_campaign%3Dshare_detail_campaign';
+      let txt2 = 'Jangan biarkan mereka merasa sendirian! Yuk bantu bersama yang membutuhkan bantuan, dengan klik';
+      let utm  = 'utm_source=';
+      let utm2 = 'utm_source%3Dsocialsharing_donor_web_null%26utm_medium%3Dshare_campaign_whatsapp%26utm_campaign%3Dshare_detail_campaign';
       if(name=='facebook'){
-        var url = encodeURI('https://www.facebook.com/sharer/sharer.php?u='+uri+'?'+utm+'&quote%3D'+txt);
+        var url = encodeURI('https://www.facebook.com/sharer/sharer.php?u='+uri+'?'+utm+'&quote%3D'+txt2);
         window.open(url, 'name', 'width=600,height=400');
       } else if(name=='twitter') {
-        let url = encodeURI('https://twitter.com/intent/tweet?url='+uri+'?'+utm+'&text='+txt);
+        let url = encodeURI('https://twitter.com/intent/tweet?url='+uri+'?'+utm+'&text='+txt2);
         window.open(url, 'name', 'width=600,height=400');
       } else if(name=='whatsapp') {
-        let url = encodeURI('https://web.whatsapp.com/send?text='+txt+' '+uri+'?'+utm);
+        let url = encodeURI('https://api.whatsapp.com/send?phone=&text='+txt2+' '+uri+'?'+utm);
         window.open(url, 'name', 'width=600,height=400');
       } else if(name=='telegram') {
         let url = encodeURI('https://telegram.me/share/url?url='+uri+'&text={{ $program->title }}');
         window.open(url, 'name', 'width=600,height=400');
       } else if(name=='line') {
-        let url = encodeURI('https://social-plugins.line.me/lineit/share?url='+uri+'?'+utm+'&text='+txt);
+        let url = encodeURI('https://social-plugins.line.me/lineit/share?url='+uri+'?'+utm+'&text='+txt2);
         window.open(url, 'name', 'width=600,height=400');
       } else if(name=='linkedin') {
         let url = encodeURI('https://www.linkedin.com/shareArticle?url='+uri+'&mini=true&title={{ $program->title }}&summary={{ $program->short_desc }}&source={{ url("/") }}');
         window.open(url, 'name', 'width=600,height=400');
       } else if(name=='email') {
-        let url = encodeURI('mailto:Bantubersama.com<contact@bantubersama.com>?subject={{ $program->title }}&body='+txt+' '+uri);
+        let url = encodeURI('mailto:Bantubersama.com<contact@bantubersama.com>?subject={{ $program->title }}&body='+txt2+' '+uri);
         window.open(url);
       } else {
-        alert('copied');
+        let link_share = $(this).attr('data-clipboard-text');
+        navigator.clipboard.writeText(link_share);
+        $('#copyUrlToast').toast({
+          animation: false,
+          delay: 3000
+        });
+        $('#copyUrlToast').toast('show');
       }
       
     });

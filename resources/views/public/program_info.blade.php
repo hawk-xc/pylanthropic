@@ -54,11 +54,11 @@
         <div class="title mb-3 pb-1">
           <div class="fw-bold fs-16" id="kabar-terbaru">{{ ucwords($program->title) }}</div>
         </div>
-        <div >
+        <div>
           <ul class="info-timeline">
             @foreach($info as $vi)
               <li>
-                <div class="content-preview" id="preview-info">
+                <div class="content-preview">
                   <div class="info-head">
                     <div class="info-box justify-content-start">
                         <div class="img-wrap">
@@ -75,7 +75,7 @@
                   </div>
                 </div>
                 <div class="text-center pt-3 pb-2">
-                  <button class="btn-selengkapnya-about" id="info-more">Baca selengkapnya</button>
+                  <button class="btn-selengkapnya-about">Baca selengkapnya</button>
                 </div>
               </li>
             @endforeach
@@ -114,10 +114,10 @@
 @section('js_inline')
   <script type="text/javascript">
     // Baca selengkapnya Info
-    $("#info-more").on("click", function() {
-      $('#preview-info').addClass('no-after');
-      $('#preview-info').css('height', '100%');
-      $('#preview-info').css('max-height', '100%');
+    $(".btn-selengkapnya-about").on("click", function(e) {
+      const a = e.target.parentNode.parentNode.querySelector(".content-preview");
+      console.log(a);
+      a.classList.add('no-after');
       $(this).remove();
     });
   </script>

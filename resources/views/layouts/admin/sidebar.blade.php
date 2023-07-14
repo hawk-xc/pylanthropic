@@ -46,17 +46,17 @@
                     </a>
                     <ul class="{{ $sidebar_menu == 'program' ? 'mm-show' : '' }}">
                         <li>
-                            <a class="{{ route('adm.program.index') }}" href="#">
-                                <i class="metismenu-icon"></i> List Program 
+                            <a href="{{ route('adm.program.index') }}" class="{{ $sidebar_submenu == 'program' ? 'mm-active' : '' }}">
+                                <i class="metismenu-icon"></i> List Program
                             </a>
                         </li>
                         <li>
-                            <a class="{{ route('adm.program-category.index') }}" href="#">
+                            <a href="{{ route('adm.program-category.index') }}" class="{{ $sidebar_submenu == 'category' ? 'mm-active' : '' }}">
                                 <i class="metismenu-icon"></i> Kategori 
                             </a>
                         </li>
                         <li>
-                            <a class="" href="{{ route('adm.organization.index') }}">
+                            <a href="{{ route('adm.organization.index') }}" class="{{ $sidebar_submenu == 'organization' ? 'mm-active' : '' }}">
                                 <i class="metismenu-icon"></i> Lembaga 
                             </a>
                         </li>
@@ -74,7 +74,7 @@
                             </a>
                         </li>
                         <li>
-                            <a class="{{ route('adm.fundraiser.index') }}" href="#">
+                            <a href="{{ route('adm.fundraiser.index') }}">
                                 <i class="metismenu-icon"></i> Fundraiser 
                             </a>
                         </li>
@@ -87,27 +87,27 @@
                     </a>
                     <ul class="{{ $sidebar_menu == 'master-data' ? 'mm-show' : '' }}">
                         <li>
-                            <a class="{{ route('adm.user.index') }}" href="#">
+                            <a href="{{ route('adm.user.index') }}" href="#">
                                 <i class="metismenu-icon"></i> Admin 
                             </a>
                         </li>
                         <li>
-                            <a class="{#" href="#">
+                            <a href="#" href="#">
                                 <i class="metismenu-icon"></i> Settings 
                             </a>
                         </li>
                         <li>
-                            <a class="#" href="#">
+                            <a href="#" href="#">
                                 <i class="metismenu-icon"></i> Kebijakan Privasi 
                             </a>
                         </li>
                         <li>
-                            <a class="{#" href="#">
+                            <a href="#" href="#">
                                 <i class="metismenu-icon"></i> Tentang Kami 
                             </a>
                         </li>
                         <li>
-                            <a class="#" href="#">
+                            <a href="#" href="#">
                                 <i class="metismenu-icon"></i> FAQ 
                             </a>
                         </li>

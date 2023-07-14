@@ -33,12 +33,23 @@ Route::group([
     });
 
     // Dashboard
-        Route::group([
+    Route::group([
         'middleware' => ['auth']
     ], function() {
         Route::get('/dashboard', [Admin\DashboardController::class, 'index'])->name('index');
+
         Route::get('/donatur-datatables', [Admin\DonaturController::class, 'datatablesDonatur'])->name('donatur.datatables');
         Route::get('/donate-datatables', [Admin\DonateController::class, 'datatablesDonate'])->name('donate.datatables');
+        Route::get('/program-datatables', [Admin\ProgramController::class, 'datatablesProgram'])->name('program.datatables');
+
+        Route::get('/program-show-donate', [Admin\ProgramController::class, 'showDonate'])->name('program.show.donate');
+
+        Route::post('/donate-status-edit', [Admin\DonateController::class, 'statusEdit'])->name('donate.status.edit');
+
+        // SELECT2
+        Route::get('/organization-select2-all', [Admin\OrganizationController::class, 'select2'])->name('organization.select2.all');
+        Route::get('/category-select2-all', [Admin\ProgramCategoryController::class, 'select2'])->name('category.select2.all');
+
         Route::resources([
             'program'          => Admin\ProgramController::class,
             'organization'     => Admin\OrganizationController::class,
@@ -54,10 +65,14 @@ Route::group([
 
 
 Route::get('/programs', [Guest\ProgramController::class, 'list'])->name('program.list');
+Route::get('/donasi/status', [Guest\DonateController::class, 'paymentStatus'])->name('donate.status');
+Route::post('/donasi/status-check/{inv}', [Guest\DonateController::class, 'paymentStatusCheck'])->name('donate.status.check');
 Route::get('/{slug}', [Guest\ProgramController::class, 'index'])->name('program.index');
 Route::get('/{slug}/info', [Guest\ProgramController::class, 'info'])->name('program.info');
 Route::get('/{slug}/donate', [Guest\DonateController::class, 'amount'])->name('donate.amount');
 Route::get('/{slug}/payment/{nominal}', [Guest\DonateController::class, 'payment'])->name('donate.payment');
 Route::get('/{slug}/checkout/{nominal}/{type}', [Guest\DonateController::class, 'checkout'])->name('donate.checkout');
-Route::post('/{slug}/payment-info', [Guest\DonateController::class, 'paymentInfo'])->name('donate.payment_info');
+Route::post('/{slug}/checkout-do', [Guest\DonateController::class, 'checkoutDo'])->name('donate.checkout.do');
+Route::get('/{slug}/payment-info', [Guest\DonateController::class, 'paymentInfo'])->name('donate.payment_info');
+Route::post('/{slug}/program-read-more-count', [Guest\ProgramController::class, 'countReadMore'])->name('program.count.read_more');
 

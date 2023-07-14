@@ -19,7 +19,7 @@
       'https://connect.facebook.net/en_US/fbevents.js');
       fbq.disablePushState = true;
       fbq('init', '2596008717326722');
-    fbq('init', '586907076711934');
+      fbq('init', '586907076711934');
       fbq('track', 'PageView');
       window.loadedPixel = []
     </script>
@@ -48,7 +48,7 @@
     <!-- search section starts -->
     <section class="search-section pt-3">
       <div class="custom-container">
-        <form class="auth-form search-head" target="_blank">
+        <form class="auth-form search-head" method="get" action="#" id="search">
           <div class="form-group header-navbar">
             <a href="{{ url('/') }}" class="logo-navbar">
               <img class="" src="{{ asset('Logo Bantubersama.png') }}">
@@ -96,7 +96,7 @@
           <div class="swiper-wrapper ratio_square">
             @foreach($category as $vc)
               <div class="swiper-slide">
-                <a href="{{ route('program.list') }}" class="food-categories">
+                <a href="{{ route('program.list').'/?kategori='.$vc->slug }}" class="food-categories">
                   <img class="img-fluid categories-img" src="{{ asset('public/images/categories').'/'.$vc->icon }}" alt="{{ ucwords($vc->name) }}" />
                 </a>
                 <h6 class="fs-12">{{ ucwords($vc->name) }}</h6>
@@ -121,11 +121,11 @@
               <div class="swiper-slide">
                 <a href="{{ url('/').'/'.$vsl->slug }}" class="">
                   <div class="product-box">
-                    <img class="img-fluid rounded-top" src="{{ asset('public/images/program').'/'.$vsl->thumbnail }}" alt="{{ ucwords($vsl->title) }}" />
+                    <img class="img-fluid rounded-top lazyload" data-original="{{ asset('public/images/program').'/'.$vsl->thumbnail }}" alt="{{ ucwords($vsl->title) }}" />
                     <div class="product-box-detail product-box-bg">
                       <h5 class="two-line mt-1 mb-1 fs-11 lh-14">{{ ucwords($vsl->title) }}</h5>
-                      <ul class="timing mt-2 mb-3">
-                        <li class="fs-11 lh-16">
+                      <ul class="timing mt-2 mb-2">
+                        <li class="fs-11 lh-14">
                           {{ ucwords($vsl->name) }} 
                           @if($vsl->status=='verified' || $vsl->status=='verif_org')
                             <span class="star"><i class="ri-star-s-fill"></i></span>
@@ -142,8 +142,8 @@
                         </div>
                       </div>
                       <div class="bottom-panel mt-0">
-                        <div class="pe-0 fw-light fs-10">Donasi Terkumpul</div>
-                        <div class="fw-light fs-10 text-end">Hari Lagi</div>
+                        <div class="fw-light fs-10 lh-14 pe-0">Donasi Terkumpul</div>
+                        <div class="fw-light fs-10 lh-14 text-end">Hari Lagi</div>
                       </div>
                     </div>
                   </div>
@@ -154,13 +154,13 @@
         </div>
       </div>
     </section>
-    <!-- product section start -->
+    <!-- Program Selection section start -->
 
     <!-- Banner section start -->
     <section class="empty-section section-t-space section-b-space pt-3">
       <div class="custom-container">
-        <a href="#" target="_blank">
-          <img class="img-fluid" src="{{ asset('public/images/banner/Banner campaign 2 terang 580x280.jpg') }}">
+        <a href="https://wa.me/6281352521934" target="_blank">
+          <img class="img-fluid lazyload" data-original="{{ asset('public/images/banner/Banner campaign 2 terang 580x280.jpg') }}">
         </a>
       </div>
     </section>
@@ -173,23 +173,23 @@
           <h3 class="mt-0">Terbaru di Bantubersama</h3>
           <a href="{{ route('program.list') }}">Semua</a>
         </div>
-        <div class="row gy-3">
+        <div class="row gy-2">
           @foreach($newest as $vn)
           <div class="col-12">
             <div class="vertical-product-box">
               <div class="vertical-box-img">
                 <a href="{{ url('/').'/'.$vn->slug }}">
-                  <img class="img-fluid img" src="{{ asset('public/images/program').'/'.$vn->thumbnail }}" alt="{{ ucwords($vn->title) }}" />
+                  <img class="img-fluid img lazyload" data-original="{{ asset('public/images/program').'/'.$vn->thumbnail }}" alt="{{ ucwords($vn->title) }}" />
                 </a>
               </div>
               <div class="vertical-box-details">
                 <a href="{{ url('/').'/'.$vn->slug }}">
                   <div class="vertical-box-head">
                     <div class="restaurant">
-                      <h5 class="two-line fs-12">{{ ucwords($vn->title) }}</h5>
+                      <h5 class="two-line fs-11 lh-14">{{ ucwords($vn->title) }}</h5>
                     </div>
 
-                    <h6 class="rating-star mt-2 mb-2 fs-11">
+                    <h6 class="rating-star mt-1 mb-1 fs-11">
                       {{ ucwords($vn->name) }} 
                       @if($vn->status=='verified' || $vn->status=='verif_org')
                         <span class="star"><i class="ri-star-s-fill"></i></span>
@@ -207,8 +207,8 @@
                       </div>
                     </div>
                     <div class="d-flex justify-content-between">
-                      <div class="fw-light fs-10 pe-0">Donasi Terkumpul</div>
-                      <div class="fw-light fs-10 text-end ps-1">Hari Lagi</div>
+                      <div class="fw-light fs-10 lh-14 pe-0">Donasi Terkumpul</div>
+                      <div class="fw-light fs-10 lh-14 text-end ps-1">Hari Lagi</div>
                     </div>
                   </div>
                 </a>
@@ -232,13 +232,13 @@
         <div class="mt-3 text-grey fs-14">
           Temukan kami di <br>
           <div class="socmed mb-3 mt-1">
-            <a rel="noreferrer" href="https://www.facebook.com/bantubersama/" target="_blank" class="me-2 socmed-item rounded-circle">
+            <a rel="noreferrer" href="https://www.facebook.com/profile.php?id=100091563649667" target="_blank" class="me-2 socmed-item rounded-circle">
                 <svg class="mx-auto" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M9 .002L7.443 0C5.695 0 4.565 1.16 4.565 2.953v1.362H3.001a.245.245 0 00-.245.245v1.973c0 .135.11.244.245.244h1.564v4.978c0 .135.11.245.245.245h2.041c.136 0 .245-.11.245-.245V6.777h1.83c.135 0 .244-.11.244-.244V4.56a.245.245 0 00-.244-.245h-1.83V3.16c0-.555.132-.837.855-.837h1.048c.135 0 .245-.11.245-.245V.247A.245.245 0 009 .002z" fill="currentColor"></path>
                 </svg>
                 <span class="screen-reader-text">Facebook</span>
             </a>
-            <a rel="noreferrer" href="https://www.instagram.com/bantubersama" target="_blank" class="me-2 socmed-item rounded-circle">
+            <a rel="noreferrer" href="https://www.instagram.com/bantubersamacom/" target="_blank" class="me-2 socmed-item rounded-circle">
                 <svg class="mx-auto" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path
                         d="M8.688 0H3.311A3.315 3.315 0 000 3.312v5.376A3.315 3.315 0 003.311 12h5.377A3.315 3.315 0 0012 8.688V3.312A3.315 3.315 0 008.688 0zm2.247 8.688a2.25 2.25 0 01-2.247 2.247H3.311a2.25 2.25 0 01-2.246-2.247V3.312A2.25 2.25 0 013.31 1.065h5.377a2.25 2.25 0 012.247 2.247v5.376z"
@@ -251,7 +251,7 @@
                 </svg>
                 <span class="screen-reader-text">Instagram</span>
             </a>
-            <a rel="noreferrer" href="https://twitter.com/bantubersama" target="_blank" class="me-2 socmed-item rounded-circle">
+            <a rel="noreferrer" href="https://twitter.com/bantubersamacom" target="_blank" class="me-2 socmed-item rounded-circle">
                 <svg class="mx-auto" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
                     <g>
                         <path
@@ -262,7 +262,7 @@
                 </svg>
                 <span class="screen-reader-text">Twitter</span>
             </a>
-            <a rel="noreferrer" href="https://www.youtube.com/bantubersama" target="_blank" class="socmed-item rounded-circle">
+            <a rel="noreferrer" href="https://www.youtube.com/@Bantubersama-de2vi" target="_blank" class="socmed-item rounded-circle">
                 <svg class="mx-auto" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24">
                     <path
                         d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"
@@ -294,17 +294,16 @@
                 <div class="order-options">
                   <h3 class="mt-3 mb-3 dark-text fw-semibold">Kategori</h3>
                   <div class="order-type">
-                    
                     <div class="auth-form search-form">
                       <div class="form-check">
                         <label class="form-check-label" for="fixed1">Semua</label>
-                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="fixed1" checked />
+                        <input class="form-check-input" type="radio" name="kategori" value="semua" checked />
                       </div>
                     </div>
                     <div class="auth-form search-form">
                       <div class="form-check">
                         <label class="form-check-label" for="fixed2">Kemanusiaan</label>
-                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="fixed2" />
+                        <input class="form-check-input" type="radio" name="kategori" value="kemanusiaan" />
                       </div>
                     </div>
                   </div>
@@ -312,27 +311,61 @@
                     <div class="auth-form search-form">
                       <div class="form-check">
                         <label class="form-check-label" for="fixed1">Pendidikan</label>
-                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="fixed1" />
+                        <input class="form-check-input" type="radio" name="kategori" value="pendidikan" />
                       </div>
                     </div>
                     <div class="auth-form search-form">
                       <div class="form-check">
                         <label class="form-check-label" for="fixed2">Kesehatan</label>
-                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="fixed2" />
+                        <input class="form-check-input" type="radio" name="kategori" value="kesehatan" />
                       </div>
                     </div>
                   </div>
                   <div class="order-type">
                     <div class="auth-form search-form">
                       <div class="form-check">
-                        <label class="form-check-label" for="fixed1">Rumad Ibadah</label>
-                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="fixed1" />
+                        <label class="form-check-label" for="fixed1">Rumah Ibadah</label>
+                        <input class="form-check-input" type="radio" name="kategori" value="rumah_ibadah" />
                       </div>
                     </div>
                     <div class="auth-form search-form">
                       <div class="form-check">
                         <label class="form-check-label" for="fixed2">Difabel</label>
-                        <input class="form-check-input" type="radio" name="flexRadioDefault" id="fixed2" />
+                        <input class="form-check-input" type="radio" name="kategori" value="difabel" />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="order-type">
+                    <!-- <div class="auth-form search-form">
+                      <div class="form-check">
+                        <label class="form-check-label" for="fixed1">Sosial</label>
+                        <input class="form-check-input" type="radio" name="kategori" value="sosial" />
+                      </div>
+                    </div> -->
+                    <div class="auth-form search-form">
+                      <div class="form-check">
+                        <label class="form-check-label" for="fixed1">Bencana Alam</label>
+                        <input class="form-check-input" type="radio" name="kategori" value="bencana_alam" />
+                      </div>
+                    </div>
+                    <div class="auth-form search-form">
+                      <div class="form-check">
+                        <label class="form-check-label" for="fixed2">Kemanusiaan</label>
+                        <input class="form-check-input" type="radio" name="kategori" value="kemanusiaan" />
+                      </div>
+                    </div>
+                  </div>
+                  <div class="order-type">
+                    <div class="auth-form search-form">
+                      <div class="form-check">
+                        <label class="form-check-label" for="fixed2">Infrastruktur</label>
+                        <input class="form-check-input" type="radio" name="kategori" value="infrastruktur" />
+                      </div>
+                    </div>
+                    <div class="auth-form search-form">
+                      <div class="form-check">
+                        <label class="form-check-label" for="fixed2">Lainnya</label>
+                        <input class="form-check-input" type="radio" name="kategori" value="lainnya" />
                       </div>
                     </div>
                   </div>
@@ -346,13 +379,13 @@
                     <div class="auth-form search-form">
                       <div class="form-check">
                         <label class="form-check-label" for="fixed3">Tanggal Terbaru</label>
-                        <input class="form-check-input" type="radio" name="RadioDefault" id="fixed3" checked />
+                        <input class="form-check-input" type="radio" name="sort" value="terbaru" checked />
                       </div>
                     </div>
                     <div class="auth-form search-form section-b-space">
                       <div class="form-check">
                         <label class="form-check-label" for="fixed4">Segera Berakhir</label>
-                        <input class="form-check-input" type="radio" name="RadioDefault" id="fixed4" />
+                        <input class="form-check-input" type="radio" name="sort" value="segera_berakhir" />
                       </div>
                     </div>
                   </div>
@@ -360,13 +393,13 @@
                     <div class="auth-form search-form">
                       <div class="form-check">
                         <label class="form-check-label" for="fixed3">Donasi Terbanyak</label>
-                        <input class="form-check-input" type="radio" name="RadioDefault" id="fixed3" />
+                        <input class="form-check-input" type="radio" name="sort" value="terbanyak" />
                       </div>
                     </div>
                     <div class="auth-form search-form section-b-space">
                       <div class="form-check">
                         <label class="form-check-label" for="fixed4">Donasi Sedikit</label>
-                        <input class="form-check-input" type="radio" name="RadioDefault" id="fixed4" />
+                        <input class="form-check-input" type="radio" name="sort" value="sedikit" />
                       </div>
                     </div>
                   </div>
@@ -376,8 +409,8 @@
           </section>
 
           <div class="footer-modal d-flex">
-            <a href="index.html" class="btn btn-link btn-inline mt-0 w-50">Reset Filter</a>
-            <a href="{{ route('program.list') }}" class="theme-btn btn btn-inline mt-0 w-50">Terapkan</a>
+            <a href="#" class="btn btn-link btn-inline mt-0 w-50">Reset Filter</a>
+            <a href="#" class="theme-btn btn btn-inline mt-0 w-50" id="apply">Apply</a>
           </div>
         </div>
       </div>
@@ -404,17 +437,23 @@
 
 
 @section('js_plugins')
-    <!-- bootstrap js -->
-    <script src="{{ asset('public') }}/js/bootstrap.bundle.min.js"></script>
+  <!-- JQuery -->
+  <script src="{{ asset('public/js/jquery-3.6.4.min.js') }}"></script>
+  <!-- bootstrap js -->
+  <script src="{{ asset('public') }}/js/bootstrap.bundle.min.js"></script>
 
-    <!-- swiper js -->
-    <script src="{{ asset('public') }}/js/swiper-bundle.min.js"></script>
-    <script src="{{ asset('public') }}/js/custom-swiper.js"></script>
+  <!-- swiper js -->
+  <script src="{{ asset('public') }}/js/swiper-bundle.min.js"></script>
+  <script src="{{ asset('public') }}/js/custom-swiper.js"></script>
+  <!-- lazy load -->
+  <script src="https://cdn.jsdelivr.net/npm/jquery-lazyload@1.9.7/jquery.lazyload.min.js"></script>
 @endsection
 
 
 @section('js_inline')
     <script type="text/javascript">
+      $("img.lazyload").lazyload();
+
       const texts = ['Gandakan sedekah disaat Ramadhan', 'Cari Program Kebaikan... ','Anak Yatim...','Beasiswa Santri...', 'Rumah Tahfidz...'];
       const input = document.querySelector('#inputkey');
       const animationWorker = function (input, texts) {
@@ -507,5 +546,18 @@
       //   var bsOffcanvas = new bootstrap.Offcanvas(myOffcanvas);
       //   bsOffcanvas.show();
       // });
+
+      // Apply Filter
+      $("#apply").on("click", function() {
+        let kategori = $('input[name=kategori]:checked').val();
+        let sort     = $('input[name=sort]:checked').val();
+        window.location.href = "{{ url('/') }}/programs/?kategori="+kategori+"&sort="+sort;
+      });
+
+      $('#search').on("submit", function(e){
+        let keys = $('#inputkey').val();
+        window.location.href = "{{ url('/') }}/programs/?key="+keys;
+        return false;
+      });
     </script>
 @endsection

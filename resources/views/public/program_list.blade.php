@@ -27,7 +27,7 @@
   <!-- List section starts -->
   <section class="search-section pt-3">
     <div class="custom-container">
-      <form class="auth-form search-head" target="_blank">
+      <form class="auth-form search-head" method="get" action="#" id="search">
         <div class="form-group">
           <a href="{{ url('/') }}" class="logo-navbar">
             <img class="" src="{{ asset('Logo Bantubersama.png') }}">
@@ -47,13 +47,13 @@
   <!-- search section end -->
 
   <!-- Explore Restaurants section start -->
-  <section class="section-t-space pt-3 mt-1">
+  <section class="section-t-space pt-3 mt-1 pb-4">
     <div class="custom-container">
-      <div>
+      <!-- <div>
         <span class="badge-search">Semua Kategori</span>
         <span class="badge-search">Terbaru</span>
-      </div>
-      <div class="row gy-3 mt-2">
+      </div> -->
+      <div class="row gy-2 pt-1">
         @foreach($program as $vn)
           <div class="col-12">
             <div class="vertical-product-box">
@@ -77,11 +77,11 @@
                     </h6>
 
                     <div class="progress mt-1 mb-2" role="progressbar" aria-label="Basic example" aria-valuenow="89" aria-valuemin="0" aria-valuemax="100" style="height: 5px">
-                      <div class="progress-bar" style="width: 85%"></div>
+                      <div class="progress-bar" style="width: {{ ceil($vn->sum_amount/$vn->nominal_approved*100) }}%"></div>
                     </div>
 
                     <div class="d-flex justify-content-between mt-2">
-                      <div class="fw-semibold fs-11 pe-0 lh-20">Rp 2.812.758.634</div>
+                      <div class="fw-semibold fs-11 pe-0 lh-20">Rp {{ str_replace(',', '.', number_format($vn->sum_amount)) }}</div>
                       <div class="fw-semibold fs-11 text-end ps-1 lh-20">
                         {{ now()->diffInDays(substr($vn->end_date, 0,10)) }}
                       </div>
@@ -96,70 +96,18 @@
             </div>
           </div>
         @endforeach
+
+        @if(count($program)<1)
+          <div class="col-12 text-center mt-4">
+            <h4 class="fs-16">Program Tidak Ditemukan</h4>
+            <p class="fs-14">Coba atur kembali pencarian Anda atau reset filter</p>
+          </div>
+        @endif
       </div>
     </div>
   </section>
   <!-- List section end -->
 
-  <!-- Footer section start -->
-  <section class="empty-section section-t-space section-b-space pb-0">
-    <div class="custom-container footer pb-3 pt-3">
-      <div class="fw-medium text-grey pt-2 fs-14">
-        <a class="text-grey" href="">Tentang Kami</a> | 
-        <a class="text-grey" href="">Syarat & Ketentuan</a> | 
-        <a class="text-grey" href="">Pusat Bantuan</a>
-      </div>
-      <div class="mt-4 text-grey">
-        Temukan kami di <br>
-        <div class="socmed mb-4 mt-2">
-          <a rel="noreferrer" href="https://www.facebook.com/bantubersamacom" target="_blank" class="me-2 socmed-item rounded-circle">
-              <svg class="mx-auto" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M9 .002L7.443 0C5.695 0 4.565 1.16 4.565 2.953v1.362H3.001a.245.245 0 00-.245.245v1.973c0 .135.11.244.245.244h1.564v4.978c0 .135.11.245.245.245h2.041c.136 0 .245-.11.245-.245V6.777h1.83c.135 0 .244-.11.244-.244V4.56a.245.245 0 00-.244-.245h-1.83V3.16c0-.555.132-.837.855-.837h1.048c.135 0 .245-.11.245-.245V.247A.245.245 0 009 .002z" fill="currentColor"></path>
-              </svg>
-              <span class="screen-reader-text">Facebook</span>
-          </a>
-          <a rel="noreferrer" href="https://www.instagram.com/bantubersamacom/" target="_blank" class="me-2 socmed-item rounded-circle">
-              <svg class="mx-auto" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                      d="M8.688 0H3.311A3.315 3.315 0 000 3.312v5.376A3.315 3.315 0 003.311 12h5.377A3.315 3.315 0 0012 8.688V3.312A3.315 3.315 0 008.688 0zm2.247 8.688a2.25 2.25 0 01-2.247 2.247H3.311a2.25 2.25 0 01-2.246-2.247V3.312A2.25 2.25 0 013.31 1.065h5.377a2.25 2.25 0 012.247 2.247v5.376z"
-                      fill="currentColor"
-                  ></path>
-                  <path
-                      d="M6 2.906a3.096 3.096 0 00-3.092 3.092A3.095 3.095 0 006 9.09a3.095 3.095 0 003.092-3.092A3.096 3.096 0 006 2.906zm0 5.12a2.03 2.03 0 01-2.028-2.028A2.03 2.03 0 016 3.971a2.03 2.03 0 012.027 2.027A2.03 2.03 0 016 8.025zM9.222 2.004a.784.784 0 00-.781.78.787.787 0 00.78.78.788.788 0 00.553-.227.784.784 0 00-.552-1.333z"
-                      fill="currentColor"
-                  ></path>
-              </svg>
-              <span class="screen-reader-text">Instagram</span>
-          </a>
-          <a rel="noreferrer" href="https://twitter.com/BantubersamaCom" target="_blank" class="me-2 socmed-item rounded-circle">
-              <svg class="mx-auto" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-                  <g>
-                      <path
-                          d="M14.356 4.742A6.547 6.547 0 0016 3.039a6.85 6.85 0 01-1.89.518 3.263 3.263 0 001.443-1.813 6.563 6.563 0 01-2.08.794A3.28 3.28 0 007.8 4.781c0 .26.022.51.076.748a9.287 9.287 0 01-6.761-3.432 3.308 3.308 0 00-.45 1.658c0 1.136.585 2.143 1.458 2.726A3.242 3.242 0 01.64 6.077v.036a3.296 3.296 0 002.628 3.224 3.262 3.262 0 01-.86.108c-.21 0-.422-.012-.62-.056a3.312 3.312 0 003.064 2.285 6.593 6.593 0 01-4.067 1.399c-.269 0-.527-.012-.785-.045A9.237 9.237 0 005.032 14.5c5.789 0 9.561-4.83 9.324-9.758z"
-                          fill="currentColor"
-                      ></path>
-                  </g>
-              </svg>
-              <span class="screen-reader-text">Twitter</span>
-          </a>
-          <a rel="noreferrer" href="https://www.youtube.com/bantubersama" target="_blank" class="socmed-item rounded-circle">
-              <svg class="mx-auto" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24">
-                  <path
-                      d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"
-                      fill="currentColor"
-                  ></path>
-              </svg>
-              <span class="screen-reader-text">Youtube</span>
-          </a>
-      </div>
-
-      </div>
-      <div class="fs-14 fw-normal text-grey mt-3">
-        Copyright © 2023 Yayasan Bantu Bersama Sejahtera
-      </div>
-    </div>
-  </section>
-  <!-- footer section end -->
 @endsection
 
 
@@ -181,13 +129,13 @@
                   <div class="auth-form search-form">
                     <div class="form-check">
                       <label class="form-check-label" for="fixed1">Semua</label>
-                      <input class="form-check-input" type="radio" name="flexRadioDefault" id="fixed1" checked />
+                      <input class="form-check-input" type="radio" name="kategori" value="semua" checked />
                     </div>
                   </div>
                   <div class="auth-form search-form">
                     <div class="form-check">
                       <label class="form-check-label" for="fixed2">Kemanusiaan</label>
-                      <input class="form-check-input" type="radio" name="flexRadioDefault" id="fixed2" />
+                      <input class="form-check-input" type="radio" name="kategori" value="kemanusiaan" />
                     </div>
                   </div>
                 </div>
@@ -195,27 +143,61 @@
                   <div class="auth-form search-form">
                     <div class="form-check">
                       <label class="form-check-label" for="fixed1">Pendidikan</label>
-                      <input class="form-check-input" type="radio" name="flexRadioDefault" id="fixed1" />
+                      <input class="form-check-input" type="radio" name="kategori" value="pendidikan" />
                     </div>
                   </div>
                   <div class="auth-form search-form">
                     <div class="form-check">
                       <label class="form-check-label" for="fixed2">Kesehatan</label>
-                      <input class="form-check-input" type="radio" name="flexRadioDefault" id="fixed2" />
+                      <input class="form-check-input" type="radio" name="kategori" value="kesehatan" />
                     </div>
                   </div>
                 </div>
                 <div class="order-type">
                   <div class="auth-form search-form">
                     <div class="form-check">
-                      <label class="form-check-label" for="fixed1">Rumad Ibadah</label>
-                      <input class="form-check-input" type="radio" name="flexRadioDefault" id="fixed1" />
+                      <label class="form-check-label" for="fixed1">Rumah Ibadah</label>
+                      <input class="form-check-input" type="radio" name="kategori" value="rumah_ibadah" />
                     </div>
                   </div>
                   <div class="auth-form search-form">
                     <div class="form-check">
                       <label class="form-check-label" for="fixed2">Difabel</label>
-                      <input class="form-check-input" type="radio" name="flexRadioDefault" id="fixed2" />
+                      <input class="form-check-input" type="radio" name="kategori" value="difabel" />
+                    </div>
+                  </div>
+                </div>
+                <div class="order-type">
+                  <!-- <div class="auth-form search-form">
+                    <div class="form-check">
+                      <label class="form-check-label" for="fixed1">Sosial</label>
+                      <input class="form-check-input" type="radio" name="kategori" value="sosial" />
+                    </div>
+                  </div> -->
+                  <div class="auth-form search-form">
+                    <div class="form-check">
+                      <label class="form-check-label" for="fixed1">Bencana Alam</label>
+                      <input class="form-check-input" type="radio" name="kategori" value="bencana_alam" />
+                    </div>
+                  </div>
+                  <div class="auth-form search-form">
+                    <div class="form-check">
+                      <label class="form-check-label" for="fixed2">Kemanusiaan</label>
+                      <input class="form-check-input" type="radio" name="kategori" value="kemanusiaan" />
+                    </div>
+                  </div>
+                </div>
+                <div class="order-type">
+                  <div class="auth-form search-form">
+                    <div class="form-check">
+                      <label class="form-check-label" for="fixed2">Infrastruktur</label>
+                      <input class="form-check-input" type="radio" name="kategori" value="infrastruktur" />
+                    </div>
+                  </div>
+                  <div class="auth-form search-form">
+                    <div class="form-check">
+                      <label class="form-check-label" for="fixed2">Lainnya</label>
+                      <input class="form-check-input" type="radio" name="kategori" value="lainnya" />
                     </div>
                   </div>
                 </div>
@@ -229,13 +211,13 @@
                   <div class="auth-form search-form">
                     <div class="form-check">
                       <label class="form-check-label" for="fixed3">Tanggal Terbaru</label>
-                      <input class="form-check-input" type="radio" name="RadioDefault" id="fixed3" checked />
+                      <input class="form-check-input" type="radio" name="sort" value="terbaru" checked />
                     </div>
                   </div>
                   <div class="auth-form search-form section-b-space">
                     <div class="form-check">
                       <label class="form-check-label" for="fixed4">Segera Berakhir</label>
-                      <input class="form-check-input" type="radio" name="RadioDefault" id="fixed4" />
+                      <input class="form-check-input" type="radio" name="sort" value="segera_berakhir" />
                     </div>
                   </div>
                 </div>
@@ -243,13 +225,13 @@
                   <div class="auth-form search-form">
                     <div class="form-check">
                       <label class="form-check-label" for="fixed3">Donasi Terbanyak</label>
-                      <input class="form-check-input" type="radio" name="RadioDefault" id="fixed3" />
+                      <input class="form-check-input" type="radio" name="sort" value="terbanyak" />
                     </div>
                   </div>
                   <div class="auth-form search-form section-b-space">
                     <div class="form-check">
                       <label class="form-check-label" for="fixed4">Donasi Sedikit</label>
-                      <input class="form-check-input" type="radio" name="RadioDefault" id="fixed4" />
+                      <input class="form-check-input" type="radio" name="sort" value="sedikit" />
                     </div>
                   </div>
                 </div>
@@ -259,8 +241,8 @@
         </section>
 
         <div class="footer-modal d-flex">
-          <a href="index.html" class="btn btn-link btn-inline mt-0 w-50">Clear Filter</a>
-          <a href="search.html" class="theme-btn btn btn-inline mt-0 w-50">Apply</a>
+          <a href="#" class="btn btn-link btn-inline mt-0 w-50">Reset Filter</a>
+          <a href="#" class="theme-btn btn btn-inline mt-0 w-50" id="apply">Apply</a>
         </div>
       </div>
     </div>
@@ -270,8 +252,10 @@
 
 
 @section('js_plugins')
-    <!-- bootstrap js -->
-    <script src="{{ asset('public') }}/js/bootstrap.bundle.min.js"></script>
+  <!-- JQuery -->
+  <script src="{{ asset('public/js/jquery-3.6.4.min.js') }}"></script>
+  <!-- bootstrap js -->
+  <script src="{{ asset('public') }}/js/bootstrap.bundle.min.js"></script>
 @endsection
 
 
@@ -360,6 +344,19 @@
         aw = new animationWorker(input, texts);
         if(e.target.value == '') setTimeout( aw.start, 400);
       });
+    });
+
+    // Apply Filter
+    $("#apply").on("click", function() {
+      let kategori = $('input[name=kategori]:checked').val();
+      let sort     = $('input[name=sort]:checked').val();
+      window.location.href = "{{ url('/') }}/programs/?kategori="+kategori+"&sort="+sort;
+    });
+
+    $('#search').on("submit", function(e){
+      let keys = $('#inputkey').val();
+      window.location.href = "{{ url('/') }}/programs/?key="+keys;
+      return false;
     });
   </script>
 @endsection

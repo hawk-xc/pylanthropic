@@ -10,6 +10,7 @@ use App\Models\PaymentType;
 use App\Models\Donatur;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Http\Controllers\PaymentController;
 
 class DonateController extends Controller
 {
@@ -18,9 +19,14 @@ class DonateController extends Controller
      */
     public function amount(Request $request)
     {
-        $program = Program::where('is_publish', 1)->select('slug')
+        $program = Program::where('is_publish', 1)->select('slug', 'id', 'count_amount_page')
                     ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
         if(isset($program->slug)) {
+            // update count_amount_page
+            Program::where('id', $program->id)->update([
+                'count_amount_page' => $program->count_amount_page+1,
+                'updated_at'        => date('Y-m-d H:i:s')
+            ]);
             return view('public.donate_amount', compact('program'));
         } else {
             return view('public.not_found');
@@ -41,9 +47,9 @@ class DonateController extends Controller
                     ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
 
         if(isset($program->slug) && $nominal>=10000) {
-            $payment_transfer = PaymentType::where('type', 'transfer')->orderBy('sort_number')->get();
-            $payment_instant  = PaymentType::where('type', 'instant')->orderBy('sort_number')->get();
-            $payment_va       = PaymentType::where('type', 'virtual_account')->orderBy('sort_number')->get();
+            $payment_transfer = PaymentType::where('type', 'transfer')->where('is_active', 1)->orderBy('sort_number')->get();
+            $payment_instant  = PaymentType::where('type', 'instant')->where('is_active', 1)->orderBy('sort_number')->get();
+            $payment_va       = PaymentType::where('type', 'virtual_account')->where('is_active', 1)->orderBy('sort_number')->get();
             return view('public.payment', compact('program', 'nominal', 'payment_transfer', 'payment_instant', 'payment_va'));
         } else {
             return view('public.not_found');
@@ -62,9 +68,15 @@ class DonateController extends Controller
 
         $nominal      = $request->nominal;
         $payment_type = $request->type;
-        $program      = Program::where('is_publish', 1)->select('slug')
+        $program      = Program::where('is_publish', 1)->select('slug', 'id', 'count_pra_checkout')
                         ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
         if(isset($program->slug) && $nominal>=10000) {
+            // update count pra checkout
+            Program::where('id', $program->id)->update([
+                'count_pra_checkout' => $program->count_pra_checkout+1,
+                'updated_at'         => date('Y-m-d H:i:s')
+            ]);
+
             $payment  = PaymentType::where('key', $payment_type)->first();
             return view('public.checkout', compact('program', 'nominal', 'payment'));
         } else {
@@ -72,10 +84,536 @@ class DonateController extends Controller
         }
     }
 
+
+
+
+    public function paymentStatus(Request $request)
+    {
+        // check any transaction
+        $is_trans = Transaction::where('invoice_number', $request->order_id)->first();
+        if(isset($is_trans->status)) {
+            $nominal        = $is_trans->nominal_final;
+            $nominal_show   = str_replace(',', '.', $nominal);
+            $nominal_show   = 'Rp '.substr($nominal, 0, strlen($nominal)-3).'.';
+            $nominal_show2  = substr($nominal, strlen($nominal)-3, strlen($nominal));
+            $token_midtrans = $is_trans->midtrans_token;
+            $redirect_url   = $is_trans->midtrans_url;
+            $va_number      = 0;
+            $paid_before    = 0;
+            $payment        = PaymentType::where('id', $is_trans->payment_type_id)->first();
+            $transaction    = $is_trans;
+            $program        = Program::where('id', $is_trans->program_id)->first();
+
+            return view('public.payment_info', compact('nominal', 'nominal_show', 'nominal_show2', 'paid_before', 'payment', 'va_number', 'transaction', 'program', 'token_midtrans', 'redirect_url'));
+        } else {
+            return view('public.not_found');
+        }
+    }
+
+
+    public function checkoutDo(Request $request)
+    {
+        $request->validate([
+            'type'     => 'required|string',
+            'nominal'  => 'required',
+            'type'     => 'required|string',
+            'slug'     => 'required|string',
+            'fullname' => 'required|string',
+            'telp'     => 'required|numeric',
+        ]);
+
+        $nominal       = str_replace(',', '', preg_replace("/[^0-9]/", "",$request->nominal));
+        $program       = Program::where('is_publish', 1)->select('slug', 'id', 'title')
+                        ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
+        $payment       = PaymentType::where('key', $request->type)->first();
+        $va_number     = '0';
+
+        if(isset($program->slug) && $nominal>=10000 && isset($payment->name)) {
+            // insert donatur
+            $telp    = $this->formatTelp($request->telp);
+            $donatur = Donatur::where('telp', $telp)->select('id', 'name')->first();
+            if(isset($donatur->id)) {
+                $donatur_id   = $donatur->id;
+                $donatur_name = $donatur->name;
+            } else {
+                $donatur_id = Donatur::insertGetId([
+                    'telp'            => $telp,
+                    'name'            => trim($request->fullname), 
+                    'want_to_contact' => $request->has('want_to_contact')?1:0  ]
+                );
+                $donatur_name = trim($request->fullname);
+            }
+            
+            // check any transaction
+            $is_trans = Transaction::where('donatur_id', $donatur_id)->where('nominal', $nominal)
+                        ->whereDate('created_at', date('Y-m-d'))->where('status', '!=', 'cancel')
+                        ->where('payment_type_id', $payment->id)->first();
+            if(isset($is_trans->status)) {
+                $transaction    = $is_trans;
+                $final_nominal  = $is_trans->nominal_final;
+                $redirect_url   = $is_trans->midtrans_url;
+                $token_midtrans = $is_trans->midtrans_token;
+            } else {
+                $id_increment = Transaction::select('id')->orderBy('id', 'DESC')->first();
+                $invoice      = 'INV-'.date('Ymd').(isset($id_increment->id)?$id_increment->id+1:1);
+
+                // get unique number for add nominal transaction
+                $unique_number = $this->uniqueNumber();
+                $final_nominal = $nominal+$unique_number;
+
+                // Payment Gateway
+                if( ($payment->type=='virtual_account' || $payment->type=='instant') && $payment->key!='qris' ){
+                    $requestBody = array(
+                        'transaction_details' => array(
+                            'order_id'     => $invoice,
+                            'gross_amount' => $final_nominal,
+                        ),
+                        'credit_card' => array(
+                            'secure' => true
+                        ),
+                        'customer_details' => array(
+                            'first_name' => $donatur_name,
+                            'phone' => $telp,
+                        )
+                    );
+
+                    $ch = curl_init(env('MID_URL'));  // https://app.midtrans.com/snap/v1/transactions
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                        'Accept:application/json',
+                        'Content-Type:application/json',
+                        'Authorization:Basic '.base64_encode(env('MID_SERVER_KEY')),
+                    ));
+                    $responseJson = curl_exec($ch);
+                    $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    curl_close($ch);
+                    $res          = json_decode($responseJson, true);
+
+                    if(isset($res['redirect_url'])) {
+                        $redirect_url   = $res['redirect_url'];
+                        $token_midtrans = $res['token'];
+                    } else {
+                        return view('public.not_found');    // ada problem payment gateway
+                    }
+                } elseif($payment->key=='qris') {
+                    $redirect_url   = 0;
+                    $token_midtrans = 0;
+                } else {        // TRANSFER MANUAL
+                    $redirect_url   = 0;
+                    $token_midtrans = 0;
+                }
+                
+
+                // insert table transaction
+                $transaction  = Transaction::create([
+                    'program_id'      => $program->id,
+                    'donatur_id'      => $donatur_id,
+                    'invoice_number'  => $invoice,
+                    'nominal'         => $nominal,
+                    'status'          => 'draft',
+                    'nominal_code'    => $unique_number,
+                    'nominal_final'   => $final_nominal,
+                    'message'         => $request->has('doa')?trim(strip_tags($request->doa)):null,
+                    'payment_type_id' => $payment->id,
+                    'is_show_name'    => $request->has('anonim')?1:0,
+                    'midtrans_token'  => $token_midtrans,
+                    'midtrans_url'    => $redirect_url,
+                    'user_agent'      => ''
+                ]);
+            }
+
+
+            
+
+            // if($payment->type=='transfer') {             // sementara ditambahkan 3 digit semua
+                $nominal       = $final_nominal;
+                $nominal_show  = str_replace(',', '.', $nominal);
+                $nominal_show  = 'Rp '.substr($nominal, 0, strlen($nominal)-3).'.';
+                $nominal_show2 = substr($nominal, strlen($nominal)-3, strlen($nominal));
+            // } else {
+            //     $nominal_show  = 'Rp '.str_replace(',', '.', number_format($nominal));
+            //     $nominal_show2 = '';
+            // }
+
+            $paid_before     = date('d F Y H:i', strtotime('23 hour')).' WIB';
+
+            return view('public.payment_info', compact('nominal', 'nominal_show', 'nominal_show2', 'paid_before', 'payment', 'va_number', 'transaction', 'program', 'token_midtrans', 'redirect_url'));
+
+        } else {
+            return view('public.not_found');
+        }
+    }
+
+
+    public function paymentInfo(Request $request)
+    {
+        $request->validate([
+            'type'     => 'required|string',
+            'nominal'  => 'required',
+            'type'     => 'required|string',
+            'slug'     => 'required|string',
+            'fullname' => 'required|string',
+            'telp'     => 'required|numeric',
+        ]);
+
+        $nominal       = str_replace(',', '', preg_replace("/[^0-9]/", "",$request->nominal));
+        $program       = Program::where('is_publish', 1)->select('slug', 'id', 'title')
+                        ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
+        $payment       = PaymentType::where('key', $request->type)->first();
+        $va_number     = '0';
+
+        if(isset($program->slug) && $nominal>=10000 && isset($payment->name)) {
+            // insert donatur
+            $telp    = $this->formatTelp($request->telp);
+            $donatur = Donatur::where('telp', $telp)->select('id', 'name')->first();
+            if(isset($donatur->id)) {
+                $donatur_id   = $donatur->id;
+                $donatur_name = $donatur->name;
+            } else {
+                $donatur_id = Donatur::insertGetId([
+                    'telp'            => $telp,
+                    'name'            => trim($request->fullname), 
+                    'want_to_contact' => $request->has('want_to_contact')?1:0  ]
+                );
+                $donatur_name = trim($request->fullname);
+            }
+            
+            // check any transaction
+            $is_trans = Transaction::where('donatur_id', $donatur_id)->where('nominal', $nominal)
+                        ->whereDate('created_at', date('Y-m-d'))->where('status', '!=', 'cancel')
+                        ->where('payment_type_id', $payment->id)->first();
+            if(isset($is_trans->status)) {
+                $transaction    = $is_trans;
+                $final_nominal  = $is_trans->nominal_final;
+                $redirect_url   = $is_trans->midtrans_url;
+                $token_midtrans = $is_trans->midtrans_token;
+            } else {
+                $id_increment = Transaction::select('id')->orderBy('id', 'DESC')->first();
+                $invoice      = 'INV-'.date('Ymd').(isset($id_increment->id)?$id_increment->id+1:1);
+
+                // get unique number for add nominal transaction
+                $unique_number = $this->uniqueNumber();
+                $final_nominal = $nominal+$unique_number;
+
+                // Payment Gateway
+                if( ($payment->type=='virtual_account' || $payment->type=='instant') && $payment->key!='qris' ){
+                    $requestBody = array(
+                        'transaction_details' => array(
+                            'order_id'     => $invoice,
+                            'gross_amount' => $final_nominal,
+                        ),
+                        'credit_card' => array(
+                            'secure' => true
+                        ),
+                        'customer_details' => array(
+                            'first_name' => $donatur_name,
+                            'phone' => $telp,
+                        )
+                    );
+
+                    $ch = curl_init(env('MID_URL'));  // https://app.midtrans.com/snap/v1/transactions
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                        'Accept:application/json',
+                        'Content-Type:application/json',
+                        'Authorization:Basic '.base64_encode(env('MID_SERVER_KEY')),
+                    ));
+                    $responseJson = curl_exec($ch);
+                    $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    curl_close($ch);
+                    $res          = json_decode($responseJson, true);
+
+                    if(isset($res['redirect_url'])) {
+                        $redirect_url   = $res['redirect_url'];
+                        $token_midtrans = $res['token'];
+                    } else {
+                        return view('public.not_found');    // ada problem payment gateway
+                    }
+                } elseif($payment->key=='qris') {
+                    $redirect_url   = 0;
+                    $token_midtrans = 0;
+                } else {        // TRANSFER MANUAL
+                    $redirect_url   = 0;
+                    $token_midtrans = 0;
+                }
+                
+
+                // insert table transaction
+                $transaction  = Transaction::create([
+                    'program_id'      => $program->id,
+                    'donatur_id'      => $donatur_id,
+                    'invoice_number'  => $invoice,
+                    'nominal'         => $nominal,
+                    'status'          => 'draft',
+                    'nominal_code'    => $unique_number,
+                    'nominal_final'   => $final_nominal,
+                    'message'         => $request->has('doa')?trim(strip_tags($request->doa)):null,
+                    'payment_type_id' => $payment->id,
+                    'is_show_name'    => $request->has('anonim')?1:0,
+                    'midtrans_token'  => $token_midtrans,
+                    'midtrans_url'    => $redirect_url,
+                    'user_agent'      => ''
+                ]);
+            }
+
+
+            
+
+            // if($payment->type=='transfer') {             // sementara ditambahkan 3 digit semua
+                $nominal       = $final_nominal;
+                $nominal_show  = str_replace(',', '.', $nominal);
+                $nominal_show  = 'Rp '.substr($nominal, 0, strlen($nominal)-3).'.';
+                $nominal_show2 = substr($nominal, strlen($nominal)-3, strlen($nominal));
+            // } else {
+            //     $nominal_show  = 'Rp '.str_replace(',', '.', number_format($nominal));
+            //     $nominal_show2 = '';
+            // }
+
+            $paid_before     = date('d F Y H:i', strtotime('23 hour')).' WIB';
+
+
+
+
+
+
+            $transaction = Transaction::select('status')->where('invoice_number', trim($inv))->first();
+
+            return view('public.payment_info', compact('nominal', 'nominal_show', 'nominal_show2', 'paid_before', 'payment', 'va_number', 'transaction', 'program', 'token_midtrans', 'redirect_url'));
+
+        } else {
+            return view('public.not_found');
+        }
+    }
+
+
+
+    public function paymentInfoMidtransCoreAPI(Request $request)
+    {
+        $request->validate([
+            'type'     => 'required|string',
+            'nominal'  => 'required',
+            'type'     => 'required|string',
+            'slug'     => 'required|string',
+            'fullname' => 'required|string',
+            'telp'     => 'required|numeric',
+        ]);
+
+        $nominal       = str_replace(',', '', preg_replace("/[^0-9]/", "",$request->nominal));
+        $program       = Program::where('is_publish', 1)->select('slug', 'id', 'title')
+                        ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
+        $payment       = PaymentType::where('key', $request->type)->first();
+        $va_number     = '0';
+
+        if(isset($program->slug) && $nominal>=10000 && isset($payment->name)) {
+            // insert donatur
+            $telp    = $this->formatTelp($request->telp);
+            $donatur = Donatur::where('telp', $telp)->select('id', 'name')->first();
+            if(isset($donatur->id)) {
+                $donatur_id   = $donatur->id;
+                $donatur_name = $donatur->name;
+            } else {
+                $donatur_id = Donatur::insertGetId([
+                    'telp'            => $telp,
+                    'name'            => trim($request->fullname), 
+                    'want_to_contact' => $request->has('want_to_contact')?1:0  ]
+                );
+                $donatur_name = trim($request->fullname);
+            }
+            
+            // check any transaction
+            $is_trans = Transaction::where('donatur_id', $donatur_id)->where('nominal', $nominal)
+                        ->whereDate('created_at', date('Y-m-d'))->where('status', '!=', 'cancel')
+                        ->where('payment_type_id', $payment->id)->first();
+            if(isset($is_trans->status)) {
+                $transaction   = $is_trans;
+                $final_nominal = $is_trans->nominal_final;
+            } else {
+                $id_increment = Transaction::select('id')->first();
+                $invoice      = 'INV-'.date('Ymd').(isset($id_increment->id)?$id_increment->id+1:1);
+
+                // get unique number for add nominal transaction
+                $unique_number = $this->uniqueNumber();
+                $final_nominal = $nominal+$unique_number;
+
+                // Payment Gateway
+                if($payment->type=='virtual_account'){
+                    if($payment->key=='va_bca'){
+                        $requestBody = array(
+                            'payment_type' => 'bank_transfer',
+                            'bank_transfer' => array(
+                                'bank' => 'bca'
+                            ),
+                            'transaction_details' => array(
+                                'order_id' => $invoice,
+                                'gross_amount' => $final_nominal,
+                            ),
+                            'customer_details' => array(
+                                'first_name' => $donatur_name,
+                                'phone' => $telp,
+                            )
+                        );
+                    } elseif($payment->key=='va_bni') {
+                        $requestBody = array(
+                            'payment_type' => 'bank_transfer',
+                            'bank_transfer' => array(
+                                'bank' => 'bni'
+                            ),
+                            'transaction_details' => array(
+                                'order_id' => $invoice,
+                                'gross_amount' => $final_nominal,
+                            ),
+                            'customer_details' => array(
+                                'first_name' => $donatur_name,
+                                'phone' => $telp,
+                            )
+                        );
+                    } elseif($payment->key=='va_bri') {
+                        $requestBody = array(
+                            'payment_type' => 'bank_transfer',
+                            'bank_transfer' => array(
+                                'bank' => 'bri'
+                            ),
+                            'transaction_details' => array(
+                                'order_id' => $invoice,
+                                'gross_amount' => $final_nominal,
+                            ),
+                            'customer_details' => array(
+                                'first_name' => $donatur_name,
+                                'phone' => $telp,
+                            )
+                        );
+                    } elseif($payment->key=='va_permata') {
+                        $requestBody = array(
+                            'payment_type' => 'permata',
+                            'transaction_details' => array(
+                                'order_id' => $invoice,
+                                'gross_amount' => $final_nominal,
+                            ),
+                            'customer_details' => array(
+                                'first_name' => $donatur_name,
+                                'phone' => $telp,
+                            )
+                        );
+                    } elseif($payment->key=='va_mandiri') {
+                        $requestBody = array(
+                            'payment_type' => 'echannel',
+                            'echannel' => array(
+                                'bill_info1' => 'Payment',
+                                'bill_info2' => 'Online purchase'
+                            ),
+                            'transaction_details' => array(
+                                'order_id' => $invoice,
+                                'gross_amount' => $final_nominal,
+                            ),
+                            'customer_details' => array(
+                                'first_name' => $donatur_name,
+                                'phone' => $telp,
+                            )
+                        );
+                    } elseif($payment->key=='gopay') {
+                        $requestBody = array(
+                            'payment_type' => 'gopay',
+                            'transaction_details' => array(
+                                'order_id' => $invoice,
+                                'gross_amount' => $final_nominal,
+                            )
+                        );
+                    }
+                    // Danamon, CIMB, BSI belum
+                }
+                
+
+                $ch = curl_init("https://api.sandbox.midtrans.com/v2/charge");
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                    'Accept:application/json',
+                    'Content-Type:application/json',
+                    'Authorization:Basic '.base64_encode('SB-Mid-server-smxoK3uKAUYyJ3lx15qe-ktj:'),
+                ));
+                $responseJson = curl_exec($ch);
+                $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+                $res          = json_decode($responseJson, true);
+
+                if(isset($res['va_numbers'][0]['va_number'])) {         // VA for BCA, BNI, BRI
+                    $va_number = $res['va_numbers'][0]['va_number'];
+                } elseif(isset($res['permata_va_number'])) {            // VA for Permata
+                    $va_number = $res['permata_va_number'];
+                } elseif(isset($res['bill_key'])) {                     // VA for Mandiri
+                    $va_number = $res['bill_key'];
+                } elseif(isset($res['actions'])) {                     // VA for Mandiri
+                    
+                } else {
+                    // print_r($res);
+                    // echo $res['va_numbers'][0]['va_number'];
+                    return view('public.not_found');    // ada problem payment gateway
+                }
+            }
+
+
+            // insert table transaction
+            $transaction  = Transaction::create([
+                'program_id'      => $program->id,
+                'donatur_id'      => $donatur_id,
+                'invoice_number'  => $invoice,
+                'nominal'         => $nominal,
+                'status'          => 'draft',
+                'nominal_code'    => $unique_number,
+                'nominal_final'   => $final_nominal,
+                'message'         => $request->has('doa')?trim($request->doa):null,
+                'payment_type_id' => $payment->id,
+                'is_show_name'    => $request->has('anonim')?1:0,
+                'user_agent'      => ''
+            ]);
+
+            // if($payment->type=='transfer') {             // sementara ditambahkan 3 digit semua
+                $nominal       = $final_nominal;
+                $nominal_show  = str_replace(',', '.', $nominal);
+                $nominal_show  = 'Rp '.substr($nominal, 0, strlen($nominal)-3).'.';
+                $nominal_show2 = substr($nominal, strlen($nominal)-3, strlen($nominal));
+            // } else {
+            //     $nominal_show  = 'Rp '.str_replace(',', '.', number_format($nominal));
+            //     $nominal_show2 = '';
+            // }
+
+            $paid_before     = date('d F Y H:i').' WIB';
+
+            return view('public.payment_info', compact('nominal', 'nominal_show', 'nominal_show2', 'paid_before', 'payment', 'va_number', 'transaction', 'program'));
+
+        } else {
+            return view('public.not_found');
+        }
+    }
+
+    public function paymentStatusCheck(Request $request)
+    {
+        $inv         = $request->inv;
+        $transaction = Transaction::select('status')->where('invoice_number', trim($inv))->first();
+        if(isset($transaction->status)) {
+            if($transaction->status=='draft') {
+                return 'Belum Diterima';
+            } elseif($transaction->status=='success') {
+                return 'Sudah Dibayar';
+            } else {
+                return 'Dibatalkan';
+            }
+        } else {
+            return 'no';
+        }
+    }
+
+
+
+
+
+
     /**
      * Display a listing of the resource.
      */
-    public function paymentInfo(Request $request)
+    public function paymentInfo1(Request $request)
     {
         $request->validate([
             'type'     => 'required|string',
@@ -114,7 +652,7 @@ class DonateController extends Controller
             if(isset($is_trans->status)) {
                 $transaction = $is_trans;
             } else {
-                $id_increment = Transaction::select('id')->first();
+                $id_increment = Transaction::select('id')->orderBy('id', 'DESC')->first();
                 $invoice      = 'INV-'.date('Ymd').(isset($id_increment->id)?$id_increment->id+1:1);
 
                 // Payment Gateway
@@ -126,65 +664,114 @@ class DonateController extends Controller
                         'callback_url'        => env('DOKU_NOTIFY_URL'),
                         'callback_url_cancel' => env('DOKU_NOTIFY_URL')
                     ),
-                    'payment' => array(
-                        'payment_due_date' => 1440,
-                        'payment_method_types' => [$payment->payment_code]
+                    // 'payment' => array(
+                    //     'payment_due_date' => 1440,
+                    //     'payment_method_types' => ['doku-virtual-account']
+                    //     // 'payment_method_types' => [$payment->payment_code]
+                    // ),
+                    'virtual_account_info' => array(
+                        'expired_time'    => 1440,
+                        'reusable_status' => false,
+                        'info1'           => 'Merchant Demo Store',
                     ),
                     'customer' => array(
-                        'id'    => $telp,
                         'name'  => $donatur_name,
                         'email' => 'bantubersamasejahtera@gmail.com',
                         'phone' => $telp
                     ),
                 );
 
+
+
                 $requestId     = Str::random(20); // Change to UUID or anything that can generate unique value
-                $dateTime      = gmdate("Y-m-d H:i:s");
-                $isoDateTime   = date(DATE_ISO8601, strtotime($dateTime));
-                $dateTimeFinal = substr($isoDateTime, 0, 19) . "Z";
+        $dateTime      = gmdate("Y-m-d H:i:s");
+        $isoDateTime   = date(DATE_ISO8601, strtotime($dateTime));
+        $dateTimeFinal = substr($isoDateTime, 0, 19) . "Z";
 
-                // Generate digest
-                $digestValue = base64_encode(hash('sha256', json_encode($requestBody), true));
-                
-                // Prepare signature component
-                $componentSignature = "Client-Id:" . env('DOKU_PROD_CLIENT_ID') . "\n" .
-                    "Request-Id:" . $requestId . "\n" .
-                    "Request-Timestamp:" . $dateTimeFinal . "\n" .
-                    "Request-Target:" . env('DOKU_PROD_TARGET') . "\n" .
-                    "Digest:" . $digestValue;
+        // Generate digest
+        $digestValue = base64_encode(hash('sha256', json_encode($requestBody), true));
 
-                // Generate signature
-                $signature = base64_encode(hash_hmac('sha256', $componentSignature, env('DOKU_PROD_SECRET_KEY'), true));
+        // Generate Digest
+        $digestValue = base64_encode(hash('sha256', json_encode($requestBody), true));
+        echo "Digest: " . $digestValue;
+        echo "<br><br>";
 
-                // Execute request
-                $ch = curl_init(env('DOKU_PROD_URL').env('DOKU_PROD_TARGET'));
-                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        // Prepare signature component
+        $componentSignature = "Client-Id:" . env('DOKU_PROD_CLIENT_ID') . "\n" .
+            "Request-Id:" . $requestId . "\n" .
+            "Request-Timestamp:" . $dateTimeFinal . "\n" .
+            "Request-Target:bca-virtual-account/v2/payment-code\n" .
+            // "Request-Target:" . env('DOKU_PROD_TARGET') . "\n" .
+            "Digest:" . $digestValue;
 
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                    'Content-Type: application/json',
-                    'Client-Id:' . env('DOKU_PROD_CLIENT_ID'),
-                    'Request-Id:' . $requestId,
-                    'Request-Timestamp:' . $dateTimeFinal,
-                    'Signature:' . "HMACSHA256=" . $signature,
-                ));
-
-                // Set response json
-                $responseJson = curl_exec($ch);
-                $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                curl_close($ch);
-                $res = json_decode($responseJson, true);
-                // $res = $responseJson;
-                // print_r($requestBody);
-                // echo '<br><br>';
-                // print_r($res);
-                // yg akan digunakan jika VA 
-                $link = $res['response']['payment']['url'];
-                // die();
+        echo "Component Signature: \n" . $componentSignature;
+        echo "<br><br>";
 
 
+        // Generate signature
+        $signature = base64_encode(hash_hmac('sha256', $componentSignature, env('DOKU_PROD_SECRET_KEY'), true));
 
+        echo "Signature: " . $signature;
+        echo "<br><br>";
+
+
+        $headerSignature =  "Client-Id:" . env('DOKU_PROD_CLIENT_ID') ."\n". 
+                    "Request-Id:" . $requestId . "\n".
+                    "Request-Timestamp:" . $dateTimeFinal ."\n".
+                    "Signature:" . "HMACSHA256=" . $signature;
+
+
+echo 'CURLOPT_HTTPHEADER : <br>';
+print_r(array(
+            // $headerSignature
+            'Client-Id:' . env('DOKU_PROD_CLIENT_ID'),
+            'Request-Id:' . $requestId,
+            'Request-Timestamp:' . $dateTimeFinal,
+            'Signature:' . "HMACSHA256=" . $signature,
+        ));
+echo '<br><br>';
+
+
+        // Execute request
+        // $ch = curl_init(env('DOKU_PROD_URL').env('DOKU_PROD_TARGET'));
+        $ch = curl_init("https://api-sandbox.doku.com/bca-virtual-account/v2/payment-code");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        // curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            // $headerSignature
+            'Client-Id:' . env('DOKU_PROD_CLIENT_ID'),
+            'Request-Id:' . $requestId,
+            'Request-Timestamp:' . $dateTimeFinal,
+            'Signature:' . "HMACSHA256=" . $signature,
+        ));
+
+echo 'requestBody : <br>';
+print_r(json_encode($requestBody));
+echo "<br><br><br>------------------------------------------------------------<br><br><br>";
+        // Set response json
+        $responseJson = curl_exec($ch);
+        print_r($responseJson);
+echo "<br><br>";
+        $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        $res          = json_decode($responseJson, true);
+        print_r($res);
+        // yg akan digunakan jika VA 
+        // $link         = $res['response']['payment']['url'];
+        // return $link;
+        // return $res;
+
+
+
+                // generate payment gateway
+                // $link = (new PaymentController)->generate($requestBody);
+                // print_r($link);
+                die();
+
+
+                // get unique number for add nominal transaction
+                $unique_number = $this->uniqueNumber();
 
                 // insert table transaction
                 $transaction  = Transaction::create([
@@ -193,17 +780,18 @@ class DonateController extends Controller
                     'invoice_number'  => $invoice,
                     'nominal'         => $nominal,
                     'status'          => 'draft',
-                    'nominal_code'    => 137,
-                    'nominal_final'   => $nominal+137,
+                    'nominal_code'    => $unique_number,
+                    'nominal_final'   => $nominal+$unique_number,
                     'message'         => $request->has('doa')?trim($request->doa):null,
                     'payment_type_id' => $payment->id,
                     'is_show_name'    => $request->has('anonim')?1:0,
                     'user_agent'      => ''
                 ]);
 
+                // for auto WA
                 $chat1 = 'Terimakasih '.ucwords(trim($request->fullname)).'.
 Selangkah lagi kebaikan donasi Anda berhasil dengan menyelesaikan pembayaran berikut :
-Sebesar : Rp '.str_replace(',', '.', number_format($nominal+137)).'
+Sebesar : Rp '.str_replace(',', '.', number_format($nominal+$unique_number)).'
 Nomor Invoice : '.$invoice.' 
 ';
                 if($payment->type=='transfer') {
@@ -292,6 +880,24 @@ Terimakasih';
         ));
         $response = curl_exec($curl);
         curl_close($curl);
+    }
+
+    /**
+     * Get unique number payment.
+     */
+    public function uniqueNumber($nominal='', $payment_type='')
+    {
+        $i = 1;
+        do {
+            $unique_number = rand(11, 499);
+            $check         = Transaction::select('id')->where('status', 'draft')->where('nominal', $nominal)
+                            ->where('payment_type_id', $payment_type)->where('nominal_code', $unique_number)->first();
+            if(isset($check->id)) {
+                $i = 2;
+            }
+        } while ($i > 1);
+
+        return $unique_number;
     }
 
 }

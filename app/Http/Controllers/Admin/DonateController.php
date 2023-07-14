@@ -5,7 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
+use App\Models\Program;
+use App\Models\Donatur;
 use DataTables;
+use App\Http\Controllers\WaBlastController;
 
 class DonateController extends Controller
 {
@@ -66,6 +69,36 @@ class DonateController extends Controller
     }
 
     /**
+     * Remove the specified resource from storage.
+     */
+    public function statusEdit(Request $request)
+    {
+        // validattion
+        $id_trans = $request->id_trans;
+        $status   = $request->status;
+
+        $trans = Transaction::where('id', $id_trans)->first();
+        $trans->update([
+            'status' => $status
+        ]);
+
+        // Send WA Terimakasih
+        if($request->sendwa==1) {
+            $program = Program::where('id', $trans->program_id)->first();
+            $donatur = Donatur::where('id', $trans->donatur_id)->first();
+            $chat    = 'Terimakasih '.ucwords(trim($donatur->name)).'.
+Kebaikan Anda sangat berarti bagi kami yang membutuhkan, semoga mendapat balasan yang lebih berarti. Amin.
+Atas Donasi :
+*'.ucwords($program->title).'*
+Sebesar : *Rp '.str_replace(',', '.', number_format($trans->nominal_final)).'*';
+
+            (new WaBlastController)->sentWA($donatur->telp, $chat);
+        }
+
+        return 'success'; 
+    }
+
+    /**
      * Datatables Donatur
      */
     public function datatablesDonate()
@@ -88,11 +121,12 @@ class DonateController extends Controller
                 })
                 ->addColumn('nominal_final', function($row){
                     if($row->status=='draft'){
-                        $status = '<span class="badge badge-pill badge-warning">Belum Dibayar</span>';
+                        $param  = $row->id.", '".$row->status."', 'Rp. ".str_replace(',', '.', number_format($row->nominal_final))."'";
+                        $status = '<div id="status_'.$row->id.'"><span class="badge badge-warning modal_status" style="cursor:pointer" onclick="editStatus('.$param.')">Belum Dibayar</span></div>';
                     } elseif ($row->status=='success') {
-                        $status = '<span class="badge badge-pill badge-success">Sudah Dibayar</span>';
+                        $status = '<div id="status_'.$row->id.'"><span class="badge badge-success">Sudah Dibayar</span></div>';
                     } else {
-                        $status = '<span class="badge badge-pill badge-secondary">Dibatalkan</span>';
+                        $status = '<div id="status_'.$row->id.'"><span class="badge badge-secondary">Dibatalkan</span></div>';
                     }
                     return 'Rp. '.number_format($row->nominal_final).'<br>'.$status;
                 })
