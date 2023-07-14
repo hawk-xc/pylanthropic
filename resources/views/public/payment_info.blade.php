@@ -18,7 +18,7 @@
       'https://connect.facebook.net/en_US/fbevents.js');
       fbq.disablePushState = true;
       fbq('init', '2596008717326722');
-      fbq('init', '586907076711934');
+    fbq('init', '586907076711934');
       fbq('track', 'Donate');
       window.loadedPixel = []
     </script>
@@ -96,7 +96,7 @@
               <!-- <div class="fs-14 fw-medium text-secondary pb-1">{{ $payment->name }}</div> -->
             @elseif($payment->key=='qris')
               <div class="py-2 text-center">
-                <img src="{{ asset('public/images/payment/qris_bsi.png') }}">
+                <img src="{{ asset('public/images/payment/qris_bri.png') }}">
               </div>
               <div class="text-center pb-1">
                 <a class="fw-semibold color-me" href="#" id="download_qris">Download QRIS</a>
@@ -133,7 +133,7 @@
           <li class="cart-add-box payment-card-box gap-0 mt-2">
             <div class="w-100">
                 <div class="py-2 text-center">
-                <img src="{{ asset('public/images/payment/qris_bsi.png') }}">
+                <img src="{{ asset('public/images/payment/qris_bri.png') }}">
               </div>
               <div class="text-center pb-1">
                 <a class="fw-semibold color-me" href="#" id="download_qris">Download QRIS</a>
@@ -334,7 +334,7 @@
     $("#download_qris").on("click", function() {
       var link = document.createElement("a");
       link.setAttribute('download', '');
-      link.href = "{{ asset('public/images/payment/qris_bsi.png') }}";
+      link.href = "{{ asset('public/images/payment/qris_bri.png') }}";
       document.body.appendChild(link);
       link.click();
       link.remove();

@@ -73,6 +73,6 @@ Route::get('/{slug}/donate', [Guest\DonateController::class, 'amount'])->name('d
 Route::get('/{slug}/payment/{nominal}', [Guest\DonateController::class, 'payment'])->name('donate.payment');
 Route::get('/{slug}/checkout/{nominal}/{type}', [Guest\DonateController::class, 'checkout'])->name('donate.checkout');
 Route::post('/{slug}/checkout-do', [Guest\DonateController::class, 'checkoutDo'])->name('donate.checkout.do');
-Route::get('/{slug}/payment-info', [Guest\DonateController::class, 'paymentInfo'])->name('donate.payment_info');
+Route::post('/{slug}/payment-info', [Guest\DonateController::class, 'paymentInfo'])->name('donate.payment_info');
 Route::post('/{slug}/program-read-more-count', [Guest\ProgramController::class, 'countReadMore'])->name('program.count.read_more');
 
