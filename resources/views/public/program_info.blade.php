@@ -17,6 +17,8 @@
     fbq.disablePushState = true;
     fbq('init', '2596008717326722');
     fbq('init', '586907076711934');
+    fbq('init', '1278491429470122');
+    fbq('init', '1352154889054298');
     fbq('track', 'ViewContent');
     window.loadedPixel = []
   </script>

@@ -11,10 +11,11 @@ use Illuminate\Support\Facades\Log;
 
 class WaBlastController extends Controller
 {
-    public function sentWA($telp='', $chat='')
+    public function sentWA($telp='', $chat='', $type='', $trans='', $danatur='', $program='')
     {
-        $telp = $this->formatTelp($telp);
-        $curl = curl_init();
+        $telp  = $this->formatTelp($telp);
+        $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3';
+        $curl  = curl_init();
         curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/send_message');
         curl_setopt($curl, CURLOPT_HEADER, 0);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
@@ -23,7 +24,7 @@ class WaBlastController extends Controller
         curl_setopt($curl, CURLOPT_TIMEOUT,30);
         curl_setopt($curl, CURLOPT_POST, 1);
         curl_setopt($curl, CURLOPT_POSTFIELDS, array(
-            'token'   => 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3',
+            'token'   => $token,
             'number'  => $telp,
             'message' => $chat,
             'date'    => date('Y-m-d'),
@@ -31,6 +32,19 @@ class WaBlastController extends Controller
         ));
         $response = curl_exec($curl);
         curl_close($curl);
+
+        // insert table chat
+        \App\Models\Chat::create([
+            'no_telp'        => $telp,
+            'text'           => $chat,
+            'token'          => $token,
+            'vendor'         => 'RuangWA',
+            'url'            => 'https://app.ruangwa.id/api/send_message',
+            'type'           => $type,
+            'transaction_id' => $trans!=''?$trans:null,
+            'donatur_id'     => $danatur!=''?$danatur:null,
+            'program_id'     => $program!=''?$program:null
+        ]);
     }
 
     /**

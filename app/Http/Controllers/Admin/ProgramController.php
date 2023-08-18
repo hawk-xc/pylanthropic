@@ -130,20 +130,30 @@ class ProgramController extends Controller
             $data = $data->latest()->get();
             return Datatables::of($data)->addIndexColumn()
                 ->addColumn('nominal', function($row){
-                    $sum      = \App\Models\Transaction::where('program_id', $row->id)->where('status', 'success')->sum('nominal_final');
+                    $sum    = \App\Models\Transaction::where('program_id', $row->id)->where('status', 'success')->sum('nominal_final');
                     if($sum>0) {
                         $sum_percent = round($sum/$row->nominal_approved*100, 2);
                     } else {
                         $sum_percent = 0;
                     }
 
-                    $param  = $row->id.", '".ucwords($row->title)."'";
+                    $spend  = \App\Models\ProgramSpend::where('program_id', $row->id)->where('status', 'done')->sum('nominal_approved');
+                    if($spend>0 && $sum>0) {
+                        $spend_percent = round($spend/$sum*100, 2);
+                    } else {
+                        $spend_percent = 0;
+                    }
 
-                    return '<i class="fa fa-sign-in-alt icon-gradient bg-malibu-beach"></i> : Rp.'.str_replace(',', '.', number_format($row->nominal_request)).'
-                        <br> <i class="fa fa-check-double icon-gradient bg-happy-green"></i> : Rp.'.str_replace(',', '.', number_format($row->nominal_approved)).'
+                    $param  = $row->id.", '".ucwords(str_replace("'", "", $row->title))."'";
+
+                    return '<span class="badge badge-light" style="cursor:pointer" onclick="showSummary('.$param.')">
+                        <i class="fa fa-check-double icon-gradient bg-happy-green"></i> Rp.'.str_replace(',', '.', number_format($row->nominal_approved)).'</span>
                         <br> 
                         <span class="badge badge-light modal_status" style="cursor:pointer" onclick="showDonate('.$param.')">
-                        <i class="fa fa-money-bill icon-gradient bg-happy-green"></i> Rp.'.number_format($sum).' ('.$sum_percent.'%)</span>';
+                        <i class="fa fa-money-bill icon-gradient bg-happy-green"></i> Rp.'.number_format($sum).' ('.$sum_percent.'%)</span>
+                        <br>
+                        <span class="badge badge-light" style="cursor:pointer" onclick="inpSpend('.$param.')">
+                        <i class="fa fa-credit-card icon-gradient bg-strong-bliss"></i> Rp.'.number_format($spend).' ('.$spend_percent.'%)</span>';
                 })
                 ->addColumn('status', function($row){
                     if($row->approved_at!==NULL) {                                      // disetujui
@@ -353,5 +363,248 @@ class ProgramController extends Controller
                         </tbody>
                     </table>';
         return $data1;
+    }
+
+
+
+    /**
+     * Show Summary in this Program from datatable program
+     */
+    public function showSummary(Request $request)
+    {
+        $id            = $request->id;
+        $dn            = date('Y-m-d');
+        
+        $payout_paid    = \App\Models\Payout::where('status', 'paid')->where('program_id', $id)->sum('nominal_approved');
+        $payout_req     = \App\Models\Payout::where('status', 'request')->where('program_id', $id)->sum('nominal_approved');
+        $payout_process = \App\Models\Payout::where('status', 'process')->where('program_id', $id)->sum('nominal_approved');
+        $payout_reject  = \App\Models\Payout::where('status', 'reject')->where('program_id', $id)->sum('nominal_approved');
+        $payout_cancel  = \App\Models\Payout::where('status', 'cancel')->where('program_id', $id)->sum('nominal_approved');
+        $donate_sum     = Transaction::select('id')->where('status', 'success')->where('program_id', $id)->sum('nominal_final');
+        $platform_fee   = $donate_sum*5/100;
+        $ads_fee        = $donate_sum*20/100;
+        $opex_fee       = $donate_sum*3/100;
+        $final          = $donate_sum-$platform_fee-$ads_fee-$opex_fee-$payout_paid;
+
+        $data1   = '<div class="row">
+                <div class="col-6">
+                    <table class="table table-hover table-responsive mb-1">
+                        <tr>
+                            <td class="text-start">Total Donasi</td>
+                            <td>Rp. '.number_format($donate_sum).'</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">Platform Fee 5%</td>
+                            <td>Rp. '.number_format($platform_fee).'</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">ADS Fee 20%</td>
+                            <td>Rp. '.number_format($ads_fee).'</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">Operasional 3%</td>
+                            <td>Rp. '.number_format($opex_fee).'</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">Penyaluran Terbayar</td>
+                            <td>Rp. '.number_format($payout_paid).'</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">Sisa Penghimpunan</td>
+                            <td>Rp. '.number_format($final).'</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-6">
+                    <table class="table table-hover table-responsive mb-1">
+                        <tr>
+                            <th>Penyaluran</th>
+                            <th>Nominal</th>
+                        </tr>
+                        <tr>
+                            <td class="text-start">Penyaluran Diajukan</td>
+                            <td>Rp. '.number_format($payout_req).'</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">Penyaluran Sedang Diproses</td>
+                            <td>Rp. '.number_format($payout_process).'</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">Penyaluran Terbayar</td>
+                            <td>Rp. '.number_format($payout_paid).'</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">Penyaluran Ditolak</td>
+                            <td>Rp. '.number_format($payout_reject).'</td>
+                        </tr>
+                        <tr>
+                            <td class="text-start">Penyaluran Dibatalkan</td>
+                            <td>Rp. '.number_format($payout_cancel).'</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>';
+        return $data1;
+    }
+
+    /**
+     * Show Donate from datatable program
+     */
+    public function showSpend(Request $request)
+    {
+        // $program = Program::where('id', $id)->first();
+        $id             = $request->id;
+        $dn             = date('Y-m-d');
+        $donate_success = array(
+            0 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', $dn.'%')->count(),
+            1 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-1 day')).'%')->count(),
+            2 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-2 day')).'%')->count(),
+            3 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-3 day')).'%')->count(),
+            4 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-4 day')).'%')->count(),
+            5 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-5 day')).'%')->count(),
+            6 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-6 day')).'%')->count(),
+            7 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-7 day')).'%')->count(),
+            8 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-8 day')).'%')->count(),
+            9 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-9 day')).'%')->count()
+        );
+        $donate_success_rp = array(
+            0 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', $dn.'%')->sum('nominal_final'),
+            1 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-1 day')).'%')->sum('nominal_final'),
+            2 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-2 day')).'%')->sum('nominal_final'),
+            3 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-3 day')).'%')->sum('nominal_final'),
+            4 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-4 day')).'%')->sum('nominal_final'),
+            5 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-5 day')).'%')->sum('nominal_final'),
+            6 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-6 day')).'%')->sum('nominal_final'),
+            7 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-7 day')).'%')->sum('nominal_final'),
+            8 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-8 day')).'%')->sum('nominal_final'),
+            9 => Transaction::select('id')->where('program_id', $id)->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-9 day')).'%')->sum('nominal_final')
+        );
+        $donate_draft    = array(
+            0 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', $dn.'%')->count(),
+            1 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-1 day')).'%')->count(),
+            2 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-2 day')).'%')->count(),
+            3 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-3 day')).'%')->count(),
+            4 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-4 day')).'%')->count(),
+            5 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-5 day')).'%')->count(),
+            6 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-6 day')).'%')->count(),
+            7 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-7 day')).'%')->count(),
+            8 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-8 day')).'%')->count(),
+            9 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-9 day')).'%')->count()
+        );
+        $donate_draft_rp = array(
+            0 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', $dn.'%')->sum('nominal_final'),
+            1 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-1 day')).'%')->sum('nominal_final'),
+            2 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-2 day')).'%')->sum('nominal_final'),
+            3 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-3 day')).'%')->sum('nominal_final'),
+            4 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-4 day')).'%')->sum('nominal_final'),
+            5 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-5 day')).'%')->sum('nominal_final'),
+            6 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-6 day')).'%')->sum('nominal_final'),
+            7 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-7 day')).'%')->sum('nominal_final'),
+            8 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-8 day')).'%')->sum('nominal_final'),
+            9 => Transaction::select('id')->where('program_id', $id)->where('status', 'draft')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-9 day')).'%')->sum('nominal_final')
+        );
+
+        $data1   = '<table class="table table-hover table-responsive mb-1">
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>'.date('d-m-Y').'</th>
+                                <th>'.date('d-m-Y', strtotime(date('Y-m-d').'-1 day')).'</th>
+                                <th>'.date('d-m-Y', strtotime(date('Y-m-d').'-2 day')).'</th>
+                                <th>'.date('d-m-Y', strtotime(date('Y-m-d').'-3 day')).'</th>
+                                <th>'.date('d-m-Y', strtotime(date('Y-m-d').'-4 day')).'</th>
+                                <th>'.date('d-m-Y', strtotime(date('Y-m-d').'-5 day')).'</th>
+                                <th>'.date('d-m-Y', strtotime(date('Y-m-d').'-6 day')).'</th>
+                                <th>'.date('d-m-Y', strtotime(date('Y-m-d').'-7 day')).'</th>
+                                <th>'.date('d-m-Y', strtotime(date('Y-m-d').'-8 day')).'</th>
+                                <th>'.date('d-m-Y', strtotime(date('Y-m-d').'-9 day')).'</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>JML Donasi Dibayar</td>
+                                <td>'.number_format($donate_success[0]).'</td>
+                                <td>'.number_format($donate_success[1]).'</td>
+                                <td>'.number_format($donate_success[2]).'</td>
+                                <td>'.number_format($donate_success[3]).'</td>
+                                <td>'.number_format($donate_success[4]).'</td>
+                                <td>'.number_format($donate_success[5]).'</td>
+                                <td>'.number_format($donate_success[6]).'</td>
+                                <td>'.number_format($donate_success[7]).'</td>
+                                <td>'.number_format($donate_success[8]).'</td>
+                                <td>'.number_format($donate_success[9]).'</td>
+                            </tr>
+                            <tr>
+                                <td>Rp Donasi Dibayar</td>
+                                <td>'.number_format($donate_success_rp[0]).'</td>
+                                <td>'.number_format($donate_success_rp[1]).'</td>
+                                <td>'.number_format($donate_success_rp[2]).'</td>
+                                <td>'.number_format($donate_success_rp[3]).'</td>
+                                <td>'.number_format($donate_success_rp[4]).'</td>
+                                <td>'.number_format($donate_success_rp[5]).'</td>
+                                <td>'.number_format($donate_success_rp[6]).'</td>
+                                <td>'.number_format($donate_success_rp[7]).'</td>
+                                <td>'.number_format($donate_success_rp[8]).'</td>
+                                <td>'.number_format($donate_success_rp[9]).'</td>
+                            </tr>
+                            <tr>
+                                <td>Donasi Blm Dibayar</td>
+                                <td>'.number_format($donate_draft[0]).'</td>
+                                <td>'.number_format($donate_draft[1]).'</td>
+                                <td>'.number_format($donate_draft[2]).'</td>
+                                <td>'.number_format($donate_draft[3]).'</td>
+                                <td>'.number_format($donate_draft[4]).'</td>
+                                <td>'.number_format($donate_draft[5]).'</td>
+                                <td>'.number_format($donate_draft[6]).'</td>
+                                <td>'.number_format($donate_draft[7]).'</td>
+                                <td>'.number_format($donate_draft[8]).'</td>
+                                <td>'.number_format($donate_draft[9]).'</td>
+                            </tr>
+                            <tr>
+                                <td>Donasi Blm Dibayar Rp</td>
+                                <td>'.number_format($donate_draft_rp[0]).'</td>
+                                <td>'.number_format($donate_draft_rp[1]).'</td>
+                                <td>'.number_format($donate_draft_rp[2]).'</td>
+                                <td>'.number_format($donate_draft_rp[3]).'</td>
+                                <td>'.number_format($donate_draft_rp[4]).'</td>
+                                <td>'.number_format($donate_draft_rp[5]).'</td>
+                                <td>'.number_format($donate_draft_rp[6]).'</td>
+                                <td>'.number_format($donate_draft_rp[7]).'</td>
+                                <td>'.number_format($donate_draft_rp[8]).'</td>
+                                <td>'.number_format($donate_draft_rp[9]).'</td>
+                            </tr>
+                        </tbody>
+                    </table>';
+        return $data1;
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function submitSpend(Request $request)
+    {
+        $request->validate([
+            'title'      => 'required|string',
+            'id_program' => 'required|numeric',
+            'date_time'  => 'required',
+            'nominal'    => 'required'
+        ]);
+
+        $data                   = new \App\Models\ProgramSpend;
+        $data->program_id       = $request->id_program;
+        $data->title            = trim($request->title);
+        $data->nominal_request  = str_replace('.', '', $request->nominal);
+        $data->nominal_approved = str_replace('.', '', $request->nominal);
+        $data->date_request     = $request->date_time.':00';
+        $data->date_approved    = $request->date_time.':00';
+        $data->approved_by      = 1;
+        $data->type             = 'ads';
+        $data->is_operational   = 1;
+        $data->status           = 'done';
+        $data->desc_request     = trim($request->title);
+        $data->save();
+
+        echo "success";
+        // return redirect()->back();
     }
 }

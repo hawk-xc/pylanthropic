@@ -18,6 +18,7 @@ use App\Http\Controllers\Guest;
 // Route::get('/', function () { return view('welcome'); });
 Route::get('/', [Guest\HomeController::class, 'index'])->name('index');
 Route::get('/payment/callback-doku', [PaymentController::class, 'callbackDoku'])->name('payment.callback.doku');
+Route::get('/donatur/wa-check', [Admin\DonaturController::class, 'talentWACheck']);
 
 Route::group([
     'as'     => 'adm.',   // for route(adm.xx)
@@ -43,8 +44,17 @@ Route::group([
         Route::get('/program-datatables', [Admin\ProgramController::class, 'datatablesProgram'])->name('program.datatables');
 
         Route::get('/program-show-donate', [Admin\ProgramController::class, 'showDonate'])->name('program.show.donate');
+        Route::get('/program-show-summary', [Admin\ProgramController::class, 'showSummary'])->name('program.show.summary');
+        Route::post('/program-show-spend', [Admin\ProgramController::class, 'showSpend'])->name('program.spend.show');
+        Route::post('/program-submit-spend', [Admin\ProgramController::class, 'submitSpend'])->name('program.spend.submit');
 
         Route::post('/donate-status-edit', [Admin\DonateController::class, 'statusEdit'])->name('donate.status.edit');
+        Route::post('/donate-fu-paid', [Admin\DonateController::class, 'fuPaid'])->name('donate.fu.paid');
+
+        // REPORT
+        Route::get('/report/collection', [Admin\ReportController::class, 'collection'])->name('report.collection');
+        Route::get('/report/monthly', [Admin\ReportController::class, 'monthly'])->name('report.monthly');
+        Route::get('/report/matching-transaction', [Admin\ReportController::class, 'mutationMatching'])->name('report.matching');
 
         // SELECT2
         Route::get('/organization-select2-all', [Admin\OrganizationController::class, 'select2'])->name('organization.select2.all');

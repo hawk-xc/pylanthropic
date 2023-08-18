@@ -185,7 +185,8 @@ Atas Donasi :
 *'.ucwords($program->title).'*
 Sebesar : Rp '.str_replace(',', '.', number_format($transaction->nominal_final));
 
-                (new WaBlastController)->sentWA($donatur->telp, $chat);
+                // (new WaBlastController)->sentWA($donatur->telp, $chat);
+                (new WaBlastController)->sentWA($donatur->telp, $chat, 'thanks_trans', $transaction->id, $donatur->id, $program->id);
 
                 return response()->json([
                     'status' => 'success'
