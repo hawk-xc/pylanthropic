@@ -97,6 +97,11 @@
                             </a>
                         </li>
                         <li>
+                            <a href="{{ route('adm.report.settlement') }}" class="{{ $sidebar_submenu == 'settlement' ? 'mm-active' : '' }}">
+                                <i class="metismenu-icon"></i> Settlement
+                            </a>
+                        </li>
+                        <li>
                             <a href="#" href="#">
                                 <i class="metismenu-icon"></i> Program 
                             </a>

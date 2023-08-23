@@ -36,10 +36,9 @@
                 <thead>
                     <tr>
                         <th>Name</th>
-                        <th>Telp</th>
-                        <th>Mau Di WA?</th>
-                        <th>Tanggal Buat</th>
-                        <th>Jml Donasi</th>
+                        <th>Terakhir Donasi</th>
+                        <th>Summary Donasi</th>
+                        <th>History Chat</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -62,16 +61,18 @@
 <script type="text/javascript">
 
     var table = $('#table-donatur').DataTable({
+        orderCellsTop: true,
+        fixedHeader: true,
         processing: true,
         serverSide: true,
         responsive: true,
+        order: [[2, 'desc']],
         ajax: "{{ route('adm.donatur.datatables') }}",
         columns: [
             {data: 'name', name: 'name'},
-            {data: 'telp', name: 'telp'},
-            {data: 'want_wa', name: 'want_wa'},
-            {data: 'created_at', name: 'created_at'},
-            {data: 'sum_donate', name: 'sum_donate'},
+            {data: 'last_donate', name: 'last_donate'},
+            {data: 'donate_summary', name: 'donate_summary'},
+            {data: 'chat', name: 'chat'},
             {
                 data: 'action', 
                 name: 'action', 
@@ -79,6 +80,20 @@
                 searchable: false
             },
         ]
+    });
+    $('#table-donatur thead tr').clone(true).appendTo( '#table-donatur thead' );
+    $('#table-donatur tr:eq(1) th').each( function (i) {
+        var title = $(this).text();
+        $(this).html( '<input type="text" class="form-control form-control-sm" placeholder="Search '+title+'" />' );
+    
+        $( 'input', this ).on( 'keyup change', function () {
+            if ( table.column(i).search() !== this.value ) {
+                table
+                    .column(i)
+                    .search( this.value )
+                    .draw();
+            }
+        } );
     });
 
 </script>

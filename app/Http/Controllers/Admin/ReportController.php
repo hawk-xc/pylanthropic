@@ -160,6 +160,21 @@ class ReportController extends Controller
         return view('admin.report.collection', compact('donate_success', 'donate_success_rp', 'donate_draft', 'donate_draft_rp', 'donate_perjam_count', 'donate_perjam_sum'));
     }
 
+    /**
+     * Show the application's settlement
+     *
+     */
+    public function settlement(Request $request)
+    {
+        if($request->has('month')) {
+                $month = $request->month;
+        } else {
+                $month = date('Y-m');
+        }
+        
+        return view('admin.report.settlement', compact('month'));
+    }
+
 
     /**
      * Mutation Matchin between bank and transaction

@@ -73,32 +73,65 @@ class DonaturController extends Controller
         // if ($request->ajax()) {
             $data = Donatur::latest()->get();
             return Datatables::of($data)->addIndexColumn()
-                ->addColumn('want_wa', function($row){
+                ->addColumn('name', function($row){
                     if($row->want_to_contact==1) {
-                        $want_contact = '<span class="badge badge-pill badge-success">Mau</span>';
+                        $want_contact = 'Mau';
+                        $status_color = 'success';
                     } else {
-                        $want_contact = '<span class="badge badge-pill badge-secondary">Belum</span>';
+                        $want_contact = 'Belum';
+                        $status_color = 'warning';
                     }
 
                     if($row->wa_inactive_since===null) {
-                        $wa_status = '<span class="badge badge-pill badge-success">Active</span>';
+                        $telp = '<span class="badge badge-pill badge-'.$status_color.'">'.$row->telp.' Aktif ('.$want_contact.')</span>';
                     } else {
-                        $wa_status = '<span class="badge badge-pill badge-danger">Inactive</span>';
+                        $telp = '<span class="badge badge-pill badge-danger">'.$row->telp.' Not ('.$want_contact.')</span>';
+                    }
+                    return ucwords($row->name).'<br>'.$telp;
+                })
+                ->addColumn('last_donate', function($row){
+                    $donate_last = \App\Models\Transaction::where('donatur_id', $row->id)->orderBy('created_at', 'DESC');
+                    if($donate_last->count()>0) {
+                        $donate_last  = $donate_last->first();
+                        $program_name = \App\Models\Program::where('id', $donate_last->program_id)->first();
+                        return 'Rp.'.number_format($donate_last->nominal_final).' '.date('d-m-Y H:i', strtotime($donate_last->created_at)).' ('.$donate_last->status.')<br>'.ucwords($program_name->title);
+                    } else {
+                        return 'Belum Pernah';
                     }
 
                     return $want_contact.' '.$wa_status;
                 })
-                ->addColumn('created_at', function($row){
-                    return date('Y-m-d H:i', strtotime($row->created_at));
+                ->addColumn('donate_summary', function($row){
+                    $donate_sum = \App\Models\Transaction::where('donatur_id', $row->id)->where('status', 'success');
+                    if($donate_sum->count()>0) {
+                        $donate_sum_nominal = number_format($donate_sum->count()).' kali';
+                        return $donate_sum_nominal.'<br><a href="'.route('adm.donate.perdonatur', $row->id).'" target="_blank" class="badge badge-success" >Rp.'.number_format($donate_sum->sum('nominal_final')).'</a>';
+                    } else {
+                        return '0';
+                    }
                 })
-                ->addColumn('sum_donate', function($row){
-                    return number_format(5656);
+                ->addColumn('chat', function($row){
+                    $chat = \App\Models\Chat::where('donatur_id', $row->id)->orderBy('created_at', 'DESC')->first();
+                    if(!empty($chat->type)) {
+                        if($chat->type=='fu_trans') {
+                            $chat_type = 'FU Transaksi';
+                        } elseif($chat->type=='thanks_trans') {
+                            $chat_type = 'Setelah Transaksi';
+                        } elseif($chat->type=='repeat_donate') {
+                            $chat_type = 'Ajak Transaksi Ulang';
+                        } else {
+                            $chat_type = 'Info Umum';
+                        }
+                        return $chat_type.'<br>'.date('d-m-Y H:i', strtotime($chat->created_at));
+                    } else {
+                        return 'No Data';
+                    }
                 })
                 ->addColumn('action', function($row){
                     $actionBtn = '<a href="javascript:void(0)" class="edit btn btn-warning btn-sm">Edit</a>';
                     return $actionBtn;
                 })
-                ->rawColumns(['action', 'want_wa', 'sum_donate'])
+                ->rawColumns(['name', 'action', 'last_donate', 'donate_summary', 'chat'])
                 ->make(true);
         // }
     }

@@ -41,6 +41,7 @@ Route::group([
 
         Route::get('/donatur-datatables', [Admin\DonaturController::class, 'datatablesDonatur'])->name('donatur.datatables');
         Route::get('/donate-datatables', [Admin\DonateController::class, 'datatablesDonate'])->name('donate.datatables');
+        Route::get('/donate-perdonatur-datatables/{id}', [Admin\DonateController::class, 'datatablesDonatePerdonatur'])->name('donate.donatur.datatables');
         Route::get('/program-datatables', [Admin\ProgramController::class, 'datatablesProgram'])->name('program.datatables');
 
         Route::get('/program-show-donate', [Admin\ProgramController::class, 'showDonate'])->name('program.show.donate');
@@ -50,11 +51,13 @@ Route::group([
 
         Route::post('/donate-status-edit', [Admin\DonateController::class, 'statusEdit'])->name('donate.status.edit');
         Route::post('/donate-fu-paid', [Admin\DonateController::class, 'fuPaid'])->name('donate.fu.paid');
+        Route::get('/donate-perdonatur/{id}', [Admin\DonateController::class, 'donatePerdonatur'])->name('donate.perdonatur');
 
         // REPORT
         Route::get('/report/collection', [Admin\ReportController::class, 'collection'])->name('report.collection');
         Route::get('/report/monthly', [Admin\ReportController::class, 'monthly'])->name('report.monthly');
         Route::get('/report/matching-transaction', [Admin\ReportController::class, 'mutationMatching'])->name('report.matching');
+        Route::get('/report/settlement', [Admin\ReportController::class, 'settlement'])->name('report.settlement');
 
         // SELECT2
         Route::get('/organization-select2-all', [Admin\OrganizationController::class, 'select2'])->name('organization.select2.all');

@@ -6171,7 +6171,7 @@ input[type=button].btn-block {
 
 .card-body {
     flex: 1 1 auto;
-    padding: 1.25rem
+    padding: 18px;/*1.25rem*/
 }
 
 .card-title {
@@ -12374,7 +12374,7 @@ button,
 }
 
 .app-main .app-main__inner {
-    padding: 20px 19px 0px 19px;
+    padding: 20px 18px 0px 18px;
     flex: 1
 }
 
