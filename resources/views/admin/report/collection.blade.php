@@ -24,16 +24,9 @@
                                     <thead>
                                         <tr>
                                             <th>Nama</th>
-                                            <th>{{ date('d-m-Y') }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-1 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-2 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-3 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-4 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-5 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-6 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-7 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-8 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-9 day')) }}</th>
+                                            @for($i=0; $i<=9; $i++)
+                                                <th {{ $date_list_color[$i] }}>{{ $date_list[$i] }}</th>
+                                            @endfor
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -97,16 +90,9 @@
                                     <thead>
                                         <tr>
                                             <th>Nama</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-10 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-11 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-12 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-13 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-14 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-15 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-16 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-17 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-18 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-19 day')) }}</th>
+                                            @for($i=10; $i<=19; $i++)
+                                                <th {{ $date_list_color[$i] }}>{{ $date_list[$i] }}</th>
+                                            @endfor
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -170,16 +156,9 @@
                                     <thead>
                                         <tr>
                                             <th>Nama</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-20 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-21 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-22 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-23 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-24 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-25 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-26 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-27 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-28 day')) }}</th>
-                                            <th>{{ date('d-m-Y', strtotime(date('Y-m-d').'-29 day')) }}</th>
+                                            @for($i=20; $i<=29; $i++)
+                                                <th {{ $date_list_color[$i] }}>{{ $date_list[$i] }}</th>
+                                            @endfor
                                         </tr>
                                     </thead>
                                     <tbody>

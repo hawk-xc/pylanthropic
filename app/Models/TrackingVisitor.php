@@ -7,7 +7,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Model;
 
-class Donatur extends Model
+class TrackingVisitor extends Model
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -16,20 +16,19 @@ class Donatur extends Model
      *
      * @var array<int, string>
      */
-    protected $table    = 'donatur';
+    protected $table    = 'tracking_visitor';
     protected $fillable = [
-        'name',
-        'telp', 
-        'want_to_contact',
-        'wa_inactive_since',
-        'email',
-        'password',
-        'password_reset',
-        'last_donate_paid',
-        'count_donate_paid',
-        'sum_donate_paid',
-        'wa_campaign',
+        'program_id',
+        'visitor_code',
+        'page_view',
+        'nominal',
+        'payment_type_id',
         'ref_code',
-        'created_at'
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'utm_content',
+        'created_at',
+        'updated_at'
     ];
 }

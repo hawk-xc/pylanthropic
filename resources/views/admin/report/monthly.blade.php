@@ -40,7 +40,7 @@
                                             <td>Penghimpunan</td>
                                             <td>Rp. {{ str_replace(',', '.', number_format($donate_sum)) }}</td>
                                         </tr>
-                                        <tr title="{{ round($program_spend/$donate_sum*100, 2) }}%">
+                                        <tr title="{{ ($donate_sum==0) ? '0' : round($program_spend/$donate_sum*100, 2) }}%">
                                             <td>Biaya Riil Ads</td>
                                             <td>Rp. {{ str_replace(',', '.', number_format($program_spend)) }}</td>
                                         </tr>
@@ -49,7 +49,7 @@
                                             <td>Rp. {{ str_replace(',', '.', number_format(($donate_sum*5/100)+($donate_sum*2/100))) }}</td>
                                         </tr>
                                         <tr>
-                                            <td><strong>Salur</strong> ({{ round(($donate_sum-$program_spend-($donate_sum*5/100)-($donate_sum*2/100))/$donate_sum*100, 2) }}%)</td>
+                                            <td><strong>Salur</strong> ({{ ($donate_sum==0) ? '0' : round(($donate_sum-$program_spend-($donate_sum*5/100)-($donate_sum*2/100))/$donate_sum*100, 2) }}%)</td>
                                             <td><strong>Rp. {{ str_replace(',', '.', number_format($donate_sum-$program_spend-($donate_sum*5/100)-($donate_sum*2/100))) }}</strong></td>
                                         </tr>
                                     </tbody>
@@ -159,7 +159,7 @@
                                             <td>Penghimpunan</td>
                                             <td>Rp. {{ str_replace(',', '.', number_format($donate_sum_ago)) }}</td>
                                         </tr>
-                                        <tr title="{{ round($program_spend_ago/$donate_sum_ago*100, 2) }}%">
+                                        <tr title="{{ ($donate_sum_ago==0) ? '0' : round($program_spend_ago/$donate_sum_ago*100, 2) }}%">
                                             <td>Biaya Riil Ads</td>
                                             <td>Rp. {{ str_replace(',', '.', number_format($program_spend_ago)) }}</td>
                                         </tr>
@@ -168,7 +168,7 @@
                                             <td>Rp. {{ str_replace(',', '.', number_format(($donate_sum_ago*5/100)+($donate_sum_ago*2/100))) }}</td>
                                         </tr>
                                         <tr>
-                                            <td><strong>Salur</strong> ({{ round(($donate_sum_ago-$program_spend_ago-($donate_sum_ago*5/100)-($donate_sum_ago*2/100))/$donate_sum_ago*100, 2) }}%)</td>
+                                            <td><strong>Salur</strong> ({{ ($donate_sum_ago==0) ? '0' : round(($donate_sum_ago-$program_spend_ago-($donate_sum_ago*5/100)-($donate_sum_ago*2/100))/$donate_sum_ago*100, 2) }}%)</td>
                                             <td><strong>Rp. {{ str_replace(',', '.', number_format($donate_sum_ago-$program_spend_ago-($donate_sum_ago*5/100)-($donate_sum_ago*2/100))) }}</strong></td>
                                         </tr>
                                     </tbody>
