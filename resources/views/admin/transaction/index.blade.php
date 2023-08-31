@@ -44,7 +44,7 @@
                         <th>Judul</th>
                         <th>Staus</th>
                         <th>Tgl Donasi</th>
-                        <th>Action</th>
+                        <!-- <th>Action</th> -->
                     </tr>
                 </thead>
                 <tbody>
@@ -196,24 +196,47 @@
     }
 
     var table = $('#table-donatur').DataTable({
+        orderCellsTop: true,
+        fixedHeader: true,
         processing: true,
         serverSide: true,
         responsive: true,
         order: [[4, 'desc']],
         ajax: "{{ route('adm.donate.datatables') }}",
+        "columnDefs": [
+            { "width": "21%", "targets": 0 },
+            { "width": "14%", "targets": 1 },
+            { "width": "35%", "targets": 2 },
+            { "width": "16%", "targets": 3 },
+            { "width": "14%", "targets": 4 }
+        ],
         columns: [
             {data: 'name', name: 'name'},
             {data: 'nominal_final', name: 'nominal_final'},
             {data: 'title', name: 'title'},
             {data: 'invoice', name: 'invoice'},
             {data: 'created_at', name: 'created_at'},
-            {
-                data: 'action', 
-                name: 'action', 
-                orderable: false, 
-                searchable: false
-            },
+            // {
+            //     data: 'action', 
+            //     name: 'action', 
+            //     orderable: false, 
+            //     searchable: false
+            // },
         ]
+    });
+    $('#table-donatur thead tr').clone(true).appendTo( '#table-donatur thead' );
+    $('#table-donatur tr:eq(1) th').each( function (i) {
+        var title = $(this).text();
+        $(this).html( '<input type="text" class="form-control form-control-sm" placeholder="Search '+title+'" />' );
+    
+        $( 'input', this ).on( 'keyup change', function () {
+            if ( table.column(i).search() !== this.value ) {
+                table
+                    .column(i)
+                    .search( this.value )
+                    .draw();
+            }
+        } );
     });
 
     $("#refresh_table_donate").on("click", function() {

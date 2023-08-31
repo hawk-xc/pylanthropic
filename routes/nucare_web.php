@@ -13,7 +13,8 @@ use App\Http\Controllers\Guest;
 |
 */
 
-Route::get('/', function () { return 'welcome'; });
-// Route::get('/', [Guest\HomeController::class, 'index'])->name('index');
-
-
+// Route::get('/', function () { return 'welcome'; });
+Route::get('/', [Guest\NucareController::class, 'index'])->name('index');
+Route::get('/form', [Guest\NucareController::class, 'form'])->name('form');
+Route::post('/submit', [Guest\NucareController::class, 'submit'])->name('submit');
+Route::get('/terimakasih', [Guest\NucareController::class, 'thanks'])->name('thanks');

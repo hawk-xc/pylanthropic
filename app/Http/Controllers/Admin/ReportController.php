@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\Transaction;
 use App\Models\Program;
 
+use DataTables;
+
 class ReportController extends Controller
 {
     /**
@@ -167,12 +169,110 @@ class ReportController extends Controller
     public function settlement(Request $request)
     {
         if($request->has('month')) {
+                $month = '?month='.$request->month;
+        } else {
+                $month = '';
+        }
+        
+        return view('admin.report.settlement', compact('month'));
+    }
+
+    /**
+     * Datatables Mutation
+     */
+    public function datatablesMutation(Request $request)
+    {
+        if($request->has('month')) {
                 $month = $request->month;
         } else {
                 $month = date('Y-m');
         }
-        
-        return view('admin.report.settlement', compact('month'));
+
+        $data = \App\Models\TransactionReal::where('created_at', 'like', $month.'%')->latest()->get();
+        return Datatables::of($data)->addIndexColumn()
+                ->addColumn('nominal', function($row){
+                    return number_format($row->nominal);
+                })
+                ->addColumn('transaction_id', function($row){
+                    if($row->transaction_id!=null || $row->transaction_id>0) {
+                        return $row->transaction_id;
+                    } else {
+                        return 'Belum';
+                    }
+                })
+                ->addColumn('status', function($row){
+                    if($row->transaction_id=='' || $row->transaction_id===null) {
+                        $param  = $row->id.", 0, '".$row->status."', 'Rp.".number_format($row->nominal)."', '".$row->bank."'";
+                    } else {
+                        $param  = $row->id.", ".$row->transaction_id.", '".$row->status."', 'Rp.".number_format($row->nominal)."', '".$row->bank."'";
+                    }
+                    if($row->status=='notfound'){
+                        $status = '<span class="badge badge-danger" style="cursor:pointer" onclick="editMutation('.$param.')">NotFound</span>';
+                    } elseif ($row->status=='duplicate') {
+                        $status = '<span class="badge badge-warning" style="cursor:pointer" onclick="editMutation('.$param.')">Duplicate</span>';
+                    } elseif ($row->status=='hold') {
+                        $status = '<span class="badge badge-secondary" style="cursor:pointer" onclick="editMutation('.$param.')">Hold</span>';
+                    } elseif ($row->status=='matched') {
+                        $status = '<span class="badge badge-success" style="cursor:pointer" onclick="editMutation('.$param.')">Matched</span>';
+                    } else {
+                        $status = '<span class="badge badge-light" style="cursor:pointer" onclick="editMutation('.$param.')">Draft</span>';
+                    }
+                    return $status;
+                })
+                ->addColumn('created_at', function($row){
+                    return date('d-m-Y H:i', strtotime($row->created_at));
+                })
+                ->rawColumns(['nominal', 'status', 'transaction_id', 'created_at'])
+                ->make(true);
+    }
+
+    /**
+     * Datatables Transaction
+     */
+    public function datatablesTransaction(Request $request)
+    {
+        if($request->has('month')) {
+                $month = $request->month;
+        } else {
+                $month = date('Y-m');
+        }
+
+        $trans_real = \App\Models\TransactionReal::where('created_at', 'like', $month.'%')->whereNotNull('transaction_id')
+                    ->orderBy('transaction_id')->groupBy('transaction_id')->pluck('transaction_id');
+
+        $data       = Transaction::where('transaction.created_at', 'like', $month.'%')->whereNotIn('transaction.id', $trans_real)
+                        ->select('transaction.id', 'nominal_final', 'transaction.created_at', 'transaction.status', 'name')
+                        ->join('payment_type', 'transaction.payment_type_id', 'payment_type.id')->latest()->get();
+        return Datatables::of($data)->addIndexColumn()
+                ->addColumn('nominal_final', function($row){
+                    return number_format($row->nominal_final).'<br>'.$row->status;
+                })
+                ->addColumn('created_at', function($row){
+                    return date('d-m-Y H:i', strtotime($row->created_at));
+                })
+                ->rawColumns(['nominal_final', 'bank', 'created_at'])
+                ->make(true);
+    }
+
+    /**
+     * Mutation Edit
+     */
+    public function mutationEdit(Request $request)
+    {
+        $id_mutation = $request->id_mutation;
+        $status      = $request->status;
+        if($request->id_trans>0) {
+                $id_trans    = $request->id_trans;
+        } else {
+                $id_trans    = null;
+        }
+
+        $trans_real = \App\Models\TransactionReal::where('id', $id_mutation)->update([ 
+                'status'         => $status,
+                'transaction_id' => $id_trans
+        ]);
+
+        return 'success';
     }
 
 
@@ -183,12 +283,16 @@ class ReportController extends Controller
      */
     public function mutationMatching()
     {
-        // 'bca','bsi','bni','bri','mandiri','gopay','cash'
-        $trans_real = \App\Models\TransactionReal::whereNull('transaction_id')->where('status', 'draft')->where('bank', 'gopay')
-                        ->orderBy('id')->limit(2500)->get();
+        // 'bca'=1, 'bsi'=2, 'bni'=19, 'bri'=4, 'mandiri'=3, 'gopay'=6, 'qris'=5, 'cash'=, 'Shopeepay'=7, 
+        $type    = 'gopay';
+        $type_id = 6;
+        
+        $trans_real = \App\Models\TransactionReal::whereNull('transaction_id')->where('status', 'draft')->where('bank', $type)->orderBy('id')->limit(2500)->get();
         foreach($trans_real as $v) {
-                // BSI = 2,   BRI = 4,   BNI = 19,   Mandiri = 3,   QRIS = 5,   Gopay = 6,   Shopeepay = 7,   BCA = 1,
-                $trans_check = Transaction::where('status', 'success')->where('nominal_final', $v->nominal)->where('payment_type_id', '6');
+                // Jenis Transfer
+                // $trans_check = Transaction::where('status', 'success')->where('nominal_final', $v->nominal)->where('payment_type_id', $type_id);
+                // khusus GOPAY
+                $trans_check = Transaction::where('status', 'success')->where('invoice_number', $v->invoice_number)->where('payment_type_id', $type_id); 
                 if($trans_check->count()>1) {           // duplicate kembar nominal dalam 1 jenis pembayaran
                         \App\Models\TransactionReal::where('id', $v->id)->update([
                                 'status' => 'duplicate'

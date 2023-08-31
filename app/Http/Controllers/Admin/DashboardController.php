@@ -61,60 +61,6 @@ class DashboardController extends Controller
             6 => Transaction::select('id')->where('status', '!=', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-6 day')).'%')->sum('nominal_final')
         );
 
-        // Donasi Perjam
-        $donate_perjam_count  = array(
-            0 => Transaction::select('id')->where('created_at', 'like', '% 00:%')->count(),
-            1 => Transaction::select('id')->where('created_at', 'like', '% 01:%')->count(),
-            2 => Transaction::select('id')->where('created_at', 'like', '% 02:%')->count(),
-            3 => Transaction::select('id')->where('created_at', 'like', '% 03:%')->count(),
-            4 => Transaction::select('id')->where('created_at', 'like', '% 04:%')->count(),
-            5 => Transaction::select('id')->where('created_at', 'like', '% 05:%')->count(),
-            6 => Transaction::select('id')->where('created_at', 'like', '% 06:%')->count(),
-            7 => Transaction::select('id')->where('created_at', 'like', '% 07:%')->count(),
-            8 => Transaction::select('id')->where('created_at', 'like', '% 08:%')->count(),
-            9 => Transaction::select('id')->where('created_at', 'like', '% 09:%')->count(),
-            10 => Transaction::select('id')->where('created_at', 'like', '% 10:%')->count(),
-            11 => Transaction::select('id')->where('created_at', 'like', '% 11:%')->count(),
-            12 => Transaction::select('id')->where('created_at', 'like', '% 12:%')->count(),
-            13 => Transaction::select('id')->where('created_at', 'like', '% 13:%')->count(),
-            14 => Transaction::select('id')->where('created_at', 'like', '% 14:%')->count(),
-            15 => Transaction::select('id')->where('created_at', 'like', '% 15:%')->count(),
-            16 => Transaction::select('id')->where('created_at', 'like', '% 16:%')->count(),
-            17 => Transaction::select('id')->where('created_at', 'like', '% 17:%')->count(),
-            18 => Transaction::select('id')->where('created_at', 'like', '% 18:%')->count(),
-            19 => Transaction::select('id')->where('created_at', 'like', '% 19:%')->count(),
-            20 => Transaction::select('id')->where('created_at', 'like', '% 20:%')->count(),
-            21 => Transaction::select('id')->where('created_at', 'like', '% 21:%')->count(),
-            22 => Transaction::select('id')->where('created_at', 'like', '% 22:%')->count(),
-            23 => Transaction::select('id')->where('created_at', 'like', '% 23:%')->count()
-        );
-        $donate_perjam_sum  = array(
-            0 => Transaction::select('id')->where('created_at', 'like', '% 00:%')->sum('nominal_final'),
-            1 => Transaction::select('id')->where('created_at', 'like', '% 01:%')->sum('nominal_final'),
-            2 => Transaction::select('id')->where('created_at', 'like', '% 02:%')->sum('nominal_final'),
-            3 => Transaction::select('id')->where('created_at', 'like', '% 03:%')->sum('nominal_final'),
-            4 => Transaction::select('id')->where('created_at', 'like', '% 04:%')->sum('nominal_final'),
-            5 => Transaction::select('id')->where('created_at', 'like', '% 05:%')->sum('nominal_final'),
-            6 => Transaction::select('id')->where('created_at', 'like', '% 06:%')->sum('nominal_final'),
-            7 => Transaction::select('id')->where('created_at', 'like', '% 07:%')->sum('nominal_final'),
-            8 => Transaction::select('id')->where('created_at', 'like', '% 08:%')->sum('nominal_final'),
-            9 => Transaction::select('id')->where('created_at', 'like', '% 09:%')->sum('nominal_final'),
-            10 => Transaction::select('id')->where('created_at', 'like', '% 10:%')->sum('nominal_final'),
-            11 => Transaction::select('id')->where('created_at', 'like', '% 11:%')->sum('nominal_final'),
-            12 => Transaction::select('id')->where('created_at', 'like', '% 12:%')->sum('nominal_final'),
-            13 => Transaction::select('id')->where('created_at', 'like', '% 13:%')->sum('nominal_final'),
-            14 => Transaction::select('id')->where('created_at', 'like', '% 14:%')->sum('nominal_final'),
-            15 => Transaction::select('id')->where('created_at', 'like', '% 15:%')->sum('nominal_final'),
-            16 => Transaction::select('id')->where('created_at', 'like', '% 16:%')->sum('nominal_final'),
-            17 => Transaction::select('id')->where('created_at', 'like', '% 17:%')->sum('nominal_final'),
-            18 => Transaction::select('id')->where('created_at', 'like', '% 18:%')->sum('nominal_final'),
-            19 => Transaction::select('id')->where('created_at', 'like', '% 19:%')->sum('nominal_final'),
-            20 => Transaction::select('id')->where('created_at', 'like', '% 20:%')->sum('nominal_final'),
-            21 => Transaction::select('id')->where('created_at', 'like', '% 21:%')->sum('nominal_final'),
-            22 => Transaction::select('id')->where('created_at', 'like', '% 22:%')->sum('nominal_final'),
-            23 => Transaction::select('id')->where('created_at', 'like', '% 23:%')->sum('nominal_final')
-        );
-
-        return view('admin.dashboard', compact('sum_donate', 'sum_paid', 'sum_paid_now', 'sum_transaction', 'sum_page_viewed', 'donate_success', 'donate_success_rp', 'donate_draft', 'donate_draft_rp', 'donate_perjam_count', 'donate_perjam_sum'));
+        return view('admin.dashboard', compact('sum_donate', 'sum_paid', 'sum_paid_now', 'sum_transaction', 'sum_page_viewed', 'donate_success', 'donate_success_rp', 'donate_draft', 'donate_draft_rp'));
     }
 }

@@ -276,7 +276,7 @@
     <div class="custom-container">
       @if(count($donate)>0)
         <div class="title mb-3 pb-1">
-          <div class="fw-bold fs-16" id="donasi">Donatur</div>
+          <div class="fw-bold fs-16" id="donasi">Donatur ({{ number_format($count_donate) }})</div>
           <a href="#" class="d-flex fs-15 align-items-center">
             <span class="fs-14 color-me">Lihat Semua</span>
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ms-1"><polyline points="9 18 15 12 9 6"></polyline></svg>

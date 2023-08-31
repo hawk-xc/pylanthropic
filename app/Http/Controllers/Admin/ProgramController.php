@@ -233,6 +233,150 @@ class ProgramController extends Controller
         // }
     }
 
+    /**
+     * Datatables Program Dashboard
+     */
+    public function datatablesProgramDashboard(Request $request)
+    {
+        // if ($request->ajax()) {
+            $data = Program::select('program.*', 'organization.name as organization')
+                    ->join('organization', 'organization.id', 'program.organization_id');
+            if(isset($request->is_publish)) {
+                $data = $data->where('is_publish', $request->is_publish)->where('end_date', '>', date('Y-m-d'));
+            }
+            $data = $data->latest()->get();
+            return Datatables::of($data)->addIndexColumn()
+                ->addColumn('nominal', function($row){
+                    $sum    = \App\Models\Transaction::where('program_id', $row->id)->where('status', 'success')->sum('nominal_final');
+                    if($sum>0) {
+                        $sum_percent = round($sum/$row->nominal_approved*100, 2);
+                    } else {
+                        $sum_percent = 0;
+                    }
+
+                    $spend  = \App\Models\ProgramSpend::where('program_id', $row->id)->where('status', 'done')->sum('nominal_approved');
+                    if($spend>0 && $sum>0) {
+                        $spend_percent = round($spend/$sum*100, 2);
+                    } else {
+                        $spend_percent = 0;
+                    }
+
+                    $param  = $row->id.", '".ucwords(str_replace("'", "", $row->title))."'";
+
+                    return '<span class="badge badge-light" style="cursor:pointer" onclick="showSummary('.$param.')">
+                        <i class="fa fa-check-double icon-gradient bg-happy-green"></i> Rp.'.str_replace(',', '.', number_format($row->nominal_approved)).'</span>
+                        <br> 
+                        <span class="badge badge-light modal_status" style="cursor:pointer" onclick="showDonate('.$param.')">
+                        <i class="fa fa-money-bill icon-gradient bg-happy-green"></i> Rp.'.number_format($sum).' ('.$sum_percent.'%)</span>
+                        <br>
+                        <span class="badge badge-light" style="cursor:pointer" onclick="inpSpend('.$param.')">
+                        <i class="fa fa-credit-card icon-gradient bg-strong-bliss"></i> Rp.'.number_format($spend).' ('.$spend_percent.'%)</span>';
+                })
+                ->addColumn('ads', function($row){
+                    $trans_prime1 = \App\Models\Transaction::where('program_id', $row->id)->where('created_at', '>', date('Y-m-d').' 00:00:00')
+                                    ->where('created_at', '<', date('Y-m-d').' 09:59:59');
+                    if($trans_prime1->count()>9) {
+                        $prime1_ads = '<span class="badge badge-success" title="10 Donasi Keatas">'.number_format($trans_prime1->count()).' | Rp.'.number_format($trans_prime1->sum('nominal_final')).'</span>';
+                    } elseif($trans_prime1->count()>4) {
+                        $prime1_ads = '<span class="badge badge-primary" title="5-9 Donasi">'.number_format($trans_prime1->count()).' | Rp.'.number_format($trans_prime1->sum('nominal_final')).'</span>';
+                    } elseif($trans_prime1->count()>2) {
+                        $prime1_ads = '<span class="badge badge-info" title="3-4 Donasi">'.number_format($trans_prime1->count()).' | Rp.'.number_format($trans_prime1->sum('nominal_final')).'</span>';
+                    }  elseif($trans_prime1->count()>0) {
+                        $prime1_ads = '<span class="badge badge-secondary" title="0-2 Donasi">'.number_format($trans_prime1->count()).' | Rp.'.number_format($trans_prime1->sum('nominal_final')).'</span>';
+                    } else {
+                        $prime1_ads = '<span class="badge badge-danger" title="0 Donasi">'.number_format($trans_prime1->count()).' | Rp.'.number_format($trans_prime1->sum('nominal_final')).'</span>';
+                    }
+
+                    $trans_prime2 = \App\Models\Transaction::where('program_id', $row->id)->where('created_at', '>', date('Y-m-d').' 10:00:00')
+                                    ->where('created_at', '<', date('Y-m-d').' 14:59:59');
+                    if($trans_prime2->count()>9) {
+                        $prime2_ads = '<span class="badge badge-success" title="10 Donasi Keatas">'.number_format($trans_prime2->count()).' | Rp.'.number_format($trans_prime2->sum('nominal_final')).'</span>';
+                    } elseif($trans_prime2->count()>4) {
+                        $prime2_ads = '<span class="badge badge-primary" title="5-9 Donasi">'.number_format($trans_prime2->count()).' | Rp.'.number_format($trans_prime2->sum('nominal_final')).'</span>';
+                    } elseif($trans_prime2->count()>2) {
+                        $prime2_ads = '<span class="badge badge-info" title="3-4 Donasi">'.number_format($trans_prime2->count()).' | Rp.'.number_format($trans_prime2->sum('nominal_final')).'</span>';
+                    }  elseif($trans_prime2->count()>0) {
+                        $prime2_ads = '<span class="badge badge-secondary" title="0-2 Donasi">'.number_format($trans_prime2->count()).' | Rp.'.number_format($trans_prime2->sum('nominal_final')).'</span>';
+                    } else {
+                        $prime2_ads = '<span class="badge badge-danger" title="0 Donasi">'.number_format($trans_prime2->count()).' | Rp.'.number_format($trans_prime2->sum('nominal_final')).'</span>';
+                    }
+
+                    $trans_prime3 = \App\Models\Transaction::where('program_id', $row->id)->where('created_at', '>', date('Y-m-d').' 15:00:00')
+                                    ->where('created_at', '<', date('Y-m-d').' 23:59:59');
+                    if($trans_prime3->count()>9) {
+                        $prime3_ads = '<span class="badge badge-success" title="10 Donasi Keatas">'.number_format($trans_prime3->count()).' | Rp.'.number_format($trans_prime3->sum('nominal_final')).'</span>';
+                    } elseif($trans_prime3->count()>4) {
+                        $prime3_ads = '<span class="badge badge-primary" title="5-9 Donasi">'.number_format($trans_prime3->count()).' | Rp.'.number_format($trans_prime3->sum('nominal_final')).'</span>';
+                    } elseif($trans_prime3->count()>2) {
+                        $prime3_ads = '<span class="badge badge-info" title="3-4 Donasi">'.number_format($trans_prime3->count()).' | Rp.'.number_format($trans_prime3->sum('nominal_final')).'</span>';
+                    }  elseif($trans_prime3->count()>0) {
+                        $prime3_ads = '<span class="badge badge-secondary" title="0-2 Donasi">'.number_format($trans_prime3->count()).' | Rp.'.number_format($trans_prime3->sum('nominal_final')).'</span>';
+                    } else {
+                        $prime3_ads = '<span class="badge badge-danger" title="0 Donasi">'.number_format($trans_prime3->count()).' | Rp.'.number_format($trans_prime3->sum('nominal_final')).'</span>';
+                    }
+
+                    $prime1 = 'Jam 00:00 - 10:00 = '.$prime1_ads;
+                    $prime2 = 'Jam 10:00 - 15:00 = '.$prime2_ads;
+                    $prime3 = 'Jam 15:00 - 24:00 = '.$prime3_ads;
+                    return $prime1.'<br>'.$prime2.'<br>'.$prime3;
+                })
+                ->addColumn('stats', function($row){
+                    $view        = "<i class='fa fa-eye icon-gradient bg-malibu-beach'></i> ".number_format($row->count_view);
+                    $read_more   = "<i class='fa fa-angle-double-down icon-gradient bg-malibu-beach'></i> ".number_format($row->count_read_more);
+                    $amount_page = "<i class='fa fa-download icon-gradient bg-malibu-beach'></i> ".number_format($row->count_amount_page);
+
+                    if($row->count_view>0 && $row->count_amount_page>0) {
+                        $amount_per  = round($row->count_amount_page/$row->count_view*100, 2);
+                    } else {
+                        $amount_per  = 0;
+                    }
+
+                    if($row->count_view>0 && $row->count_read_more>0) {
+                        $read_more_per  = round($row->count_read_more/$row->count_view*100, 2);
+                    } else {
+                        $read_more_per  = 0;
+                    }
+                    
+                    
+                    
+                    return $view.'<br>'.$read_more.' ('.$read_more_per.'%) <br>'.$amount_page.' ('.$amount_per.'%)';
+                })
+                ->addColumn('donate', function($row){
+                    $interest = "<i class='fa fa-file icon-gradient bg-malibu-beach'></i> ".number_format($row->count_pra_checkout);
+                    $checkout = \App\Models\Transaction::where('program_id', $row->id)->count('id');
+                    $count    = \App\Models\Transaction::where('program_id', $row->id)->where('status', 'success')->count('id');
+                    
+                    if($row->count_view>0 && $row->count_pra_checkout>0) {
+                        $interest_per  = round($row->count_pra_checkout/$row->count_view*100, 2);
+                    } else {
+                        $interest_per  = 0;
+                    }
+
+                    if($checkout>0 && $row->count_view>0) {
+                        $checkout_per = round($checkout/$row->count_view*100, 2);
+                    } else {
+                        $checkout_per = 0;
+                    }
+                    
+                    if($count>0 && $checkout>0) {
+                        $count_per = round($count/$checkout*100, 2);
+                    } else {
+                        $count_per = 0;
+                    }
+
+                    return $interest.' ('.$interest_per.'%)
+                        <br> <i class="fa fa-shopping-cart icon-gradient bg-malibu-beach"></i> '.number_format($checkout).' ('.$checkout_per.'%)
+                        <br> <i class="fa fa-heart icon-gradient bg-happy-green"></i> '.number_format($count).' ('.$count_per.'%)';
+                })
+                ->addColumn('action', function($row){
+                    $actionBtn = '<a href="javascript:void(0)" class="edit btn btn-warning btn-xs">Edit</a>';
+                    return $actionBtn;
+                })
+                ->rawColumns(['action', 'nominal', 'ads', 'stats', 'donate'])
+                ->make(true);
+        // }
+    }
+
 
     /**
      * Show Donate from datatable program

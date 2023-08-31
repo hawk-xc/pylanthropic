@@ -11,10 +11,11 @@ use Illuminate\Support\Facades\Log;
 
 class WaBlastController extends Controller
 {
-    public function sentWA($telp='', $chat='', $type='', $trans='', $danatur='', $program='')
+    public function sentWA($telp='', $chat='', $type='', $trans='', $donatur='', $program='')
     {
         $telp  = $this->formatTelp($telp);
-        $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3';
+        // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
+        $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
         $curl  = curl_init();
         curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/send_message');
         curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -42,7 +43,7 @@ class WaBlastController extends Controller
             'url'            => 'https://app.ruangwa.id/api/send_message',
             'type'           => $type,
             'transaction_id' => $trans!=''?$trans:null,
-            'donatur_id'     => $danatur!=''?$danatur:null,
+            'donatur_id'     => $donatur!=''?$donatur:null,
             'program_id'     => $program!=''?$program:null
         ]);
     }

@@ -25,6 +25,10 @@ class Donatur extends Model
         'email',
         'password',
         'password_reset',
+        'last_donate_paid',
+        'count_donate_paid',
+        'sum_donate_paid',
+        'wa_campaign',
         'created_at'
     ];
 }

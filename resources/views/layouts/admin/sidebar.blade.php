@@ -74,6 +74,26 @@
                             </a>
                         </li>
                         <li>
+                            <a class="{{ $sidebar_submenu == 'donatur_dorman' ? 'mm-active' : '' }}" href="{{ route('adm.donatur.dorman') }}">
+                                <i class="metismenu-icon"></i> Donatur Dorman 14D
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ $sidebar_submenu == 'donatur_tetap' ? 'mm-active' : '' }}" href="{{ route('adm.donatur.tetap') }}">
+                                <i class="metismenu-icon"></i> Donatur Tetap
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ $sidebar_submenu == 'donatur_sultan' ? 'mm-active' : '' }}" href="{{ route('adm.donatur.sultan') }}">
+                                <i class="metismenu-icon"></i> Donatur Sultan
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ $sidebar_submenu == 'donatur_hampir' ? 'mm-active' : '' }}" href="{{ route('adm.donatur.hampir') }}">
+                                <i class="metismenu-icon"></i> Hampir Jadi Donatur
+                            </a>
+                        </li>
+                        <li>
                             <a href="{{ route('adm.fundraiser.index') }}">
                                 <i class="metismenu-icon"></i> Fundraiser 
                             </a>
@@ -165,7 +185,7 @@
                     <a href="#"> <i class="metismenu-icon pe-7s-rocket icon-gradient bg-arielle-smile"></i> Campaign </a>
                 </li>
                 <li class="{{ $sidebar_menu == 'wa-history' ? 'mm-active' : '' }}">
-                    <a href="#"> <i class="metismenu-icon pe-7s-rocket icon-gradient bg-arielle-smile"></i> History </a>
+                    <a href="{{ route('adm.chat.index') }}"> <i class="metismenu-icon pe-7s-rocket icon-gradient bg-arielle-smile"></i> History </a>
                 </li>
             </ul>
         </div>

@@ -211,115 +211,6 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-12 col-xl-12">
-                <div class="main-card mb-3 card">
-                    <div class="card-body">
-                        <h5 class="card-title">Laporan Donasi Setiap Jam (WIB) Semua Campaign</h5>
-                        <div class="mt-3 row">
-                            <div class="col-sm-12">
-                                <table class="table table-hover table-responsive mb-4">
-                                    <thead>
-                                        <tr>
-                                            <th>01:00</th>
-                                            <th>02:00</th>
-                                            <th>03:00</th>
-                                            <th>04:00</th>
-                                            <th>05:00</th>
-                                            <th>06:00</th>
-                                            <th>07:00</th>
-                                            <th>08:00</th>
-                                            <th>09:00</th>
-                                            <th>10:00</th>
-                                            <th>11:00</th>
-                                            <th>12:00</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>{{ number_format($donate_perjam_count[1]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[2]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[3]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[4]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[5]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[6]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[7]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[8]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[9]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[10]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[11]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[12]) }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>{{ number_format($donate_perjam_sum[1]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[2]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[3]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[4]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[5]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[6]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[7]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[8]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[9]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[10]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[11]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[12]) }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="col-sm-12">
-                                <table class="table table-hover table-responsive mb-1">
-                                    <thead>
-                                        <tr>
-                                            <th>13:00</th>
-                                            <th>14:00</th>
-                                            <th>15:00</th>
-                                            <th>16:00</th>
-                                            <th>17:00</th>
-                                            <th>18:00</th>
-                                            <th>19:00</th>
-                                            <th>20:00</th>
-                                            <th>21:00</th>
-                                            <th>22:00</th>
-                                            <th>23:00</th>
-                                            <th>24:00</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>{{ number_format($donate_perjam_count[13]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[14]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[15]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[16]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[17]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[18]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[19]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[20]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[21]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[22]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[23]) }}</td>
-                                            <td>{{ number_format($donate_perjam_count[0]) }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>{{ number_format($donate_perjam_sum[13]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[14]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[15]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[16]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[17]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[18]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[19]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[20]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[21]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[22]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[23]) }}</td>
-                                            <td>{{ number_format($donate_perjam_sum[0]) }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
         <div class="row">
             <div class="col-md-12">
@@ -338,11 +229,9 @@
                                 <tr>
                                     <th>Judul</th>
                                     <th>Nominal</th>
-                                    <th>Status</th>
-                                    <th>Lembaga</th>
+                                    <th>Rekomendasi Ads</th>
                                     <th>Donasi</th>
                                     <th>Statistik</th>
-                                    <!-- <th>Action</th> -->
                                 </tr>
                             </thead>
                             <tbody>
@@ -454,25 +343,18 @@
         serverSide: true,
         responsive: true,
         autoWidth: false,
-        pageLength : 10,
+        pageLength : 25,
         columnDefs: [
             { "width": "22%", "targets": 0 }
         ],
         order: [[4, 'desc']],
-        ajax: "{{ route('adm.program.datatables').'/?is_publish=1' }}",
+        ajax: "{{ route('adm.program.dashboard.datatables').'/?is_publish=1' }}",
         columns: [
             {data: 'title', name: 'title'},
             {data: 'nominal', name: 'nominal'},
-            {data: 'status', name: 'status'},
-            {data: 'organization', name: 'organization'},
+            {data: 'ads', name: 'ads'},
             {data: 'donate', name: 'donate'},
             {data: 'stats', name: 'stats'},
-            // {
-            //     data: 'action', 
-            //     name: 'action', 
-            //     orderable: false, 
-            //     searchable: false
-            // },
         ]
     });
 

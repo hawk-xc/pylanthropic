@@ -38,10 +38,10 @@ class ProgramController extends Controller
             $info         = ProgramInfo::where('program_id', $program->id)->where('is_publish', 1)
                             ->orderBy('created_at', 'DESC')->first();
             $donate       = $transaction->join('donatur', 'donatur.id', 'transaction.donatur_id')
-                            ->select('transaction.nominal_final', 'transaction.paid_at', 'transaction.is_show_name', 'transaction.message', 'donatur.name')
-                            ->orderBy('paid_at', 'DESC')->limit(5)->get();
+                            ->select('transaction.nominal_final', 'transaction.created_at', 'transaction.is_show_name', 'transaction.message', 'donatur.name')
+                            ->orderBy('transaction.created_at', 'DESC')->limit(5)->get();
             $donate->map(function($donate, $key) {
-                        return $donate->date_string = (new FormatDateController)->timeDonate($donate->paid_at);
+                        return $donate->date_string = (new FormatDateController)->timeDonate($donate->created_at);
                     });
             return view('public.program', 
                     compact('program', 'sum_amount', 'count_donate', 'sum_news', 'count_payout', 'info', 'donate'));
