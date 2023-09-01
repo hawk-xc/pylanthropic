@@ -247,8 +247,8 @@ class ReportController extends Controller
     public function mutationMatching()
     {
         // 'bca'=1, 'bsi'=2, 'bni'=19, 'bri'=4, 'mandiri'=3, 'gopay'=6, 'qris'=5, 'cash'=, 'Shopeepay'=7, 
-        $type    = 'gopay';
-        $type_id = 6;
+        $type    = 'bsi';
+        $type_id = 2;
         
         $trans_real = \App\Models\TransactionReal::whereNull('transaction_id')->where('status', 'draft')->where('bank', $type)->orderBy('id')->limit(2500)->get();
         foreach($trans_real as $v) {
@@ -271,6 +271,92 @@ class ReportController extends Controller
                         ]);
                 }
         }
+
+        $type    = 'bni';
+        $type_id = 19;
+        $trans_real = \App\Models\TransactionReal::whereNull('transaction_id')->where('status', 'draft')->where('bank', $type)->orderBy('id')->limit(2500)->get();
+        foreach($trans_real as $v) {
+                $trans_check = Transaction::where('status', 'success')->where('nominal_final', $v->nominal)->where('payment_type_id', $type_id);
+                if($trans_check->count()>1) {           // duplicate kembar nominal dalam 1 jenis pembayaran
+                        \App\Models\TransactionReal::where('id', $v->id)->update([
+                                'status' => 'duplicate'
+                        ]);
+                } elseif(!empty($trans_check->first()->id)) {
+                        \App\Models\TransactionReal::where('id', $v->id)->update([
+                                'transaction_id' => $trans_check->first()->id,
+                                'status' => 'matched'
+                        ]);
+                } else {
+                        \App\Models\TransactionReal::where('id', $v->id)->update([
+                                'status' => 'notfound'
+                        ]);
+                }
+        }
+
+        $type    = 'bri';
+        $type_id = 4;
+        $trans_real = \App\Models\TransactionReal::whereNull('transaction_id')->where('status', 'draft')->where('bank', $type)->orderBy('id')->limit(2500)->get();
+        foreach($trans_real as $v) {
+                $trans_check = Transaction::where('status', 'success')->where('nominal_final', $v->nominal)->where('payment_type_id', $type_id);
+                if($trans_check->count()>1) {           // duplicate kembar nominal dalam 1 jenis pembayaran
+                        \App\Models\TransactionReal::where('id', $v->id)->update([
+                                'status' => 'duplicate'
+                        ]);
+                } elseif(!empty($trans_check->first()->id)) {
+                        \App\Models\TransactionReal::where('id', $v->id)->update([
+                                'transaction_id' => $trans_check->first()->id,
+                                'status' => 'matched'
+                        ]);
+                } else {
+                        \App\Models\TransactionReal::where('id', $v->id)->update([
+                                'status' => 'notfound'
+                        ]);
+                }
+        }
+
+        $type    = 'mandiri';
+        $type_id = 3;
+        $trans_real = \App\Models\TransactionReal::whereNull('transaction_id')->where('status', 'draft')->where('bank', $type)->orderBy('id')->limit(2500)->get();
+        foreach($trans_real as $v) {
+                $trans_check = Transaction::where('status', 'success')->where('nominal_final', $v->nominal)->where('payment_type_id', $type_id);
+                if($trans_check->count()>1) {           // duplicate kembar nominal dalam 1 jenis pembayaran
+                        \App\Models\TransactionReal::where('id', $v->id)->update([
+                                'status' => 'duplicate'
+                        ]);
+                } elseif(!empty($trans_check->first()->id)) {
+                        \App\Models\TransactionReal::where('id', $v->id)->update([
+                                'transaction_id' => $trans_check->first()->id,
+                                'status' => 'matched'
+                        ]);
+                } else {
+                        \App\Models\TransactionReal::where('id', $v->id)->update([
+                                'status' => 'notfound'
+                        ]);
+                }
+        }
+
+        $type    = 'gopay';
+        $type_id = 6;
+        $trans_real = \App\Models\TransactionReal::whereNull('transaction_id')->where('status', 'draft')->where('bank', $type)->orderBy('id')->limit(2500)->get();
+        foreach($trans_real as $v) {
+                // khusus GOPAY
+                $trans_check = Transaction::where('status', 'success')->where('invoice_number', $v->invoice_number)->where('payment_type_id', $type_id);
+                if($trans_check->count()>1) {           // duplicate kembar nominal dalam 1 jenis pembayaran
+                        \App\Models\TransactionReal::where('id', $v->id)->update([
+                                'status' => 'duplicate'
+                        ]);
+                } elseif(!empty($trans_check->first()->id)) {
+                        \App\Models\TransactionReal::where('id', $v->id)->update([
+                                'transaction_id' => $trans_check->first()->id,
+                                'status' => 'matched'
+                        ]);
+                } else {
+                        \App\Models\TransactionReal::where('id', $v->id)->update([
+                                'status' => 'notfound'
+                        ]);
+                }
+        }
+
         echo "FINISH";
     }
 }

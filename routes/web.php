@@ -20,6 +20,7 @@ Route::get('/', [Guest\HomeController::class, 'index'])->name('index');
 Route::get('/payment/callback-doku', [PaymentController::class, 'callbackDoku'])->name('payment.callback.doku');
 Route::get('/donatur/wa-check', [Admin\DonaturController::class, 'talentWACheck']);
 Route::get('/donatur/wa-dorman', [Admin\DonaturController::class, 'waDorman']);
+Route::get('/donatur/wa-summary-donate', [Admin\DonaturController::class, 'waSummaryDonate']);
 
 Route::group([
     'as'     => 'adm.',   // for route(adm.xx)

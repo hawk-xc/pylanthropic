@@ -458,7 +458,7 @@ class DonaturController extends Controller
      */
     public function donateUpdate()
     {
-        $last_donate_paid = Donatur::select('id')->whereNull('last_donate_paid')->orderBy('id','asc')->limit(800)->get();
+        $last_donate_paid = Donatur::select('id')->whereNull('last_donate_paid')->orderBy('id','asc')->limit(1000)->get();
         foreach($last_donate_paid as $v){
             $trans = \App\Models\Transaction::where('donatur_id', $v->id)->where('status', 'success')->orderBy('created_at', 'DESC')->first();
             if( isset($trans->created_at) ) {
@@ -469,16 +469,17 @@ class DonaturController extends Controller
         }
         echo 'FINISH LAST DONATE PAID';
 
-        $count_donate_paid = Donatur::select('id')->whereNull('count_donate_paid')->orderBy('id','asc')->limit(800)->get();
+        $count_donate_paid = Donatur::select('id')->whereNull('count_donate_paid')->orderBy('id','asc')->limit(1000)->get();
         foreach($count_donate_paid as $vc){
             $trans_c = \App\Models\Transaction::where('donatur_id', $vc->id)->where('status', 'success')->count();
             Donatur::where('id', $vc->id)->update([ 'count_donate_paid' => $trans_c ]);
         }
         echo '<br>FINISH COUNT DONATE PAID';
 
-        $sum_donate_paid = Donatur::select('id')->whereNull('sum_donate_paid')->orderBy('id','asc')->limit(800)->get();
+        $sum_donate_paid = Donatur::select('id')->whereNull('sum_donate_paid')->orderBy('id','asc')->limit(1000)->get();
         foreach($sum_donate_paid as $vs){
-            $trans_s = \App\Models\Transaction::where('donatur_id', $vs->id)->where('status', 'success')->sum('nominal_final');
+            $trans_s = \App\Models\Transaction::where('donatur_id', $vs->id)->where('status', 'success')
+                        ->where('created_at', '<', '2023-09-01 00:00:00')->sum('nominal_final');
             Donatur::where('id', $vs->id)->update([ 'sum_donate_paid' => $trans_s ]);
         }
         echo '<br>FINISH SUM DONATE PAID';
@@ -559,6 +560,86 @@ Kepedulian kita masih terus dinantikan, oleh mereka yang membutuhkan.';
                 'transaction_id' => null,
                 'donatur_id'     => $v->id,
                 'program_id'     => $trans->id
+            ]);
+        }
+        
+        echo 'FINISH';
+    }
+
+    /**
+     * Cek WA Dorman
+     */
+    public function waSummaryDonate()
+    {
+        $data = Donatur::where('sum_donate_paid', '>', 0)->whereNull('wa_campaign')
+                ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->orderBy('sum_donate_paid', 'desc')->limit(4)->get();
+
+        foreach($data as $v){
+            $telp = str_replace(['-', ' ', '(', ')', '+', '.'], '', $v->telp);
+            if (substr($telp, 0, 1) == '0') {
+                $telp = '62' . substr($telp, 1, 20);
+            } elseif (substr($telp, 0, 2) != '62') {
+                $telp = '62' . substr($telp, 0, 20);
+            }
+
+            // belum dibuat logic jika ternyata program sebelumnya sudah berakhir / tidak publish
+            $nominal_final = \App\Models\Transaction::select('nominal_final')->where('created_at', '<', '2023-09-01 00:00:00')
+                            ->where('transaction.status', 'success')->where('donatur_id', $v->id)->sum('nominal_final');
+
+            $chat  = 'Salam peduli, sehat dan bahagia selalu buat Anda
+
+Terima kasih atas donasi yang telah diberikan dan sudah menjadi bagian dari pelopor *Misi Kebaikan Bantubersama.com*
+
+Rekap donasi Anda bulan Agustus 2023 sebesar *Rp.'.str_replace(',', '.', number_format($nominal_final)).'*
+Semoga jiwa kepedulian dan komitmen membantu sesama terus membersamai Anda
+
+Mari terus lanjutkan langkah positif ini untuk membantu sesama, kepedulian Anda masih terus dinantikan bagi mereka yang membutuhkan.
+
+Yuk donasi kembali dengan klik tautan ini
+
+https://bantubersama.com
+
+Terimakash';
+
+            // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
+            $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+            $curl  = curl_init();
+            curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/send_message');
+            curl_setopt($curl, CURLOPT_HEADER, 0);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($curl, CURLOPT_TIMEOUT,30);
+            curl_setopt($curl, CURLOPT_POST, 1);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, array(
+                'token'   => $token,
+                'number'  => $telp,
+                'message' => $chat,
+                'date'    => date('Y-m-d'),
+                'time'    => date('H:i'),
+            ));
+            $response = curl_exec($curl);
+            curl_close($curl);
+            
+            $response = json_decode($response);
+            $now      = date('Y-m-d H:i:s');
+            
+            if($response->result=='true'){
+                $update = Donatur::select('id')->where('id', $v->id);
+                $update->update(['wa_campaign' => 'dorman-25-08-2023']);
+            }
+
+            // insert table chat
+            \App\Models\Chat::create([
+                'no_telp'        => $telp,
+                'text'           => $chat,
+                'token'          => $token,
+                'vendor'         => 'RuangWA',
+                'url'            => 'https://app.ruangwa.id/api/send_message',
+                'type'           => 'info',
+                'transaction_id' => null,
+                'donatur_id'     => $v->id,
+                'program_id'     => null
             ]);
         }
         
