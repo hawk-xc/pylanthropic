@@ -108,7 +108,12 @@
                     <ul class="{{ $sidebar_menu == 'report' ? 'mm-show' : '' }}">
                         <li>
                             <a href="{{ route('adm.report.monthly') }}" class="{{ $sidebar_submenu == 'monthly_report' ? 'mm-active' : '' }}">
-                                <i class="metismenu-icon"></i> Bulanan
+                                <i class="metismenu-icon"></i> Rekap Bulanan
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('adm.report.mtm') }}" class="{{ $sidebar_submenu == 'mtm_report' ? 'mm-active' : '' }}">
+                                <i class="metismenu-icon"></i> Month to Month
                             </a>
                         </li>
                         <li>

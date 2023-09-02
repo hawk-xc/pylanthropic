@@ -52,6 +52,8 @@
             </table>
         </div>
     </div>
+    <input type="hidden" id="last_donate" value="{{ $last_donate }}">
+    <button id="playButton" style="display: none;"></button>
 @endsection
 
 
@@ -274,13 +276,37 @@
         });
     });
 
+    // ALARM NEW DONATE
+    function alarmNewDonate() {
+        var last_donate = $('#last_donate').val();
+        
+        $.ajax({
+            type: "POST",
+            url: "{{ route('adm.donate.check.alarm') }}",
+            data: {
+              "_token": "{{ csrf_token() }}",
+              "last_donate": last_donate
+            },
+            success: function(data){
+                if(data.status=='ON') {
+                    $('#last_donate').val(data.last_donate);
+                    const playButton = document.getElementById('playButton');
+                    const audio      = new Audio("{{ asset('public/audio/1.mp3') }}");
+                    playButton.addEventListener('click', () => {
+                        audio.play();
+                    });
+                    playButton.click();
+                }
+            }
+        });
+    }
 
     $(document).ready(function(){
         setInterval( function () {
             table.ajax.reload();    // reset paging
             // table.ajax.reload(null, false);    // paging retained
-            console.log('ok'); 
-        }, 300000 );
+            alarmNewDonate();
+        }, 250000 );
     });
 
     var rupiah = document.getElementById("rupiah");

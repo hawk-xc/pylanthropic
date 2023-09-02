@@ -63,6 +63,7 @@ Route::group([
         Route::post('/donate-status-edit', [Admin\DonateController::class, 'statusEdit'])->name('donate.status.edit');
         Route::post('/donate-fu-paid', [Admin\DonateController::class, 'fuPaid'])->name('donate.fu.paid');
         Route::get('/donate-perdonatur/{id}', [Admin\DonateController::class, 'donatePerdonatur'])->name('donate.perdonatur');
+        Route::post('/donate-check-alarm', [Admin\DonateController::class, 'donateCheckAlarm'])->name('donate.check.alarm');
 
         // DONATUR
         Route::get('/donatur/dorman', [Admin\DonaturController::class, 'dorman'])->name('donatur.dorman');
@@ -74,6 +75,7 @@ Route::group([
         // REPORT
         Route::get('/report/collection', [Admin\ReportController::class, 'collection'])->name('report.collection');
         Route::get('/report/monthly', [Admin\ReportController::class, 'monthly'])->name('report.monthly');
+        Route::get('/report/monthly-to-monthly', [Admin\ReportController::class, 'monthlyToMonthly'])->name('report.mtm');
         Route::get('/report/matching-transaction', [Admin\ReportController::class, 'mutationMatching'])->name('report.matching');
         Route::get('/report/settlement', [Admin\ReportController::class, 'settlement'])->name('report.settlement');
         Route::post('/report/mutation/edit', [Admin\ReportController::class, 'mutationEdit'])->name('report.mutation.edit');

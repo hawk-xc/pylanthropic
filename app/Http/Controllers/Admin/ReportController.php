@@ -74,6 +74,15 @@ class ReportController extends Controller
     }
 
     /**
+     * Monthly Report
+     */
+    public function monthlyToMonthly()
+    {
+        $sum_donate = ;
+        $count_donate = ;
+    }
+
+    /**
      * Show the application's Dashboard Admin.
      *
      * @return \Illuminate\Http\Response

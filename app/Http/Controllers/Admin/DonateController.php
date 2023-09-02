@@ -17,7 +17,22 @@ class DonateController extends Controller
      */
     public function index()
     {
-        return view('admin.transaction.index');
+        $last_donate = Transaction::select('created_at')->orderBy('created_at', 'desc')->first()->created_at;
+        return view('admin.transaction.index', compact('last_donate'));
+    }
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function donateCheckAlarm(Request $request)
+    {
+        // $last_donate = date('Y-m-d H:i:s', strtotime($request->last_donate));
+        $check_alarm = date('Y-m-d H:i:s', strtotime(Transaction::select('created_at')->orderBy('created_at', 'desc')->first()->created_at));
+        if($check_alarm != $request->last_donate) {
+            return ['status'=>'ON', 'last_donate'=>$check_alarm];
+        } else {
+            return ['status'=>'OFF'];
+        }
     }
 
     /**
