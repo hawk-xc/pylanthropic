@@ -1,7 +1,7 @@
 @extends('layouts.public', [
     'second_title' => 'Pengajuan Program - LAZISNU DIY x BANTUBERSAMA',
     'meta_desc'    => 'Bantubersama adalah platform penggalang dana untuk membantu bersama secara online',
-    'image'        => asset('public/images/program/Infaq_Bantu_Bersama.jpg'),
+    'image'        => 'pengajuan_bantubersama_lazisnu_diy.jpg',
 ])
 
 
@@ -18,7 +18,7 @@
 
 @section('content')
   <div class="">
-    <img alt="Pengajuan Program Bantubersama.com" class="h-auto w-100" src="{{ asset('public/images/program/Infaq_Bantu_Bersama.jpg') }}">
+    <img alt="Pengajuan Program Bantubersama.com" class="h-auto w-100" src="{{ asset('public/images/organization/pengajuan_bantubersama_lazisnu_diy.jpg') }}">
   </div>
   <!-- header end -->
 
@@ -41,54 +41,54 @@
   <!-- Program Detail section start -->
   <section class="py-20">
     <div class="custom-container">
-      <div class="text-center fw-bold fs-16 mb-2 pb-1">Pilih Kategori Program</div>
+      <div class="text-center fw-bold fs-18 mb-2 pb-1">Pilih Kategori Program</div>
       <div class="row gy-3">
         <div class="col-6">
           <div class="text-center" style="">
             <a href="{{ route('form') }}?c=kesehatan" class="">
-              <img class="img-fluid categories-img" src="https://bantubersama.com/public/images/categories/scholarship.png" alt="Pendidikan">
+              <img class="img-fluid categories-img" src="{{ asset('public/images/organization/kesehatan.png') }}" alt="Kesehatan Bantubersama">
             </a>
-            <h6 class="fs-14 mt-1">Kesehatan</h6>
+            <h6 class="fs-15 mt-1 pt-1">Kesehatan</h6>
           </div>
         </div>
         <div class="col-6">
           <div class="text-center" style="">
             <a href="{{ route('form') }}?c=rumahibadah" class="">
-              <img class="img-fluid" src="https://bantubersama.com/public/images/categories/scholarship.png" alt="Pendidikan">
+              <img class="img-fluid" src="{{ asset('public/images/organization/tempat_ibadah.png') }}" alt="Tempat Ibadah Bantubersama">
             </a>
-            <h6 class="fs-14 mt-1">Rumah Ibadan</h6>
+            <h6 class="fs-15 mt-1 pt-1">Rumah Ibadan</h6>
           </div>
         </div>
         <div class="col-6">
           <div class="text-center" style="">
             <a href="{{ route('form') }}?c=pendidikan" class="">
-              <img class="img-fluid" src="https://bantubersama.com/public/images/categories/scholarship.png" alt="Pendidikan">
+              <img class="img-fluid" src="{{ asset('public/images/organization/pendidikan.png') }}" alt="Pendidikan Bantubersama">
             </a>
-            <h6 class="fs-14 mt-1">Pendidikan</h6>
+            <h6 class="fs-15 mt-1 pt-1">Pendidikan</h6>
           </div>
         </div>
         <div class="col-6">
           <div class="text-center" style="">
             <a href="{{ route('form') }}?c=kemanusiaan" class="">
-              <img class="img-fluid" src="https://bantubersama.com/public/images/categories/scholarship.png" alt="Pendidikan">
+              <img class="img-fluid" src="{{ asset('public/images/organization/kemanusiaan.png') }}" alt="Kemanusiaan Bantubersama">
             </a>
-            <h6 class="fs-14 mt-1">Kemanusiaan</h6>
+            <h6 class="fs-15 mt-1 pt-1">Kemanusiaan</h6>
           </div>
         </div>
         <div class="col-6">
           <div class="text-center" style="">
             <a href="{{ route('form') }}?c=bencanaalam" class="">
-              <img class="img-fluid" src="https://bantubersama.com/public/images/categories/scholarship.png" alt="Pendidikan">
+              <img class="img-fluid" src="{{ asset('public/images/organization/bencana_alam.png') }}" alt="Bencana Alam Bantubersama">
             </a>
-            <h6 class="fs-14 mt-1">Bencana Alam</h6>
+            <h6 class="fs-15 mt-1 pt-1">Bencana Alam</h6>
           </div>
         </div>
         <div class="col-6">
           <div class="text-center" style="">
             <a href="{{ route('form') }}?c=lainnya" class="">
-              <img class="img-fluid" src="https://bantubersama.com/public/images/categories/scholarship.png" alt="Pendidikan">
+              <img class="img-fluid" src="{{ asset('public/images/organization/lain_lain.png') }}" alt="Lainnya Bantubersama">
             </a>
-            <h6 class="fs-14 mt-1">Lainnya</h6>
+            <h6 class="fs-15 mt-1 pt-1">Lainnya</h6>
           </div>
         </div>
       </div>

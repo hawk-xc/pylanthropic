@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
+use App\Models\Donatur;
 use App\Models\Program;
 
 use DataTables;
@@ -76,10 +77,78 @@ class ReportController extends Controller
     /**
      * Monthly Report
      */
-    public function monthlyToMonthly()
+    public function monthlyToMonthly(Request $request)
     {
-        $sum_donate = ;
-        $count_donate = ;
+        // DONATE
+        $now  = date('Y-m');
+        $old1 = date('Y-m', strtotime(date('Y-m-d').'-1 month'));
+        $old2 = date('Y-m', strtotime(date('Y-m-d').'-2 month'));
+        $old3 = date('Y-m', strtotime(date('Y-m-d').'-3 month'));
+
+        $date = [$now, $old1, $old2, $old3];
+
+        $trans_now  = Transaction::select('nominal_final')->where('created_at', 'like', $now.'%');
+        $trans_old1 = Transaction::select('nominal_final')->where('created_at', 'like', $old1.'%');
+        $trans_old2 = Transaction::select('nominal_final')->where('created_at', 'like', $old2.'%');
+        $trans_old3 = Transaction::select('nominal_final')->where('created_at', 'like', $old3.'%');
+
+        $sum_donate_all        = [
+                $trans_now->sum('nominal_final'), $trans_old1->sum('nominal_final'), 
+                $trans_old2->sum('nominal_final'), $trans_old3->sum('nominal_final')
+        ];
+        $count_donate_all      = [$trans_now->count(), $trans_old1->count(), $trans_old2->count(), $trans_old3->count()];
+
+        $trans_now_paid    = $trans_now->where('status', 'success');
+        $trans_old1_paid   = $trans_old1->where('status', 'success');
+        $trans_old2_paid   = $trans_old2->where('status', 'success');
+        $trans_old3_paid   = $trans_old3->where('status', 'success');
+        $sum_donate_paid   = [
+                $trans_now_paid->sum('nominal_final'), $trans_old1_paid->sum('nominal_final'), 
+                $trans_old2_paid->sum('nominal_final'), $trans_old3_paid->sum('nominal_final')
+        ];
+        $count_donate_paid = [$trans_now_paid->count(), $trans_old1_paid->count(), $trans_old2_paid->count(), $trans_old3_paid->count()];
+
+
+        $trans_now  = Transaction::select('nominal_final')->where('created_at', 'like', $now.'%');
+        $trans_old1 = Transaction::select('nominal_final')->where('created_at', 'like', $old1.'%');
+        $trans_old2 = Transaction::select('nominal_final')->where('created_at', 'like', $old2.'%');
+        $trans_old3 = Transaction::select('nominal_final')->where('created_at', 'like', $old3.'%');
+        
+        $trans_now_unpaid  = $trans_now->where('status', '!=', 'success');
+        $trans_old1_unpaid = $trans_old1->where('status', '!=', 'success');
+        $trans_old2_unpaid = $trans_old2->where('status', '!=', 'success');
+        $trans_old3_unpaid = $trans_old3->where('status', '!=', 'success');
+        $sum_donate_unpaid     = [
+                $trans_now_unpaid->sum('nominal_final'), $trans_old1_unpaid->sum('nominal_final'), 
+                $trans_old2_unpaid->sum('nominal_final'), $trans_old3_unpaid->sum('nominal_final')
+        ];
+        $count_donate_unpaid   = [$trans_now_unpaid->count(), $trans_old1_unpaid->count(), $trans_old2_unpaid->count(), $trans_old3_unpaid->count()];
+        
+        $donate_average_all    = [
+                $trans_now->avg('nominal_final'), $trans_old1->avg('nominal_final'), 
+                $trans_old2->avg('nominal_final'), $trans_old3->avg('nominal_final')
+        ];
+
+        // DONATUR
+        $donatur_now      = Transaction::select('donatur_id')->where('created_at', 'like', $now.'%')->pluck('donatur_id');
+        $donatur_old1     = Transaction::select('donatur_id')->where('created_at', 'like', $old1.'%')->pluck('donatur_id');
+        $donatur_old2     = Transaction::select('donatur_id')->where('created_at', 'like', $old2.'%')->pluck('donatur_id');
+        $donatur_old3     = Transaction::select('donatur_id')->where('created_at', 'like', $old3.'%')->pluck('donatur_id');
+
+        $donatur_new_now  = Donatur::select('id')->where('created_at', 'like', $now.'%')->count();
+        $donatur_new_old1 = Donatur::select('id')->where('created_at', 'like', $old1.'%')->count();
+        $donatur_new_old2 = Donatur::select('id')->where('created_at', 'like', $old2.'%')->count();
+        $donatur_new_old3 = Donatur::select('id')->where('created_at', 'like', $old3.'%')->count();
+
+        $count_donatur_all    = [$donatur_now->count(), $donatur_old1->count(), $donatur_old2->count(), $donatur_old3->count()];
+        $count_donatur_new    = [$donatur_new_now, $donatur_new_old1, $donatur_new_old2, $donatur_new_old3];
+        $count_donatur_old    = [
+                ($donatur_now->count()-$donatur_new_now), ($donatur_old1->count()-$donatur_new_old1), 
+                ($donatur_old2->count()-$donatur_new_old2), ($donatur_old3->count()-$donatur_new_old3)
+        ];
+        $count_donatur_hampir = [0, 0, 0, 0];
+
+        return view('admin.report.m2m', compact('date', 'sum_donate_all', 'count_donate_all', 'sum_donate_paid', 'count_donate_paid', 'sum_donate_unpaid', 'count_donate_unpaid', 'donate_average_all', 'count_donatur_all', 'count_donatur_new', 'count_donatur_old', 'count_donatur_hampir'));
     }
 
     /**

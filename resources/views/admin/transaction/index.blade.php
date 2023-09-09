@@ -30,6 +30,7 @@
                     <button class="btn btn-outline-primary"><i class="fa fa-sync mr-1"></i> BSI</button>
                     <button class="btn btn-outline-primary mr-3"><i class="fa fa-sync mr-1"></i> Mandiri</button>
 
+                    <button class="btn btn-outline-primary" id="playButton"><i class="fa fa-volume-mute mr-1"></i> OFF</button>
                     <button class="btn btn-outline-primary"><i class="fa fa-filter mr-1"></i> Filter</button>
                     <button class="btn btn-outline-primary" id="refresh_table_donate"><i class="fa fa-sync mr-1"></i> Refresh</button>
                     <a href="#" class="btn btn-outline-primary"><i class="fa fa-plus mr-1"></i> Tambah Donasi</a>
@@ -53,7 +54,6 @@
         </div>
     </div>
     <input type="hidden" id="last_donate" value="{{ $last_donate }}">
-    <button id="playButton" style="display: none;"></button>
 @endsection
 
 
@@ -274,6 +274,11 @@
                 }
             }
         });
+    });
+
+    $('#playButton').on('click', () => {
+        new Audio("{{ asset('public/audio/1.mp3') }}").play();
+        document.querySelector('#playButton').innerHTML = '<i class="fa fa-volume-up mr-1"></i> ON';
     });
 
     // ALARM NEW DONATE

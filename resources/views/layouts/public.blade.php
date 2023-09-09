@@ -15,7 +15,11 @@
 
     <meta name="og:site_name" content="{{ (isset($second_title) && !empty($second_title) ? $second_title : ' Platform Penggalang Dana - Bantubersama.com') }}"/>
     <meta property="og:title" content="{{ (isset($second_title) && !empty($second_title) ? $second_title : ' Platform Penggalang Dana - Bantubersama.com') }}"/>
-    <meta name="og:image" content="{{ isset($image) ? asset('public/images/program/'.$image) : asset('public/images/logo/Bantubersama.png') }}"/>
+    @if(isset($image) && $image=='pengajuan_bantubersama_lazisnu_diy.jpg')
+      <meta name="og:image" content="{{ asset('public/images/organization/'.$image) }}"/>
+    @else
+      <meta name="og:image" content="{{ isset($image) ? asset('public/images/program/'.$image) : asset('public/images/logo/Bantubersama.png') }}"/>
+    @endif
     <meta property="og:url" content="https://www.bantubersama.com"/>
     <meta property="og:description" content="{{ isset($meta_desc) && !empty($meta_desc) ? $meta_desc.' - ' : 'Bantubersama adalah platform penggalangan dana untuk membantu bersama secara online' }}"/>
 
@@ -27,8 +31,8 @@
     <meta name="msapplication-TileColor" content="#3BA8DD" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-    <link rel="preconnect" href="https://dev.bantubersama.com" crossorigin>
-    <link rel="dns-prefetch" href="https://dev.bantubersama.com">
+    <link rel="preconnect" href="https://bantubersama.com" crossorigin>
+    <link rel="dns-prefetch" href="https://bantubersama.com">
     <link rel="preconnect" href="https://graph.facebook.com"/>
     
     <!-- Chrome, Firefox OS and Opera -->

@@ -146,7 +146,7 @@ class DonateController extends Controller
             
             // check any transaction
             $is_trans = Transaction::where('donatur_id', $donatur_id)->where('nominal', $nominal)
-                        ->where('created_at', 'like', date('Y-m-d H:i').'%')->where('status', '!=', 'cancel')
+                        ->where('created_at', 'like', date('Y-m-d H').'%')->where('status', '!=', 'cancel')
                         ->where('payment_type_id', $payment->id)->first();
             if(isset($is_trans->status)) {
                 $transaction    = $is_trans;

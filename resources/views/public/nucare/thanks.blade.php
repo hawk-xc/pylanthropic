@@ -1,7 +1,7 @@
 @extends('layouts.public', [
     'second_title' => 'Berhasil Pengajuan Program - LAZISNU DIY x BANTUBERSAMA',
     'meta_desc'    => 'Bantubersama adalah platform penggalang dana untuk membantu bersama secara online',
-    'image'        => asset('public/images/program/Infaq_Bantu_Bersama.jpg'),
+    'image'        => 'pengajuan_bantubersama_lazisnu_diy.jpg',
 ])
 
 

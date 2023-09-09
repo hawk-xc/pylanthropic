@@ -1,7 +1,7 @@
 @extends('layouts.public', [
     'second_title' => 'Form Pengajuan Program - LAZISNU DIY x BANTUBERSAMA',
     'meta_desc'    => 'Bantubersama adalah platform penggalang dana untuk membantu bersama secara online',
-    'image'        => asset('public/images/program/Infaq_Bantu_Bersama.jpg'),
+    'image'        => 'pengajuan_bantubersama_lazisnu_diy.jpg',
 ])
 
 
@@ -35,7 +35,21 @@
     <!-- payment method section start -->
     <section class="payment method section-lg-b-space pt-0">
       <div class="custom-container">
-        <h5 class="text-center fw-medium fs-15 mt-4">Kategori Kesehatan</h5>
+        <h5 class="text-center fw-medium fs-16 mt-4">Kategori
+          @if($_GET['c']=='kesehatan')
+            Kesehatan
+          @elseif($_GET['c']=='rumahibadah')
+            Rumah Ibadah
+          @elseif($_GET['c']=='pendidikan')
+            Pendidikan
+          @elseif($_GET['c']=='kemanusiaan')
+            Kemanusiaan
+          @elseif($_GET['c']=='bencanaalam')
+            Bencana Alam
+          @else
+            Lain-Lain
+          @endif
+        </h5>
         <hr>
         <div class="form-input mt-4">
           <label class="fw-medium fs-15 mb-1 pb-1">Data PIC</label>
