@@ -24,16 +24,18 @@
                     </nav>
                 </div>
                 <div class="col-9 fc-rtl">
-                    <button class="btn btn-outline-primary"><i class="fa fa-sync mr-1"></i> BCA</button>
+                    <!-- <button class="btn btn-outline-primary"><i class="fa fa-sync mr-1"></i> BCA</button>
                     <button class="btn btn-outline-primary"><i class="fa fa-sync mr-1"></i> BRI</button>
                     <button class="btn btn-outline-primary"><i class="fa fa-sync mr-1"></i> BNI</button>
                     <button class="btn btn-outline-primary"><i class="fa fa-sync mr-1"></i> BSI</button>
-                    <button class="btn btn-outline-primary mr-3"><i class="fa fa-sync mr-1"></i> Mandiri</button>
+                    <button class="btn btn-outline-primary mr-3"><i class="fa fa-sync mr-1"></i> Mandiri</button> -->
 
                     <button class="btn btn-outline-primary" id="playButton"><i class="fa fa-volume-mute mr-1"></i> OFF</button>
-                    <button class="btn btn-outline-primary"><i class="fa fa-filter mr-1"></i> Filter</button>
-                    <button class="btn btn-outline-primary" id="refresh_table_donate"><i class="fa fa-sync mr-1"></i> Refresh</button>
-                    <a href="#" class="btn btn-outline-primary"><i class="fa fa-plus mr-1"></i> Tambah Donasi</a>
+                    <!-- <button class="btn btn-outline-primary"><i class="fa fa-filter mr-1"></i> Filter</button> -->
+                    <button class="btn btn-outline-primary" id="filter-fu"><i class="fa fa-filter mr-1" id="filter-fu-icon"></i> Butuh FU</button>
+                    <button class="btn btn-primary" id="filter-5day"><i class="fa fa-check mr-1" id="filter-5day-icon"></i> Show 5 Hari</button>
+                    <button class="btn btn-outline-primary mr-1" id="refresh_table_donate"><i class="fa fa-sync"></i> Refresh</button>
+                    <!-- <a href="#" class="btn btn-outline-primary"><i class="fa fa-plus mr-1"></i> Tambah Donasi</a> -->
                 </div>
             </div>
             <div class="divider"></div>
@@ -54,6 +56,8 @@
         </div>
     </div>
     <input type="hidden" id="last_donate" value="{{ $last_donate }}">
+    <input type="hidden" id="fu_val" value="0">
+    <input type="hidden" id="5day_val" value="1">
 @endsection
 
 
@@ -150,44 +154,47 @@
         myModal.show();
     }
 
-    $("#save_status").on("click", function(){
-        var id_trans = $("#id_trans").val();
-        var status   = $('input[name="status"]:checked').val();
-        var nominal  = $('#rupiah').val();
+    var need_fu = $('#fu_val').val();
+    var day5    = $('#5day_val').val();
 
-        if(document.getElementById('checkboxwa').checked) {
-            var sendwa = 1;
+    $("#filter-5day").on("click", function(){
+        let fil_5day = $('#5day_val').val();
+        var need_fu  = $('#fu_val').val();
+        if(fil_5day==1) {
+            $('#filter-5day-icon').removeClass('fa-check');
+            $('#filter-5day-icon').addClass('fa-filter');
+            $('#filter-5day').removeClass('btn-primary');
+            $('#filter-5day').addClass('btn-outline-primary');
+            $('#5day_val').val(0);
+            donate_table(need_fu, 0);
         } else {
-            var sendwa = 0;
+            $('#filter-5day-icon').removeClass('fa-filter');
+            $('#filter-5day-icon').addClass('fa-check');
+            $('#filter-5day').removeClass('btn-outline-primary');
+            $('#filter-5day').addClass('btn-primary');
+            $('#5day_val').val(1);
+            donate_table(need_fu, 1);
         }
+    });
 
-        $.ajax({
-            type: "POST",
-            url: "{{ route('adm.donate.status.edit') }}",
-            data: {
-              "_token": "{{ csrf_token() }}",
-              "id_trans": id_trans,
-              "sendwa": sendwa,
-              "status": status,
-              "nominal": nominal
-            },
-            success: function(data){
-                console.log(data);
-                if(data.status=='success') {
-                    // toast success
-                    let status_id = '#status_'+id_trans;
-                    if(status=='draft') {
-                        $(status_id).html(data.nominal+'<br><span class="badge badge-warning">BELUM DIBAYAR</span>');
-                    } else if(status=='success') {
-                        $(status_id).html(data.nominal+'<br><span class="badge badge-success">SUDAH DIBAYAR</span>');
-                    } else {
-                        $(status_id).html(data.nominal+'<br><span class="badge badge-secondary">DIBATALKAN</span>');
-                    }
-
-                    hideFunc('#modal_status');
-                }
-            }
-        });
+    $("#filter-fu").on("click", function(){
+        let fil_5day = $('#5day_val').val();
+        var need_fu  = $('#fu_val').val();
+        if(need_fu==0) {
+            $('#filter-fu-icon').removeClass('fa-filter');
+            $('#filter-fu-icon').addClass('fa-check');
+            $('#filter-fu').removeClass('btn-outline-primary');
+            $('#filter-fu').addClass('btn-primary');
+            $('#fu_val').val(1);
+            donate_table(1, fil_5day);
+        } else {
+            $('#filter-fu-icon').removeClass('fa-check');
+            $('#filter-fu-icon').addClass('fa-filter');
+            $('#filter-fu').removeClass('btn-primary');
+            $('#filter-fu').addClass('btn-outline-primary');
+            $('#fu_val').val(0);
+            donate_table(0, fil_5day);
+        }
     });
 
     function hideFunc(name) {
@@ -197,6 +204,10 @@
         modal.hide();
     }
 
+    function donate_table(need_fu_ar, day5_ar) {
+        table.ajax.url("{{ route('adm.donate.datatables') }}/?need_fu="+need_fu_ar+"&day5="+day5_ar).load();
+    }
+    
     var table = $('#table-donatur').DataTable({
         orderCellsTop: true,
         fixedHeader: true,
@@ -204,7 +215,7 @@
         serverSide: true,
         responsive: true,
         order: [[4, 'desc']],
-        ajax: "{{ route('adm.donate.datatables') }}",
+        ajax: "{{ route('adm.donate.datatables') }}/?need_fu="+need_fu+"&day5="+day5,
         "columnDefs": [
             { "width": "21%", "targets": 0 },
             { "width": "14%", "targets": 1 },
@@ -243,6 +254,46 @@
 
     $("#refresh_table_donate").on("click", function() {
         table.ajax.reload();
+    });
+
+    $("#save_status").on("click", function(){
+        var id_trans = $("#id_trans").val();
+        var status   = $('input[name="status"]:checked').val();
+        var nominal  = $('#rupiah').val();
+
+        if(document.getElementById('checkboxwa').checked) {
+            var sendwa = 1;
+        } else {
+            var sendwa = 0;
+        }
+
+        $.ajax({
+            type: "POST",
+            url: "{{ route('adm.donate.status.edit') }}",
+            data: {
+              "_token": "{{ csrf_token() }}",
+              "id_trans": id_trans,
+              "sendwa": sendwa,
+              "status": status,
+              "nominal": nominal
+            },
+            success: function(data){
+                console.log(data);
+                if(data.status=='success') {
+                    // toast success
+                    let status_id = '#status_'+id_trans;
+                    if(status=='draft') {
+                        $(status_id).html(data.nominal+'<br><span class="badge badge-warning">BELUM DIBAYAR</span>');
+                    } else if(status=='success') {
+                        $(status_id).html(data.nominal+'<br><span class="badge badge-success">SUDAH DIBAYAR</span>');
+                    } else {
+                        $(status_id).html(data.nominal+'<br><span class="badge badge-secondary">DIBATALKAN</span>');
+                    }
+
+                    hideFunc('#modal_status');
+                }
+            }
+        });
     });
 
     function fuPaid(id, name, nominal) {

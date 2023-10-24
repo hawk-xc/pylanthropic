@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
     <style type="text/css">
         .ck-editor__editable {min-height: 340px;}
+        .fs-8 {font-size: 8px;}
     </style>
 @endsection
 
@@ -48,7 +49,7 @@
                 </div>
                 <div class="col-12">
                     <label class="form-label fw-semibold">Kategori (boleh lebih dari 1 kategori)</label>
-                    <select class="form-control form-control-sm" name="category" id="kategori-select2"></select>
+                    <select class="form-control form-control-sm" name="category[]" id="kategori-select2"></select>
                 </div>
                 <div class="col-6">
                     <label class="form-label fw-semibold">Lembaga</label>
@@ -88,7 +89,7 @@
                     </div>
                 </div>
                 <div class="col-6">
-                    <label class="form-label fw-semibold">Thumbnail (300 x 160 px)</label>
+                    <label class="form-label fw-semibold">Thumbnail (292 x 156 px)</label>
                     <input type="file" class="form-control form-control-sm" name="thumbnail">
                 </div>
                 <div class="col-6">
@@ -98,6 +99,39 @@
                 <div class="col-12">
                     <label class="form-label fw-semibold">Cerita Singkat (caption)</label>
                     <input type="text" class="form-control form-control-sm" name="caption" placeholder="Yuk bantu warga desa Meranti untuk memiliki masjid satu-satunya.">
+                </div>
+                <div class="col-4">
+                    <label class="form-label fw-semibold">Gambar Dalam Konten 1 (580 x ~ px)</label>
+                    <div class="input-group">
+                        <input type="file" name="img_content1" class="form-control form-control-sm" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="button-addon2">Upload</button>
+                    </div>
+                    <div class="row">
+                        <div class="col-10 fs-8">https://bantubersama.com/public/images/program/content/...</div>
+                        <div class="col-2 text-end"><a href="#"><i class="fa fa-copy"></i></a></div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <label class="form-label fw-semibold">Gambar Dalam Konten 2 (580 x ~ px)</label>
+                    <div class="input-group">
+                        <input type="file" name="img_content2" class="form-control form-control-sm" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="button-addon2">Upload</button>
+                    </div>
+                    <div class="row">
+                        <div class="col-10 fs-8">https://bantubersama.com/public/images/program/content/...</div>
+                        <div class="col-2 text-end"><a href="#"><i class="fa fa-copy"></i></a></div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <label class="form-label fw-semibold">Gambar Dalam Konten 3 (580 x ~ px)</label>
+                    <div class="input-group">
+                        <input type="file" name="img_content3" class="form-control form-control-sm" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="button-addon2">Upload</button>
+                    </div>
+                    <div class="row">
+                        <div class="col-10 fs-8">https://bantubersama.com/public/images/program/content/...</div>
+                        <div class="col-2 text-end"><a href="#"><i class="fa fa-copy"></i></a></div>
+                    </div>
                 </div>
                 <div class="col-12">
                     <label class="form-label fw-semibold">Cerita Lengkap (min 3 paragfar dan 1 foto)</label>

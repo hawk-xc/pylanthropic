@@ -183,6 +183,20 @@
             </a>
           </li>
           <li class="cart-add-box payment-card-box gap-0 mt-2">
+            <a href="#" class="container-fluid pe-0 sub_amount" data-nominal="2500000">
+              <div class="payment-detail">
+                <div class="add-content">
+                  <div>
+                    <h5 class="fw-bold fs-16">Rp 2.500.000</h5>
+                  </div>
+                  <div class="float-end">
+                    <i class="ri-arrow-right-s-line fs-26"></i>
+                  </div>
+                </div>
+              </div>
+            </a>
+          </li>
+          <li class="cart-add-box payment-card-box gap-0 mt-2">
             <div class="container-fluid pe-0 payment-detail nominal-other">
               <div class="add-content">
                 <div>

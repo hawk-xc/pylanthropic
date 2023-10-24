@@ -179,7 +179,7 @@ class PaymentController extends Controller
                 // for auto WA
                 $program = Program::where('id', $transaction->program_id)->first();
                 $donatur = Donatur::where('id', $transaction->donatur_id)->first();
-                $chat = 'Terimakasih '.ucwords(trim($donatur->name)).'.
+                $chat = 'Terimakasih dermawan *'.ucwords(trim($donatur->name)).'*.
 Kebaikan Anda sangat berarti bagi kami yang membutuhkan, semoga mendapat balasan yang lebih berarti. Amin.
 Atas Donasi :
 *'.ucwords($program->title).'*

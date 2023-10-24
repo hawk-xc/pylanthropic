@@ -33,6 +33,7 @@ class Transaction extends Model
         'is_show_name',
         'created_at',
         'updated_at',
-        'user_agent'
+        'user_agent',
+        'ref_code'
     ];
 }

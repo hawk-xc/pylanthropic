@@ -8,6 +8,8 @@ use App\Models\Program;
 use App\Models\Transaction;
 use App\Models\PaymentType;
 use App\Models\Donatur;
+use App\Models\TrackingVisitor;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Http\Controllers\PaymentController;
@@ -27,6 +29,21 @@ class DonateController extends Controller
                 'count_amount_page' => $program->count_amount_page+1,
                 'updated_at'        => date('Y-m-d H:i:s')
             ]);
+
+            // insert tracking visitor
+            TrackingVisitor::create([
+                'program_id'      => $program->id,
+                'visitor_code'    => 1,
+                'page_view'       => 'amount',
+                'nominal'         => 0,
+                'payment_type_id' => null,
+                'ref_code'        => (isset($request->ref)) ? strip_tags($request->ref) : null,
+                'utm_source'      => (isset($request->a)) ? strip_tags($request->a) : null,
+                'utm_medium'      => (isset($request->as)) ? strip_tags($request->as) : null,
+                'utm_campaign'    => null,
+                'utm_content'     => (isset($request->k)) ? strip_tags($request->k) : null
+            ]);
+
             return view('public.donate_amount', compact('program'));
         } else {
             return view('public.not_found');
@@ -43,13 +60,28 @@ class DonateController extends Controller
         // ]);
 
         $nominal = $request->nominal;
-        $program = Program::where('is_publish', 1)->select('slug')
+        $program = Program::where('is_publish', 1)->select('slug', 'id')
                     ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
 
         if(isset($program->slug) && $nominal>=10000) {
             $payment_transfer = PaymentType::where('type', 'transfer')->where('is_active', 1)->orderBy('sort_number')->get();
             $payment_instant  = PaymentType::where('type', 'instant')->where('is_active', 1)->orderBy('sort_number')->get();
             $payment_va       = PaymentType::where('type', 'virtual_account')->where('is_active', 1)->orderBy('sort_number')->get();
+
+            // insert tracking visitor
+            TrackingVisitor::create([
+                'program_id'      => $program->id,
+                'visitor_code'    => 1,
+                'page_view'       => 'payment_type',
+                'nominal'         => $nominal,
+                'payment_type_id' => null,
+                'ref_code'        => (isset($request->ref)) ? strip_tags($request->ref) : null,
+                'utm_source'      => (isset($request->a)) ? strip_tags($request->a) : null,
+                'utm_medium'      => (isset($request->as)) ? strip_tags($request->as) : null,
+                'utm_campaign'    => null,
+                'utm_content'     => (isset($request->k)) ? strip_tags($request->k) : null
+            ]);
+
             return view('public.payment', compact('program', 'nominal', 'payment_transfer', 'payment_instant', 'payment_va'));
         } else {
             return view('public.not_found');
@@ -78,6 +110,21 @@ class DonateController extends Controller
             ]);
 
             $payment  = PaymentType::where('key', $payment_type)->first();
+
+            // insert tracking visitor
+            TrackingVisitor::create([
+                'program_id'      => $program->id,
+                'visitor_code'    => 1,
+                'page_view'       => 'form',
+                'nominal'         => $nominal,
+                'payment_type_id' => $payment->id,
+                'ref_code'        => (isset($request->ref)) ? strip_tags($request->ref) : null,
+                'utm_source'      => (isset($request->a)) ? strip_tags($request->a) : null,
+                'utm_medium'      => (isset($request->as)) ? strip_tags($request->as) : null,
+                'utm_campaign'    => null,
+                'utm_content'     => (isset($request->k)) ? strip_tags($request->k) : null
+            ]);
+
             return view('public.checkout', compact('program', 'nominal', 'payment'));
         } else {
             return view('public.not_found');
@@ -219,11 +266,25 @@ class DonateController extends Controller
                     'is_show_name'    => $request->has('anonim')?1:0,
                     'midtrans_token'  => $token_midtrans,
                     'midtrans_url'    => $redirect_url,
-                    'user_agent'      => ''
+                    'user_agent'      => '',
+                    'ref_code'        => (isset($request->ref)) ? strip_tags($request->ref) : null
                 ]);
             }
 
 
+            // insert tracking visitor
+            TrackingVisitor::create([
+                'program_id'      => $program->id,
+                'visitor_code'    => 1,
+                'page_view'       => 'invoice',
+                'nominal'         => $nominal,
+                'payment_type_id' => $payment->id,
+                'ref_code'        => (isset($request->ref)) ? strip_tags($request->ref) : null,
+                'utm_source'      => (isset($request->a)) ? strip_tags($request->a) : null,
+                'utm_medium'      => (isset($request->as)) ? strip_tags($request->as) : null,
+                'utm_campaign'    => null,
+                'utm_content'     => (isset($request->k)) ? strip_tags($request->k) : null
+            ]);
             
 
             // if($payment->type=='transfer') {             // sementara ditambahkan 3 digit semua
@@ -647,7 +708,7 @@ echo "<br><br>";
                 ]);
 
                 // for auto WA
-                $chat1 = 'Terimakasih '.ucwords(trim($request->fullname)).'.
+                $chat1 = 'Terimakasih dermawan *'.ucwords(trim($request->fullname)).'*.
 Selangkah lagi kebaikan donasi Anda berhasil dengan menyelesaikan pembayaran berikut :
 Sebesar : Rp '.str_replace(',', '.', number_format($nominal+$unique_number)).'
 Nomor Invoice : '.$invoice.' 

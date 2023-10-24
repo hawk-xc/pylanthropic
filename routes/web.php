@@ -21,6 +21,8 @@ Route::get('/payment/callback-doku', [PaymentController::class, 'callbackDoku'])
 Route::get('/donatur/wa-check', [Admin\DonaturController::class, 'talentWACheck']);
 Route::get('/donatur/wa-dorman', [Admin\DonaturController::class, 'waDorman']);
 Route::get('/donatur/wa-summary-donate', [Admin\DonaturController::class, 'waSummaryDonate']);
+// FU Trans ke-2
+Route::get('/donatur/wa-fu-2', [Admin\DonateController::class, 'donateFu2Sc']);
 
 Route::group([
     'as'     => 'adm.',   // for route(adm.xx)
@@ -48,11 +50,17 @@ Route::group([
         Route::get('/donatur-sultan-datatables', [Admin\DonaturController::class, 'datatablesDonaturSultan'])->name('donatur.sultan.datatables');
         Route::get('/donatur-hampir-datatables', [Admin\DonaturController::class, 'datatablesDonaturHampir'])->name('donatur.hampir.datatables');
         Route::get('/donate-datatables', [Admin\DonateController::class, 'datatablesDonate'])->name('donate.datatables');
-        Route::get('/donate-perdonatur-datatables/{id}', [Admin\DonateController::class, 'datatablesDonatePerdonatur'])->name('donate.donatur.datatables');
+        Route::get('/donate-perdonatur-datatables/{id}', [Admin\DonateController::class, 'datatablesDonatePerdonatur'])
+                    ->name('donate.donatur.datatables');
         Route::get('/program-datatables', [Admin\ProgramController::class, 'datatablesProgram'])->name('program.datatables');
-        Route::get('/program-dashboard-datatables', [Admin\ProgramController::class, 'datatablesProgramDashboard'])->name('program.dashboard.datatables');
-        Route::get('/report/settlement/mutation-datatables', [Admin\ReportController::class, 'datatablesMutation'])->name('report.mutation.datatables');
-        Route::get('/report/settlement/transaction-datatables', [Admin\ReportController::class, 'datatablesTransaction'])->name('report.transaction.datatables');
+        Route::get('/program-dashboard-datatables', [Admin\ProgramController::class, 'datatablesProgramDashboard'])
+                    ->name('program.dashboard.datatables');
+        Route::get('/fundraiser-dashboard-datatables', [Admin\DonateController::class, 'datatablesFundraiserDashboard'])
+                    ->name('fundraiser.dashboard.datatables');
+        Route::get('/report/settlement/mutation-datatables', [Admin\ReportController::class, 'datatablesMutation'])
+                    ->name('report.mutation.datatables');
+        Route::get('/report/settlement/transaction-datatables', [Admin\ReportController::class, 'datatablesTransaction'])
+                    ->name('report.transaction.datatables');
         Route::get('/chat-datatables', [Admin\ChatController::class, 'datatablesChat'])->name('chat.datatables');
 
         Route::get('/program-show-donate', [Admin\ProgramController::class, 'showDonate'])->name('program.show.donate');

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Program;
 use App\Models\Transaction;
+use App\Models\TrackingVisitor;
+
 use DataTables;
 
 class ProgramController extends Controller
@@ -24,6 +26,18 @@ class ProgramController extends Controller
     public function create()
     {
         return view('admin.program.create');
+    }
+
+    /**
+     * Store image content
+     */
+    public function storeImagecontent(Request $request)
+    {
+        // upload image content-1
+        $file            = $request->file('thumbnail');
+        $filename        = 'thumbnail_'.$filename.'.'.$file->guessExtension();
+        $file->move(public_path('public/images/program/content'), $filename);
+        $data->thumbnail = $filename;
     }
 
     /**
@@ -54,8 +68,6 @@ class ProgramController extends Controller
         $data->end_date         = $request->date_end;
         $data->short_desc       = $request->caption;
         $data->about            = $request->story;
-        $data->thumbnail        = 'thumbnail'; //$request->thumbnail;
-        $data->image            = 'img.jpg'; //$request->img;
 
         if($request->show == 1){
             $data->is_publish       = 1;
@@ -75,10 +87,43 @@ class ProgramController extends Controller
             $data->is_show_home     = 0;
         }
 
-        $data->approved_at      = date('Y-m-d H:i:s');
-        $data->approved_by      = 1;
-        $data->created_by       = 1;
+        // upload image primary
+        $file              = $request->file('img');
+        $filename          = str_replace([' ', '-', '&', ':'], '_', trim($request->title));     // $file->getClientOriginalName();
+        $filename          = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
+        $file->move(public_path('public/images/program'), $filename);
+        $data->image       = $filename.'.'.$file->guessExtension();
+
+        // upload thumbnail
+        $file              = $request->file('thumbnail');
+        $filename          = 'thumbnail_'.$filename.'.'.$file->guessExtension();
+        $file->move(public_path('public/images/program'), $filename);
+        $data->thumbnail   = $filename;
+
+        $data->approved_at = date('Y-m-d H:i:s');
+        $data->approved_by = 1;
+        $data->created_by  = 1;
         $data->save();
+        $program_id        = $data->id;
+
+        // insert program categories
+        if(count($request->category)>1) {
+            for($i=0; $i<count($request->category); $i++) {
+                $data_categories                      = new \App\Models\ProgramCategories;
+                $data_categories->program_id          = $program_id;
+                $data_categories->program_category_id = $request->category[$i];
+                $data_categories->is_active           = 1;
+                $data_categories->save();
+
+                $data_categories = '';      // reset data tersimpan
+            }
+        } else {
+            $data_categories                      = new \App\Models\ProgramCategories;
+            $data_categories->program_id          = $program_id;
+            $data_categories->program_category_id = $request->category[0];
+            $data_categories->is_active           = 1;
+            $data_categories->save();
+        }
 
         echo "FINISHED";
         // return redirect()->back();
@@ -321,39 +366,50 @@ class ProgramController extends Controller
                     return $prime1.'<br>'.$prime2.'<br>'.$prime3;
                 })
                 ->addColumn('stats', function($row){
-                    $view        = "<i class='fa fa-eye icon-gradient bg-malibu-beach'></i> ".number_format($row->count_view);
-                    $read_more   = "<i class='fa fa-angle-double-down icon-gradient bg-malibu-beach'></i> ".number_format($row->count_read_more);
-                    $amount_page = "<i class='fa fa-download icon-gradient bg-malibu-beach'></i> ".number_format($row->count_amount_page);
+                    $count_view         = TrackingVisitor::where('program_id', $row->id)->where('page_view', 'landing_page')
+                                        ->where('created_at', 'like', date('Y-m-d').'%')->count();
+                    $count_amount_page  = TrackingVisitor::where('program_id', $row->id)->where('page_view', 'amount')
+                                        ->where('created_at', 'like', date('Y-m-d').'%')->count();
+                    $count_payment_page = TrackingVisitor::where('program_id', $row->id)->where('page_view', 'payment_type')
+                                        ->where('created_at', 'like', date('Y-m-d').'%')->count();
 
-                    if($row->count_view>0 && $row->count_amount_page>0) {
-                        $amount_per  = round($row->count_amount_page/$row->count_view*100, 2);
+                    $view         = "<i class='fa fa-eye icon-gradient bg-malibu-beach'></i> ".number_format($count_view);
+                    $amount_page  = "<i class='fa fa-money-bill icon-gradient bg-malibu-beach'></i> ".number_format($count_amount_page);
+                    $payment_page = "<i class='fa fa-credit-card icon-gradient bg-malibu-beach'></i> ".number_format($count_payment_page);
+
+                    if($count_view>0 && $count_amount_page>0) {
+                        $amount_per  = round($count_amount_page/$count_view*100, 2);
                     } else {
                         $amount_per  = 0;
                     }
 
-                    if($row->count_view>0 && $row->count_read_more>0) {
-                        $read_more_per  = round($row->count_read_more/$row->count_view*100, 2);
+                    if($count_view>0 && $count_payment_page>0) {
+                        $count_payment_page_per  = round($count_payment_page/$count_view*100, 2);
                     } else {
-                        $read_more_per  = 0;
+                        $count_payment_page_per  = 0;
                     }
                     
-                    
-                    
-                    return $view.'<br>'.$read_more.' ('.$read_more_per.'%) <br>'.$amount_page.' ('.$amount_per.'%)';
+                    return $view.'<br>'.$amount_page.' ('.$amount_per.'%) <br>'.$payment_page.' ('.$count_payment_page_per.'%)';
                 })
                 ->addColumn('donate', function($row){
-                    $interest = "<i class='fa fa-file icon-gradient bg-malibu-beach'></i> ".number_format($row->count_pra_checkout);
-                    $checkout = \App\Models\Transaction::where('program_id', $row->id)->count('id');
-                    $count    = \App\Models\Transaction::where('program_id', $row->id)->where('status', 'success')->count('id');
+                    $count_view      = TrackingVisitor::where('program_id', $row->id)->where('page_view', 'landing_page')
+                                        ->where('created_at', 'like', date('Y-m-d').'%')->count();
+                    $count_form_page = TrackingVisitor::where('program_id', $row->id)->where('page_view', 'form')
+                                        ->where('created_at', 'like', date('Y-m-d').'%')->count();
+
+                    $interest = "<i class='fa fa-file icon-gradient bg-malibu-beach'></i> ".number_format($count_form_page);
+                    $checkout = \App\Models\Transaction::where('program_id', $row->id)->where('created_at', 'like', date('Y-m-d').'%')->count('id');
+                    $count    = \App\Models\Transaction::where('program_id', $row->id)->where('status', 'success')
+                                ->where('created_at', 'like', date('Y-m-d').'%')->count('id');
                     
-                    if($row->count_view>0 && $row->count_pra_checkout>0) {
-                        $interest_per  = round($row->count_pra_checkout/$row->count_view*100, 2);
+                    if($count_view>0 && $count_form_page>0) {
+                        $interest_per  = round($count_form_page/$count_view*100, 2);
                     } else {
                         $interest_per  = 0;
                     }
 
-                    if($checkout>0 && $row->count_view>0) {
-                        $checkout_per = round($checkout/$row->count_view*100, 2);
+                    if($checkout>0 && $count_view>0) {
+                        $checkout_per = round($checkout/$count_view*100, 2);
                     } else {
                         $checkout_per = 0;
                     }

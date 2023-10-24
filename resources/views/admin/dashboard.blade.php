@@ -240,6 +240,34 @@
                     </div>
                 </div>
             </div>
+            <div class="col-md-12">
+                <div class="main-card mb-3 card">
+                    <div class="card-header">
+                        Fundraiser
+                        <div class="btn-actions-pane-right">
+                            <div role="group" class="btn-group-sm btn-group">
+                                <button class="active btn btn-info" id="refresh_table_fundraiser">Refresh Table</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive px-3 mt-3 mb-3">
+                        <table id="table-fundraiser" class="table table-hover table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>REF CODE</th>
+                                    <th>TOTAL</th>
+                                    <th>00:00 - 04:59</th>
+                                    <th>05:00 - 08:59</th>
+                                    <th>09:00 - 16:59</th>
+                                    <th>17:00 - 23:59</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
         
     </div>
@@ -360,6 +388,32 @@
 
     $("#refresh_table").on("click", function() {
         table.ajax.reload();
+    });
+
+
+    var table_fundraiser = $('#table-fundraiser').DataTable({
+        processing: true,
+        serverSide: true,
+        responsive: true,
+        autoWidth: false,
+        pageLength : 25,
+        // columnDefs: [
+        //     { "width": "22%", "targets": 0 }
+        // ],
+        order: [[1, 'desc']],
+        ajax: "{{ route('adm.fundraiser.dashboard.datatables').'/?date='.date('Y-m-d') }}",
+        columns: [
+            {data: 'name', name: 'name'},
+            {data: 'total', name: 'total'},
+            {data: 'sesi1', name: 'sesi1'},
+            {data: 'sesi2', name: 'sesi2'},
+            {data: 'sesi3', name: 'sesi3'},
+            {data: 'sesi4', name: 'sesi4'},
+        ]
+    });
+
+    $("#refresh_table_fundraiser").on("click", function() {
+        table_fundraiser.ajax.reload();
     });
 
     function showDonate(id, title) {

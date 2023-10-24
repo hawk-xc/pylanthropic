@@ -10,6 +10,8 @@ use App\Models;
 use App\Models\Program;
 use App\Models\Transaction;
 use App\Models\ProgramInfo;
+use App\Models\TrackingVisitor;
+
 use App\Http\Controllers\FormatDateController;
 
 class ProgramController extends Controller
@@ -43,6 +45,21 @@ class ProgramController extends Controller
             $donate->map(function($donate, $key) {
                         return $donate->date_string = (new FormatDateController)->timeDonate($donate->created_at);
                     });
+
+            // insert tracking visitor
+            TrackingVisitor::create([
+                'program_id'      => $program->id,
+                'visitor_code'    => 1,
+                'page_view'       => 'landing_page',
+                'nominal'         => 0,
+                'payment_type_id' => null,
+                'ref_code'        => (isset($request->ref)) ? strip_tags($request->ref) : null,
+                'utm_source'      => (isset($request->a)) ? strip_tags($request->a) : null,
+                'utm_medium'      => (isset($request->as)) ? strip_tags($request->as) : null,
+                'utm_campaign'    => null,
+                'utm_content'     => (isset($request->k)) ? strip_tags($request->k) : null
+            ]);
+
             return view('public.program', 
                     compact('program', 'sum_amount', 'count_donate', 'sum_news', 'count_payout', 'info', 'donate'));
         } else {
