@@ -23,6 +23,8 @@ Route::get('/donatur/wa-dorman', [Admin\DonaturController::class, 'waDorman']);
 Route::get('/donatur/wa-summary-donate', [Admin\DonaturController::class, 'waSummaryDonate']);
 // FU Trans ke-2
 Route::get('/donatur/wa-fu-2', [Admin\DonateController::class, 'donateFu2Sc']);
+// TELEGRAM NOTIFICATION
+Route::post('/notification/telegram/{invoice}', [Guest\DonateController::class, 'sendNotifTelegram'])->name('notif.telegram.newdonate');
 
 Route::group([
     'as'     => 'adm.',   // for route(adm.xx)

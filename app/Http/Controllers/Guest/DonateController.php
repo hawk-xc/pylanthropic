@@ -763,6 +763,44 @@ Terimakasih';
     }
 
     /**
+     * Send Notification to Telegram Group "Donate - Bantubersama"
+     */
+    public function sendNotifTelegram($invoice='')
+    {
+        $data = Transaction::select('transaction.*', 'donatur.name as name', 'donatur.telp', 'program.title', 'payment_type.name as payment_name')
+                    ->join('program', 'program.id', 'transaction.program_id')
+                    ->join('donatur', 'donatur.id', 'transaction.donatur_id')
+                    ->join('payment_type', 'payment_type.id', 'transaction.payment_type_id')
+                    ->where('invoice_number', $invoice)->first();
+        if(isset($data->telp)) {
+            $chat1     = "ALHAMDULILLAH
+Donasi baru *Rp.".str_replace(',', '.', number_format($data->nominal_final))."*
+melalui *".$data->payment_name."*
+atas nama *".$data->name." - ".$data->telp."* 
+untuk program *".$data->title."*";
+
+            $count_all    = Transaction::select('id')->where('created_at', 'like', date('Y-m-d').'%')->count();
+            $sum_all      = Transaction::select('id')->where('created_at', 'like', date('Y-m-d').'%')->sum('nominal_final');
+            $count_paid   = Transaction::select('id')->where('created_at', 'like', date('Y-m-d').'%')->where('status', 'success')->count();
+            $sum_paid     = Transaction::select('id')->where('created_at', 'like', date('Y-m-d').'%')->where('status', 'success')->sum('nominal_final');
+            $count_unpaid = Transaction::select('id')->where('created_at', 'like', date('Y-m-d').'%')->where('status', '<>', 'success')->count();
+            $sum_unpaid   = Transaction::select('id')->where('created_at', 'like', date('Y-m-d').'%')->where('status', '<>', 'success')->sum('nominal_final');
+
+            $chat2     = "
+
+*Today Report ".date('d-m-Y')."*
+Total Donasi : ".number_format($count_all)." - Rp.".str_replace(',', '.', number_format($sum_all))."
+Donasi Dibayar : ".number_format($count_paid)." - Rp.".str_replace(',', '.', number_format($sum_paid))."
+Donasi Belum Dibayar : ".number_format($count_unpaid)." - Rp.".str_replace(',', '.', number_format($sum_unpaid));
+
+            // ID GROUP Telegram "Donate - Bantubersama"    = -4062835663
+            (new \App\Http\Controllers\TelegramController)->sendMessage('-4062835663', $chat1.$chat2);
+        }
+        
+    }
+
+
+    /**
      * Format phone number of the resource.
      */
     public function formatTelp($number='')

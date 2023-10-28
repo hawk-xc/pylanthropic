@@ -100,6 +100,7 @@
                     <label class="form-label fw-semibold">Cerita Singkat (caption)</label>
                     <input type="text" class="form-control form-control-sm" name="caption" placeholder="Yuk bantu warga desa Meranti untuk memiliki masjid satu-satunya.">
                 </div>
+                <!-- START IMAGE IN CONTENT -->
                 <div class="col-4">
                     <label class="form-label fw-semibold">Gambar Dalam Konten 1 (580 x ~ px)</label>
                     <div class="input-group">
@@ -133,6 +134,7 @@
                         <div class="col-2 text-end"><a href="#"><i class="fa fa-copy"></i></a></div>
                     </div>
                 </div>
+                <!-- END IMAGE IN CONTENT -->
                 <div class="col-12">
                     <label class="form-label fw-semibold">Cerita Lengkap (min 3 paragfar dan 1 foto)</label>
                     <textarea class="form-control form-control-sm" name="story" id="editor" row="12"></textarea>

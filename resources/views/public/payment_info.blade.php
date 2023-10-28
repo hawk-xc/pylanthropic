@@ -353,6 +353,23 @@
   @endif
 
   <script type="text/javascript">
+    $(document).ready(function(){
+        setTimeout( function () {
+            window.history.pushState(null,"", );
+            $.ajax({
+              type: "POST",
+              url: "{{ route('notif.telegram.newdonate', $transaction->invoice_number) }}",
+              data: {
+                "_token": "{{ csrf_token() }}"
+              },
+              success: function(data)
+              {
+                console.log(data);
+              }
+            });
+        }, 3000 );
+    });
+
     $("#download_qris").on("click", function() {
       var link = document.createElement("a");
       link.setAttribute('download', '');
