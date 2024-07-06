@@ -43,7 +43,7 @@
         </div>
         <h5 class="text-center fw-medium mt-4">Terimakasih</h5>
         <div class="fs-15 mt-3 text-center">
-            <p style="color:#212529;">Sudah peduli dan ingin membantu warga sekitar yang mempercayakannya kepada <strong></strong>Nucare Lazisnu D.I.Y x Bantubersama.com</strong></p>
+            <p style="color:#212529;">Sudah peduli dan ingin membantu warga sekitar yang mempercayakannya kepada <strong>Bantubersama.com</strong></p>
             <p style="color:#212529;">Pengajuan Anda sudah kami terima dan segera kami lakukan verifikasi. Agar berkenan dalam waktu dekat akan kami hubungi untuk mengerti lebih detail program yang diajukan.</p>
             <p style="color:#212529;">Semangat Peduli Sesama, Berkah Buat Kita Semua</p>
         </div>

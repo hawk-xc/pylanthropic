@@ -8,6 +8,19 @@
 
 @section('css_plugins')
     <link href="{{ asset('admin/dataTables.bootstrap5.min.css') }}" rel="stylesheet">
+    <style type="text/css">
+        .big-checkbox .form-check-input {
+            width: 22px;
+            height: 22px;
+            margin-top: 5px;
+        }
+        .big-checkbox .form-check-label {
+            margin-left: 8px;
+            margin-top: 4px;
+        }
+        .widget-chart { padding:8px !important;  }
+        .widget-chart .widget-numbers { margin: 12px auto 14px auto; }
+    </style>
 @endsection
 
 
@@ -17,14 +30,11 @@
             <div class="col-lg-12 col-xl-8">
                 <div class="main-card mb-3 card">
                     <div class="card-body">
-                        <h5 class="card-title">Donate Report</h5>
-                        <!-- <div class="widget-chart-wrapper widget-chart-wrapper-lg opacity-10 m-0">
-                            <div style="height: 227px;">
-                                <canvas id="line-chart"></canvas>
-                            </div>
+                        <div class="card-header p-0" style="border-bottom: 0px; height: auto;">
+                            Donate Report
+                            <div class="btn-actions-pane-right">AVG/Day : Rp.{{ str_replace(',', '.', number_format($sum_paid_now/date('d'))) }}</div>
                         </div>
-                        <h5 class="card-title">Target Sales</h5> -->
-                        <div class="mt-3 row">
+                        <div class="row mt-3">
                             <div class="col-sm-12">
                                 <table class="table table-hover table-responsive mb-1">
                                     <thead>
@@ -41,7 +51,7 @@
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td>JML Donasi Dibayar</td>
+                                            <td>JML Dibayar</td>
                                             <td>{{ number_format($donate_success[0]) }}</td>
                                             <td>{{ number_format($donate_success[1]) }}</td>
                                             <td>{{ number_format($donate_success[2]) }}</td>
@@ -51,7 +61,7 @@
                                             <td>{{ number_format($donate_success[6]) }}</td>
                                         </tr>
                                         <tr>
-                                            <td>Rp Donasi Dibayar</td>
+                                            <td>Rp Dibayar</td>
                                             <td>{{ number_format($donate_success_rp[0]) }}</td>
                                             <td>{{ number_format($donate_success_rp[1]) }}</td>
                                             <td>{{ number_format($donate_success_rp[2]) }}</td>
@@ -61,7 +71,7 @@
                                             <td>{{ number_format($donate_success_rp[6]) }}</td>
                                         </tr>
                                         <tr>
-                                            <td>Donasi Blm Dibayar</td>
+                                            <td>JML Blm Dibayar</td>
                                             <td>{{ number_format($donate_draft[0]) }}</td>
                                             <td>{{ number_format($donate_draft[1]) }}</td>
                                             <td>{{ number_format($donate_draft[2]) }}</td>
@@ -71,7 +81,7 @@
                                             <td>{{ number_format($donate_draft[6]) }}</td>
                                         </tr>
                                         <tr>
-                                            <td>Donasi Blm Dibayar Rp</td>
+                                            <td>Rp Blm Dibayar</td>
                                             <td>{{ number_format($donate_draft_rp[0]) }}</td>
                                             <td>{{ number_format($donate_draft_rp[1]) }}</td>
                                             <td>{{ number_format($donate_draft_rp[2]) }}</td>
@@ -83,64 +93,6 @@
                                     </tbody>
                                 </table>
                             </div>
-
-                            <!-- <div class="col-sm-12 col-md-4">
-                                <div class="widget-content p-0">
-                                    <div class="widget-content-outer">
-                                        <div class="widget-content-wrapper">
-                                            <div class="widget-content-left">
-                                                <div class="widget-numbers text-dark">65%</div>
-                                            </div>
-                                        </div>
-                                        <div class="widget-progress-wrapper mt-1">
-                                            <div class="progress-bar-xs progress-bar-animated-alt progress">
-                                                <div class="progress-bar bg-info" role="progressbar" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100" style="width: 65%;"></div>
-                                            </div>
-                                            <div class="progress-sub-label">
-                                                <div class="sub-label-left font-size-md">Sales</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-12 col-md-4">
-                                <div class="widget-content p-0">
-                                    <div class="widget-content-outer">
-                                        <div class="widget-content-wrapper">
-                                            <div class="widget-content-left">
-                                                <div class="widget-numbers text-dark">22%</div>
-                                            </div>
-                                        </div>
-                                        <div class="widget-progress-wrapper mt-1">
-                                            <div class="progress-bar-xs progress-bar-animated-alt progress">
-                                                <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="22" aria-valuemin="0" aria-valuemax="100" style="width: 22%;"></div>
-                                            </div>
-                                            <div class="progress-sub-label">
-                                                <div class="sub-label-left font-size-md">Profiles</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-sm-12 col-md-4">
-                                <div class="widget-content p-0">
-                                    <div class="widget-content-outer">
-                                        <div class="widget-content-wrapper">
-                                            <div class="widget-content-left">
-                                                <div class="widget-numbers text-dark">83%</div>
-                                            </div>
-                                        </div>
-                                        <div class="widget-progress-wrapper mt-1">
-                                            <div class="progress-bar-xs progress-bar-animated-alt progress">
-                                                <div class="progress-bar bg-success" role="progressbar" aria-valuenow="83" aria-valuemin="0" aria-valuemax="100" style="width: 83%;"></div>
-                                            </div>
-                                            <div class="progress-sub-label">
-                                                <div class="sub-label-left font-size-md">Tickets</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div> -->
                         </div>
                     </div>
                 </div>
@@ -213,6 +165,16 @@
             </div>
         </div>
         <div class="row">
+            <div class="col-md-12">
+                <div class="main-card mb-3 card">
+                    <div class="card-header">
+                        Statistik Pengunjung Keseluruhan
+                    </div>
+                    <div class="card-body">
+                        <canvas id="myChart"></canvas>
+                    </div>
+                </div>
+            </div>
             <div class="col-md-12">
                 <div class="main-card mb-3 card">
                     <div class="card-header">
@@ -321,6 +283,21 @@
             </div>
             <div class="modal-body text-center pt-4">
                 <div id="modalBodySpend"></div>
+                <div class="table-responsive mt-1 mb-2">
+                    <table id="table-spent" class="table table-hover table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Judul</th>
+                                <th>Nominal</th>
+                                <th>Status</th>
+                                <th>Keterangan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
                 <div class="row gy-1 mt-3">
                     <div class="col-12">
                         <hr>
@@ -332,17 +309,20 @@
                     <div class="col-4">
                         <input type="text" name="title" id="title" class="form-control form-control-sm" value="Iklan FB">
                     </div>
-                    <div class="col-4">
+                    <div class="col-3">
                         <input type="datetime-local" name="date" id="date_time" class="form-control form-control-sm" value="{{ date('Y-m-d H:i') }}">
                     </div>
-                    <div class="col-4">
-                        <!-- <input type="text" name="nominal" class="form-control form-control-sm" id="rupiah" value=""> -->
-                        <!-- <div class="d-flex"> -->
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text">RP</span>
-                                <input class="form-control form-control-sm" id="rupiah" name="amount" placeholder="0" type="text" value=""/>
-                            </div>
-                        <!-- </div> -->
+                    <div class="col-3">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">RP</span>
+                            <input class="form-control form-control-sm" id="rupiah" name="amount" placeholder="0" type="text" value=""/>
+                        </div>
+                    </div>
+                    <div class="col-2 text-start">
+                        <div class="form-check big-checkbox">
+                            <input class="form-check-input" type="checkbox" value="" id="check11percent">
+                            <label class="form-check-label" for="check11percent">+ 11%</label>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -360,11 +340,69 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 @endsection
 
 
 @section('js_inline')
     <script type="text/javascript">
+    let tgl        = [];
+    let tgl_before = new Date();
+    tgl            = [tgl_before.getDate() + '-' + tgl_before.getMonth()];
+    for(i=1; i<30; i++) {
+        let tgl_before = new Date(Date.now() - i*24*60*60*1000);
+        tgl.push(tgl_before.getDate() + '-' + tgl_before.getMonth());
+    }
+
+    function getStatsVisitor(type_page) {
+        var tmp = null;
+        $.ajax({
+            async: false,
+            global: false,
+            type: "GET",
+            url: "{{ route('adm.program.visitor.stats') }}",
+            data: {'type':type_page, 'row':30},
+            success: function (data) {
+                tmp = data;
+            }
+        });
+        return tmp;
+    }
+
+    new Chart(document.getElementById('myChart'), {
+        type: 'line',
+        data: {
+            labels: tgl,
+            datasets: [{
+                label: 'Visit LP',
+                // data: getStatsVisitor('landing_page'),
+                data: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+                borderColor: 'rgb(170, 215, 217)',
+                tension: 0.1
+            },
+            {
+                label: 'Klik Donasi',
+                // data: getStatsVisitor('amount'),
+                data: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+                borderColor: 'rgb(40, 169, 224)',
+                tension: 0.13
+            },
+            {
+                label: 'Donasi/Transaksi',
+                // data: getStatsVisitor('donate'),
+                data: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+                borderColor: 'rgb(255, 181, 52)',
+                tension: 0.15
+            },
+            {
+                label: 'Dibayar',
+                // data: getStatsVisitor('paid'),
+                data: [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10],
+                borderColor: 'rgb(139, 197, 61)',
+                tension: 0.18
+            }]
+        }
+    });
 
     var table = $('#table-donatur').DataTable({
         processing: true,
@@ -375,7 +413,8 @@
         columnDefs: [
             { "width": "22%", "targets": 0 }
         ],
-        order: [[4, 'desc']],
+        // order: [[4, 'desc']],
+        order: [],
         ajax: "{{ route('adm.program.dashboard.datatables').'/?is_publish=1' }}",
         columns: [
             {data: 'title', name: 'title'},
@@ -389,7 +428,6 @@
     $("#refresh_table").on("click", function() {
         table.ajax.reload();
     });
-
 
     var table_fundraiser = $('#table-fundraiser').DataTable({
         processing: true,
@@ -492,21 +530,47 @@
         $("#modalTitleSpend").html(title);
         $("#id_program").val(id);
         
-        $.ajax({
-            type: "POST",
-            url: "{{ route('adm.program.spend.show') }}",
-            data: {
-              "_token": "{{ csrf_token() }}",
-              "id": id
-            },
-            success: function(data){
-                $("#modalBodySpend").html(data);
-            }
-        });
+        table_spent.ajax.url("{{ route('adm.program.spend.show').'/?id=' }}"+id).load();
 
         let myModal = new bootstrap.Modal(document.getElementById('modal_inp_spend'));
         myModal.show();
     }
+
+    var table_spent = $('#table-spent').DataTable({
+        processing: true,
+        serverSide: true,
+        responsive: true,
+        autoWidth: false,
+        pageLength : 10,
+        order: [[0, 'desc']],
+        ajax: "{{ route('adm.program.spend.show').'/?id=1' }}",
+        columns: [
+            {data: 'date', name: 'date'},
+            {data: 'title', name: 'title'},
+            {data: 'nominal', name: 'nominal'},
+            {data: 'status', name: 'status'},
+            {data: 'desc', name: 'desc'},
+        ]
+    });
+
+    $("#check11percent").on("click", function() {
+        var val_rupiah = $('#rupiah').val();
+        val_rupiah     = val_rupiah.replaceAll(".", "");
+        val_rupiah     = Number(val_rupiah);
+        var rupiah_11  = Math.ceil(val_rupiah*11/100);
+        console.log(val_rupiah);
+
+        if ($('#check11percent').is(':checked')) {
+            console.log(rupiah_11);
+            $('#rupiah').val(val_rupiah + rupiah_11);
+            let rupiah_fix = formatRupiah( document.getElementById("rupiah").value, "");
+            $('#rupiah').val(rupiah_fix);
+        } else {
+            $('#rupiah').val(val_rupiah - rupiah_11);
+            let rupiah_fix = formatRupiah( document.getElementById("rupiah").value, "");
+            $('#rupiah').val(rupiah_fix);
+        }
+    });
 
     var rupiah = document.getElementById("rupiah");
     rupiah.addEventListener("keyup", function(e) {

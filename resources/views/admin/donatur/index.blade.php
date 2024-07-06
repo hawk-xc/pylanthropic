@@ -27,8 +27,9 @@
                     </nav>
                 </div>
                 <div class="col-7 fc-rtl">
-                    <button class="btn btn-outline-primary"><i class="fa fa-filter mr-1"></i> Filter</button>
-                    <a href="#" class="btn btn-outline-primary"><i class="fa fa-plus mr-1"></i> Tambah Donatur</a>
+                    <button class="btn btn-outline-primary">WA Aktif</button>
+                    <button class="btn btn-outline-primary">Mau</button>
+                    <a href="#" class="btn btn-outline-primary"><i class="fa fa-plus mr-1"></i> Tambah</a>
                 </div>
             </div>
             <div class="divider"></div>
@@ -66,7 +67,7 @@
         processing: true,
         serverSide: true,
         responsive: true,
-        order: [[2, 'desc']],
+        order: [],
         ajax: "{{ route('adm.donatur.datatables') }}",
         columns: [
             {data: 'name', name: 'name'},

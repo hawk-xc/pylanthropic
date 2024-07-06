@@ -29,6 +29,10 @@ class RouteServiceProvider extends ServiceProvider
         $this->routes(function () {
             Route::domain('nucare.bantubersama.com')
                 ->group(base_path('routes/nucare_web.php'));
+            Route::domain('galang-dana.bantubersama.com')
+                ->group(base_path('routes/galangdana.php'));
+            Route::domain('qurban.bantubersama.com')
+                ->group(base_path('routes/qurban.php'));
                 
             Route::middleware('api')
                 ->prefix('api')

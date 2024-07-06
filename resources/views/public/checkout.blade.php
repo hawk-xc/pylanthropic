@@ -4,7 +4,7 @@
 
 
 @section('css_plugins')
-  <!-- Meta Pixel Code -->
+<!-- Meta Pixel Code -->
     <script>
       !function(f,b,e,v,n,t,s)
       {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -16,50 +16,60 @@
       'https://connect.facebook.net/en_US/fbevents.js');
       fbq.disablePushState = true;
       fbq('init', '2596008717326722');
-      fbq('init', '586907076711934');
-      fbq('init', '1278491429470122');
-      fbq('init', '1352154889054298');
+      // belum clear masih banyak typo / gak sesuai list value param a kalau lihat di DB
+      <?php 
+      if(isset($_GET['a'])) {
+        if($_GET['a']=='il1') {
+          echo "fbq('init', '1352154889054298');";
+          $pixel_id = "1352154889054298";
+        } elseif($_GET['a']=='bb4' || $_GET['a']=='BB4') {
+          echo "fbq('init', '1278491429470122');";
+          $pixel_id = "1278491429470122";
+        } elseif($_GET['a']=='bb1' || $_GET['a']=='bb2' || $_GET['a']=='bb3') {
+          echo "fbq('init', '586907076711934');";
+          $pixel_id = "586907076711934";
+        } else {
+          echo "fbq('init', '586907076711934');";   // akun 1, 2, 3
+          echo "fbq('init', '1278491429470122');";  // akun 4
+          echo "fbq('init', '1352154889054298');";  // ilyas
+          $pixel_id = "2596008717326722";
+        }
+      } else {
+        echo "fbq('init', '586907076711934');";   // akun 1, 2, 3
+        echo "fbq('init', '1278491429470122');";  // akun 4
+        echo "fbq('init', '1352154889054298');";  // ilyas
+        $pixel_id = "2596008717326722";
+      }
+      ?>
       fbq('track', 'InitiateCheckout');
       window.loadedPixel = []
     </script>
-  <!-- End Meta Pixel Code -->
-
-  <!-- Meta Pixel Code -->
-  <script>
-    !function(f,b,e,v,n,t,s)
-    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-    n.queue=[];t=b.createElement(e);t.async=!0;
-    t.src=v;s=b.getElementsByTagName(e)[0];
-    s.parentNode.insertBefore(t,s)}(window, document,'script',
-    'https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', '');
-    fbq('track', 'InitiateCheckout');
-  </script>
-  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=3496745097262004&ev=InitiateCheckout&noscript=1" /></noscript>
+  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{$pixel_id}}&ev=InitiateCheckout&noscript=1" /></noscript>
   <!-- End Meta Pixel Code -->
   
-  <!-- Tiktok Analytic Code -->
-  <script>
-    !function (w, d, t) {
-      w.TiktokAnalyticsObject=t;
-      var ttq=w[t]=w[t]||[];
-      ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};
-      for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);
-      ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};
-      var o=document.createElement("script");
-      o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;
-      var a=document.getElementsByTagName("script")[0];
-      a.parentNode.insertBefore(o,a)};
-    
-      ttq.load('CJ86D3BC77UC183801KG');
-      ttq.track('InitiateCheckout');
-      ttq.page();
-    }(window, document, 'ttq');
-  </script>
-  <!-- End Tiktok Analytic Code -->
-  </script>
+
+  @if(false)
+    <!-- Tiktok Analytic Code -->
+    <script>
+      !function (w, d, t) {
+        w.TiktokAnalyticsObject=t;
+        var ttq=w[t]=w[t]||[];
+        ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};
+        for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);
+        ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};
+        var o=document.createElement("script");
+        o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;
+        var a=document.getElementsByTagName("script")[0];
+        a.parentNode.insertBefore(o,a)};
+      
+        ttq.load('CJ86D3BC77UC183801KG');
+        ttq.track('InitiateCheckout');
+        ttq.page();
+      }(window, document, 'ttq');
+    </script>
+    <!-- End Tiktok Analytic Code -->
+  @endif
+
 @endsection
 
 

@@ -37,101 +37,115 @@
             <form action="{{ route('adm.program.store') }}" method="post" enctype="multipart/form-data" accept-charset="utf-8" class="row gy-3">
                 @csrf
                 <div class="col-12">
-                    <label class="form-label fw-semibold">Judul Program (max 50 karakter)</label>
-                    <input type="text" class="form-control form-control-sm" name="title" id="program_title">
+                    <label class="form-label fw-semibold">Judul Program (max 75 karakter) - <span id="count_title" class="fw-normal"></span></label>
+                    <input type="text" class="form-control form-control-sm" name="title" id="program_title" required>
                 </div>
                 <div class="col-12">
-                    <label class="form-label fw-semibold">URL Program ({{ url('/').'/disini_url' }})</label>
+                    <label class="form-label fw-semibold">URL Program (<span class="" id="status_url">Belum Dicek</span>)</label>
                     <div class="input-group input-group-sm">
                         <span class="input-group-text"><input type="checkbox" class="mr-2" id="edit_url"> Edit</span>
-                        <input type="text" class="form-control" name="url" placeholder="Username" id="url" readonly>
+                        <span class="input-group-text">{{ url('/') }}/</span>
+                        <input type="text" class="form-control" name="url" placeholder="bangunmasjidmandangin" id="url" readonly>
+                        <span class="input-group-text p-0"><button class="btn btn-sm btn-info" id="cek_url" type="button">Cek & Lanjut</button></span>
                     </div>
                 </div>
+
+                <div class="divider mt-4"></div>
+
                 <div class="col-12">
                     <label class="form-label fw-semibold">Kategori (boleh lebih dari 1 kategori)</label>
-                    <select class="form-control form-control-sm" name="category[]" id="kategori-select2"></select>
+                    <select class="form-control form-control-sm" name="category[]" id="kategori-select2" required></select>
                 </div>
                 <div class="col-6">
                     <label class="form-label fw-semibold">Lembaga</label>
-                    <select class="form-control form-control-sm" name="organization" id="lembaga-select2"></select>
+                    <select class="form-control form-control-sm" name="organization" id="lembaga-select2" required></select>
                 </div>
                 <div class="col-6">
                     <label class="form-label fw-semibold">Nominal Pengajuan</label>
                     <div class="input-group input-group-sm">
                         <span class="input-group-text">Rp. </span>
-                        <input type="text" class="form-control" name="nominal" id="rupiah" placeholder="100.000.000">
+                        <input type="text" class="form-control" name="nominal" id="rupiah" placeholder="100.000.000" required>
                     </div>
                 </div>
                 <div class="col-6">
                     <label class="form-label fw-semibold">Tanggal Berakhir</label>
                     <div class="input-group input-group-sm">
                         <span class="input-group-text"><input type="checkbox" class="mr-2" id="forever_checked"> Selamanya</span>
-                        <input type="date" class="form-control form-control-sm" id="forever" name="date_end">
+                        <input type="date" class="form-control form-control-sm" id="forever" min="{{ date('Y-m-d') }}" name="date_end" required>
                     </div>
                 </div>
                 <div class="col-6">
                     <label class="form-label fw-semibold">Status Tampil</label><br>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" name="show" type="radio" id="inlineCheckbox1" value="1">
-                        <label class="form-check-label" for="inlineCheckbox1">Tampil Biasa</label>
+                        <input class="form-check-input" name="show" type="radio" id="tampil_biasa" value="1">
+                        <label class="form-check-label" for="tampil_biasa">Tampil Biasa</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" name="show" type="radio" id="inlineCheckbox1" value="2">
-                        <label class="form-check-label" for="inlineCheckbox1">Tampil Pilihan</label>
+                        <input class="form-check-input" name="show" type="radio" id="tampil_pilihan" value="2">
+                        <label class="form-check-label" for="tampil_pilihan">Tampil Pilihan</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" name="show" type="radio" id="inlineCheckbox1" value="3">
-                        <label class="form-check-label" for="inlineCheckbox1">Tampil Terbaru</label>
+                        <input class="form-check-input" name="show" type="radio" id="tampil_terbaru" value="3">
+                        <label class="form-check-label" for="tampil_terbaru">Tampil Terbaru</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" name="show" type="radio" id="inlineCheckbox1" value="4">
-                        <label class="form-check-label" for="inlineCheckbox1">Sembunyikan</label>
+                        <input class="form-check-input" name="show" type="radio" id="tampil_sembunyikan" value="4">
+                        <label class="form-check-label" for="tampil_sembunyikan">Sembunyikan</label>
                     </div>
-                </div>
-                <div class="col-6">
-                    <label class="form-label fw-semibold">Thumbnail (292 x 156 px)</label>
-                    <input type="file" class="form-control form-control-sm" name="thumbnail">
-                </div>
-                <div class="col-6">
-                    <label class="form-label fw-semibold">Gambar Utama (600 x 320 px)</label>
-                    <input type="file" class="form-control form-control-sm" name="img">
                 </div>
                 <div class="col-12">
                     <label class="form-label fw-semibold">Cerita Singkat (caption)</label>
-                    <input type="text" class="form-control form-control-sm" name="caption" placeholder="Yuk bantu warga desa Meranti untuk memiliki masjid satu-satunya.">
+                    <input type="text" class="form-control form-control-sm" name="caption" placeholder="Yuk bantu warga desa Meranti untuk memiliki masjid satu-satunya." required>
                 </div>
+
+                <div class="divider mt-4"></div>
+
+                <div class="col-6">
+                    <label class="form-label fw-semibold">Thumbnail (292 x 156 px)</label>
+                    <input type="file" class="form-control form-control-sm" name="thumbnail" required>
+                </div>
+                <div class="col-6">
+                    <label class="form-label fw-semibold">Gambar Utama (600 x 320 px)</label>
+                    <input type="file" class="form-control form-control-sm" name="img_primary" required>
+                </div>
+
+                <div class="divider mt-4"></div>
+
                 <!-- START IMAGE IN CONTENT -->
                 <div class="col-4">
                     <label class="form-label fw-semibold">Gambar Dalam Konten 1 (580 x ~ px)</label>
                     <div class="input-group">
-                        <input type="file" name="img_content1" class="form-control form-control-sm" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2">
-                        <button class="btn btn-sm btn-outline-secondary" type="button" id="button-addon2">Upload</button>
+                        <input type="file" name="img_content1" class="form-control form-control-sm" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon1" id="img1">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="button-addon1">Upload</button>
                     </div>
                     <div class="row">
-                        <div class="col-10 fs-8">https://bantubersama.com/public/images/program/content/...</div>
-                        <div class="col-2 text-end"><a href="#"><i class="fa fa-copy"></i></a></div>
+                        <div class="col-10 fs-8" id="link_img1">no image</div>
+                        <div class="col-2 text-end"><a href="#" id="copy_img1"><i class="fa fa-copy"></i></a></div>
+                        <input type="hidden" name="link_img1" id="full_img1" value="">
                     </div>
                 </div>
                 <div class="col-4">
                     <label class="form-label fw-semibold">Gambar Dalam Konten 2 (580 x ~ px)</label>
                     <div class="input-group">
-                        <input type="file" name="img_content2" class="form-control form-control-sm" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2">
+                        <input type="file" name="img_content2" class="form-control form-control-sm" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2" id="img2">
                         <button class="btn btn-sm btn-outline-secondary" type="button" id="button-addon2">Upload</button>
                     </div>
                     <div class="row">
-                        <div class="col-10 fs-8">https://bantubersama.com/public/images/program/content/...</div>
-                        <div class="col-2 text-end"><a href="#"><i class="fa fa-copy"></i></a></div>
+                        <div class="col-10 fs-8" id="link_img2">no image</div>
+                        <div class="col-2 text-end"><a href="#" id="copy_img2"><i class="fa fa-copy"></i></a></div>
+                        <input type="hidden" name="link_img2" id="full_img2" value="">
                     </div>
                 </div>
                 <div class="col-4">
                     <label class="form-label fw-semibold">Gambar Dalam Konten 3 (580 x ~ px)</label>
                     <div class="input-group">
-                        <input type="file" name="img_content3" class="form-control form-control-sm" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2">
-                        <button class="btn btn-sm btn-outline-secondary" type="button" id="button-addon2">Upload</button>
+                        <input type="file" name="img_content3" class="form-control form-control-sm" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon3" id="img3">
+                        <button class="btn btn-sm btn-outline-secondary" type="button" id="button-addon3">Upload</button>
                     </div>
                     <div class="row">
-                        <div class="col-10 fs-8">https://bantubersama.com/public/images/program/content/...</div>
-                        <div class="col-2 text-end"><a href="#"><i class="fa fa-copy"></i></a></div>
+                        <div class="col-10 fs-8" id="link_img3">no image</div>
+                        <div class="col-2 text-end"><a href="#" id="copy_img3"><i class="fa fa-copy"></i></a></div>
+                        <input type="hidden" name="link_img3" id="full_img3" value="">
                     </div>
                 </div>
                 <!-- END IMAGE IN CONTENT -->
@@ -293,6 +307,18 @@
         } );
     });
 
+    $("#program_title").on("keyup change", function(){
+        var title = $(this).val();
+        var title = title.length;
+        if(title>75){
+            $("#count_title").html(title+' / 75');
+            $("#count_title").addClass('text-danger');
+        } else {
+            $("#count_title").html(title+' / 75');
+            $("#count_title").removeClass('text-warning');
+        }
+    });
+
     $("#program_title").on("blur", function(){
         var title = $(this).val();
         var title = title.toLowerCase();
@@ -304,12 +330,98 @@
         $("#url").val(title);
     });
 
+    $("#cek_url").on("click", function(){
+        var url_data = $('#url').val();
+
+        $.ajax({
+            url: "{{ route('adm.program.create.check_url') }}",
+            type: "POST",
+            headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'},
+            data: {
+              "url": url_data
+            },
+            success:function(data){
+                if(data=='valid'){
+                    console.log(data);
+                    $('#status_url').html('Valid');
+                    $('#status_url').removeClass('text-danger');
+                    $('#status_url').addClass('text-success');
+                } else {
+                    console.log(data);
+                    $('#status_url').html('Sudah Dipakai');
+                    $('#status_url').removeClass('text-success');
+                    $('#status_url').addClass('text-danger');
+                }
+                
+            },
+            error: function(data){
+                console.log("error");
+                console.log(data);
+            }
+        });
+    });
+
     $("#edit_url").on("click", function(){
         if ($("#edit_url").is(':checked')) {
             document.getElementById('url').removeAttribute('readonly');
         } else {
             document.getElementById('url').readOnly = true;
         }
+    });
+
+    $("#button-addon1").on("click", function(){
+        imageContentUpload('img1');
+        $(this).attr('disabled', 'disabled');
+    });
+
+    $("#button-addon2").on("click", function(){
+        imageContentUpload('img2');
+        $(this).attr('disabled', 'disabled');
+    });
+
+    $("#button-addon3").on("click", function(){
+        imageContentUpload('img3');
+        $(this).attr('disabled', 'disabled');
+    });
+
+    function imageContentUpload(img) {
+        var imgname =  $('input[name=title]').val();
+        var data    = new FormData();
+
+        data.append('file', $('#'+img)[0].files[0]);
+        data.append('name', imgname);
+        data.append('number', img);
+
+        $.ajax({
+            url: "{{ route('adm.program.image.content.submit') }}",
+            type: "POST",
+            headers: {'X-CSRF-TOKEN': '{{ csrf_token() }}'},
+            data: data,
+            enctype: 'multipart/form-data',
+            processData: false,
+            contentType: false,
+            success:function(data){
+                $('#link_'+img).html(data.link);
+                $('#full_'+img).val(data.full);
+            },
+            error: function(data){
+                console.log("error");
+                console.log(data);
+            }
+        });
+        return false;
+    }
+
+    $("#copy_img1").on("click", function(){
+        navigator.clipboard.writeText($('#full_img1').val());
+    });
+
+    $("#copy_img2").on("click", function(){
+        navigator.clipboard.writeText($('#full_img2').val());
+    });
+
+    $("#copy_img3").on("click", function(){
+        navigator.clipboard.writeText($('#full_img3').val());
     });
 
     var rupiah = document.getElementById("rupiah");

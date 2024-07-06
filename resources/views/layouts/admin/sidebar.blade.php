@@ -39,6 +39,45 @@
                 <li class="{{ $sidebar_menu == 'donate' ? 'mm-active' : '' }}">
                     <a href="{{ route('adm.donate.index') }}"> <i class="metismenu-icon pe-7s-cash icon-gradient bg-arielle-smile"></i> Donasi </a>
                 </li>
+                <li class="{{ $sidebar_menu == 'donate_mutation' ? 'mm-active' : '' }}">
+                    <a href="{{ route('adm.donate.mutation') }}"> <i class="metismenu-icon pe-7s-cash icon-gradient bg-arielle-smile"></i> Donasi x Mutasi </a>
+                </li>
+                <li class="{{ $sidebar_menu == 'donate_qurban' ? 'mm-active' : '' }}">
+                    <a href="{{ route('adm.donate.qurban') }}"> <i class="metismenu-icon pe-7s-cash icon-gradient bg-arielle-smile"></i> Donasi Qurban </a>
+                </li>
+                <li class="{{ $sidebar_menu == 'ads' ? 'mm-active' : '' }}">
+                    <a href="#">
+                        <i class="metismenu-icon pe-7s-albums icon-gradient bg-arielle-smile"></i> ADS
+                        <i class="metismenu-state-icon pe-7s-angle-down caret-left"></i>
+                    </a>
+                    <ul class="{{ $sidebar_menu == 'ads' ? 'mm-show' : '' }}">
+                        <li>
+                            <a href="{{ route('adm.ads.need.action') }}?id=1" class="{{ $sidebar_submenu == 'ads' ? 'mm-active' : '' }}">
+                                <i class="metismenu-icon"></i> Butuh Tindakan
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('adm.ads.balance') }}?id=1" class="{{ $sidebar_submenu == 'balance' ? 'mm-active' : '' }}">
+                                <i class="metismenu-icon"></i> Status & Tagihan
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('adm.ads.roas') }}" class="{{ $sidebar_submenu == 'roas' ? 'mm-active' : '' }}">
+                                <i class="metismenu-icon"></i> ROAS
+                            </a>
+                        </li>
+                        <!-- <li>
+                            <a href="{{ route('adm.program-category.index') }}" class="{{ $sidebar_submenu == 'category' ? 'mm-active' : '' }}">
+                                <i class="metismenu-icon"></i> Semua List
+                            </a>
+                        </li> -->
+                        <li>
+                            <a href="{{ route('adm.ads.campaign.index') }}" class="{{ $sidebar_submenu == 'campaign' ? 'mm-active' : '' }}">
+                                <i class="metismenu-icon"></i> Campaign
+                            </a>
+                        </li>
+                    </ul>
+                </li>
                 <li class="{{ $sidebar_menu == 'program' ? 'mm-active' : '' }}">
                     <a href="#">
                         <i class="metismenu-icon pe-7s-albums icon-gradient bg-arielle-smile"></i> Program
@@ -51,6 +90,21 @@
                             </a>
                         </li>
                         <li>
+                            <a href="{{ route('adm.program.donate.performance') }}" class="{{ $sidebar_submenu == 'donate_performance' ? 'mm-active' : '' }}">
+                                <i class="metismenu-icon"></i> Performa Donasi
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('adm.spent.index') }}" class="{{ $sidebar_submenu == 'program_spent' ? 'mm-active' : '' }}">
+                                <i class="metismenu-icon"></i> Pengeluaran
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('adm.payout.index') }}" class="{{ $sidebar_submenu == 'program_payout' ? 'mm-active' : '' }}">
+                                <i class="metismenu-icon"></i> Penyaluran
+                            </a>
+                        </li>
+                        <li>
                             <a href="{{ route('adm.program-category.index') }}" class="{{ $sidebar_submenu == 'category' ? 'mm-active' : '' }}">
                                 <i class="metismenu-icon"></i> Kategori 
                             </a>
@@ -58,6 +112,29 @@
                         <li>
                             <a href="{{ route('adm.organization.index') }}" class="{{ $sidebar_submenu == 'organization' ? 'mm-active' : '' }}">
                                 <i class="metismenu-icon"></i> Lembaga 
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="{{ $sidebar_menu == 'leads' ? 'mm-active' : '' }}">
+                    <a href="#">
+                        <i class="metismenu-icon pe-7s-albums icon-gradient bg-arielle-smile"></i> Leads Program
+                        <i class="metismenu-state-icon pe-7s-angle-down caret-left"></i>
+                    </a>
+                    <ul class="{{ $sidebar_menu == 'leads' ? 'mm-show' : '' }}">
+                        <li>
+                            <a href="{{ route('adm.leads.index') }}" class="{{ $sidebar_submenu == 'leads' ? 'mm-active' : '' }}">
+                                <i class="metismenu-icon"></i> Pengajuan
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('adm.leads.grab.list') }}" class="{{ $sidebar_submenu == 'grab' ? 'mm-active' : '' }}">
+                                <i class="metismenu-icon"></i> List Grab
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ route('adm.leads.grab.amalsholeh') }}" class="{{ $sidebar_submenu == 'grab_do' ? 'mm-active' : '' }}">
+                                <i class="metismenu-icon"></i> Grab Do
                             </a>
                         </li>
                     </ul>
@@ -144,6 +221,24 @@
                         <li>
                             <a href="#" href="#">
                                 <i class="metismenu-icon"></i> Keuangan
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="{{ $sidebar_menu == 'automate' ? 'mm-active' : '' }}">
+                    <a href="#">
+                        <i class="metismenu-icon pe-7s-box1 icon-gradient bg-arielle-smile"></i>Automation
+                        <i class="metismenu-state-icon pe-7s-angle-down caret-left"></i>
+                    </a>
+                    <ul class="{{ $sidebar_menu == 'automate' ? 'mm-show' : '' }}">
+                        <li>
+                            <a href="{{ route('adm.report.auto.monthly') }}" href="#">
+                                <i class="metismenu-icon"></i> Bulanan 
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" href="#">
+                                <i class="metismenu-icon"></i> Lainnya 
                             </a>
                         </li>
                     </ul>

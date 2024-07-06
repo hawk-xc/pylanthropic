@@ -62,6 +62,7 @@
     <!-- Theme css -->
     <link rel="stylesheet" id="change-link" type="text/css" href="{{ asset('public') }}/css/style.css?v=1234567" />
 
+    @if(false)
     <!-- Google Tag Manager -->
     <script>
       (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -71,6 +72,7 @@
       })(window,document,'script','dataLayer','GTM-PL9ZZZK');
     </script>
     <!-- End Google Tag Manager -->
+    @endif
 
     <!-- Hotjar Tracking Code for https://bantubersama.com/ -->
     <script>
@@ -90,15 +92,16 @@
 </head>
 
   <body>
+    @if(false)
       <!-- Google Tag Manager (noscript) -->
       <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PL9ZZZK"
       height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <!-- End Google Tag Manager (noscript) -->
+    @endif
+
       @yield('content')
 
-
       @yield('content_modal')
-      
 
       @yield('js_plugins')
 

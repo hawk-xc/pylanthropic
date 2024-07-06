@@ -31,6 +31,7 @@ class ProgramSpend extends Model
         'approved_by',
         'transfer_proof',
         'desc_request',
+        'ads_campaign_id',
         'created_at',
         'updated_at',
         'updated_by'

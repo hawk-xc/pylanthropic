@@ -63,7 +63,7 @@
         processing: true,
         serverSide: true,
         responsive: true,
-        order: [[2, 'desc']],
+        order: [],
         ajax: "{{ route('adm.donatur.sultan.datatables') }}",
         columns: [
             {data: 'name', name: 'name'},

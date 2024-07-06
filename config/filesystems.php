@@ -55,6 +55,13 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
         ],
+        
+        'public_uploads' => [
+            'driver' => 'local',
+            'root' => base_path('../public_html/bantubersama/'), // Path ke folder uploads di dalam public_html
+            'url' => env('APP_URL') .'/storage',
+            'visibility' => 'public',
+        ],
 
     ],
 

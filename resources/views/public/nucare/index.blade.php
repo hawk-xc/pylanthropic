@@ -1,7 +1,7 @@
 @extends('layouts.public', [
-    'second_title' => 'Pengajuan Program - LAZISNU DIY x BANTUBERSAMA',
+    'second_title' => 'Pengajuan Program - BANTUBERSAMA.com',
     'meta_desc'    => 'Bantubersama adalah platform penggalang dana untuk membantu bersama secara online',
-    'image'        => 'pengajuan_bantubersama_lazisnu_diy.jpg',
+    'image'        => 'galang-dana-bantubersama.png',
 ])
 
 
@@ -18,22 +18,67 @@
 
 @section('content')
   <div class="">
-    <img alt="Pengajuan Program Bantubersama.com" class="h-auto w-100" src="{{ asset('public/images/organization/pengajuan_bantubersama_lazisnu_diy.jpg') }}">
+    <img alt="Pengajuan Program Bantubersama.com" class="h-auto w-100" src="{{ asset('public/images/banner/galang-dana-bantubersama.png') }}">
   </div>
   <!-- header end -->
 
   <!-- Detail section start  -->
   <section class="pt-3 pb-2">
     <div class="custom-container text-center">
-      <h4 class="donate-collect">Pengajuan Program Warga NU D.I.Yogyakarta</h4>
-      <div class="short-desc mt-1 pt-1">Beritahu kami jika ada tetangga / masyarakat umum yang membutuhkan bantuan penggalang dana</div>
+      <h4 class="donate-collect">Program Pengajuan Galang Dana</h4>
+      <div class="short-desc mt-1 pt-1">Beritahu kami jika ada saudaramu / tetangga / masyarakat umum yang membutuhkan bantuan penggalangan dana</div>
     </div>
   </section>
   <!-- filter section end  -->
 
   <!-- Empty section start -->
-  <section class="empty-section section-t-space section-b-space pb-0 pt-1">
-    <div class="custom-container space-empty pb-2">
+  <section class="empty-section section-t-space section-b-space pb-0 pt-2">
+    <div class="custom-container pt-3 pb-3" style="background-color:#f5f5f5">
+      <div class="text-center fw-bold fs-18 mb-2 pb-1">Alur Pengajuan Galang Dana</div>
+      <ul class="info-timeline">
+        <li>
+          <div class="content-preview1">
+            <div class="info-head">
+              <div class="info-box justify-content-start">
+                  <div class="pt-1">
+                      <h4>Pilih Jenis Galang Dana Dibawah</h4>
+                  </div>
+              </div>
+            </div>
+            <div class="info-content">
+              Galang dana di Bantubersama.com memiliki 8 pilihan kategori penggalangan, jika kamu memiliki pilihan lain, masukan ke opsi lainnya
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="content-preview1">
+            <div class="info-head">
+              <div class="info-box justify-content-start">
+                  <div class="pt-1">
+                      <h4>Isi Form Pengajuan Galang Dana</h4>
+                  </div>
+              </div>
+            </div>
+            <div class="info-content">
+              Isi form secara lengkap dengan mengikuti instruksi yang diberikan
+            </div>
+          </div>
+        </li>
+        <li>
+          <div class="content-preview1">
+            <div class="info-head">
+              <div class="info-box justify-content-start">
+                  <div class="pt-1">
+                      <h4>Menunggu konfirmasi dari tim Bantubersama</h4>
+                  </div>
+              </div>
+            </div>
+            <div class="info-content">
+              Jika program masuk kriteria dan lolos persyaratan, maka tim Bantubersama akan menghubungi Anda melalui WA / No Telp
+            </div>
+          </div>
+        </li>
+      </ul>
     </div>
   </section>
   <!-- Empty section end -->

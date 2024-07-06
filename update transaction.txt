@@ -1,0 +1,6 @@
+SELECT * FROM `transaction`
+WHERE created_at <= '2024-05-10' AND status='draft';
+
+
+UPDATE transaction SET status = 'cancel'
+WHERE created_at <= '2024-06-13' AND status='draft';

@@ -176,17 +176,19 @@ class PaymentController extends Controller
                 $transaction->paid_at = date('Y-m-d H:i:s');
                 $transaction->save();
 
-                // for auto WA
-                $program = Program::where('id', $transaction->program_id)->first();
-                $donatur = Donatur::where('id', $transaction->donatur_id)->first();
-                $chat = 'Terimakasih dermawan *'.ucwords(trim($donatur->name)).'*.
-Kebaikan Anda sangat berarti bagi kami yang membutuhkan, semoga mendapat balasan yang lebih berarti. Amin.
+                if($status=='settlement'){
+                    // for auto WA
+                    $program = Program::where('id', $transaction->program_id)->first();
+                    $donatur = Donatur::where('id', $transaction->donatur_id)->first();
+                    $chat    = 'Terimakasih dermawan *'.ucwords(trim($donatur->name)).'*.
+Kebaikan Anda sangat berarti bagi kami yang membutuhkan, semoga mendapat balasan yang lebih berarti. Aamiin.
 Atas Donasi :
 *'.ucwords($program->title).'*
-Sebesar : Rp '.str_replace(',', '.', number_format($transaction->nominal_final));
+Sebesar : *Rp '.str_replace(',', '.', number_format($transaction->nominal_final)).'*';
 
-                // (new WaBlastController)->sentWA($donatur->telp, $chat);
-                (new WaBlastController)->sentWA($donatur->telp, $chat, 'thanks_trans', $transaction->id, $donatur->id, $program->id);
+                    // (new WaBlastController)->sentWA($donatur->telp, $chat);
+                    (new WaBlastController)->sentWA($donatur->telp, $chat, 'thanks_trans', $transaction->id, $donatur->id, $program->id);
+                }
 
                 return response()->json([
                     'status' => 'success'

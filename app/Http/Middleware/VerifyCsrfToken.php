@@ -12,6 +12,6 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        'https://bantubersama.com/callback_mutasibank_mandiri' //This is the url that I dont want Csrf for postman.
     ];
 }

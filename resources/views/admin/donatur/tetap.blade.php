@@ -63,7 +63,7 @@
         processing: true,
         serverSide: true,
         responsive: true,
-        order: [[2, 'desc']],
+        order: [],
         ajax: "{{ route('adm.donatur.tetap.datatables') }}",
         columns: [
             {data: 'name', name: 'name'},

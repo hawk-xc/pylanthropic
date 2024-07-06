@@ -163,7 +163,6 @@ class DonateController extends Controller
         $request->validate([
             'type'     => 'required|string',
             'nominal'  => 'required',
-            'type'     => 'required|string',
             'slug'     => 'required|string',
             'fullname' => 'required|string',
             'telp'     => 'required|numeric',
@@ -603,41 +602,41 @@ class DonateController extends Controller
 
 
                 $requestId     = Str::random(20); // Change to UUID or anything that can generate unique value
-        $dateTime      = gmdate("Y-m-d H:i:s");
-        $isoDateTime   = date(DATE_ISO8601, strtotime($dateTime));
-        $dateTimeFinal = substr($isoDateTime, 0, 19) . "Z";
+                $dateTime      = gmdate("Y-m-d H:i:s");
+                $isoDateTime   = date(DATE_ISO8601, strtotime($dateTime));
+                $dateTimeFinal = substr($isoDateTime, 0, 19) . "Z";
 
-        // Generate digest
-        $digestValue = base64_encode(hash('sha256', json_encode($requestBody), true));
+                // Generate digest
+                $digestValue = base64_encode(hash('sha256', json_encode($requestBody), true));
 
-        // Generate Digest
-        $digestValue = base64_encode(hash('sha256', json_encode($requestBody), true));
-        echo "Digest: " . $digestValue;
-        echo "<br><br>";
+                // Generate Digest
+                $digestValue = base64_encode(hash('sha256', json_encode($requestBody), true));
+                echo "Digest: " . $digestValue;
+                echo "<br><br>";
 
-        // Prepare signature component
-        $componentSignature = "Client-Id:" . env('DOKU_PROD_CLIENT_ID') . "\n" .
-            "Request-Id:" . $requestId . "\n" .
-            "Request-Timestamp:" . $dateTimeFinal . "\n" .
-            "Request-Target:bca-virtual-account/v2/payment-code\n" .
-            // "Request-Target:" . env('DOKU_PROD_TARGET') . "\n" .
-            "Digest:" . $digestValue;
+                // Prepare signature component
+                $componentSignature = "Client-Id:" . env('DOKU_PROD_CLIENT_ID') . "\n" .
+                    "Request-Id:" . $requestId . "\n" .
+                    "Request-Timestamp:" . $dateTimeFinal . "\n" .
+                    "Request-Target:bca-virtual-account/v2/payment-code\n" .
+                    // "Request-Target:" . env('DOKU_PROD_TARGET') . "\n" .
+                    "Digest:" . $digestValue;
 
-        echo "Component Signature: \n" . $componentSignature;
-        echo "<br><br>";
-
-
-        // Generate signature
-        $signature = base64_encode(hash_hmac('sha256', $componentSignature, env('DOKU_PROD_SECRET_KEY'), true));
-
-        echo "Signature: " . $signature;
-        echo "<br><br>";
+                echo "Component Signature: \n" . $componentSignature;
+                echo "<br><br>";
 
 
-        $headerSignature =  "Client-Id:" . env('DOKU_PROD_CLIENT_ID') ."\n". 
-                    "Request-Id:" . $requestId . "\n".
-                    "Request-Timestamp:" . $dateTimeFinal ."\n".
-                    "Signature:" . "HMACSHA256=" . $signature;
+                // Generate signature
+                $signature = base64_encode(hash_hmac('sha256', $componentSignature, env('DOKU_PROD_SECRET_KEY'), true));
+
+                echo "Signature: " . $signature;
+                echo "<br><br>";
+
+
+                $headerSignature =  "Client-Id:" . env('DOKU_PROD_CLIENT_ID') ."\n". 
+                            "Request-Id:" . $requestId . "\n".
+                            "Request-Timestamp:" . $dateTimeFinal ."\n".
+                            "Signature:" . "HMACSHA256=" . $signature;
 
 
 echo 'CURLOPT_HTTPHEADER : <br>';
@@ -708,7 +707,7 @@ echo "<br><br>";
                 ]);
 
                 // for auto WA
-                $chat1 = 'Terimakasih dermawan *'.ucwords(trim($request->fullname)).'*.
+                $chat1 = 'Terimakasih orang baik *'.ucwords(trim($request->fullname)).'*.
 Selangkah lagi kebaikan donasi Anda berhasil dengan menyelesaikan pembayaran berikut :
 Sebesar : Rp '.str_replace(',', '.', number_format($nominal+$unique_number)).'
 Nomor Invoice : '.$invoice.' 
@@ -738,7 +737,7 @@ a/n '.$payment->target_desc.'
 *'.ucwords($program->title).'*
 
 Terimakasih';
-                $this->sentWA($telp, $chat);
+                // $this->sentWA($telp, $chat);
             }
 
             // hanya dummy saja, nanti kalau payment gateway sudah jadi maka ini akan dihapus
@@ -773,10 +772,8 @@ Terimakasih';
                     ->join('payment_type', 'payment_type.id', 'transaction.payment_type_id')
                     ->where('invoice_number', $invoice)->first();
         if(isset($data->telp)) {
-            $chat1     = "ALHAMDULILLAH
-Donasi baru *Rp.".str_replace(',', '.', number_format($data->nominal_final))."*
-melalui *".$data->payment_name."*
-atas nama *".$data->name." - ".$data->telp."* 
+            $chat1     = "Donasi baru *Rp.".str_replace(',', '.', number_format($data->nominal_final))."* (*".$data->payment_name."*)
+a/n *".$data->name." - ".$data->telp."* 
 untuk program *".$data->title."*";
 
             $count_all    = Transaction::select('id')->where('created_at', 'like', date('Y-m-d').'%')->count();

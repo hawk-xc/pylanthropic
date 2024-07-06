@@ -56,7 +56,7 @@
           
           <input type="text" name="fullname" class="form-control fs-14 form-payment" placeholder="Nama Lengkap" required />
           
-          <input type="text" name="telp" class="form-control fs-14 form-payment mt-2" placeholder="Nomor Telpon : 08....." required />
+          <input type="text" name="telp" class="form-control fs-14 form-payment mt-2" placeholder="Nomor WA : 08....." required />
         </div>
         <div class="form-input mt-4">
           <label class="fw-medium fs-15 mb-1 pb-1">Detail Program Bantuan</label>

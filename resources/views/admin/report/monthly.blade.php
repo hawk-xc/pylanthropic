@@ -143,7 +143,8 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-3">
-                                <h5 class="card-title">{{ date('F Y', strtotime($month_ago)) }}</h5>
+                                <?php $dn = new \DateTime(date('Y-m-d H:i:s')); ?>
+                                <h5 class="card-title">{{ $dn->modify('first day of -1 month')->format('F Y') }}</h5>
                             </div>
                             <div class="col-9 fc-rtl">
                                 <button class="btn btn-sm btn-outline-primary"><i class="fa fa-filter mr-1"></i> Filter</button>

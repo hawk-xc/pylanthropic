@@ -16,6 +16,21 @@ class WaBlastController extends Controller
         $telp  = $this->formatTelp($telp);
         // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
         $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+        
+        // insert table chat
+        \App\Models\Chat::create([
+            'no_telp'        => $telp,
+            'text'           => $chat,
+            'token'          => $token,
+            'vendor'         => 'RuangWA',
+            'url'            => 'https://app.ruangwa.id/api/send_message',
+            'type'           => $type,
+            'transaction_id' => $trans!=''?$trans:null,
+            'donatur_id'     => $donatur!=''?$donatur:null,
+            'program_id'     => $program!=''?$program:null
+        ]);
+
+
         $curl  = curl_init();
         curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/send_message');
         curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -33,19 +48,6 @@ class WaBlastController extends Controller
         ));
         $response = curl_exec($curl);
         curl_close($curl);
-
-        // insert table chat
-        \App\Models\Chat::create([
-            'no_telp'        => $telp,
-            'text'           => $chat,
-            'token'          => $token,
-            'vendor'         => 'RuangWA',
-            'url'            => 'https://app.ruangwa.id/api/send_message',
-            'type'           => $type,
-            'transaction_id' => $trans!=''?$trans:null,
-            'donatur_id'     => $donatur!=''?$donatur:null,
-            'program_id'     => $program!=''?$program:null
-        ]);
     }
 
     /**

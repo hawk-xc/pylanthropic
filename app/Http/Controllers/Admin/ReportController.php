@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Transaction;
 use App\Models\Donatur;
 use App\Models\Program;
+use App\Models\TrackingVisitor;
 
 use DataTables;
 
@@ -42,8 +43,8 @@ class ReportController extends Controller
         $dana      = Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m').'%')
                         ->where('payment_type_id', '9')->sum('nominal_final');
 
-                        
-        $month_ago         = date('Y-m', strtotime(date('Y-m-d').'-1 month'));
+        $dn                = new \DateTime(date('Y-m-d H:i:s'));
+        $month_ago         = $dn->modify('first day of -1 month')->format('Y-m');
         $program_spend_ago = \App\Models\ProgramSpend::where('type', 'ads')->where('status', 'done')->where('date_approved', 'like', $month_ago.'%')
                                 ->select('id')->sum('nominal_approved');
         $donate_sum_ago    = Transaction::select('id')->where('status', 'success')->where('created_at', 'like', $month_ago.'%')->sum('nominal_final');
@@ -80,53 +81,68 @@ class ReportController extends Controller
     public function monthlyToMonthly(Request $request)
     {
         // DONATE
+        $dn   = new \DateTime(date('Y-m-d H:i:s'));
         $now  = date('Y-m');
-        $old1 = date('Y-m', strtotime(date('Y-m-d').'-1 month'));
-        $old2 = date('Y-m', strtotime(date('Y-m-d').'-2 month'));
-        $old3 = date('Y-m', strtotime(date('Y-m-d').'-3 month'));
+        $old1 = $dn->modify('first day of -1 month')->format('Y-m');
+        $old2 = $dn->modify('first day of -1 month')->format('Y-m');
+        $old3 = $dn->modify('first day of -1 month')->format('Y-m');
+        $old4 = $dn->modify('first day of -1 month')->format('Y-m');
+        $old5 = $dn->modify('first day of -1 month')->format('Y-m');
 
-        $date = [$now, $old1, $old2, $old3];
+        $date = [$now, $old1, $old2, $old3, $old4, $old5];
+
 
         $trans_now  = Transaction::select('nominal_final')->where('created_at', 'like', $now.'%');
         $trans_old1 = Transaction::select('nominal_final')->where('created_at', 'like', $old1.'%');
         $trans_old2 = Transaction::select('nominal_final')->where('created_at', 'like', $old2.'%');
         $trans_old3 = Transaction::select('nominal_final')->where('created_at', 'like', $old3.'%');
+        $trans_old4 = Transaction::select('nominal_final')->where('created_at', 'like', $old4.'%');
+        $trans_old5 = Transaction::select('nominal_final')->where('created_at', 'like', $old5.'%');
 
         $sum_donate_all        = [
-                $trans_now->sum('nominal_final'), $trans_old1->sum('nominal_final'), 
-                $trans_old2->sum('nominal_final'), $trans_old3->sum('nominal_final')
+                $trans_now->sum('nominal_final'), $trans_old1->sum('nominal_final'), $trans_old2->sum('nominal_final'), 
+                $trans_old3->sum('nominal_final'), $trans_old4->sum('nominal_final'), $trans_old5->sum('nominal_final')
         ];
-        $count_donate_all      = [$trans_now->count(), $trans_old1->count(), $trans_old2->count(), $trans_old3->count()];
+        $count_donate_all      = [$trans_now->count(), $trans_old1->count(), $trans_old2->count(), 
+                                $trans_old3->count(), $trans_old4->count(), $trans_old5->count()];
 
         $trans_now_paid    = $trans_now->where('status', 'success');
         $trans_old1_paid   = $trans_old1->where('status', 'success');
         $trans_old2_paid   = $trans_old2->where('status', 'success');
         $trans_old3_paid   = $trans_old3->where('status', 'success');
+        $trans_old4_paid   = $trans_old4->where('status', 'success');
+        $trans_old5_paid   = $trans_old5->where('status', 'success');
         $sum_donate_paid   = [
-                $trans_now_paid->sum('nominal_final'), $trans_old1_paid->sum('nominal_final'), 
-                $trans_old2_paid->sum('nominal_final'), $trans_old3_paid->sum('nominal_final')
+                $trans_now_paid->sum('nominal_final'), $trans_old1_paid->sum('nominal_final'), $trans_old2_paid->sum('nominal_final'), 
+                $trans_old3_paid->sum('nominal_final'), $trans_old4_paid->sum('nominal_final'), $trans_old5_paid->sum('nominal_final'),
         ];
-        $count_donate_paid = [$trans_now_paid->count(), $trans_old1_paid->count(), $trans_old2_paid->count(), $trans_old3_paid->count()];
+        $count_donate_paid = [$trans_now_paid->count(), $trans_old1_paid->count(), $trans_old2_paid->count(), 
+                              $trans_old3_paid->count(), $trans_old4_paid->count(), $trans_old5_paid->count()];
 
 
         $trans_now  = Transaction::select('nominal_final')->where('created_at', 'like', $now.'%');
         $trans_old1 = Transaction::select('nominal_final')->where('created_at', 'like', $old1.'%');
         $trans_old2 = Transaction::select('nominal_final')->where('created_at', 'like', $old2.'%');
         $trans_old3 = Transaction::select('nominal_final')->where('created_at', 'like', $old3.'%');
+        $trans_old4 = Transaction::select('nominal_final')->where('created_at', 'like', $old4.'%');
+        $trans_old5 = Transaction::select('nominal_final')->where('created_at', 'like', $old5.'%');
         
         $trans_now_unpaid  = $trans_now->where('status', '!=', 'success');
         $trans_old1_unpaid = $trans_old1->where('status', '!=', 'success');
         $trans_old2_unpaid = $trans_old2->where('status', '!=', 'success');
         $trans_old3_unpaid = $trans_old3->where('status', '!=', 'success');
+        $trans_old4_unpaid = $trans_old4->where('status', '!=', 'success');
+        $trans_old5_unpaid = $trans_old5->where('status', '!=', 'success');
         $sum_donate_unpaid     = [
-                $trans_now_unpaid->sum('nominal_final'), $trans_old1_unpaid->sum('nominal_final'), 
-                $trans_old2_unpaid->sum('nominal_final'), $trans_old3_unpaid->sum('nominal_final')
+                $trans_now_unpaid->sum('nominal_final'), $trans_old1_unpaid->sum('nominal_final'), $trans_old2_unpaid->sum('nominal_final'), 
+                $trans_old3_unpaid->sum('nominal_final'), $trans_old4_unpaid->sum('nominal_final'), $trans_old5_unpaid->sum('nominal_final')
         ];
-        $count_donate_unpaid   = [$trans_now_unpaid->count(), $trans_old1_unpaid->count(), $trans_old2_unpaid->count(), $trans_old3_unpaid->count()];
+        $count_donate_unpaid   = [$trans_now_unpaid->count(), $trans_old1_unpaid->count(), $trans_old2_unpaid->count(), 
+                                 $trans_old3_unpaid->count(), $trans_old4_unpaid->count(), $trans_old5_unpaid->count()];
         
         $donate_average_all    = [
-                $trans_now->avg('nominal_final'), $trans_old1->avg('nominal_final'), 
-                $trans_old2->avg('nominal_final'), $trans_old3->avg('nominal_final')
+                $trans_now->avg('nominal_final'), $trans_old1->avg('nominal_final'), $trans_old2->avg('nominal_final'), 
+                $trans_old3->avg('nominal_final'), $trans_old4->avg('nominal_final'), $trans_old5->avg('nominal_final')
         ];
 
         // DONATUR
@@ -134,21 +150,58 @@ class ReportController extends Controller
         $donatur_old1     = Transaction::select('donatur_id')->where('created_at', 'like', $old1.'%')->pluck('donatur_id');
         $donatur_old2     = Transaction::select('donatur_id')->where('created_at', 'like', $old2.'%')->pluck('donatur_id');
         $donatur_old3     = Transaction::select('donatur_id')->where('created_at', 'like', $old3.'%')->pluck('donatur_id');
+        $donatur_old4     = Transaction::select('donatur_id')->where('created_at', 'like', $old4.'%')->pluck('donatur_id');
+        $donatur_old5     = Transaction::select('donatur_id')->where('created_at', 'like', $old5.'%')->pluck('donatur_id');
 
         $donatur_new_now  = Donatur::select('id')->where('created_at', 'like', $now.'%')->count();
         $donatur_new_old1 = Donatur::select('id')->where('created_at', 'like', $old1.'%')->count();
         $donatur_new_old2 = Donatur::select('id')->where('created_at', 'like', $old2.'%')->count();
         $donatur_new_old3 = Donatur::select('id')->where('created_at', 'like', $old3.'%')->count();
+        $donatur_new_old4 = Donatur::select('id')->where('created_at', 'like', $old4.'%')->count();
+        $donatur_new_old5 = Donatur::select('id')->where('created_at', 'like', $old5.'%')->count();
 
-        $count_donatur_all    = [$donatur_now->count(), $donatur_old1->count(), $donatur_old2->count(), $donatur_old3->count()];
-        $count_donatur_new    = [$donatur_new_now, $donatur_new_old1, $donatur_new_old2, $donatur_new_old3];
+        $view_program[] = TrackingVisitor::select('id')->where('page_view', 'landing_page')->where('created_at', 'like', $now.'%')->count();
+        $view_program[] = TrackingVisitor::select('id')->where('page_view', 'landing_page')->where('created_at', 'like', $old1.'%')->count();
+        $view_program[] = TrackingVisitor::select('id')->where('page_view', 'landing_page')->where('created_at', 'like', $old2.'%')->count();
+        $view_program[] = TrackingVisitor::select('id')->where('page_view', 'landing_page')->where('created_at', 'like', $old3.'%')->count();
+        $view_program[] = TrackingVisitor::select('id')->where('page_view', 'landing_page')->where('created_at', 'like', $old4.'%')->count();
+        $view_program[] = TrackingVisitor::select('id')->where('page_view', 'landing_page')->where('created_at', 'like', $old5.'%')->count();
+
+        $view_amount[]  = TrackingVisitor::select('id')->where('page_view', 'amount')->where('created_at', 'like', $now.'%')->count();
+        $view_amount[] = TrackingVisitor::select('id')->where('page_view', 'amount')->where('created_at', 'like', $old1.'%')->count();
+        $view_amount[] = TrackingVisitor::select('id')->where('page_view', 'amount')->where('created_at', 'like', $old2.'%')->count();
+        $view_amount[] = TrackingVisitor::select('id')->where('page_view', 'amount')->where('created_at', 'like', $old3.'%')->count();
+        $view_amount[] = TrackingVisitor::select('id')->where('page_view', 'amount')->where('created_at', 'like', $old4.'%')->count();
+        $view_amount[] = TrackingVisitor::select('id')->where('page_view', 'amount')->where('created_at', 'like', $old5.'%')->count();
+
+        $view_payment[]  = TrackingVisitor::select('id')->where('page_view', 'payment_type')->where('created_at', 'like', $now.'%')->count();
+        $view_payment[] = TrackingVisitor::select('id')->where('page_view', 'payment_type')->where('created_at', 'like', $old1.'%')->count();
+        $view_payment[] = TrackingVisitor::select('id')->where('page_view', 'payment_type')->where('created_at', 'like', $old2.'%')->count();
+        $view_payment[] = TrackingVisitor::select('id')->where('page_view', 'payment_type')->where('created_at', 'like', $old3.'%')->count();
+        $view_payment[] = TrackingVisitor::select('id')->where('page_view', 'payment_type')->where('created_at', 'like', $old4.'%')->count();
+        $view_payment[] = TrackingVisitor::select('id')->where('page_view', 'payment_type')->where('created_at', 'like', $old5.'%')->count();
+
+        $view_form[] = TrackingVisitor::select('id')->where('page_view', 'form')->where('created_at', 'like', $now.'%')->count();
+        $view_form[] = TrackingVisitor::select('id')->where('page_view', 'form')->where('created_at', 'like', $old1.'%')->count();
+        $view_form[] = TrackingVisitor::select('id')->where('page_view', 'form')->where('created_at', 'like', $old2.'%')->count();
+        $view_form[] = TrackingVisitor::select('id')->where('page_view', 'form')->where('created_at', 'like', $old3.'%')->count();
+        $view_form[] = TrackingVisitor::select('id')->where('page_view', 'form')->where('created_at', 'like', $old4.'%')->count();
+        $view_form[] = TrackingVisitor::select('id')->where('page_view', 'form')->where('created_at', 'like', $old5.'%')->count();
+
+        $count_donatur_all    = [$donatur_now->count(), $donatur_old1->count(), $donatur_old2->count(), 
+                                $donatur_old3->count(), $donatur_old4->count(), $donatur_old5->count()];
+
+        $count_donatur_all    = [$donatur_now->count(), $donatur_old1->count(), $donatur_old2->count(), 
+                                $donatur_old3->count(), $donatur_old4->count(), $donatur_old5->count()];
+
+        $count_donatur_new    = [$donatur_new_now, $donatur_new_old1, $donatur_new_old2, $donatur_new_old3, $donatur_new_old4, $donatur_new_old5];
         $count_donatur_old    = [
-                ($donatur_now->count()-$donatur_new_now), ($donatur_old1->count()-$donatur_new_old1), 
-                ($donatur_old2->count()-$donatur_new_old2), ($donatur_old3->count()-$donatur_new_old3)
+                ($donatur_now->count()-$donatur_new_now), ($donatur_old1->count()-$donatur_new_old1), ($donatur_old2->count()-$donatur_new_old2), 
+                ($donatur_old3->count()-$donatur_new_old3), ($donatur_old4->count()-$donatur_new_old4), ($donatur_old5->count()-$donatur_new_old5) 
         ];
-        $count_donatur_hampir = [0, 0, 0, 0];
+        $count_donatur_hampir = [0, 0, 0, 0, 0, 0];
 
-        return view('admin.report.m2m', compact('date', 'sum_donate_all', 'count_donate_all', 'sum_donate_paid', 'count_donate_paid', 'sum_donate_unpaid', 'count_donate_unpaid', 'donate_average_all', 'count_donatur_all', 'count_donatur_new', 'count_donatur_old', 'count_donatur_hampir'));
+        return view('admin.report.m2m', compact('date', 'sum_donate_all', 'count_donate_all', 'sum_donate_paid', 'count_donate_paid', 'sum_donate_unpaid', 'count_donate_unpaid', 'donate_average_all', 'count_donatur_all', 'count_donatur_new', 'count_donatur_old', 'count_donatur_hampir', 'view_program', 'view_amount', 'view_payment', 'view_form'));
     }
 
     /**
@@ -185,11 +238,15 @@ class ReportController extends Controller
 
         // Donasi Perjam
         for($i=0; $i<24; $i++) {
-            $donate_perjam_count[$i] = Transaction::select('id')->where('created_at', 'like', '% '.sprintf("%02d", $i).':%')->count();
+            $donate_perjam_count[$i] = Transaction::select('id')->where('created_at', 'like', '% '.sprintf("%02d", $i).':%')
+                                        ->where('created_at', '>=', '2024-03-12 00:00:00')      // selama ramadhan
+                                        ->count();
         }
 
         for($i=0; $i<24; $i++) {
-            $donate_perjam_sum[$i] = Transaction::select('id')->where('created_at', 'like', '% '.sprintf("%02d", $i).':%')->sum('nominal_final');
+            $donate_perjam_sum[$i] = Transaction::select('id')->where('created_at', 'like', '% '.sprintf("%02d", $i).':%')
+                                        ->where('created_at', '>=', '2024-03-12 00:00:00')      // selama ramadhan
+                                        ->sum('nominal_final');
         }
 
         for($i=0; $i<=29; $i++) {

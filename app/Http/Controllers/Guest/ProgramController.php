@@ -39,9 +39,14 @@ class ProgramController extends Controller
             $sum_news     = ProgramInfo::select('id')->where('program_id', $program->id)->where('is_publish', 1)->count();
             $info         = ProgramInfo::where('program_id', $program->id)->where('is_publish', 1)
                             ->orderBy('created_at', 'DESC')->first();
+
+            if($program->show_minus>0 && !is_null($program->show_minus) && $sum_amount>0) {
+                $sum_amount = $sum_amount-($sum_amount*$program->show_minus/100);
+            }
+
             $donate       = $transaction->join('donatur', 'donatur.id', 'transaction.donatur_id')
                             ->select('transaction.nominal_final', 'transaction.created_at', 'transaction.is_show_name', 'transaction.message', 'donatur.name')
-                            ->orderBy('transaction.created_at', 'DESC')->limit(5)->get();
+                            ->orderBy('transaction.created_at', 'DESC')->limit(8)->get();
             $donate->map(function($donate, $key) {
                         return $donate->date_string = (new FormatDateController)->timeDonate($donate->created_at);
                     });
@@ -109,7 +114,11 @@ class ProgramController extends Controller
         $program->map(function($program, $key) {
                         $sum_amount = Models\Transaction::where('program_id', $program->id)->where('status', 'success')
                                     ->sum('nominal_final');
-                        return $program->sum_amount = $sum_amount;
+                        if($program->show_minus>0 && !is_null($program->show_minus) && $sum_amount>0) {
+                            return $program->sum_amount = $sum_amount-($sum_amount*$program->show_minus/100);
+                        } else {
+                            return $program->sum_amount = $sum_amount;
+                        }
                     });
         return view('public.program_list', compact('program'));
     }

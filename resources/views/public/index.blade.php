@@ -156,10 +156,58 @@
     </section>
     <!-- Program Selection section start -->
 
+    <!-- Program Urgent section start -->
+    <section class="section-t-space pt-3">
+      <div class="custom-container pt-3 pb-2 mt-0" style="background-color: #fff9f5;">
+        <div class="title">
+          <h3 class="mt-0">Penggalangan Dana Mendesak</h3>
+          <a href="{{ route('program.list') }}">Semua</a>
+        </div>
+        <div class="swiper products pt-0 pb-2">
+          <div class="swiper-wrapper">
+            @foreach($urgent as $vu)
+              <div class="swiper-slide">
+                <a href="{{ url('/').'/'.$vu->slug }}" class="">
+                  <div class="product-box">
+                    <img class="img-fluid rounded-top lazyload" data-original="{{ asset('public/images/program').'/'.$vu->thumbnail }}" alt="{{ ucwords($vu->title) }}" />
+                    <div class="product-box-detail product-box-bg">
+                      <h5 class="two-line mt-1 mb-1 fs-11 lh-14">{{ ucwords($vu->title) }}</h5>
+                      <ul class="timing mt-2 mb-2">
+                        <li class="fs-11 lh-14">
+                          {{ ucwords($vu->name) }} 
+                          @if($vu->status=='verified' || $vu->status=='verif_org')
+                            <span class="star"><i class="ri-star-s-fill"></i></span>
+                          @endif
+                        </li>
+                      </ul>
+                      <div class="progress mt-1" role="progressbar" aria-label="Basic example" aria-valuenow="86" aria-valuemin="0" aria-valuemax="100" style="height: 5px">
+                        <div class="progress-bar" style="width: {{ ceil($vu->sum_amount/$vu->nominal_approved*100) }}%"></div>
+                      </div>
+                      <div class="bottom-panel">
+                        <div class="pe-0 fw-semibold fs-11 lh-16">Rp {{ str_replace(',', '.', number_format($vu->sum_amount)) }}</div>
+                        <div class="fw-semibold fs-11 lh-16 text-end">
+                          {{ now()->diffInDays(substr($vu->end_date, 0,10)) }}
+                        </div>
+                      </div>
+                      <div class="bottom-panel mt-0">
+                        <div class="fw-light fs-10 lh-14 pe-0">Donasi Terkumpul</div>
+                        <div class="fw-light fs-10 lh-14 text-end">Hari Lagi</div>
+                      </div>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            @endforeach
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Program Urgent section start -->
+
     <!-- Banner section start -->
     <section class="empty-section section-t-space section-b-space pt-3">
       <div class="custom-container">
-        <a href="https://wa.me/6281352521934" target="_blank">
+        <a href="https://wa.me/628155555849" target="_blank">
           <img class="img-fluid lazyload" data-original="{{ asset('public/images/banner/Banner campaign 2 terang 580x280.jpg') }}">
         </a>
       </div>
