@@ -210,5 +210,27 @@
         }
     }
 
+    function firstChat(id, org) {
+        var result = confirm("Ingin Frist Chat ke "+org+"?");
+        if (result) {
+            $.ajax({
+                type: "POST",
+                url: "{{ route('adm.leads.org.chat') }}",
+                data: {
+                  "_token": "{{ csrf_token() }}",
+                  "id": id,
+                  "type": 'fc'
+                },
+                success: function(data){
+                    if(data.status=='success') {
+                        alert('BERHASIL, first chat ke lembaga '+data.org);
+                    } else {
+                        alert('GAGAL, frist chat ke lembaga');
+                    }
+                }
+            });
+        }
+    }
+
 </script>
 @endsection

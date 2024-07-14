@@ -166,6 +166,13 @@ Route::group([
         Route::get('/list-leads', [Admin\LeadsController::class, 'index'])->name('leads.index');
         Route::get('/list-leads-datatables', [Admin\LeadsController::class, 'leadsDatatables'])->name('leads.datatables');
         Route::get('/list-leads-grab-status', [Admin\LeadsController::class, 'editStatusGrab'])->name('leads.grab.status');
+        Route::get('/leads-org-edit/{id}', [Admin\LeadsController::class, 'editOrganization'])->name('leads.org.edit');
+        Route::post('/leads-org-update/{id}', [Admin\LeadsController::class, 'updateOrganization'])->name('leads.org.update');
+        Route::post('/leads-org-chat', [Admin\LeadsController::class, 'waOrganization'])->name('leads.org.chat');
+        Route::get('/leads-org-list', [Admin\LeadsController::class, 'listOrganization'])->name('leads.org.list');
+        Route::get('/list-leads-org-datatables', [Admin\LeadsController::class, 'orgDatatables'])->name('leads.org.datatables');
+        Route::get('/list-leads-org-add', [Admin\LeadsController::class, 'orgCreate'])->name('leads.org.add');
+        Route::post('/list-leads-org-store', [Admin\LeadsController::class, 'orgStore'])->name('leads.org.store');
 
         Route::resources([
             'program'          => Admin\ProgramController::class,

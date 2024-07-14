@@ -17,7 +17,7 @@
       s.parentNode.insertBefore(t,s)}(window, document,'script',
       'https://connect.facebook.net/en_US/fbevents.js');
       fbq.disablePushState = true;
-      // fbq('init', '2596008717326722');
+
       <?php 
       if(isset($_GET['a'])) {
         if($_GET['a']=='il1') {
@@ -32,15 +32,12 @@
         } else {
           echo "fbq('init', '586907076711934');";   // akun 1, 2, 3
           echo "fbq('init', '1278491429470122');";  // akun 4
-          // echo "fbq('init', '1352154889054298');";  // ilyas
-          $pixel_id = "2596008717326722";
+          $pixel_id = "1278491429470122";
         }
       } else {
         echo "fbq('init', '586907076711934');";   // akun 1, 2, 3
         echo "fbq('init', '1278491429470122');";  // akun 4
-        // echo "fbq('init', '1352154889054298');";  // ilyas
-        // $pixel_id = "2596008717326722";
-        $pixel_id = "586907076711934";
+        $pixel_id = "1278491429470122";
       }
       ?>
       fbq('track', 'ViewContent');

@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+use App\Http\Controllers\WaBlastController;
+
 use DataTables;
 
 class LeadsController extends Controller
@@ -27,19 +29,56 @@ class LeadsController extends Controller
     }
 
     /**
+     * Display a listing of the resource.
+     */
+    public function listOrganization(Request $request)
+    {
+        return view('admin.leads.org_list');
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function orgCreate(Request $request)
     {
-        //
+        return view('admin.leads.org_create');
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function orgStore(Request $request)
     {
-        //
+        try {
+            $request->validate([
+                'name'         => 'required|string'
+            ]);
+
+            $check_org = DB::table('grab_organization')->select('id')->where('name', $request->name)->first();
+
+            if(!isset($check_org->id)) {
+                DB::table('grab_organization')->insert([
+                    'name'        => $request->name,
+                    'phone'       => $request->phone,
+                    'address'     => $request->address,
+                    'email'       => $request->email,
+                    'instagram'   => $request->ig,
+                    'facebook'    => $request->fb,
+                    'youtube'     => $request->yt,
+                    'twitter'     => $request->tw,
+                    'fb_pixel'    => $request->pixel,
+                    'gtm'         => $request->gtm,
+                    'description' => $request->desc,
+                    'user_id'     => date('ymd')
+                ]);
+            } else {
+                return redirect()->back()->with('error', 'Gagal tambah, duplikat nama lembaga');
+            }
+
+            return redirect()->back()->with('success', 'Berhasil tambah data Lembaga');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal tambah, ada kesalahan teknis');
+        }
     }
 
     /**
@@ -114,14 +153,15 @@ class LeadsController extends Controller
         }
     }
 
-
     /**
      * Datatables Chat
      */
     public function grabDatatables(Request $request)
     {
         $data         = DB::table('grab_program')->select('grab_program.*', 'grab_organization.name as lembaga', 'twitter', 'instagram', 'facebook', 'youtube', 'email', 'phone')
-        ->leftJoin('grab_organization', 'grab_organization.user_id', 'grab_program.user_id')->orderBy('program_created_at', 'DESC');
+        ->leftJoin('grab_organization', 'grab_organization.user_id', 'grab_program.user_id')
+        ->orderBy('created_at', 'DESC');
+        // ->orderBy('program_created_at', 'DESC');
 
         if(isset($request->interest)) {
             if($request->interest==1) {
@@ -192,26 +232,30 @@ class LeadsController extends Controller
             return '<img src="'.$row->image_url.'" style="width:280px; height:auto;">';
         })
         ->addColumn('nominal', function($row){
-            $target  = ($row->target_type=='unlimited' && $row->target_amount==0) ? 'Unlimited' : number_format($row->target_amount);
-            $collect = number_format($row->collect_amount);
-            $org     = '<a href="#" onclick="detailOrg('.$row->user_id.')">'.$row->lembaga.'</a>';
+            $target   = ($row->target_type=='unlimited' && $row->target_amount==0) ? 'Unlimited' : number_format($row->target_amount);
+            $collect  = number_format($row->collect_amount);
+            $org      = '<a href="#" onclick="detailOrg('.$row->user_id.')">'.$row->lembaga.'</a>';
+            $wa_param = "'".$row->user_id."','".str_replace("'", "", $row->lembaga)."'";
+            $wa       = 'onclick="firstChat('.$wa_param.')"';
 
-            $sc      = 'style="cursor:pointer"';
-            $i_mail  = '<i class="fa fa-envelope"></i>';
-            $i_telp  = '<i class="fa fa-phone"></i>';
-            $i_fb    = 'FB'; //'<i class="fa fa-facebook-f"></i>';
-            $i_tw    = 'TW'; //'<i class="fa fa-twitter"></i>';
-            $i_ig    = 'IG'; //'<i class="fa fa-instagram"></i>';
-            $i_yt    = 'YT'; //'<i class="fa fa-youtube"></i>';
+            $sc       = 'style="cursor:pointer"';
+            $i_mail   = '<i class="fa fa-envelope"></i>';
+            $i_telp   = '<i class="fa fa-phone"></i>';
+            $i_fb     = 'FB'; //'<i class="fa fa-facebook-f"></i>';
+            $i_tw     = 'TW'; //'<i class="fa fa-twitter"></i>';
+            $i_ig     = 'IG'; //'<i class="fa fa-instagram"></i>';
+            $i_yt     = 'YT'; //'<i class="fa fa-youtube"></i>';
 
-            $mail    = (is_null($row->email) || $row->email=='') ? '<span class="badge badge-sm badge-secondary">'.$i_mail.'</span>' : '<span class="badge badge-sm badge-success">'.$row->email.'</span>';
-            $telp    = (is_null($row->phone) || $row->phone=='') ? '<span class="badge badge-sm badge-secondary">'.$i_telp.'</span>' : '<span class="badge badge-sm badge-success">'.$row->phone.'</span>';
-            $fb      = (is_null($row->facebook) || $row->facebook=='') ? '<span class="badge badge-sm badge-secondary">'.$i_fb.'</span>' : '<a href="'.$row->facebook.'" target="_blank" class="badge badge-sm badge-success">'.$i_fb.'</a>';
-            $tw      = (is_null($row->twitter) || $row->twitter=='') ? '<span class="badge badge-sm badge-secondary">'.$i_tw.'</span>' : '<a href="'.$row->twitter.'" target="_blank" class="badge badge-sm badge-success">'.$i_tw.'</a>';
-            $ig      = (is_null($row->instagram) || $row->instagram=='') ? '<span class="badge badge-sm badge-secondary">'.$i_ig.'</span>' : '<a href="'.$row->instagram.'" target="_blank" class="badge badge-sm badge-success">'.$i_ig.'</a>';
-            $yt      = (is_null($row->youtube) || $row->youtube=='') ? '<span class="badge badge-sm badge-secondary">'.$i_yt.'</span>' : '<a href="'.$row->youtube.'" target="_blank" class="badge badge-sm badge-success">'.$i_yt.'</a>';
+            $mail     = (is_null($row->email) || $row->email=='') ? '<span class="badge badge-sm badge-secondary">'.$i_mail.'</span>' : '<span class="badge badge-sm badge-success">'.$row->email.'</span>';
+            $fb       = (is_null($row->facebook) || $row->facebook=='') ? '<span class="badge badge-sm badge-secondary">'.$i_fb.'</span>' : '<a href="'.$row->facebook.'" target="_blank" class="badge badge-sm badge-success">'.$i_fb.'</a>';
+            $tw       = (is_null($row->twitter) || $row->twitter=='') ? '<span class="badge badge-sm badge-secondary">'.$i_tw.'</span>' : '<a href="'.$row->twitter.'" target="_blank" class="badge badge-sm badge-success">'.$i_tw.'</a>';
+            $ig       = (is_null($row->instagram) || $row->instagram=='') ? '<span class="badge badge-sm badge-secondary">'.$i_ig.'</span>' : '<a href="'.$row->instagram.'" target="_blank" class="badge badge-sm badge-success">'.$i_ig.'</a>';
+            $yt       = (is_null($row->youtube) || $row->youtube=='') ? '<span class="badge badge-sm badge-secondary">'.$i_yt.'</span>' : '<a href="'.$row->youtube.'" target="_blank" class="badge badge-sm badge-success">'.$i_yt.'</a>';
+            $telp     = (is_null($row->phone) || $row->phone=='') ? '<span class="badge badge-sm badge-secondary">'.$i_telp.'</span>' : '<span class="badge badge-sm badge-success" '.$wa.' '.$sc.'>'.$row->phone.'</span>';
+            $last_wa  = '<span class="badge badge-sm badge-warning">-</span>';
+            $btn_edit = '<a href="'.route("adm.leads.org.edit", $row->user_id).'" target="_blank" class="badge badge-sm badge-warning"><i class="fa fa-edit"></i></a>';
 
-            return $org.'<br>'.$mail.' '.$telp.' '.$fb.' '.$tw.' '.$ig.' '.$yt.'<br>'.$target.'<br>'.$collect.'<br>'.$row->target_status;
+            return $org.'<br>'.$telp.' '.$last_wa.'<br>'.$mail.' '.$fb.' '.$tw.' '.$ig.' '.$yt.' '.$btn_edit.'<br>'.$target.'<br>'.$collect.'<br>'.$row->target_status;
         })
         ->addColumn('date', function($row){
             $sc         = 'style="cursor:pointer"';
@@ -231,6 +275,171 @@ class LeadsController extends Controller
         ->make(true);
     }
 
+    /**
+     * Datatables Chat
+     */
+    public function orgDatatables(Request $request)
+    {
+        $data         = DB::table('grab_organization')->orderBy('created_at', 'DESC');
+
+        if(isset($request->ada_wa)) {
+            if($request->ada_wa==1) {
+                $data = $data->whereNotNull('phone');
+            }
+        }
+
+        if(isset($request->ada_email)) {
+            if($request->ada_email==1) {
+                $data = $data->whereNotNull('email');
+            }
+        }
+
+        $order_column = $request->input('order.0.column');
+        $order_dir    = ($request->input('order.0.dir')) ? $request->input('order.0.dir') : 'asc';
+
+        $count_total  = $data->count();
+
+        $search       = $request->input('search.value');
+
+        $count_filter = $count_total;
+        if($search != ''){
+            $data     = $data->where(function ($q) use ($search){
+                $q->where('name', 'like', '%'.$search.'%')
+                ->orWhere('address', 'like', '%'.$search.'%')
+                ->orWhere('twitter', 'like', '%'.$search.'%')
+                ->orWhere('instagram', 'like', '%'.$search.'%')
+                ->orWhere('facebook', 'like', '%'.$search.'%')
+                ->orWhere('youtube', 'like', '%'.$search.'%')
+                ->orWhere('description', 'like', '%'.$search.'%')
+                ->orWhere('email', 'like', '%'.$search.'%')
+                ->orWhere('phone', 'like', '%'.$search.'%');
+            });
+            $count_filter = $data->count();
+        }
+
+        $pageSize     = ($request->length) ? $request->length : 10;
+        $start        = ($request->start) ? $request->start : 0;
+
+        $data->skip($start)->take($pageSize);
+
+        $data         = $data->get();
+
+
+        return Datatables::of($data)
+        ->with([
+            "recordsTotal"    => $count_total,
+            "recordsFiltered" => $count_filter,
+        ])
+        ->setOffset($start)
+        ->addIndexColumn()
+        ->addColumn('name', function($row){
+            return '<a href="#" target="_blank">'.$row->name.'</a>';
+        })
+        ->addColumn('contact', function($row){
+            $sc       = 'style="cursor:pointer"';
+            $i_telp   = '<i class="fa fa-phone"></i>';
+            $i_mail   = '<i class="fa fa-envelope"></i>';
+            $wa_param = "'".$row->user_id."','".str_replace("'", "", $row->name)."'";
+            $wa       = 'onclick="firstChat('.$wa_param.')"';
+
+            $telp     = (is_null($row->phone) || $row->phone=='') ? '<span class="badge badge-sm badge-secondary">'.$i_telp.'</span>' : '<span class="badge badge-sm badge-success" '.$wa.' '.$sc.'>'.$row->phone.'</span>';
+            $last_wa  = '<span class="badge badge-sm badge-warning">-</span>';
+            $mail     = (is_null($row->email) || $row->email=='') ? '<span class="badge badge-sm badge-secondary">'.$i_mail.'</span>' : '<span class="badge badge-sm badge-success">'.$row->email.'</span>';
+
+            return $telp.' '.$last_wa.'<br>'.$mail;
+        })
+        ->addColumn('socmed', function($row){
+            $sc       = 'style="cursor:pointer"';
+            $i_fb     = 'FB';
+            $i_tw     = 'TW';
+            $i_ig     = 'IG';
+            $i_yt     = 'YT';
+
+            $fb       = (is_null($row->facebook) || $row->facebook=='') ? '<span class="badge badge-sm badge-secondary">'.$i_fb.'</span>' : '<a href="'.$row->facebook.'" target="_blank" class="badge badge-sm badge-success">'.$i_fb.'</a>';
+            $tw       = (is_null($row->twitter) || $row->twitter=='') ? '<span class="badge badge-sm badge-secondary">'.$i_tw.'</span>' : '<a href="'.$row->twitter.'" target="_blank" class="badge badge-sm badge-success">'.$i_tw.'</a>';
+            $ig       = (is_null($row->instagram) || $row->instagram=='') ? '<span class="badge badge-sm badge-secondary">'.$i_ig.'</span>' : '<a href="'.$row->instagram.'" target="_blank" class="badge badge-sm badge-success">'.$i_ig.'</a>';
+            $yt       = (is_null($row->youtube) || $row->youtube=='') ? '<span class="badge badge-sm badge-secondary">'.$i_yt.'</span>' : '<a href="'.$row->youtube.'" target="_blank" class="badge badge-sm badge-success">'.$i_yt.'</a>';
+
+            return $fb.' '.$tw.' '.$ig.' '.$yt;
+        })
+        ->addColumn('action', function($row){
+            $btn_edit = '<a href="'.route("adm.leads.org.edit", $row->user_id).'" target="_blank" class="badge badge-sm badge-warning"><i class="fa fa-edit"></i></a>';
+
+            return $btn_edit;
+        })
+        ->rawColumns(['name', 'contact', 'socmed', 'action'])
+        ->make(true);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function editOrganization($id)
+    {
+        $org  = DB::table('grab_organization')->where('user_id', $id)->first();
+
+        return view('admin.leads.edit_org', compact('org'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function updateOrganization(Request $request, $id)
+    {
+        try {
+            $data = DB::table('grab_organization')->where('user_id', $id)->update([
+                'name'        => $request->name,
+                'phone'       => $request->phone,
+                'address'     => $request->address,
+                'email'       => $request->email,
+                'instagram'   => $request->ig,
+                'facebook'    => $request->fb,
+                'youtube'     => $request->yt,
+                'twitter'     => $request->tw,
+                'fb_pixel'    => $request->pixel,
+                'gtm'         => $request->gtm,
+                'description' => $request->desc,
+                'updated_at'  => $request->date('Y-m-d H:i:s')
+            ]);
+
+            return redirect()->back()->with('success', 'Berhasil update data Lembaga');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal update, ada kesalahan teknis');
+        }
+    }
+
+    /**
+     * WA Organization
+     */
+    public function waOrganization(Request $request)
+    {
+        $id_org = $request->id;
+        $type   = $request->type;
+
+        $org    = DB::table('grab_organization')->select('name', 'phone', 'id')->where('user_id', $id_org)->first();
+
+        if(isset($org->phone)) {
+            // type of chat
+            if($type == 'fc') {
+                // FC here
+                $chat    = "Assalamu'alaikum wr.wb, admin *".ucwords(trim($org->name))."*.
+Saya Alifa dari tim Bantubersama.com (platform galang dana).
+Kami lihat program Anda ".ucwords(trim($org->name))." sangat bagus dan menarik sesuai dengan minat donatur kami.
+Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
+                (new WaBlastController)->sentWAGeneral($org->phone, $chat);
+            } else {
+                // selain FC
+            }
+
+            return array(
+                'status'=>'success',
+                'org'   => $org->name
+            );
+        } else {
+            return array('status'=>'fail');
+        }
+    }
+
 
     /**
      * Ambil data dari platform lain
@@ -242,6 +451,9 @@ class LeadsController extends Controller
         } else {
             $id = 1;
         }
+
+        $count_inp_org     = 0;
+        $count_inp_program = 0;
 
         $curl             = curl_init();
         curl_setopt($curl, CURLOPT_URL, 'https://core.sholeh.app/api/v1/programs?s=a&per_page=3000&page='.$id);
@@ -263,6 +475,12 @@ class LeadsController extends Controller
                     if(isset($data[$i]->user->id)) {
                         $org = DB::table('grab_organization')->select('user_id')->where('user_id', $data[$i]->user->id)->first();
                         if(!isset($org->user_id)) {
+                            if(isset($data[$i]->user->description)) {
+                                $desc = $this->removeEmoji($data[$i]->user->description);
+                            } else {
+                                $desc = null;
+                            }
+
                             $user_id = DB::table('grab_organization')->insertGetId([
                                 'user_id'     => $data[$i]->user->id,
                                 'name'        => $data[$i]->user->name,
@@ -275,8 +493,12 @@ class LeadsController extends Controller
                                 'instagram'   => (isset($data[$i]->user->instagram)) ? $data[$i]->user->instagram : null,
                                 'facebook'    => (isset($data[$i]->user->facebook)) ? $data[$i]->user->facebook : null,
                                 'youtube'     => (isset($data[$i]->user->youtube)) ? $data[$i]->user->youtube : null,
-                                'description' => (isset($data[$i]->user->description)) ? $data[$i]->user->description : null,
+                                'description' => $desc,
+                                // 'created_at'  => date('Y-m-d H:i:s'),
+                                // 'updated_at'  => date('Y-m-d H:i:s')
                             ]);
+
+                            $count_inp_org++;
                         } else {
                             $user_id = $org->user_id;
                         }
@@ -291,11 +513,11 @@ class LeadsController extends Controller
                             'id_grab'            => $data[$i]->id,
                             'category_slug'      => $data[$i]->category_slug,
                             'type'               => $data[$i]->type,
-                            'name'               => $data[$i]->name,
+                            'name'               => (isset($data[$i]->name)) ? $this->removeEmoji($data[$i]->name) : null,
                             'slug'               => $data[$i]->slug,
                             'permalink'          => $data[$i]->permalink,
-                            'headline'           => $data[$i]->headline,
-                            'content'            => $data[$i]->content,
+                            'headline'           => (isset($data[$i]->headline)) ? $this->removeEmoji($data[$i]->headline) : null,
+                            'content'            => (isset($data[$i]->content)) ? $this->removeEmoji($data[$i]->content) : null,
                             'status'             => $data[$i]->status,
                             'target_status'      => $data[$i]->target_status,
                             'target_type'        => $data[$i]->target_type,
@@ -315,19 +537,63 @@ class LeadsController extends Controller
                             'fb_pixel'           => $data[$i]->fb_pixel,
                             'gtm'                => $data[$i]->gtm,
                             'toggle_dana'        => $data[$i]->toggle_dana,
-                            'program_created_at' => date('Y-m-d', strtotime($data[$i]->program_created_at)),
+                            'program_created_at' => (date('Y-m-d', strtotime($data[$i]->program_created_at))) ? date('Y-m-d', strtotime($data[$i]->program_created_at)) : date('Y-m-d'),
                             'tags_name'          => (isset($data[$i]->tags->title)) ? $data[$i]->tags->title : null,
                             'is_favorite'        => ($data[$i]->is_favorite=='false') ? 0 : 1,
                             'fund_display'       => $data[$i]->fund_display
                         ]);
+                        $count_inp_program++;
                     }
                 }
             } else {
                 echo "<br>no data";
             }
 
-            echo "FINISHED, jumlah : ".count($res);
+            echo "FINISHED, <br>Total Ambil Data : ".count($data);
+            echo '<br>Total Program Bagu : '.$count_inp_program;
+            echo '<br>Total Lembaga Bagu : '.$count_inp_org;
         }
+    }
+
+    /**
+     * remove emoji
+     */
+    function removeEmoji($string)
+    {
+        // Match Enclosed Alphanumeric Supplement
+        $regex_alphanumeric = '/[\x{1F100}-\x{1F1FF}]/u';
+        $clear_string = preg_replace($regex_alphanumeric, '', $string);
+
+        // Match Miscellaneous Symbols and Pictographs
+        $regex_symbols = '/[\x{1F300}-\x{1F5FF}]/u';
+        $clear_string = preg_replace($regex_symbols, '', $clear_string);
+
+        // Match Emoticons
+        $regex_emoticons = '/[\x{1F600}-\x{1F64F}]/u';
+        $clear_string = preg_replace($regex_emoticons, '', $clear_string);
+
+        // Match Transport And Map Symbols
+        $regex_transport = '/[\x{1F680}-\x{1F6FF}]/u';
+        $clear_string = preg_replace($regex_transport, '', $clear_string);
+        
+        // Match Supplemental Symbols and Pictographs
+        $regex_supplemental = '/[\x{1F900}-\x{1F9FF}]/u';
+        $clear_string = preg_replace($regex_supplemental, '', $clear_string);
+
+        // Match Miscellaneous Symbols
+        $regex_misc = '/[\x{2600}-\x{26FF}]/u';
+        $clear_string = preg_replace($regex_misc, '', $clear_string);
+
+        // Match Dingbats
+        $regex_dingbats = '/[\x{2700}-\x{27BF}]/u';
+        $clear_string = preg_replace($regex_dingbats, '', $clear_string);
+
+        $clear_string = preg_replace('/[\x{1F600}-\x{1F64F}]/u', '', $clear_string);
+        $clear_string = preg_replace('/\x{FE0F}/u', '', $clear_string);
+        $clear_string = preg_replace('/[^\x20-\x7E]/', '', $clear_string);
+        $clear_string = preg_replace('/[\x{1F600}-\x{1F64F}|\x{1F300}-\x{1F5FF}|\x{1F680}-\x{1F6FF}|\x{1F700}-\x{1F77F}|\x{1F780}-\x{1F7FF}|\x{1F800}-\x{1F8FF}|\x{1F900}-\x{1F9FF}|\x{1FA00}-\x{1FA6F}|\x{1FA70}-\x{1FAFF}]/u', '', $clear_string);
+
+        return $clear_string;
     }
 
 }

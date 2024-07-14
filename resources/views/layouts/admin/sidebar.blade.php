@@ -133,6 +133,11 @@
                             </a>
                         </li>
                         <li>
+                            <a href="{{ route('adm.leads.org.list') }}" class="{{ $sidebar_submenu == 'org-list' ? 'mm-active' : '' }}">
+                                <i class="metismenu-icon"></i> List Lembaga
+                            </a>
+                        </li>
+                        <li>
                             <a href="{{ route('adm.leads.grab.amalsholeh') }}" class="{{ $sidebar_submenu == 'grab_do' ? 'mm-active' : '' }}">
                                 <i class="metismenu-icon"></i> Grab Do
                             </a>
