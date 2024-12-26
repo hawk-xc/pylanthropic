@@ -23,15 +23,15 @@ class ReportController extends Controller
         $donate_sum    = Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m').'%')->sum('nominal_final');
         
         $bca       = Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m').'%')
-                        ->where('payment_type_id', '1')->sum('nominal_final');
+                        ->where('payment_type_id', '21')->sum('nominal_final');
         $bsi       = Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m').'%')
-                        ->where('payment_type_id', '2')->sum('nominal_final');
+                        ->where('payment_type_id', '22')->sum('nominal_final');
         $bri       = Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m').'%')
-                        ->where('payment_type_id', '4')->sum('nominal_final');
+                        ->where('payment_type_id', '24')->sum('nominal_final');
         $bni       = Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m').'%')
-                        ->where('payment_type_id', '19')->sum('nominal_final');
+                        ->where('payment_type_id', '25')->sum('nominal_final');
         $mandiri   = Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m').'%')
-                        ->where('payment_type_id', '3')->sum('nominal_final');
+                        ->where('payment_type_id', '23')->sum('nominal_final');
         $qris      = Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m').'%')
                         ->where('payment_type_id', '5')->sum('nominal_final');
         $gopay     = Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m').'%')
@@ -50,15 +50,15 @@ class ReportController extends Controller
         $donate_sum_ago    = Transaction::select('id')->where('status', 'success')->where('created_at', 'like', $month_ago.'%')->sum('nominal_final');
 
         $bca_ago       = Transaction::select('id')->where('status', 'success')->where('created_at', 'like', $month_ago.'%')
-                        ->where('payment_type_id', '1')->sum('nominal_final');
+                        ->where('payment_type_id', '21')->sum('nominal_final');
         $bsi_ago       = Transaction::select('id')->where('status', 'success')->where('created_at', 'like', $month_ago.'%')
-                        ->where('payment_type_id', '2')->sum('nominal_final');
+                        ->where('payment_type_id', '22')->sum('nominal_final');
         $bri_ago       = Transaction::select('id')->where('status', 'success')->where('created_at', 'like', $month_ago.'%')
-                        ->where('payment_type_id', '4')->sum('nominal_final');
+                        ->where('payment_type_id', '24')->sum('nominal_final');
         $bni_ago       = Transaction::select('id')->where('status', 'success')->where('created_at', 'like', $month_ago.'%')
-                        ->where('payment_type_id', '19')->sum('nominal_final');
+                        ->where('payment_type_id', '25')->sum('nominal_final');
         $mandiri_ago   = Transaction::select('id')->where('status', 'success')->where('created_at', 'like', $month_ago.'%')
-                        ->where('payment_type_id', '3')->sum('nominal_final');
+                        ->where('payment_type_id', '23')->sum('nominal_final');
         $qris_ago      = Transaction::select('id')->where('status', 'success')->where('created_at', 'like', $month_ago.'%')
                         ->where('payment_type_id', '5')->sum('nominal_final');
         $gopay_ago     = Transaction::select('id')->where('status', 'success')->where('created_at', 'like', $month_ago.'%')

@@ -64,7 +64,7 @@
                             }
                         }
 
-                        $d_avg = $d_avg/10;
+                        $d_avg = $d_avg/$sum_row;
                         if($d_avg>=1000000) {
                             $d_avg = "<span class='text-success'>".number_format($d_avg)."</span>";
                         } elseif($d_avg<1000000 && $d_avg>=500000) {
@@ -79,8 +79,27 @@
                         echo "<td>".$data[$i]['title']."</td>";
                         echo "<td>".number_format($data[$i]['donate_sum'])."<br>".$d_avg."</td>";
 
-                        for ($a=0; $a<$sum_row; $a++) { 
-                            echo "<td><b>".(isset($data[$i]['donate'][$a]['count']) ? number_format($data[$i]['donate'][$a]['count']): 0) ."</b><br>". ($d_sum[$a])."</td>";
+                        for ($a=0; $a<$sum_row; $a++) {
+                            $it           = $a-1;
+                            $search_value = date('Y-m-d', strtotime(date('Y-m-d').'-'.($a+1).' days')).'T17:00:00.000000Z';
+                            $index        = array_search($search_value, array_column($data[$i]['donate'], 'created_at'));
+
+                            if($index !== false) {
+                                $final_sum = $data[$i]['donate'][$index]['sum'];
+                                if($final_sum>=1000000) {
+                                    $final_sum = "<span class='text-success'>".number_format($final_sum)."</span>";
+                                } elseif($final_sum<1000000 && $final_sum>=500000) {
+                                    $final_sum = number_format($final_sum);
+                                } elseif($final_sum<500000 && $final_sum>=250000) {
+                                    $final_sum = "<span class='text-warning'>".number_format($final_sum)."</span>";
+                                } else {
+                                    $final_sum = "<span class='text-danger'>".number_format($final_sum)."</span>";
+                                }
+
+                                echo "<td><b>".number_format($data[$i]['donate'][$index]['count'])."</b><br>".$final_sum."</td>";
+                            } else {
+                                echo '<td><b>0</b><br>0</td>';
+                            }
                         }
 
                         echo "</tr>";

@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
-use App\Models\Program;
 use App\Models\Payout;
 
 use DataTables;
@@ -19,7 +18,98 @@ class PayoutController extends Controller
      */
     public function index()
     {
-        return view('admin.program.program_payout');
+        return view('admin.payout.index');
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return view('admin.payout.create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        try {
+            $request->validate([
+                'program'          => 'required|numeric',
+                'description'      => 'required|string',
+                'nominal_request'  => 'required',
+                'nominal_approved' => 'required'
+            ]);
+
+            $data                   = new Payout;
+            $data->program_id       = $request->program;
+            $data->nominal_request  = str_replace('.', '', $request->nominal_request);
+            $data->nominal_approved = str_replace('.', '', $request->nominal_approved);
+            $data->desc_request     = $request->description;
+            $data->status           = $request->status;
+
+            if($request->program!='') {
+                $data->paid_at      = $request->date_paid;
+            }
+            // else paid_at = null
+
+            // upload file_submit
+            if ($request->hasFile('file_submit')) { 
+                $file1              = $request->file('file_submit');
+                $filename           = time().'_'.$file1->getClientOriginalName();
+                $file1->storeAs('public/images/payout', $filename, 'public_uploads');
+                $data->file_submit  = $filename;
+            }
+
+            // upload file_paid
+            if ($request->hasFile('file_paid')) { 
+                $file2              = $request->file('file_paid');
+                $filename           = time().'_'.$file2->getClientOriginalName();
+                $file2->storeAs('public/images/payout', $filename, 'public_uploads');
+                $data->file_paid    = $filename;
+            }
+
+            // upload file_accepted
+            if ($request->hasFile('file_accepted')) { 
+                $file3               = $request->file('file_accepted');
+                $filename            = time().'_'.$file3->getClientOriginalName();
+                $file3->storeAs('public/images/payout', $filename, 'public_uploads');
+                $data->file_accepted = $filename;
+            }
+
+            $data->save();
+
+            return redirect()->back()->with('success', 'Berhasil tambah data Penyaluran Proagram');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal tambah, ada kesalahan teknis');
+        }
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        $program = '';
+
+        return view('admin.program.edit', compact('program'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, $id)
+    {
+
     }
 
 
@@ -75,7 +165,13 @@ class PayoutController extends Controller
                 return '<i class="fa fa-file-signature icon-gradient bg-happy-green"></i> '.number_format($row->nominal_request).'<br><i class="fa fa-check-double icon-gradient bg-happy-green"></i> '.number_format($row->nominal_approved);
             })
             ->addColumn('date', function($row){
-                return '<i class="fa fa-file-signature icon-gradient bg-happy-green"></i> '.date('Y-m-d H:i', strtotime($row->created_at)).'<br><i class="fa fa-check-double icon-gradient bg-happy-green"></i> '.date('Y-m-d H:i', strtotime($row->paid_at));
+                if(!is_null($row->paid_at)) {
+                    $paid_at = date('Y-m-d H:i', strtotime($row->paid_at));
+                } else {
+                    $paid_at = 'not set';
+                }
+
+                return '<i class="fa fa-file-signature icon-gradient bg-happy-green"></i> '.date('Y-m-d H:i', strtotime($row->created_at)).'<br><i class="fa fa-check-double icon-gradient bg-happy-green"></i> '.$paid_at;
             })
             ->addColumn('status', function($row){
                 if($row->status == 'request') {
@@ -93,7 +189,9 @@ class PayoutController extends Controller
                 return $status;
             })
             ->addColumn('action', function($row){
-                return '-';
+                $view = '<a href="" href="'.route("adm.payout.show", $row->id).'" target="_blank" class="btn btn-info btn-xs"><i class="fa fa-eye"></i></a>';
+                $edit = '<a href="'.route("adm.payout.edit", $row->id).'" target="_blank" class="edit btn btn-warning btn-xs"><i class="fa fa-edit"></i></a>';
+                return $view.'<br>'.$edit;
             })
             ->rawColumns(['title', 'date', 'program_title', 'nominal', 'status', 'action'])
             ->make(true);

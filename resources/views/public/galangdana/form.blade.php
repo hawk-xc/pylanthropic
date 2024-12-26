@@ -1,7 +1,7 @@
 @extends('layouts.public', [
-    'second_title' => 'Form Pengajuan Program - LAZISNU SLEMAN x BANTUBERSAMA',
+    'second_title' => 'Form Pengajuan Program - LAZISNU DIY x BANTUBERSAMA',
     'meta_desc'    => 'Bantubersama adalah platform penggalang dana untuk membantu bersama secara online',
-    'image'        => 'galang-dana-bantubersama.png',
+    'image'        => 'pengajuan_bantubersama_lazisnu_diy.jpg',
 ])
 
 
@@ -30,7 +30,7 @@
   </header>
   <!-- header end -->
 
-  <form method="post" action="{{ route('nucare.submit') }}">
+  <form method="post" action="{{ route('submit') }}">
     @csrf
     <!-- payment method section start -->
     <section class="payment method section-lg-b-space pt-0">

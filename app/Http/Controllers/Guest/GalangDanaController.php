@@ -15,14 +15,14 @@ class GalangDanaController extends Controller
      */
     public function index(Request $request)
     {
-        return view('public.nucare.index');
+        return view('public.galangdana.index');
     }
     /**
      * Display a listing of the resource.
      */
     public function form(Request $request)
     {
-        return view('public.nucare.form');
+        return view('public.galangdana.form');
     }
 
     /**
@@ -30,7 +30,7 @@ class GalangDanaController extends Controller
      */
     public function submit(Request $request)
     {
-        return view('public.nucare.thanks');
+        return view('public.galangdana.thanks');
     }
     
     /**
@@ -38,7 +38,7 @@ class GalangDanaController extends Controller
      */
     public function thanks(Request $request)
     {
-        return view('public.nucare.index');
+        return view('public.galangdana.index');
     }
 
 }

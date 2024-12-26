@@ -134,6 +134,23 @@
                 <div class="divider mt-4"></div>
 
                 <div class="col-6">
+                    <label class="form-label fw-semibold">Optimation Fee Berapa %</label>
+                    <div class="input-group input-group-sm">
+                        <input type="number" class="form-control" max="100" name="optimation_fee" placeholder="Default 10" value="{{ $program->optimation_fee }}" required>
+                        <span class="input-group-text"> % </span>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <label class="form-label fw-semibold">Menampilkan Pengurangan Berapa %</label>
+                    <div class="input-group input-group-sm">
+                        <input type="number" class="form-control" max="100" name="show_minus" placeholder="15" value="{{ $program->show_minus }}" required>
+                        <span class="input-group-text"> % </span>
+                    </div>
+                </div>
+
+                <div class="divider mt-4"></div>
+
+                <div class="col-6">
                     <label class="form-label fw-semibold">Thumbnail (292 x 156 px)</label>
                     <input type="file" class="form-control form-control-sm" name="thumbnail">
                     @if(isset($program->thumbnail) && $program->thumbnail!='')

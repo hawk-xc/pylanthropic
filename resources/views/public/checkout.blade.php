@@ -4,7 +4,7 @@
 
 
 @section('css_plugins')
-<!-- Meta Pixel Code -->
+    <!-- Meta Pixel Code -->
     <script>
       !function(f,b,e,v,n,t,s)
       {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -28,12 +28,12 @@
           echo "fbq('init', '586907076711934');";
           $pixel_id = "586907076711934";
         } else {
-          echo "fbq('init', '586907076711934');";   // akun 1, 2, 3
+          //echo "fbq('init', '586907076711934');";   // akun 1, 2, 3
           echo "fbq('init', '1278491429470122');";  // akun 4
           $pixel_id = "1278491429470122";
         }
       } else {
-        echo "fbq('init', '586907076711934');";   // akun 1, 2, 3
+        //echo "fbq('init', '586907076711934');";   // akun 1, 2, 3
         echo "fbq('init', '1278491429470122');";  // akun 4
         $pixel_id = "1278491429470122";
       }
@@ -41,31 +41,49 @@
       fbq('track', 'InitiateCheckout');
       window.loadedPixel = []
     </script>
-  <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{$pixel_id}}&ev=InitiateCheckout&noscript=1" /></noscript>
-  <!-- End Meta Pixel Code -->
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{$pixel_id}}&ev=InitiateCheckout&noscript=1" /></noscript>
+    <!-- End Meta Pixel Code -->
   
 
-  @if(false)
     <!-- Tiktok Analytic Code -->
     <script>
-      !function (w, d, t) {
-        w.TiktokAnalyticsObject=t;
-        var ttq=w[t]=w[t]||[];
-        ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};
-        for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);
-        ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var i="https://analytics.tiktok.com/i18n/pixel/events.js";ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=i,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};
-        var o=document.createElement("script");
-        o.type="text/javascript",o.async=!0,o.src=i+"?sdkid="+e+"&lib="+t;
-        var a=document.getElementsByTagName("script")[0];
-        a.parentNode.insertBefore(o,a)};
-      
-        ttq.load('CJ86D3BC77UC183801KG');
-        ttq.track('InitiateCheckout');
-        ttq.page();
-      }(window, document, 'ttq');
+        !function (w, d, t) {
+            w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(
+            var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script")
+            ;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+
+            ttq.load('CR2P7SJC77U8E82N1D2G');
+            ttq.page();
+            ttq.track('InitiateCheckout');
+        }(window, document, 'ttq');
     </script>
     <!-- End Tiktok Analytic Code -->
-  @endif
+    <!-- Tiktok Analytic Code -->
+    <script>
+        !function (w, d, t) {
+            w.TiktokAnalyticsObject=t;var ttq2=w[t]=w[t]||[];ttq2.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq2.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq2.methods.length;i++)ttq2.setAndDefer(ttq2,ttq2.methods[i]);ttq2.instance=function(t){for(
+            var e=ttq2._i[t]||[],n=0;n<ttq2.methods.length;n++)ttq2.setAndDefer(e,ttq2.methods[n]);return e},ttq2.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq2._i=ttq2._i||{},ttq2._i[e]=[],ttq2._i[e]._u=r,ttq2._t=ttq2._t||{},ttq2._t[e]=+new Date,ttq2._o=ttq2._o||{},ttq2._o[e]=n||{};n=document.createElement("script")
+            ;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+
+            ttq2.load('CTDP1L3C77U0ROHK9HPG');
+            ttq2.page();
+            ttq2.track('InitiateCheckout');
+        }(window, document, 'ttq');
+    </script>
+    <!-- End Tiktok Analytic Code -->
+    <!-- Tiktok Analytic Code -->
+    <!-- <script>
+        !function (w, d, t) {
+            w.TiktokAnalyticsObject=t;var ttq3=w[t]=w[t]||[];ttq3.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq3.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq3.methods.length;i++)ttq3.setAndDefer(ttq3,ttq3.methods[i]);ttq3.instance=function(t){for(
+            var e=ttq3._i[t]||[],n=0;n<ttq3.methods.length;n++)ttq3.setAndDefer(e,ttq3.methods[n]);return e},ttq3.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq3._i=ttq3._i||{},ttq3._i[e]=[],ttq3._i[e]._u=r,ttq3._t=ttq3._t||{},ttq3._t[e]=+new Date,ttq3._o=ttq3._o||{},ttq3._o[e]=n||{};n=document.createElement("script")
+            ;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+
+            ttq3.load('CS4C9ORC77U61CV20FI0');
+            ttq3.page();
+            ttq3.track('InitiateCheckout');
+        }(window, document, 'ttq');
+    </script> -->
+    <!-- End Tiktok Analytic Code -->
 
 @endsection
 
@@ -154,7 +172,7 @@
           <textarea name="doa" rows="5" class="form-control fs-14 lh-20 form-payment" placeholder="Tulis pesan dan do'a  untuk diri sendiri atau penggalang dana agar dilihat dan diamini oleh orang baik lainnya"></textarea>
         </div>
         <div class="alert alert-secondary disclaimer-detail mt-4">
-          Nominal di atas sudah termasuk 5% donasi operasional Yayasan Bantu Bersama Sejahtera. Jika nominal donasi tidak sesuai dengan angka unik yang tertera maka kami catat sebagai akad infak.
+          Nominal di atas sudah termasuk 5% donasi operasional Bantubersama. Jika nominal donasi tidak sesuai dengan angka unik yang tertera maka kami catat sebagai akad infak umum.
         </div>
       </div>
     </section>

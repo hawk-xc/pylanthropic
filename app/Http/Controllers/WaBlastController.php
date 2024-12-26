@@ -15,7 +15,8 @@ class WaBlastController extends Controller
     protected $host;
     public function __construct()
     {
-        $this->token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU';
+        // $this->token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // 081-55555-849
+        $this->token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb';  // 0851-8338-8344
         $this->host  = 'https://app.ruangwa.id/api/send_message';
 
     }

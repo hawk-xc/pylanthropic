@@ -186,7 +186,7 @@
                         </div>
                     </div>
                     <div class="table-responsive px-3 mt-3 mb-3">
-                        <table id="table-donatur" class="table table-hover table-striped table-bordered">
+                        <table id="table-donatur1" class="table table-hover table-striped table-bordered">
                             <thead>
                                 <tr>
                                     <th>Judul</th>
@@ -213,7 +213,7 @@
                         </div>
                     </div>
                     <div class="table-responsive px-3 mt-3 mb-3">
-                        <table id="table-fundraiser" class="table table-hover table-striped table-bordered">
+                        <table id="table-fundraiser1" class="table table-hover table-striped table-bordered">
                             <thead>
                                 <tr>
                                     <th>REF CODE</th>

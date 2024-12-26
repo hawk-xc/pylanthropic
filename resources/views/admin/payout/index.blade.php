@@ -11,6 +11,16 @@
 @endsection
 
 
+@section('css_inline')
+    <style type="text/css">
+        .btn-xs {
+            padding: 3px !important;
+            font-size: 13px !important;
+        }
+    </style>
+@endsection
+
+
 @section('content')
     <div class="main-card mb-3 card">
         <div class="card-body">
@@ -19,17 +29,17 @@
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 pb-0">
                             <li class="breadcrumb-item"><a href="{{ route('adm.index') }}">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Program</li>
+                            <li class="breadcrumb-item active" aria-current="page">Penyaluran</li>
                         </ol>
                     </nav>
                 </div>
                 <div class="col-7 fc-rtl">
                     <button class="btn btn-sm btn-outline-primary"><i class="fa fa-filter mr-1"></i> Filter</button>
-                    <button class="btn btn-sm btn-outline-primary filter_payment" id="filter-ads" data-id="bca">ADS</button>
+                    <!-- <button class="btn btn-sm btn-outline-primary filter_payment" id="filter-ads" data-id="bca">ADS</button>
                     <button class="btn btn-sm btn-outline-primary filter_payment" id="filter-fee" data-id="bca">Payment Fee</button>
                     <button class="btn btn-sm btn-outline-primary filter_payment" id="filter-opera" data-id="bca">Operational</button>
-                    <button class="btn btn-sm btn-outline-primary filter_payment" id="filter-others" data-id="bca">Others</button>
-                    <a href="{{ route('adm.program.create') }}" class="btn btn-sm btn-outline-primary"><i class="fa fa-plus mr-1"></i> Tambah Spent</a>
+                    <button class="btn btn-sm btn-outline-primary filter_payment" id="filter-others" data-id="bca">Others</button> -->
+                    <a href="{{ route('adm.payout.create') }}" class="btn btn-sm btn-outline-primary"><i class="fa fa-plus mr-1"></i> Tambah</a>
                 </div>
             </div>
             <div class="divider"></div>
@@ -75,6 +85,7 @@
         autoWidth: true,
         columnDefs: [
             { "width": "22%", "targets": 0 },
+            { "width": "12%", "targets": 1 },
             { "width": "14%", "targets": 4 }
         ],
         // order: [[4, 'desc']],

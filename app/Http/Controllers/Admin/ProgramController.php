@@ -215,6 +215,8 @@ class ProgramController extends Controller
             $data->nominal_approved = str_replace('.', '', $request->nominal);
             $data->end_date         = $request->date_end;
             $data->short_desc       = $request->caption;
+            $data->optimation_fee   = $request->optimation_fee;
+            $data->show_minus       = $request->show_minus;
 
             if($request->show == 1){        // Pencarian saja
                 $data->is_publish       = 1;
@@ -1327,25 +1329,30 @@ class ProgramController extends Controller
      */
     public function donatePerformance(Request $request)
     {
-        $data = array();
+        $data    = array();
+        $dn      = date('d-m-Y');
+        $jml     = 10;
         $program = Program::select('id', 'title', 'donate_sum')
                     ->where('is_publish', 1)->where('end_date', '>', date('Y-m-d H:i:s'))
                     ->where(function ($q){
                         $q->where('is_recommended', 1)->orWhere('is_show_home', 1)->orWhere('is_urgent', 1);
                     })
-                    ->orderBy('donate_sum', 'DESC')->limit(10)->get();
+                    ->orderBy('donate_sum', 'DESC')->limit(20)->get();
         foreach ($program as $v) {
-            $donate  = Transaction::select(DB::raw('sum(nominal_final) as sum'), DB::raw('count(id) as count'))
+            $donate  = Transaction::select(DB::raw('sum(nominal_final) as sum'), DB::raw('count(id) as count'), DB::raw('DATE(created_at) as created_at'))
                         ->where('program_id', $v->id)->where('status', 'success')
+                        ->where('created_at', '>=', date('Y-m-d', strtotime($dn.'-'.$jml.' days')).' 00:00:00')
                         ->groupBy(DB::raw('DATE(created_at)'))
                         ->orderBy(DB::raw('DATE(created_at)'), 'DESC')
-                        ->limit(10)->get()->toArray();
+                        ->limit($jml)->get()->toArray();
+            $date    = (isset($donate[0]['created_at'])) ? date('d-m-y', strtotime($donate[0]['created_at'])) : '-';
             $data[]  = [
-                        'title'=>$v->title, 'donate_sum'=>$v->donate_sum,
-                        'donate'=> $donate
+                        'title'      => $v->title,
+                        'donate_sum' => $v->donate_sum,
+                        'donate'     => $donate
                     ];
         }
-        
+
         return view('admin.program.performance', compact('data'));
     }
 

@@ -18,8 +18,7 @@
       s.parentNode.insertBefore(t,s)}(window, document,'script',
       'https://connect.facebook.net/en_US/fbevents.js');
       fbq.disablePushState = true;
-      fbq('init', '2596008717326722');
-      fbq('init', '586907076711934');
+      fbq('init', '1278491429470122');
       fbq('track', 'PageView');
       window.loadedPixel = []
     </script>
@@ -322,7 +321,7 @@
           </div>
         </div>
         <div class="fs-14 fw-normal text-grey mt-3">
-          Copyright © 2023 Yayasan Bantu Bersama Sejahtera
+          Copyright © 2023 Yayasan Bantu Beramal Bersama
         </div>
       </div>
     </section>

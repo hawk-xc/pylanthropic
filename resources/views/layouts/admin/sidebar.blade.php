@@ -52,7 +52,7 @@
                     </a>
                     <ul class="{{ $sidebar_menu == 'ads' ? 'mm-show' : '' }}">
                         <li>
-                            <a href="{{ route('adm.ads.need.action') }}?id=1" class="{{ $sidebar_submenu == 'ads' ? 'mm-active' : '' }}">
+                            <a href="{{ route('adm.ads.need.action') }}?id=4" class="{{ $sidebar_submenu == 'ads' ? 'mm-active' : '' }}">
                                 <i class="metismenu-icon"></i> Butuh Tindakan
                             </a>
                         </li>
@@ -157,7 +157,7 @@
                         </li>
                         <li>
                             <a class="{{ $sidebar_submenu == 'donatur_dorman' ? 'mm-active' : '' }}" href="{{ route('adm.donatur.dorman') }}">
-                                <i class="metismenu-icon"></i> Donatur Dorman 14D
+                                <i class="metismenu-icon"></i> Donatur Dorman 30D
                             </a>
                         </li>
                         <li>

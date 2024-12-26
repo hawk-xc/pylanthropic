@@ -173,7 +173,7 @@ class DonaturController extends Controller
     public function datatablesDonaturDorman(Request $request)
     {
         // if ($request->ajax()) {
-            $date_set     = date('Y-m-d', strtotime(date('Y-m-d').'-14 days')).' 00:00:00';
+            $date_set     = date('Y-m-d', strtotime(date('Y-m-d').'-31 days')).' 00:00:00';
             $data         = Donatur::where('last_donate_paid', '<=', $date_set)
                             // ->where('want_to_contact', '1')->whereNull('wa_inactive_since')
                             ->orderBy('count_donate_paid', 'DESC');
@@ -219,6 +219,9 @@ class DonaturController extends Controller
 
                     if($row->wa_inactive_since===null) {
                         $telp = '<span class="badge badge-pill badge-'.$status_color.'">'.$row->telp.' Aktif ('.$want_contact.')</span>';
+                        if($row->want_to_contact==1) {
+                            $telp = '<a href="" target="_blank"></a>';
+                        }
                     } else {
                         $telp = '<span class="badge badge-pill badge-danger">'.$row->telp.' Not ('.$want_contact.')</span>';
                     }
@@ -687,7 +690,8 @@ https://bantubersama.com/'.$trans->slug.'
 Kepedulian kita masih terus dinantikan, oleh mereka yang membutuhkan.';
 
             // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
-            $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+            // $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+            $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
             $curl  = curl_init();
             curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/send_message');
             curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -767,7 +771,8 @@ https://bantubersama.com
 Terimakash';
 
             // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
-            $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+            // $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+            $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
             $curl  = curl_init();
             curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/send_message');
             curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -860,7 +865,8 @@ Ayo satukan niat untuk memberi harapan kepada saudara kita di Gaza Palestina den
 https://bantubersama.com/bantupalestina';
 
             // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
-            $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+            // $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+            $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
             $curl  = curl_init();
             curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/send_message');
             curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -922,7 +928,8 @@ https://bantubersama.com/bantupalestina';
             }
 
             // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
-            $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+            // $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+            $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
             $curl  = curl_init();
             curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/check_number');
             curl_setopt($curl, CURLOPT_HEADER, 0);

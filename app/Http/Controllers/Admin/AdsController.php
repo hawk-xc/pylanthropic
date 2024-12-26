@@ -19,7 +19,8 @@ class AdsController extends Controller
     protected $host;
     public function __construct()
     {
-        $this->token       = 'EAAFlv11kLJkBOyx9yFonwCdNAwKV6rWZC0nna2gZBOegnPjZB5HxhY9ubM6dIDhTi37fiOJXmyfV6YQO3ZCJFgUB1ebpgyuVub6VU56kucJjGCu9j5lIW66lYDznXMfLBl2CM5Rsfx4kl0A8AvOZBXVGzWROxrIxZBcuv31ta27jOPUI7TcB8yySFCb3jKMiCymQZBzEQwY';
+        // $this->token       = 'EAAFlv11kLJkBOyVGOpntLfYZAOBYIau26SIWqCCrJ4wdvNm18ZCXymkywVjBDDBZATBsNVg18YcUNz1AXfUiIcOnBKJffYaYxdf19SrTH0KHjLwWGmuccaTOUY2pBZBRUwKXk3oBZAFNq5gsBDzuIKlAzifa6kAXFADZC5J1IPhUanDGXkZCN7ZAIYCxTAnkNxtY6IarblWo';
+        $this->token       = env('TOKEN_FB_DEVELOPER_ADS');
         $this->host        = 'https://graph.facebook.com/v19.0/';
         $this->param_token = '&access_token='.$this->token;
     }
@@ -839,7 +840,7 @@ class AdsController extends Controller
                         $data->adaccount_id     = $account_id;
                         $data->name             = $v->name;
                         $data->is_active        = 1;
-                        $data->budget           = round($v->daily_budget);
+                        $data->budget           = (isset($v->daily_budget)) ? round($v->daily_budget) : 0;
                         $data->spend            = 0;
                         $data->cpr              = 0;
                         $data->result           = 0;

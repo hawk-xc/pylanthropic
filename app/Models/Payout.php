@@ -24,6 +24,9 @@ class Payout extends Model
         'nominal_approved',
         'desc_request',
         'paid_at',
+        'file_submit',
+        'file_paid',
+        'file_accepted',
         'created_at',
         'updated_at'
     ];

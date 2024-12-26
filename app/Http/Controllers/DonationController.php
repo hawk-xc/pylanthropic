@@ -49,23 +49,41 @@ class DonationController extends Controller
 Dengan donasi yang Anda berikan sebesar *Rp '.str_replace(',', '.', number_format($v->nominal_final)).'*
 
 bisa melalui :
-Link Gopay : '.$v->midtrans_url.'
+Link Gopay : '.$v->midtrans_url;
+
+                    $chat2   = $chat.'
 
 atau melalui :
-Transfer BSI - 7233152069
-Transfer BRI - 041001000888302
-Transfer BNI - 7060505013
-Transfer Mandiri - 1370022225276
-Transfer BCA - 4561363999
-a/n *Yayasan Bantu Bersama Sejahtera*
+Transfer BSI - 7855555667
+Transfer BRI - 041001001007307
+Transfer BNI - 1859941829
+Transfer Mandiri - 1370023737469
+Transfer BCA - 4561399292
+a/n *Yayasan Bantu Beramal Bersama*
 
 melalui QRIS
-https://bantubersama.com/public/qris-babe.png
+https://bantubersama.com/public/QRIS.png
 
 Kebaikan Anda sangat berarti bagi kami yang membutuhkan.
 Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah. Aamiin';
+                
+//                     $chat2   = $chat.'
 
-                    (new WaBlastController)->sentWA($donatur->telp, $chat, 'fu_trans', $v->id, $donatur->id, $program->id);
+// atau melalui :
+// Transfer BSI - 7233152069
+// Transfer BRI - 041001000888302
+// Transfer BNI - 7060505013
+// Transfer Mandiri - 1370022225276
+// Transfer BCA - 4561363999
+// a/n *Yayasan Bantu Bersama Sejahtera*
+
+// melalui QRIS
+// https://bantubersama.com/public/qris-babe.png
+
+// Kebaikan Anda sangat berarti bagi kami yang membutuhkan.
+// Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah. Aamiin';
+
+                    (new WaBlastController)->sentWA($donatur->telp, $chat2, 'fu_trans', $v->id, $donatur->id, $program->id);
 
                     // count kirim chat, agar tidak lebih dari 4 chat dalam 1 waktu kirim
                     $chat_count++;
@@ -113,23 +131,41 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
 
                     $chat    = 'Selangkah lagi kebaikan Anda'.$name.'akan dirasakan untuk program
 *'.ucwords($program->title).'*
-Dengan donasi yang Anda berikan sebesar *Rp '.str_replace(',', '.', number_format($v->nominal_final)).'*
+Dengan donasi yang Anda berikan sebesar *Rp '.str_replace(',', '.', number_format($v->nominal_final)).'*';
 
-bisa melalui :
-Transfer BSI - 7233152069
-Transfer BRI - 041001000888302
-Transfer BNI - 7060505013
-Transfer Mandiri - 1370022225276
-Transfer BCA - 4561363999
-a/n *Yayasan Bantu Bersama Sejahtera*
+                    $chat2   = $chat.'
+
+atau melalui :
+Transfer BSI - 7855555667
+Transfer BRI - 041001001007307
+Transfer BNI - 1859941829
+Transfer Mandiri - 1370023737469
+Transfer BCA - 4561399292
+a/n *Yayasan Bantu Beramal Bersama*
 
 melalui QRIS
-https://bantubersama.com/public/qris-babe.png
+https://bantubersama.com/public/QRIS.png
 
 Kebaikan Anda sangat berarti bagi kami yang membutuhkan.
 Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah. Aamiin';
+                
+//                     $chat2   = $chat.'
 
-                    (new WaBlastController)->sentWA($donatur->telp, $chat, 'fu_trans', $v->id, $donatur->id, $program->id);
+// atau melalui :
+// Transfer BSI - 7233152069
+// Transfer BRI - 041001000888302
+// Transfer BNI - 7060505013
+// Transfer Mandiri - 1370022225276
+// Transfer BCA - 4561363999
+// a/n *Yayasan Bantu Bersama Sejahtera*
+
+// melalui QRIS
+// https://bantubersama.com/public/qris-babe.png
+
+// Kebaikan Anda sangat berarti bagi kami yang membutuhkan.
+// Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah. Aamiin';
+
+                    (new WaBlastController)->sentWA($donatur->telp, $chat2, 'fu_trans', $v->id, $donatur->id, $program->id);
 
                     // count kirim chat, agar tidak lebih dari 4 chat dalam 1 waktu kirim
                     $chat_count++;
@@ -169,15 +205,15 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
 Dengan donasi yang Anda berikan sebesar *Rp '.str_replace(',', '.', number_format($v->nominal_final)).'*
 
 bisa melalui :
-Transfer BSI - 7233152069
-Transfer BRI - 041001000888302
-Transfer BNI - 7060505013
-Transfer Mandiri - 1370022225276
-Transfer BCA - 4561363999
-a/n *Yayasan Bantu Bersama Sejahtera*
+Transfer BSI - 7855555667
+Transfer BRI - 041001001007307
+Transfer BNI - 1859941829
+Transfer Mandiri - 1370023737469
+Transfer BCA - 4561399292
+a/n *Yayasan Bantu Beramal Bersama*
 
 melalui QRIS
-https://bantubersama.com/public/qris-babe.png
+https://bantubersama.com/public/QRIS.png
 
 Kebaikan Anda sangat berarti bagi kami yang membutuhkan.
 Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah. Aamiin';
@@ -209,7 +245,8 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
             }
 
             // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
-            $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+            // $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+            $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
             $curl  = curl_init();
             curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/check_number');
             curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -279,7 +316,8 @@ https://bantubersama.com/'.$trans->slug.'
 Kepedulian kita masih terus dinantikan, oleh mereka yang membutuhkan.';
 
             // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
-            $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+            // $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+            $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
             $curl  = curl_init();
             curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/send_message');
             curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -360,7 +398,8 @@ https://bantubersama.com
 Terimakash';
 
             // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
-            $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+            // $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+            $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
             $curl  = curl_init();
             curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/send_message');
             curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -454,7 +493,8 @@ Ayo satukan niat untuk memberi harapan kepada saudara kita di Gaza Palestina den
 https://bantubersama.com/bantupalestina';
 
             // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
-            $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+            // $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+            $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
             $curl  = curl_init();
             curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/send_message');
             curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -501,7 +541,7 @@ https://bantubersama.com/bantupalestina';
     }
 
     /**
-     * Broadcast to Donatur about specific program
+     * Update Sum Donate to program
      */
     public function sumDonate(Request $request)
     {
@@ -519,7 +559,7 @@ https://bantubersama.com/bantupalestina';
     }
 
     /**
-     * Broadcast to Donatur about specific program
+     * Cancel Transaction status to draft when created at before 5 days ago dan more
      */
     public function updateTransactionStatus(Request $request)
     {
@@ -530,4 +570,39 @@ https://bantubersama.com/bantupalestina';
         echo "FINISH";
     }
     
+    /**
+     * Update summary donate last_donate_paid, count_donate_paid, sum)donate_paid
+     */
+    public function donateUpdate()
+    {
+        // ini hanya untuk pertama kali saja / kalau sudah lama tidak dijalankan fungsi ini
+        // agar bisa dijalankan kesemua data donatur
+        // $dn      = date('Y-m-d H:i:s', strtotime(date('Y-m-d H:i:s').'-120 minutes'));
+        // $donatur = Donatur::select('id')
+        //             ->where(function ($q) use($dn){ $q->whereNull('last_donate_paid')->orWhere('updated_at', '<=', $dn); })
+        //             ->orderBy('id','asc')
+        //             ->limit(3200)
+        //             ->get();
+        
+        // agar efisien hanya donatur yg melakukan donasi dibayar 5 hari terakhir saja, meski ada donatur yg akan dijalankan beberapa kali
+        $ld         = date('Y-m-d H:i:s', strtotime(date('Y-m-d H:i:s').'-5 days'));
+        $last_trans = \App\Models\Transaction::select('donatur_id')->where('status', 'success')->where('created_at', '>=', $ld)
+                        ->groupBy('donatur_id')->orderBy('donatur_id', 'ASC')->get()->toArray();
+        $donatur    = Donatur::select('id')->whereIn('id', $last_trans)->orderBy('id','asc')->get();
+
+        foreach($donatur as $v){
+            $trans = \App\Models\Transaction::selectRaw('count(id) as count_donate, sum(nominal_final) as sum_donate, MAX(created_at) as last_transaction')
+                    ->where('donatur_id', $v->id)->where('status', 'success')
+                    ->groupBy('donatur_id')
+                    ->orderBy('created_at', 'DESC')->first();
+            
+            Donatur::where('id', $v->id)->update([ 
+                    'sum_donate_paid'  => (isset($trans->sum_donate)) ? $trans->sum_donate : 0,
+                    'count_donate_paid'=> (isset($trans->count_donate)) ? $trans->count_donate : 0,
+                    'last_donate_paid' => (isset($trans->last_transaction)) ? $trans->last_transaction : null,
+                    'updated_at'       => date('Y-m-d H:i:s')
+            ]);
+        }
+        echo 'FINISH LAST DONATE PAID : '.count($donatur);
+    }
 }

@@ -56,7 +56,7 @@
                         <div class="col-12 fc-rtl ps-1 pe-1">
                             <div class="grid-menu grid-menu-2col">
                                 <div class="no-gutters row">
-                                    <div class="col-sm-2">
+                                    <div class="col-md">
                                         <div class="widget-chart widget-chart-hover">
                                             <div class="widget-numbers text-success fs-5">
                                                 Rp.<span id="donate_paid_rp">{{ number_format($donate_today_paid_sum) }}</span>
@@ -71,44 +71,76 @@
                                                 </span>
                                             </div>
                                             <div class="widget-subheading">
-                                                LP : <span id="visit_lp">{{ number_format($visit_lp) }}</span>
-                                                <span class="badge badge-secondary">Refresh</span>
+                                                Rp. <span id="sum_today">{{ number_format($donate_today_unpaid_sum+$donate_today_paid_sum) }}</span>
+                                                <span class="badge badge-secondary" id="count_today">{{ number_format($donate_today_unpaid_count+$donate_today_paid_count) }}</span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-sm-2">
+                                    <div class="col-md">
+                                        <div class="widget-chart widget-chart-hover">
+                                            <div class="widget-numbers text-success fs-5">
+                                                Rp.<span id="donate_paid_rp_yest1">{{ number_format($donate_yest1_paid_sum) }}</span>
+                                                <span class="badge badge-pill badge-success" id="donate_paid_count_yest1">
+                                                    {{ number_format($donate_yest1_paid_count) }}
+                                                </span>
+                                            </div>
+                                            <div class="widget-numbers text-dark fs-5">
+                                                Rp.<span id="donate_unpaid_rp_yest1">{{ number_format($donate_yest1_unpaid_sum) }}</span>
+                                                <span class="badge badge-pill badge-dark" id="donate_unpaid_count_yest1">
+                                                    {{ number_format($donate_yest1_unpaid_count) }}
+                                                </span>
+                                            </div>
+                                            <div class="widget-subheading">
+                                                Rp. <span id="sum_yest1">{{ number_format($donate_yest1_paid_sum+$donate_yest1_unpaid_sum) }}</span>
+                                                <span class="badge badge-secondary" id="count_yest1">{{ number_format($donate_yest1_paid_count+$donate_yest1_unpaid_count) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md">
+                                        <div class="widget-chart widget-chart-hover">
+                                            <div class="widget-numbers text-success fs-5">
+                                                Rp.<span id="donate_paid_rp_yest2">{{ number_format($donate_yest2_paid_sum) }}</span>
+                                                <span class="badge badge-pill badge-success" id="donate_paid_count_yest2">
+                                                    {{ number_format($donate_yest2_paid_count) }}
+                                                </span>
+                                            </div>
+                                            <div class="widget-numbers text-dark fs-5">
+                                                Rp.<span id="donate_unpaid_rp_yest2">{{ number_format($donate_yest2_unpaid_sum) }}</span>
+                                                <span class="badge badge-pill badge-dark" id="donate_unpaid_count_yest2">
+                                                    {{ number_format($donate_yest2_unpaid_count) }}
+                                                </span>
+                                            </div>
+                                            <div class="widget-subheading">
+                                                Rp. <span id="sum_yest2">{{ number_format($donate_yest2_paid_sum+$donate_yest2_unpaid_sum) }}</span>
+                                                <span class="badge badge-secondary" id="count_yest2">{{ number_format($donate_yest2_paid_count+$donate_yest2_unpaid_count) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md">
+                                        <div class="widget-chart widget-chart-hover">
+                                            <div class="widget-numbers text-success fs-5">
+                                                Rp.<span id="donate_paid_rp_yest2">{{ number_format($donate_yest3_paid_sum) }}</span>
+                                                <span class="badge badge-pill badge-success" id="donate_paid_count_yest2">
+                                                    {{ number_format($donate_yest3_paid_count) }}
+                                                </span>
+                                            </div>
+                                            <div class="widget-numbers text-dark fs-5">
+                                                Rp.<span id="donate_unpaid_rp_yest2">{{ number_format($donate_yest3_unpaid_sum) }}</span>
+                                                <span class="badge badge-pill badge-dark" id="donate_unpaid_count_yest2">
+                                                    {{ number_format($donate_yest3_unpaid_count) }}
+                                                </span>
+                                            </div>
+                                            <div class="widget-subheading">
+                                                Rp. <span id="sum_yest2">{{ number_format($donate_yest3_paid_sum+$donate_yest3_unpaid_sum) }}</span>
+                                                <span class="badge badge-secondary" id="count_yest2">{{ number_format($donate_yest3_paid_count+$donate_yest3_unpaid_count) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md">
                                         <div class="widget-chart widget-chart-hover">
                                             <div class="widget-numbers text-dark fs-5">Rp. <span id="paid_now">{{ str_replace(',', '.', number_format($sum_paid_now)) }}</span></div>
                                             <div class="widget-numbers text-dark fs-5">Rp. <span id="avg_paid_now">{{ str_replace(',', '.', number_format($sum_paid_now/date('d'))) }}</span></div>
                                             <div class="widget-subheading">Rp. <span id="all_paid">{{ str_replace(',', '.', number_format($sum_paid)) }}</span></div>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-2">
-                                        <div class="widget-chart widget-chart-hover">
-                                            <div class="widget-numbers text-info fs-5">BSI</div>
-                                            <div class="widget-numbers text-dark fs-5">Rp. <span id="saldo_today_bsi"></span></div>
-                                            <div class="widget-subheading">Last Cehck : <span id="last_check_bsi">08:35:14</span></div>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-2">
-                                        <div class="widget-chart widget-chart-hover">
-                                            <div class="widget-numbers text-primary fs-5">BRI</div>
-                                            <div class="widget-numbers text-dark fs-5">Rp. <span id="saldo_today_bri"></span></div>
-                                            <div class="widget-subheading">Last Cehck : <span id="last_check_bri">08:35:14</span></div>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-2">
-                                        <div class="widget-chart widget-chart-hover">
-                                            <div class="widget-numbers text-warning fs-5">Mandiri</div>
-                                            <div class="widget-numbers text-dark fs-5">Rp. <span id="saldo_today_mandiri"></span></div>
-                                            <div class="widget-subheading">Last Cehck : <span id="last_check_mandiri">08:35:14</span></div>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-2">
-                                        <div class="widget-chart widget-chart-hover">
-                                            <div class="widget-numbers text-primary fs-5">BCA</div>
-                                            <div class="widget-numbers text-dark fs-5">Rp. <span id="saldo_today_bca"></span></div>
-                                            <div class="widget-subheading">Last Cehck : <span id="last_check_bca">08:35:14</span></div>
                                         </div>
                                     </div>
                                 </div>
@@ -142,11 +174,11 @@
                     <div class="divider"></div>
                     <div class="row">
                         <div class="col-12 form-inline">
-                            <span>Filter :</span>
                             <input type="text" id="donatur_name" placeholder="Nama Donatur" class="form-control form-control-sm me-1 ms-2"> 
-                            <input type="text" id="donatur_telp" placeholder="Telp Donatur ex: 8574..." class="form-control form-control-sm me-1"> 
-                            <input type="text" id="filter_nominal" placeholder="Nominal" class="form-control form-control-sm me-1"> 
+                            <input type="text" id="donatur_telp" placeholder="Telp Donatur ex: 8574..." class="form-control form-control-sm me-1" style="width:160px"> 
+                            <input type="text" id="filter_nominal" placeholder="Nominal" class="form-control form-control-sm me-1" style="width:120px"> 
                             <input type="hidden" id="donatur_title" placeholder="Judul Program" class="form-control form-control-sm me-1">
+                            <input type="text" id="ref_code" placeholder="Ref Code" class="form-control form-control-sm me-1" style="width:130px">
                             <button class="btn btn-sm btn-primary" id="filter_search">Cari</button>
                         </div>
                     </div>
@@ -173,6 +205,7 @@
                     <div class="row">
                         <div class="col-12 fc-rtl">
                             <!-- <button class="btn btn-sm btn-outline-primary filter_mutation" id="filter-bca-mutation" data-id="bca">BCA</button> -->
+                            <button class="btn btn-sm btn-outline-primary filter_mutation" id="filter-bca-mutation" data-id="bni">BCA</button>
                             <button class="btn btn-sm btn-outline-primary filter_mutation" id="filter-bni-mutation" data-id="bni">BNI</button>
                             <button class="btn btn-sm btn-outline-primary filter_mutation" id="filter-bsi-mutation" data-id="bsi">BSI</button>
                             <button class="btn btn-sm btn-outline-primary filter_mutation" id="filter-bri-mutation" data-id="bri">BRI</button>
@@ -733,8 +766,9 @@
         let donatur_telp   = $('#donatur_telp').val();
         let filter_nominal = $('#filter_nominal').val();
         let donatur_title  = $('#donatur_title').val();
+        let ref_code       = $('#ref_code').val();
 
-        table.ajax.url("{{ route('adm.donate.datatables') }}/?need_fu="+need_fu_ar+"&day1="+day1_ar+"&day5="+day5_ar+"&bca="+bca_ar+"&bni="+bni_ar+"&bsi="+bsi_ar+"&bri="+bri_ar+"&qris="+qris_ar+"&gopay="+gopay_ar+"&mandiri="+mandiri_ar+"&donatur_name="+encodeURI(donatur_name)+"&donatur_telp="+donatur_telp+"&filter_nominal="+filter_nominal+"&donatur_title="+encodeURI(donatur_title)).load();
+        table.ajax.url("{{ route('adm.donate.datatables') }}/?need_fu="+need_fu_ar+"&day1="+day1_ar+"&day5="+day5_ar+"&bca="+bca_ar+"&bni="+bni_ar+"&bsi="+bsi_ar+"&bri="+bri_ar+"&qris="+qris_ar+"&gopay="+gopay_ar+"&mandiri="+mandiri_ar+"&donatur_name="+encodeURI(donatur_name)+"&donatur_telp="+donatur_telp+"&filter_nominal="+filter_nominal+"&donatur_title="+encodeURI(donatur_title)+"&ref_code="+encodeURI(ref_code)).load();
     }
     
     var table = $('#table-donatur').DataTable({
@@ -933,6 +967,8 @@
                 $('#avg_paid_now').html(data.avg_paid_now);
                 $('#paid_now').html(data.paid_now);
                 $('#all_paid').html(data.all_paid);
+                $('#sum_today').html(data.sum_today);
+                $('#count_today').html(data.count_today);
             }
         });
     }

@@ -1,5 +1,5 @@
 @extends('layouts.public', [
-    'second_title' => 'Pengajuan Program - LAZISNU SLEMAN x BANTUBERSAMA.com',
+    'second_title' => 'Pengajuan Program - BANTUBERSAMA.com',
     'meta_desc'    => 'Bantubersama adalah platform penggalang dana untuk membantu bersama secara online',
     'image'        => 'galang-dana-bantubersama.png',
 ])
@@ -26,7 +26,6 @@
   <section class="pt-3 pb-2">
     <div class="custom-container text-center">
       <h4 class="donate-collect">Program Pengajuan Galang Dana</h4>
-      <h3 class="donate-collect mt-1">LAZISNU SLEMAN x BANTUBERSAMA.COM</h3>
       <div class="short-desc mt-1 pt-1">Beritahu kami jika ada saudaramu / tetangga / masyarakat umum yang membutuhkan bantuan penggalangan dana</div>
     </div>
   </section>
@@ -47,7 +46,7 @@
               </div>
             </div>
             <div class="info-content">
-              Galang dana di LAZISNU Sleman memiliki 8 pilihan kategori penggalangan, jika kamu memiliki pilihan lain, masukan ke opsi lainnya
+              Galang dana di Bantubersama.com memiliki 8 pilihan kategori penggalangan, jika kamu memiliki pilihan lain, masukan ke opsi lainnya
             </div>
           </div>
         </li>
@@ -70,12 +69,12 @@
             <div class="info-head">
               <div class="info-box justify-content-start">
                   <div class="pt-1">
-                      <h4>Menunggu konfirmasi dari tim LAZISNU Sleman</h4>
+                      <h4>Menunggu konfirmasi dari tim Bantubersama</h4>
                   </div>
               </div>
             </div>
             <div class="info-content">
-              Jika program masuk kriteria dan lolos persyaratan, maka tim LAZISNU Sleman akan menghubungi Anda melalui WA / No Telp
+              Jika program masuk kriteria dan lolos persyaratan, maka tim Bantubersama akan menghubungi Anda melalui WA / No Telp
             </div>
           </div>
         </li>
@@ -91,7 +90,7 @@
       <div class="row gy-3">
         <div class="col-6">
           <div class="text-center" style="">
-            <a href="{{ route('nucare.form') }}?c=kesehatan" class="">
+            <a href="{{ route('form') }}?c=kesehatan" class="">
               <img class="img-fluid categories-img" src="{{ asset('public/images/organization/kesehatan.png') }}" alt="Kesehatan Bantubersama">
             </a>
             <h6 class="fs-15 mt-1 pt-1">Kesehatan</h6>
@@ -99,7 +98,7 @@
         </div>
         <div class="col-6">
           <div class="text-center" style="">
-            <a href="{{ route('nucare.form') }}?c=rumahibadah" class="">
+            <a href="{{ route('form') }}?c=rumahibadah" class="">
               <img class="img-fluid" src="{{ asset('public/images/organization/tempat_ibadah.png') }}" alt="Tempat Ibadah Bantubersama">
             </a>
             <h6 class="fs-15 mt-1 pt-1">Rumah Ibadan</h6>
@@ -107,7 +106,7 @@
         </div>
         <div class="col-6">
           <div class="text-center" style="">
-            <a href="{{ route('nucare.form') }}?c=pendidikan" class="">
+            <a href="{{ route('form') }}?c=pendidikan" class="">
               <img class="img-fluid" src="{{ asset('public/images/organization/pendidikan.png') }}" alt="Pendidikan Bantubersama">
             </a>
             <h6 class="fs-15 mt-1 pt-1">Pendidikan</h6>
@@ -115,7 +114,7 @@
         </div>
         <div class="col-6">
           <div class="text-center" style="">
-            <a href="{{ route('nucare.form') }}?c=kemanusiaan" class="">
+            <a href="{{ route('form') }}?c=kemanusiaan" class="">
               <img class="img-fluid" src="{{ asset('public/images/organization/kemanusiaan.png') }}" alt="Kemanusiaan Bantubersama">
             </a>
             <h6 class="fs-15 mt-1 pt-1">Kemanusiaan</h6>
@@ -123,7 +122,7 @@
         </div>
         <div class="col-6">
           <div class="text-center" style="">
-            <a href="{{ route('nucare.form') }}?c=bencanaalam" class="">
+            <a href="{{ route('form') }}?c=bencanaalam" class="">
               <img class="img-fluid" src="{{ asset('public/images/organization/bencana_alam.png') }}" alt="Bencana Alam Bantubersama">
             </a>
             <h6 class="fs-15 mt-1 pt-1">Bencana Alam</h6>
@@ -131,7 +130,7 @@
         </div>
         <div class="col-6">
           <div class="text-center" style="">
-            <a href="{{ route('nucare.form') }}?c=lainnya" class="">
+            <a href="{{ route('form') }}?c=lainnya" class="">
               <img class="img-fluid" src="{{ asset('public/images/organization/lain_lain.png') }}" alt="Lainnya Bantubersama">
             </a>
             <h6 class="fs-15 mt-1 pt-1">Lainnya</h6>
@@ -144,9 +143,9 @@
 
 
   <!-- Footer section start -->
-  <section class="empty-section section-t-space section-b-space pb-0 pt-1">
-    <div class="custom-container footer pb-3 pt-1">
-      <!-- <div class="fw-medium text-grey pt-2 fs-14">
+  <section class="empty-section section-t-space section-b-space pb-0 pt-3">
+    <div class="custom-container footer pb-3 pt-3">
+      <div class="fw-medium text-grey pt-2 fs-14">
         <a class="text-grey" href="">Tentang Kami</a> | 
         <a class="text-grey" href="">Syarat & Ketentuan</a> | 
         <a class="text-grey" href="">Pusat Bantuan</a>
@@ -194,9 +193,9 @@
               <span class="screen-reader-text">Youtube</span>
           </a>
         </div>
-      </div>  -->
+      </div>
       <div class="fs-14 fw-normal text-grey mt-3">
-        Support by Bantubersama.com
+        Copyright © 2023 Yayasan Bantu Bersama Sejahtera
       </div>
     </div>
   </section>

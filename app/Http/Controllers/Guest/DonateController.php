@@ -125,7 +125,17 @@ class DonateController extends Controller
                 'utm_content'     => (isset($request->k)) ? strip_tags($request->k) : null
             ]);
 
-            return view('public.checkout', compact('program', 'nominal', 'payment'));
+            $telp = '';
+            $name = '';
+            if(isset($request->telp)) {
+                $telp = urldecode($request->telp);
+            }
+
+            if(isset($request->name)) {
+                $name = urldecode($request->name);
+            }
+
+            return view('public.checkout', compact('program', 'nominal', 'payment', 'telp', 'name'));
         } else {
             return view('public.not_found');
         }
@@ -594,7 +604,7 @@ class DonateController extends Controller
                     ),
                     'customer' => array(
                         'name'  => $donatur_name,
-                        'email' => 'bantubersamasejahtera@gmail.com',
+                        'email' => 'bantuberamalbersama@gmail.com',
                         'phone' => $telp
                     ),
                 );
@@ -818,7 +828,8 @@ Donasi Belum Dibayar : ".number_format($count_unpaid)." - Rp.".str_replace(',', 
     public function sentWA($telp='', $chat='')
     {
         // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
-        $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+        // $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
+        $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/send_message');
         curl_setopt($curl, CURLOPT_HEADER, 0);

@@ -35,8 +35,14 @@ Route::get('/donatur/wa-fu-1-bank-transfer-non-bca', [DonationController::class,
 // FU Trans ke-2
 Route::get('/donatur/wa-fu-2', [DonationController::class, 'donateFu2Sc']);
 
-// Sum Donate Nominal
+// Sum Donate Nominal to Program
 Route::get('/donate/sum-donate', [DonationController::class, 'sumDonate']);
+
+// Sum Donate Nominal to Donatur
+Route::get('/donate/sum-donate-donatur', [DonationController::class, 'donateUpdate']);
+
+// Cancel Transaction with status=draft dan created at before 5 days ago
+Route::get('/donate/cancel-transaction-status-5day-ago', [DonationController::class, 'updateTransactionStatus']);
 
 // TELEGRAM NOTIFICATION
 Route::post('/notification/telegram/{invoice}', [Guest\DonateController::class, 'sendNotifTelegram'])->name('notif.telegram.newdonate');
@@ -50,7 +56,6 @@ Route::get('/fb-ads-detail-per-campaign', [FbAdsController::class, 'detailPerCam
 Route::get('/fb-ads-auto-rules-off', [FbAdsController::class, 'autoRulesOff']);
 Route::get('/fb-ads-auto-rules-on', [FbAdsController::class, 'autoRulesOn']);
 Route::get('/fb-ads-auto-get-spend', [FbAdsController::class, 'getSpend']);
-
 
 Route::group([
     'as'     => 'adm.',   // for route(adm.xx)
@@ -161,6 +166,7 @@ Route::group([
 
         // LEADS
         Route::get('/grab-amalsholeh', [Admin\LeadsController::class, 'grabLeadsAmalsholeh'])->name('leads.grab.amalsholeh');
+        Route::get('/grab-sharinghappiness', [Admin\LeadsController::class, 'grabLeadsSharingHappiness'])->name('leads.grab.sharinghappiness');
         Route::get('/list-leads-grab', [Admin\LeadsController::class, 'grabList'])->name('leads.grab.list');
         Route::get('/list-leads-grab-datatables', [Admin\LeadsController::class, 'grabDatatables'])->name('leads.grab.datatables');
         Route::get('/list-leads', [Admin\LeadsController::class, 'index'])->name('leads.index');
@@ -174,6 +180,9 @@ Route::group([
         Route::get('/list-leads-org-add', [Admin\LeadsController::class, 'orgCreate'])->name('leads.org.add');
         Route::post('/list-leads-org-store', [Admin\LeadsController::class, 'orgStore'])->name('leads.org.store');
 
+        // Organization
+        Route::get('/datatables-org', [Admin\OrganizationController::class, 'orgDatatables'])->name('org.datatables');
+
         Route::resources([
             'program'          => Admin\ProgramController::class,
             'organization'     => Admin\OrganizationController::class,
@@ -184,6 +193,7 @@ Route::group([
             'donate'           => Admin\DonateController::class,
             'chat'             => Admin\ChatController::class,
             'ads'              => Admin\AdsController::class,
+            'payout'           => Admin\PayoutController::class,
         ]);
     });
 });

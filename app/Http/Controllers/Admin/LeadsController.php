@@ -69,7 +69,7 @@ class LeadsController extends Controller
                     'fb_pixel'    => $request->pixel,
                     'gtm'         => $request->gtm,
                     'description' => $request->desc,
-                    'user_id'     => date('ymd')
+                    'user_id'     => date('ymdhis')
                 ]);
             } else {
                 return redirect()->back()->with('error', 'Gagal tambah, duplikat nama lembaga');
@@ -158,10 +158,14 @@ class LeadsController extends Controller
      */
     public function grabDatatables(Request $request)
     {
-        $data         = DB::table('grab_program')->select('grab_program.*', 'grab_organization.name as lembaga', 'twitter', 'instagram', 'facebook', 'youtube', 'email', 'phone')
-        ->leftJoin('grab_organization', 'grab_organization.user_id', 'grab_program.user_id')
-        ->orderBy('created_at', 'DESC');
-        // ->orderBy('program_created_at', 'DESC');
+        //$sub_query = DB::table('grab_program')->select('grab_program.*')->groupBy('grab_program.id');
+        //$programs  = DB::table(DB::raw("({$sub_query->toSql()}) as grab_program"))->mergeBindings($sub_query)
+        
+        $data         = DB::table('grab_program')
+        //->select('grab_program.*', 'grab_organization.name as lembaga', 'twitter', 'instagram', 'facebook', 'youtube', 'email', 'phone', 'platform')
+        //->join('grab_organization', 'grab_organization.user_id', '=', 'grab_program.user_id')
+        ->whereNotNull('grab_program.user_id')
+        ->orderBy('grab_program.created_at', 'DESC');
 
         if(isset($request->interest)) {
             if($request->interest==1) {
@@ -204,7 +208,7 @@ class LeadsController extends Controller
                 ->orWhere('target_status', 'like', '%'.$search.'%')
                 ->orWhere('target_type', 'like', '%'.$search.'%')
                 ->orWhere('target_at', 'like', '%'.$search.'%')
-                ->orWhere('grab_organization.name', 'like', '%'.$search.'%')
+                //->orWhere('grab_organization.name', 'like', '%'.$search.'%')
                 ->orWhere('target_amount', 'like', '%'.$search.'%');
             });
             $count_filter = $data->count();
@@ -234,28 +238,35 @@ class LeadsController extends Controller
         ->addColumn('nominal', function($row){
             $target   = ($row->target_type=='unlimited' && $row->target_amount==0) ? 'Unlimited' : number_format($row->target_amount);
             $collect  = number_format($row->collect_amount);
-            $org      = '<a href="#" onclick="detailOrg('.$row->user_id.')">'.$row->lembaga.'</a>';
-            $wa_param = "'".$row->user_id."','".str_replace("'", "", $row->lembaga)."'";
-            $wa       = 'onclick="firstChat('.$wa_param.')"';
-
             $sc       = 'style="cursor:pointer"';
-            $i_mail   = '<i class="fa fa-envelope"></i>';
-            $i_telp   = '<i class="fa fa-phone"></i>';
-            $i_fb     = 'FB'; //'<i class="fa fa-facebook-f"></i>';
-            $i_tw     = 'TW'; //'<i class="fa fa-twitter"></i>';
-            $i_ig     = 'IG'; //'<i class="fa fa-instagram"></i>';
-            $i_yt     = 'YT'; //'<i class="fa fa-youtube"></i>';
-
-            $mail     = (is_null($row->email) || $row->email=='') ? '<span class="badge badge-sm badge-secondary">'.$i_mail.'</span>' : '<span class="badge badge-sm badge-success">'.$row->email.'</span>';
-            $fb       = (is_null($row->facebook) || $row->facebook=='') ? '<span class="badge badge-sm badge-secondary">'.$i_fb.'</span>' : '<a href="'.$row->facebook.'" target="_blank" class="badge badge-sm badge-success">'.$i_fb.'</a>';
-            $tw       = (is_null($row->twitter) || $row->twitter=='') ? '<span class="badge badge-sm badge-secondary">'.$i_tw.'</span>' : '<a href="'.$row->twitter.'" target="_blank" class="badge badge-sm badge-success">'.$i_tw.'</a>';
-            $ig       = (is_null($row->instagram) || $row->instagram=='') ? '<span class="badge badge-sm badge-secondary">'.$i_ig.'</span>' : '<a href="'.$row->instagram.'" target="_blank" class="badge badge-sm badge-success">'.$i_ig.'</a>';
-            $yt       = (is_null($row->youtube) || $row->youtube=='') ? '<span class="badge badge-sm badge-secondary">'.$i_yt.'</span>' : '<a href="'.$row->youtube.'" target="_blank" class="badge badge-sm badge-success">'.$i_yt.'</a>';
-            $telp     = (is_null($row->phone) || $row->phone=='') ? '<span class="badge badge-sm badge-secondary">'.$i_telp.'</span>' : '<span class="badge badge-sm badge-success" '.$wa.' '.$sc.'>'.$row->phone.'</span>';
-            $last_wa  = '<span class="badge badge-sm badge-warning">-</span>';
             $btn_edit = '<a href="'.route("adm.leads.org.edit", $row->user_id).'" target="_blank" class="badge badge-sm badge-warning"><i class="fa fa-edit"></i></a>';
+          
+            $lembaga  = DB::table('grab_organization')->where('user_id', $row->user_id)->first();
+            if(isset($lembaga->name)) {
+                $org      = '<a href="#" onclick="detailOrg('.$row->user_id.')">'.$lembaga->name.'</a>';
+                $wa_param = "'".$row->user_id."','".str_replace("'", "", $lembaga->name)."'";
+                $wa       = 'onclick="firstChat('.$wa_param.')"';
+              
+                $i_mail   = '<i class="fa fa-envelope"></i>';
+                $i_telp   = '<i class="fa fa-phone"></i>';
+                $i_fb     = 'FB'; //'<i class="fa fa-facebook-f"></i>';
+                $i_tw     = 'TW'; //'<i class="fa fa-twitter"></i>';
+                $i_ig     = 'IG'; //'<i class="fa fa-instagram"></i>';
+                $i_yt     = 'YT'; //'<i class="fa fa-youtube"></i>';
 
-            return $org.'<br>'.$telp.' '.$last_wa.'<br>'.$mail.' '.$fb.' '.$tw.' '.$ig.' '.$yt.' '.$btn_edit.'<br>'.$target.'<br>'.$collect.'<br>'.$row->target_status;
+                $mail     = (is_null($lembaga->email) || $lembaga->email=='') ? '<span class="badge badge-sm badge-secondary">'.$i_mail.'</span>' : '<span class="badge badge-sm badge-success">'.$lembaga->email.'</span>';
+                $fb       = (is_null($lembaga->facebook) || $lembaga->facebook=='') ? '<span class="badge badge-sm badge-secondary">'.$i_fb.'</span>' : '<a href="'.$lembaga->facebook.'" target="_blank" class="badge badge-sm badge-success">'.$i_fb.'</a>';
+                $tw       = (is_null($lembaga->twitter) || $lembaga->twitter=='') ? '<span class="badge badge-sm badge-secondary">'.$i_tw.'</span>' : '<a href="'.$lembaga->twitter.'" target="_blank" class="badge badge-sm badge-success">'.$i_tw.'</a>';
+                $ig       = (is_null($lembaga->instagram) || $lembaga->instagram=='') ? '<span class="badge badge-sm badge-secondary">'.$i_ig.'</span>' : '<a href="'.$lembaga->instagram.'" target="_blank" class="badge badge-sm badge-success">'.$i_ig.'</a>';
+                $yt       = (is_null($lembaga->youtube) || $lembaga->youtube=='') ? '<span class="badge badge-sm badge-secondary">'.$i_yt.'</span>' : '<a href="'.$lembaga->youtube.'" target="_blank" class="badge badge-sm badge-success">'.$i_yt.'</a>';
+                $telp     = (is_null($lembaga->phone) || $lembaga->phone=='') ? '<span class="badge badge-sm badge-secondary">'.$i_telp.'</span>' : '<span class="badge badge-sm badge-success" '.$wa.' '.$sc.'>'.$lembaga->phone.'</span>';
+                $last_wa  = '<span class="badge badge-sm badge-warning">-</span>';
+                $platform = '<span class="badge badge-sm badge-light">'.$lembaga->platform.'</span>';
+                
+                return $org.'<br>'.$telp.' '.$last_wa.'<br>'.$mail.' '.$fb.' '.$tw.' '.$ig.' '.$yt.' '.$btn_edit.'<br>'.$target.'<br>'.$collect.'<br>'.$row->target_status.'<br>'.$platform;
+            } else {
+                return 'Lembaga Tidak Ditemukan '.$btn_edit.'<br>'.$target.'<br>'.$collect.'<br>'.$row->target_status;
+            }
         })
         ->addColumn('date', function($row){
             $sc         = 'style="cursor:pointer"';
@@ -440,7 +451,6 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
         }
     }
 
-
     /**
      * Ambil data dari platform lain
      */
@@ -552,6 +562,104 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
             echo "FINISHED, <br>Total Ambil Data : ".count($data);
             echo '<br>Total Program Bagu : '.$count_inp_program;
             echo '<br>Total Lembaga Bagu : '.$count_inp_org;
+        }
+    }
+
+    /**
+     * Ambil data dari platform lain
+     */
+    public function grabLeadsSharingHappiness(Request $request)
+    {
+        if(isset($request->id)) {
+            $id = $request->id;
+        } else {
+            $id = 1;
+        }
+
+        $count_inp_org     = 0;
+        $count_inp_program = 0;
+
+        $curl             = curl_init();
+        curl_setopt($curl, CURLOPT_URL, 'https://be.sharinghappiness.org/api/v1/program?keyword=a&perPage=2000&page='.$id);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        $response         = curl_exec($curl);
+        $err              = curl_error($curl);
+        curl_close($curl);
+
+        if ($err) {
+            echo 'Pesan gagal terkirim, error :' . $err;
+        } else {
+            $res = json_decode($response);
+
+            if(isset($res->result)) {
+                $data = $res->result->data;
+
+                for ($i=0; $i<count($data); $i++) { 
+                    // ambil data lembaganya
+                    if(isset($data[$i]->user->name)) {
+                        $org = DB::table('grab_organization')->select('user_id')->where('name', $data[$i]->user->name)->first();
+                        if(!isset($org->user_id)) {
+                            $user_id = DB::table('grab_organization')->insertGetId([
+                                'user_id'     => date('ymdhis'),
+                                'name'        => $data[$i]->user->name,
+                                'avatar'      => $data[$i]->user->picture,
+                                'platform'    => 'sharinghappiness'
+                            ]);
+
+                            $count_inp_org++;
+                        } else {
+                            $user_id = $org->user_id;
+                        }
+                    } else {
+                        $user_id = null;
+                    }
+
+                    // ambil data program
+                    $program = DB::table('grab_program')->select('id_grab')->where('id_grab', $data[$i]->id)->first();
+                    if(!isset($program->id_grab) && isset($data[$i]->galleries[0]->image) && !is_null($data[$i]->galleries[0]->image) && !is_null($data[$i]->cover_picture->image)) {
+                        DB::table('grab_program')->insertGetId([
+                            'id_grab'            => $data[$i]->id,
+                            'category_slug'      => (isset($data[$i]->category->slug)) ? $data[$i]->category->slug : null,
+                            'name'               => (isset($data[$i]->title)) ? $this->removeEmoji($data[$i]->title) : null,
+                            'slug'               => $data[$i]->slug,
+                            'permalink'          => 'https://sharinghappiness.org/'.$data[$i]->slug,
+                            'headline'           => (isset($data[$i]->city->name)) ? $this->removeEmoji($data[$i]->city->name) : null,
+                            'content'            => null,
+                            'status'             => $data[$i]->status,
+                            'target_status'      => null,
+                            'target_type'        => null,
+                            'target_at'          => $data[$i]->end_date,
+                            'target_amount'      => str_replace([' ', '.', 'Rp', ',', '-'], '', $data[$i]->target),
+                            'collect_amount'     => str_replace([' ', '.', 'Rp', ',', '-'], '', $data[$i]->collected),
+                            'remaining_amount'   => 0,
+                            'over_at'            => ($data[$i]->end_date!='null' && date('Y', strtotime($data[$i]->end_date))>1970) ? $data[$i]->end_date: null,
+                            'is_featured'        => $data[$i]->is_optimized,
+                            'is_populer_search'  => $data[$i]->is_recommended,
+                            'status_percent'     => $data[$i]->discount_price,
+                            'status_date'        => null,
+                            'image_url'          => (isset($data[$i]->galleries[0]->image)) ? $data[$i]->galleries[0]->image : $data[$i]->cover_picture->image,
+                            'image_url_thumb'    => $data[$i]->cover_picture->image,
+                            'user_id'            => $user_id,
+                            'total_donatur'      => str_replace('.', '', $data[$i]->transaction_count),
+                            'fb_pixel'           => null,
+                            'gtm'                => null,
+                            'toggle_dana'        => null,
+                            'program_created_at' => (date('Y-m-d', strtotime($data[$i]->created_at))) ? date('Y-m-d', strtotime($data[$i]->created_at)) : date('Y-m-d'),
+                            'tags_name'          => null,
+                            'is_favorite'        => 0,
+                            'fund_display'       => null
+                        ]);
+                        $count_inp_program++;
+                    }
+                }
+            } else {
+                echo "<br>no data";
+            }
+
+            echo "FINISHED, ";
+            echo "<br>Total Ambil Data : ".count($data);
+            echo '<br>Total Program Baru : '.$count_inp_program;
+            echo '<br>Total Lembaga Baru : '.$count_inp_org;
         }
     }
 

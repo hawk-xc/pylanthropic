@@ -53,7 +53,9 @@ class DonateController extends Controller
                 'visit_lp'     => number_format($visit_lp),
                 'avg_paid_now' => str_replace(',', '.', number_format($avg_paid_now)),
                 'paid_now'     => str_replace(',', '.', number_format($paid_now)),
-                'all_paid'     => str_replace(',', '.', number_format($all_paid))
+                'all_paid'     => str_replace(',', '.', number_format($all_paid)),
+                'sum_today'    => str_replace(',', '.', number_format($donate_today_paid_sum+$donate_today_unpaid_sum)),
+                'count_today'  => str_replace(',', '.', number_format($donate_today_paid_count+$donate_today_unpaid_count)),
             ];
         } else {
             return [
@@ -66,6 +68,8 @@ class DonateController extends Controller
                 'avg_paid_now' => str_replace(',', '.', number_format($avg_paid_now)),
                 'paid_now'     => str_replace(',', '.', number_format($paid_now)),
                 'all_paid'     => str_replace(',', '.', number_format($all_paid)),
+                'sum_today'    => str_replace(',', '.', number_format($donate_today_paid_sum+$donate_today_unpaid_sum)),
+                'count_today'  => str_replace(',', '.', number_format($donate_today_paid_count+$donate_today_unpaid_count)),
             ];
         }
     }
@@ -235,24 +239,42 @@ Sebesar : *Rp '.str_replace(',', '.', number_format($trans->nominal_final)).'*';
 
             $chat    = 'Selangkah lagi kebaikan Anda'.$name.'akan dirasakan untuk program
 *'.ucwords($program->title).'*
-Dengan donasi yang Anda berikan sebesar *Rp '.str_replace(',', '.', number_format($trans->nominal_final)).'*
+Dengan donasi yang Anda berikan sebesar *Rp '.str_replace(',', '.', number_format($trans->nominal_final)).'*';
 
-bisa melalui :
-Transfer BSI - 7233152069
-Transfer BRI - 041001000888302
-Transfer BNI - 7060505013
-Transfer Mandiri - 1370022225276
-Transfer BCA - 4561363999
-a/n *Yayasan Bantu Bersama Sejahtera*
+            $chat2   = $chat.'
+
+atau melalui :
+Transfer BSI - 7855555667
+Transfer BRI - 041001001007307
+Transfer BNI - 1859941829
+Transfer Mandiri - 1370023737469
+Transfer BCA - 4561399292
+a/n *Yayasan Bantu Beramal Bersama*
 
 melalui QRIS
-https://bantubersama.com/public/qris-babe.png
+https://bantubersama.com/public/QRIS.png
 
 Kebaikan Anda sangat berarti bagi kami yang membutuhkan.
 Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah. Aamiin';
+                
+//                     $chat2   = $chat.'
+
+// atau melalui :
+// Transfer BSI - 7233152069
+// Transfer BRI - 041001000888302
+// Transfer BNI - 7060505013
+// Transfer Mandiri - 1370022225276
+// Transfer BCA - 4561363999
+// a/n *Yayasan Bantu Bersama Sejahtera*
+
+// melalui QRIS
+// https://bantubersama.com/public/qris-babe.png
+
+// Kebaikan Anda sangat berarti bagi kami yang membutuhkan.
+// Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah. Aamiin';
 
             // (new WaBlastController)->sentWA($donatur->telp, $chat);
-            (new WaBlastController)->sentWA($donatur->telp, $chat, 'fu_trans', $trans->id, $donatur->id, $program->id);
+            (new WaBlastController)->sentWA($donatur->telp, $chat2, 'fu_trans', $trans->id, $donatur->id, $program->id);
         }
 
         return 'success'; 
@@ -290,25 +312,29 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
 
             if(isset($request->bca)) {     // bca
                 if($request->bca==1) {
-                    $data = $data->where('transaction.payment_type_id', 1);
+                    // $data = $data->where('transaction.payment_type_id', 1);
+                    $data = $data->where('payment_type.key', 'like', 'tf_bca%');
                 }
             }
 
             if(isset($request->bni)) {     // bni
                 if($request->bni==1) {
-                    $data = $data->where('transaction.payment_type_id', 19);
+                    // $data = $data->where('transaction.payment_type_id', 19);
+                    $data = $data->where('payment_type.key', 'like', 'tf_bni%');
                 }
             }
 
             if(isset($request->bsi)) {     // bsi
                 if($request->bsi==1) {
-                    $data = $data->where('transaction.payment_type_id', 2);
+                    // $data = $data->where('transaction.payment_type_id', 2);
+                    $data = $data->where('payment_type.key', 'like', 'tf_bsi%');
                 }
             }
 
             if(isset($request->bri)) {     // bri
                 if($request->bri==1) {
-                    $data = $data->where('transaction.payment_type_id', 4);
+                    // $data = $data->where('transaction.payment_type_id', 4);
+                    $data = $data->where('payment_type.key', 'like', 'tf_bri%');
                 }
             }
 
@@ -326,11 +352,12 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
 
             if(isset($request->mandiri)) {     // mandiri
                 if($request->mandiri==1) {
-                    $data = $data->where('transaction.payment_type_id', 3);
+                    // $data = $data->where('transaction.payment_type_id', 3);
+                    $data = $data->where('payment_type.key', 'like', 'tf_mandiri%');
                 }
             }
 
-            if(isset($request->ref_code)) {     // donatur name
+            if(isset($request->ref_code)) {     // ref_code
                 if($request->ref_code!='') {
                     $data = $data->where('transaction.ref_code', $request->ref_code);
                 }
@@ -901,23 +928,41 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
 
                     $chat    = 'Selangkah lagi kebaikan Anda'.$name.'akan dirasakan untuk program
 *'.ucwords($program->title).'*
-Dengan donasi yang Anda berikan sebesar *Rp '.str_replace(',', '.', number_format($v->nominal_final)).'*
+Dengan donasi yang Anda berikan sebesar *Rp '.str_replace(',', '.', number_format($v->nominal_final)).'*';
 
-bisa melalui :
-Transfer BSI - 7233152069
-Transfer BRI - 041001000888302
-Transfer BNI - 7060505013
-Transfer Mandiri - 1370022225276
-Transfer BCA - 4561363999
-a/n *Yayasan Bantu Bersama Sejahtera*
+                    $chat2   = $chat.'
+
+atau melalui :
+Transfer BSI - 7855555667
+Transfer BRI - 041001001007307
+Transfer BNI - 1859941829
+Transfer Mandiri - 1370023737469
+Transfer BCA - 4561399292
+a/n *Yayasan Bantu Beramal Bersama*
 
 melalui QRIS
-https://bantubersama.com/public/qris-babe.png
+https://bantubersama.com/public/QRIS.png
 
 Kebaikan Anda sangat berarti bagi kami yang membutuhkan.
 Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah. Aamiin';
+                
+//                     $chat2   = $chat.'
 
-                    (new WaBlastController)->sentWA($donatur->telp, $chat, 'fu_trans', $v->id, $donatur->id, $program->id);
+// atau melalui :
+// Transfer BSI - 7233152069
+// Transfer BRI - 041001000888302
+// Transfer BNI - 7060505013
+// Transfer Mandiri - 1370022225276
+// Transfer BCA - 4561363999
+// a/n *Yayasan Bantu Bersama Sejahtera*
+
+// melalui QRIS
+// https://bantubersama.com/public/qris-babe.png
+
+// Kebaikan Anda sangat berarti bagi kami yang membutuhkan.
+// Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah. Aamiin';
+
+                    (new WaBlastController)->sentWA($donatur->telp, $chat2, 'fu_trans', $v->id, $donatur->id, $program->id);
 
                     // count kirim chat, agar tidak lebih dari 4 chat dalam 1 waktu kirim
                     $chat_count++;
@@ -944,8 +989,38 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
         $visit_lp                  = TrackingVisitor::where('created_at', 'like', date('Y-m-d').'%')->where('page_view', 'landing_page')->count();
         $sum_paid_now              = Transaction::where('status', 'success')->where('created_at', 'like', date('Y-m').'%')->sum('nominal_final');
         $sum_paid                  = Transaction::where('status', 'success')->sum('nominal_final');
+        $dn                        = date('Y-m-d');
+        $donate_yest1_paid_count   = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-1 day')).'%')
+                                    ->where('status', 'success')->count();
+        $donate_yest1_paid_sum     = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-1 day')).'%')
+                                    ->where('status', 'success')->sum('nominal_final');
+        $donate_yest1_unpaid_count = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-1 day')).'%')
+                                    ->where('status', '<>', 'success')->count();
+        $donate_yest1_unpaid_sum   = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-1 day')).'%')
+                                    ->where('status', '<>', 'success')->sum('nominal_final');
+        $donate_yest2_paid_count   = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-2 day')).'%')
+                                    ->where('status', 'success')->count();
+        $donate_yest2_paid_sum     = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-2 day')).'%')
+                                    ->where('status', 'success')->sum('nominal_final');
+        $donate_yest2_unpaid_count = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-2 day')).'%')
+                                    ->where('status', '<>', 'success')->count();
+        $donate_yest2_unpaid_sum   = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-2 day')).'%')
+                                    ->where('status', '<>', 'success')->sum('nominal_final');
+        $donate_yest3_paid_count   = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-3 day')).'%')
+                                    ->where('status', 'success')->count();
+        $donate_yest3_paid_sum     = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-3 day')).'%')
+                                    ->where('status', 'success')->sum('nominal_final');
+        $donate_yest3_unpaid_count = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-3 day')).'%')
+                                    ->where('status', '<>', 'success')->count();
+        $donate_yest3_unpaid_sum   = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-3 day')).'%')
+                                    ->where('status', '<>', 'success')->sum('nominal_final');
 
-        return view('admin.transaction.donate_mutation', compact('last_donate', 'donate_today_paid_count', 'donate_today_paid_sum', 'donate_today_unpaid_count', 'donate_today_unpaid_sum', 'visit_lp', 'sum_paid_now', 'sum_paid'));
+
+        return view('admin.transaction.donate_mutation', compact('last_donate', 'donate_today_paid_count', 'donate_today_paid_sum',
+            'donate_today_unpaid_count', 'donate_today_unpaid_sum', 'visit_lp', 'sum_paid_now', 'sum_paid',
+            'donate_yest1_paid_count', 'donate_yest1_paid_sum', 'donate_yest1_unpaid_count', 'donate_yest1_unpaid_sum',
+            'donate_yest2_paid_count', 'donate_yest2_paid_sum', 'donate_yest2_unpaid_count', 'donate_yest2_unpaid_sum',
+            'donate_yest3_paid_count', 'donate_yest3_paid_sum', 'donate_yest3_unpaid_count', 'donate_yest3_unpaid_sum'));
     }
 
     /**
