@@ -27,8 +27,12 @@
                     </nav>
                 </div>
                 <div class="col-7 fc-rtl">
-                    <button class="btn btn-outline-primary">WA Aktif</button>
-                    <button class="btn btn-outline-primary">Mau</button>
+                    <button class="btn btn-outline-primary filter_donatur" id="filter-wa-aktif" data-id="wa-aktif" data-val="0">WA Aktif</button>
+                    <button class="btn btn-outline-primary filter_donatur" id="filter-wa-mau" data-id="wa-mau" data-val="0">Mau</button>
+                    <button class="btn btn-outline-primary filter_donatur" id="filter-sultan" data-id="sultan" data-val="0">Sultan</button>
+                    <button class="btn btn-outline-primary filter_donatur" id="filter-setia" data-id="setia" data-val="0">Setia</button>
+                    <button class="btn btn-outline-primary filter_donatur" id="filter-dorman" data-id="dorman" data-val="0">Dorman</button>
+                    <a href="{{ route('refresh.donatur.donate') }}" target="_blank" class="btn btn-outline-primary">Refresh</a>
                     <a href="#" class="btn btn-outline-primary"><i class="fa fa-plus mr-1"></i> Tambah</a>
                 </div>
             </div>
@@ -36,11 +40,11 @@
             <table id="table-donatur" class="table table-hover table-striped table-bordered">
                 <thead>
                     <tr>
-                        <th>Name</th>
+                        <th>Nama</th>
                         <th>Terakhir Donasi</th>
-                        <th>Summary Donasi</th>
-                        <th>History Chat</th>
-                        <th>Action</th>
+                        <th>Rangkuman Donasi</th>
+                        <th>Riwayat Chat</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -60,6 +64,82 @@
 
 @section('js_inline')
 <script type="text/javascript">
+    $(".filter_donatur").on("click", function(){
+        var fil_name = $(this).attr("data-id");
+        var fil_val  = $(this).attr("data-val");
+
+        if(fil_name=='wa-aktif') {
+            if(fil_val==0) {
+                $(this).removeClass('btn-outline-primary');
+                $(this).addClass('btn-primary');
+                $(this).attr("data-val", "1");
+                donatur_table();
+            } else {
+                $(this).addClass('btn-outline-primary');
+                $(this).removeClass('btn-primary');
+                $(this).attr("data-val", "0");
+                donatur_table();
+            }
+        } else if(fil_name=='wa-mau') {
+            if(fil_val==0) {
+                $(this).removeClass('btn-outline-primary');
+                $(this).addClass('btn-primary');
+                $(this).attr("data-val", "1");
+                donatur_table();
+            } else {
+                $(this).addClass('btn-outline-primary');
+                $(this).removeClass('btn-primary');
+                $(this).attr("data-val", "0");
+                donatur_table();
+            }
+        } else if(fil_name=='sultan') {
+            if(fil_val==0) {
+                $(this).removeClass('btn-outline-primary');
+                $(this).addClass('btn-primary');
+                $(this).attr("data-val", "1");
+                donatur_table();
+            } else {
+                $(this).addClass('btn-outline-primary');
+                $(this).removeClass('btn-primary');
+                $(this).attr("data-val", "0");
+                donatur_table();
+            }
+        } else if(fil_name=='setia') {
+            if(fil_val==0) {
+                $(this).removeClass('btn-outline-primary');
+                $(this).addClass('btn-primary');
+                $(this).attr("data-val", "1");
+                donatur_table();
+            } else {
+                $(this).addClass('btn-outline-primary');
+                $(this).removeClass('btn-primary');
+                $(this).attr("data-val", "0");
+                donatur_table();
+            }
+        } else { // dorman
+            if(fil_val==0) {
+                $(this).removeClass('btn-outline-primary');
+                $(this).addClass('btn-primary');
+                $(this).attr("data-val", "1");
+                donatur_table();
+            } else {
+                $(this).addClass('btn-outline-primary');
+                $(this).removeClass('btn-primary');
+                $(this).attr("data-val", "0");
+                donatur_table();
+            }
+        }
+    });
+
+    function donatur_table() {
+        let wa_aktif = $('#filter-wa-aktif').attr("data-val");
+        let wa_mau   = $('#filter-wa-mau').attr("data-val");
+        let sultan   = $('#filter-sultan').attr("data-val");
+        let setia    = $('#filter-setia').attr("data-val");
+        let dorman   = $('#filter-dorman').attr("data-val");
+
+        table.ajax.url("{{ route('adm.donatur.datatables') }}/?wa_aktif="+wa_aktif+"&wa_mau="+wa_mau+"&sultan="+sultan+"&setia="+setia+"&dorman="+dorman).load();
+    }
 
     var table = $('#table-donatur').DataTable({
         orderCellsTop: true,

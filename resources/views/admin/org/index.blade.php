@@ -13,7 +13,10 @@
 
 @section('css_inline')
     <style type="text/css">
-        
+        .btn-xs {
+            padding: 3px !important;
+            font-size: 13px !important;
+        }
     </style>
 @endsection
 

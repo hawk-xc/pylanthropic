@@ -34,14 +34,14 @@ class PayoutController extends Controller
      */
     public function store(Request $request)
     {
-        try {
-            $request->validate([
-                'program'          => 'required|numeric',
-                'description'      => 'required|string',
-                'nominal_request'  => 'required',
-                'nominal_approved' => 'required'
-            ]);
+        $request->validate([
+            'program'          => 'required|numeric',
+            'description'      => 'required|string',
+            'nominal_request'  => 'required',
+            'nominal_approved' => 'required'
+        ]);
 
+        try {
             $data                   = new Payout;
             $data->program_id       = $request->program;
             $data->nominal_request  = str_replace('.', '', $request->nominal_request);
@@ -97,11 +97,11 @@ class PayoutController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit($id)
     {
-        $program = '';
+        $data = Payout::select('payout.*', 'title')->where('payout.id', $id)->join('program', 'payout.program_id', 'program.id')->first();
 
-        return view('admin.program.edit', compact('program'));
+        return view('admin.payout.edit', compact('data'));
     }
 
     /**
@@ -109,7 +109,57 @@ class PayoutController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $request->validate([
+            'program'          => 'required|numeric',
+            'description'      => 'required|string',
+            'nominal_request'  => 'required',
+            'nominal_approved' => 'required'
+        ]);
 
+        try {
+            $data                   = Payout::findOrFail($id);
+            $data->program_id       = $request->program;
+            $data->nominal_request  = str_replace('.', '', $request->nominal_request);
+            $data->nominal_approved = str_replace('.', '', $request->nominal_approved);
+            $data->desc_request     = $request->description;
+            $data->status           = $request->status;
+
+            if($request->program!='') {
+                $data->paid_at      = $request->date_paid;
+            }
+            // else paid_at = null
+
+            // upload file_submit
+            if ($request->hasFile('file_submit')) { 
+                $file1              = $request->file('file_submit');
+                $filename           = time().'_'.$file1->getClientOriginalName();
+                $file1->storeAs('public/images/payout', $filename, 'public_uploads');
+                $data->file_submit  = $filename;
+            }
+
+            // upload file_paid
+            if ($request->hasFile('file_paid')) { 
+                $file2              = $request->file('file_paid');
+                $filename           = time().'_'.$file2->getClientOriginalName();
+                $file2->storeAs('public/images/payout', $filename, 'public_uploads');
+                $data->file_paid    = $filename;
+            }
+
+            // upload file_accepted
+            if ($request->hasFile('file_accepted')) { 
+                $file3               = $request->file('file_accepted');
+                $filename            = time().'_'.$file3->getClientOriginalName();
+                $file3->storeAs('public/images/payout', $filename, 'public_uploads');
+                $data->file_accepted = $filename;
+            }
+
+            $data->updated_at  = date('Y-m-d H:i:s');
+            $data->save();
+
+            return redirect()->back()->with('success', 'Berhasil update data Penyaluran Proagram');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal update, ada kesalahan teknis');
+        }
     }
 
 

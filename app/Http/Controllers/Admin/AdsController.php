@@ -19,9 +19,8 @@ class AdsController extends Controller
     protected $host;
     public function __construct()
     {
-        // $this->token       = 'EAAFlv11kLJkBOyVGOpntLfYZAOBYIau26SIWqCCrJ4wdvNm18ZCXymkywVjBDDBZATBsNVg18YcUNz1AXfUiIcOnBKJffYaYxdf19SrTH0KHjLwWGmuccaTOUY2pBZBRUwKXk3oBZAFNq5gsBDzuIKlAzifa6kAXFADZC5J1IPhUanDGXkZCN7ZAIYCxTAnkNxtY6IarblWo';
         $this->token       = env('TOKEN_FB_DEVELOPER_ADS');
-        $this->host        = 'https://graph.facebook.com/v19.0/';
+        $this->host        = 'https://graph.facebook.com/v22.0/';
         $this->param_token = '&access_token='.$this->token;
     }
 

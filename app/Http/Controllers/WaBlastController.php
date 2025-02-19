@@ -16,7 +16,7 @@ class WaBlastController extends Controller
     public function __construct()
     {
         // $this->token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // 081-55555-849
-        $this->token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb';  // 0851-8338-8344
+        // $this->token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb';  // 0851-8338-8344
         $this->host  = 'https://app.ruangwa.id/api/send_message';
 
     }
@@ -28,7 +28,7 @@ class WaBlastController extends Controller
         \App\Models\Chat::create([
             'no_telp'        => $telp,
             'text'           => $chat,
-            'token'          => $this->token,
+            'token'          => env('TOKEN_RWA'),
             'vendor'         => 'RuangWA',
             'url'            => $this->host,
             'type'           => $type,
@@ -47,7 +47,7 @@ class WaBlastController extends Controller
         curl_setopt($curl, CURLOPT_TIMEOUT,30);
         curl_setopt($curl, CURLOPT_POST, 1);
         curl_setopt($curl, CURLOPT_POSTFIELDS, array(
-            'token'   => $this->token,
+            'token'   => env('TOKEN_RWA'),
             'number'  => $telp,
             'message' => $chat,
             'date'    => date('Y-m-d'),
@@ -71,7 +71,7 @@ class WaBlastController extends Controller
         curl_setopt($curl, CURLOPT_TIMEOUT,30);
         curl_setopt($curl, CURLOPT_POST, 1);
         curl_setopt($curl, CURLOPT_POSTFIELDS, array(
-            'token'   => $this->token,
+            'token'   => env('TOKEN_RWA'),
             'number'  => $this->formatTelp($telp),
             'message' => $chat,
             'date'    => date('Y-m-d'),
@@ -94,6 +94,35 @@ class WaBlastController extends Controller
         }
 
         return $number;
+    }
+
+    /**
+     * Callback from Ruang WA
+     */
+    public function callbackRuangWa(Request $request)
+    {
+        $data = json_decode($request->all());
+
+        if($data->ischat==true) {
+            $telp  = $this->formatTelp($data->phone);
+            \App\Models\Chat::create([
+                'no_telp'        => $telp,
+                'text'           => strip_tags(trim($data->message)),
+                'token'          => env('TOKEN_RWA'),
+                'vendor'         => 'RuangWA',
+                'url'            => 'callback',
+                'type'           => 'inbox',
+                'created_at'     => date('', strtotime($data->time)),
+                // 'transaction_id' => $trans!=''?$trans:null,
+                // 'donatur_id'     => $donatur!=''?$donatur:null,
+                // 'program_id'     => $program!=''?$program:null
+            ]);
+        } else {
+            // update status or not inbox
+            
+        }
+
+
     }
 
 }

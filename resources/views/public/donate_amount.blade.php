@@ -54,12 +54,12 @@
 
             ttq.load('CR2P7SJC77U8E82N1D2G');
             ttq.page();
-            ttq.track('AddToCart');
+            ttq.track('AddPaymentInfo');
         }(window, document, 'ttq');
     </script>
     <!-- End Tiktok Analytic Code -->
     <!-- Tiktok Analytic Code -->
-    <script>
+    <!-- <script>
         !function (w, d, t) {
             w.TiktokAnalyticsObject=t;var ttq2=w[t]=w[t]||[];ttq2.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq2.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq2.methods.length;i++)ttq2.setAndDefer(ttq2,ttq2.methods[i]);ttq2.instance=function(t){for(
             var e=ttq2._i[t]||[],n=0;n<ttq2.methods.length;n++)ttq2.setAndDefer(e,ttq2.methods[n]);return e},ttq2.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq2._i=ttq2._i||{},ttq2._i[e]=[],ttq2._i[e]._u=r,ttq2._t=ttq2._t||{},ttq2._t[e]=+new Date,ttq2._o=ttq2._o||{},ttq2._o[e]=n||{};n=document.createElement("script")
@@ -67,9 +67,9 @@
 
             ttq2.load('CTDP1L3C77U0ROHK9HPG');
             ttq2.page();
-            ttq2.track('AddToCart');
+            ttq2.track('AddPaymentInfo');
         }(window, document, 'ttq');
-    </script>
+    </script> -->
     <!-- End Tiktok Analytic Code -->
     <!-- Tiktok Analytic Code -->
     <!-- <script>
@@ -226,7 +226,7 @@
             <div class="container-fluid pe-0 payment-detail nominal-other">
               <div class="add-content">
                 <div>
-                  <h5 class="fw-bold fs-14">Nominal Lainnya</h5>
+                  <h5 class="fw-bold fs-14">Nominal Terbaik Lainnya</h5>
                   <div class="d-flex align-items-center my-2">
                     <span class="ph-rp fs-18 fw-bold">Rp</span>
                     <input class="form-nominal-other fs-18 fw-bold" id="rupiah" name="amount" placeholder="0" type="text" value=""/>

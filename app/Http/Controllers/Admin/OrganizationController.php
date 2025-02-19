@@ -110,10 +110,17 @@ class OrganizationController extends Controller
         ]);
 
         try {
+            // check uuid apakah sudah ada, jika ada maka kembalikan gagal
+            $check_uuid         = Organization::select('uuid')->where('uuid', trim($request->link))->first();
+            if(isset($check_uuid->uuid)) {
+                return redirect()->back()->with('error', 'Gagal update, duplikat LINK');
+            }
+
             $data               = Organization::findOrFail($id);
             $data->name         = $request->name;
             $data->phone        = $request->phone;
             $data->email        = $request->mail;
+            $data->uuid         = trim($request->link);
             // $data->password     = '-';
             $data->about        = $request->about;
             $data->status       = $request->status;
@@ -257,7 +264,9 @@ class OrganizationController extends Controller
                     return number_format($count_program, 0, ',', '.').' Program <br>Rp. '.number_format($sum_donate_paid, 0, ',', '.');
                 })
                 ->addColumn('action', function($row){
-                    return '<a href="'.route('adm.organization.edit', $row->id).'" target="_blank" class="edit btn btn-warning btn-xs" title="Edit"><i class="fa fa-edit"></i></a>';
+                    $btn_edit = '<a href="'.route('adm.organization.edit', $row->id).'" target="_blank" class="edit btn btn-warning btn-xs" title="Edit"><i class="fa fa-edit"></i></a>';
+                    $btn_link = '<a href="'.route('campaigner', $row->uuid).'" target="_blank" class="edit btn btn-info btn-xs" title="Link"><i class="fa fa-external-link-alt"></i></a>';
+                    return $btn_link.' '.$btn_edit;
                 })
                 ->rawColumns(['name', 'action', 'contact', 'summary'])
                 ->make(true);

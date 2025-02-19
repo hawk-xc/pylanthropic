@@ -30,12 +30,10 @@
           echo "fbq('init', '586907076711934');";
           $pixel_id = "586907076711934";
         } else {
-          //echo "fbq('init', '586907076711934');";   // akun 1, 2, 3
           echo "fbq('init', '1278491429470122');";  // akun 4
           $pixel_id = "1278491429470122";
         }
       } else {
-        //echo "fbq('init', '586907076711934');";   // akun 1, 2, 3
         echo "fbq('init', '1278491429470122');";  // akun 4
         $pixel_id = "1278491429470122";
       }
@@ -57,7 +55,7 @@
             ttq.load('CR2P7SJC77U8E82N1D2G');
             ttq.page();
             // ttq.track('CompletePayment');
-            ttq.track('CompletePayment', {
+            ttq.track('AddToCart', {
                 value: '{{ $nominal }}', // nominal
                 currency: 'IDR', // Sesuaikan mata uang
                 // content_type: 'product',

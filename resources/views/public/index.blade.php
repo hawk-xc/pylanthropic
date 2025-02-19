@@ -499,7 +499,10 @@
 
 @section('js_inline')
     <script type="text/javascript">
-      $("img.lazyload").lazyload();
+      $("img.lazyload").lazyload({
+        threshold: 900,
+        skip_invisible: false,
+      });
 
       const texts = ['Gandakan sedekah disaat Ramadhan', 'Cari Program Kebaikan... ','Anak Yatim...','Beasiswa Santri...', 'Rumah Tahfidz...'];
       const input = document.querySelector('#inputkey');

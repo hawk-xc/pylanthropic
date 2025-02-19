@@ -1,6 +1,6 @@
 @extends('layouts.admin', [
-    'second_title'    => 'Penyaluran',
-    'header_title'    => 'Tambah Penyaluran',
+    'second_title'    => 'Edit Penyaluran',
+    'header_title'    => 'Edit Penyaluran',
     'sidebar_menu'    => 'program',
     'sidebar_submenu' => 'program_payout'
 ])
@@ -9,14 +9,6 @@
 @section('css_plugins')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
-    <style type="text/css">
-        .ck-editor__editable {min-height: 120px;}
-        .fs-8 {font-size: 8px;}
-        .required:after {
-            content:"*";
-            color:red;
-        }
-    </style>
 @endsection
 
 
@@ -41,7 +33,7 @@
                         <ol class="breadcrumb mb-0 pb-0 pl-0">
                             <li class="breadcrumb-item"><a href="{{ route('adm.index') }}">Home</a></li>
                             <li class="breadcrumb-item active" aria-current="page"><a href="{{ route('adm.payout.index') }}">Penyaluran</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Tambah Penyaluran</li>
+                            <li class="breadcrumb-item active" aria-current="page">Edit Penyaluran</li>
                         </ol>
                     </nav>
                 </div>
@@ -61,50 +53,57 @@
                 </div>
             @endif
             
-            <form action="{{ route('adm.payout.store') }}" method="post" enctype="multipart/form-data" accept-charset="utf-8" class="row gy-4">
+            <form action="{{ route('adm.payout.update', $data->id) }}" method="post" enctype="multipart/form-data" accept-charset="utf-8" class="row gy-4">
                 @csrf
+                @method('PUT')
                 <div class="col-12">
                     <label class="form-label fw-semibold required">Pilih Program</label>
-                    <select class="form-control form-control-sm" name="program" id="program-select2" required></select>
+                    <select class="form-control form-control-sm" name="program" id="program-select2" required>
+                        <option value="{{ $data->program_id }}">{{ $data->title }}</option>
+                    </select>
                 </div>
                 <div class="col-6">
                     <label class="form-label fw-semibold required">Nominal Request</label>
                     <div class="input-group input-group-sm">
                         <span class="input-group-text">Rp. </span>
-                        <input type="text" class="form-control rupiah" name="nominal_request" id="rupiah1" placeholder="100.000.000" required>
+                        <input type="text" class="form-control rupiah" name="nominal_request" id="rupiah1" placeholder="100.000.000" value="{{ str_replace(',', '.', number_format($data->nominal_request)) }}" required>
                     </div>
                 </div>
                 <div class="col-6">
                     <label class="form-label fw-semibold required">Nominal Disetujui</label>
                     <div class="input-group input-group-sm">
                         <span class="input-group-text">Rp. </span>
-                        <input type="text" class="form-control rupiah" name="nominal_approved" id="rupiah2" placeholder="100.000.000" required>
+                        <input type="text" class="form-control rupiah" name="nominal_approved" id="rupiah2" placeholder="100.000.000" value="{{ str_replace(',', '.', number_format($data->nominal_approved)) }}" required>
                     </div>
                 </div>
                 <div class="col-6">
                     <label class="form-label fw-semibold required">Tanggal Dibayar</label>
                     <div class="input-group input-group-sm">
                         <span class="input-group-text"><input type="checkbox" class="mr-2" id="unpaid" checked> Belum</span>
-                        <input type="date" class="form-control form-control-sm" id="date_paid" name="date_paid" readonly>
+                        <input type="date" class="form-control form-control-sm" id="date_paid" name="date_paid" value="{{ (is_null($data->date_paid)) ? '' : date('Y-m-d', strtotime($data->date_paid)) }}" readonly>
                     </div>
                 </div>
                 <div class="col-6">
                     <label class="form-label fw-semibold required">Status Penyaluran</label><br>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" name="status" type="radio" id="tampil_biasa" value="request">
+                        <input class="form-check-input" name="status" type="radio" id="tampil_biasa" value="request" {{ ($data->status=='request') ? 'checked' : ''}}>
                         <label class="form-check-label" for="tampil_biasa">Diajukan</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" name="status" type="radio" id="tampil_pilihan" value="process">
+                        <input class="form-check-input" name="status" type="radio" id="tampil_pilihan" value="process" {{ ($data->status=='process') ? 'checked' : ''}}>
                         <label class="form-check-label" for="tampil_pilihan">Diproses</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" name="status" type="radio" id="tampil_terbaru" value="paid">
+                        <input class="form-check-input" name="status" type="radio" id="tampil_terbaru" value="paid" {{ ($data->status=='paid') ? 'checked' : ''}}>
                         <label class="form-check-label" for="tampil_terbaru">Sudah Dibayar</label>
                     </div>
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" name="status" type="radio" id="tampil_sembunyikan" value="reject">
+                        <input class="form-check-input" name="status" type="radio" id="tampil_sembunyikan" value="reject" {{ ($data->status=='reject') ? 'checked' : ''}}>
                         <label class="form-check-label" for="tampil_sembunyikan">Ditolak</label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" name="status" type="radio" id="tampil_dibatalkan" value="cancel" {{ ($data->status=='reject') ? 'cancel' : ''}}>
+                        <label class="form-check-label" for="tampil_dibatalkan">Dibatalkan</label>
                     </div>
                 </div>
                 <!-- START IMAGE IN CONTENT -->
@@ -113,23 +112,38 @@
                     <div class="input-group">
                         <input type="file" name="file_submit" class="form-control form-control-sm" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon1" id="file_submit">
                     </div>
+                    @if(!is_null($data->file_submit))
+                        <div class="row">
+                            <a href="{{ asset('public/images/payout/'.$data->file_submit) }}" target="_blank">{{ $data->file_submit }}</a>
+                        </div>
+                    @endif
                 </div>
                 <div class="col-4">
                     <label class="form-label fw-semibold">Bukti Dibayar oleh BaBe</label>
                     <div class="input-group">
                         <input type="file" name="file_paid" class="form-control form-control-sm" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2" id="file_paid">
                     </div>
+                    @if(!is_null($data->file_paid))
+                        <div class="row">
+                            <a href="{{ asset('public/images/payout/'.$data->file_paid) }}" target="_blank">{{ $data->file_paid }}</a>
+                        </div>
+                    @endif
                 </div>
                 <div class="col-4">
                     <label class="form-label fw-semibold">Bukti Terima Bantuan oleh Campaigner</label>
                     <div class="input-group">
                         <input type="file" name="file_accepted" class="form-control form-control-sm" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon3" id="file_accepted">
                     </div>
+                    @if(!is_null($data->file_accepted))
+                        <div class="row">
+                            <a href="{{ asset('public/images/payout/'.$data->file_accepted) }}" target="_blank">{{ $data->file_accepted }}</a>
+                        </div>
+                    @endif
                 </div>
                 <!-- END IMAGE IN CONTENT -->
                 <div class="col-12">
                     <label class="form-label fw-semibold required">Keterangan</label>
-                    <textarea class="form-control form-control-sm" name="description" id="editor" rows="10"></textarea>
+                    <textarea class="form-control form-control-sm" name="description" id="editor" rows="10">{{ $data->desc_request }}</textarea>
                 </div>
                 <div class="col-12">
                     <div class="divider mb-0 mt-0"></div>

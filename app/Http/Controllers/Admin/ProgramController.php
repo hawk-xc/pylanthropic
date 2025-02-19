@@ -294,11 +294,51 @@ class ProgramController extends Controller
                     ->join('organization', 'organization.id', 'program.organization_id')
                     ->orderBy('program.donate_sum', 'DESC');
 
-            if(isset($request->is_publish)) {
-                if($request->is_publish==1) {
-                    $data = $data->where('is_publish', $request->is_publish)->where('end_date', '>=', date('Y-m-d'));
-                } else {
-                    $data = $data->where('is_publish', $request->is_publish)->where('end_date', '<', date('Y-m-d'));
+            if(isset($request->active)) {
+                if($request->active==1) {
+                    $data = $data->where('is_publish', 1)->where('end_date', '>=', date('Y-m-d'));
+                }
+            }
+
+            if(isset($request->inactive)) {
+                if($request->inactive==1) {
+                    $data = $data->where('is_publish', 0);
+                }
+            }
+
+            if(isset($request->winning)) {
+                if($request->winning==1) {
+                    $data = $data->where('donate_sum', '>=', 8000000);
+                }
+            }
+
+            if(isset($request->recom)) {
+                if($request->recom==1) {
+                    $data = $data->where('is_recommended', 1);
+                }
+            }
+
+            if(isset($request->urgent)) {
+                if($request->urgent==1) {
+                    $data = $data->where('is_urgent', 1);
+                }
+            }
+
+            if(isset($request->newest)) {
+                if($request->newest==1) {
+                    $data = $data->where('is_show_home', 1);
+                }
+            }
+
+            if(isset($request->publish15day)) {
+                if($request->publish15day==1) {
+                    $data = $data->where('program.approved_at', '>=', date('Y-m-d', strtotime(date('Y-m-d').'-15 days')));
+                }
+            }
+
+            if(isset($request->end15day)) {
+                if($request->end15day==1) {
+                    $data = $data->where('end_date', '<=', date('Y-m-d', strtotime(date('Y-m-d').'+15 days')));
                 }
             }
 
@@ -444,6 +484,7 @@ class ProgramController extends Controller
                     // }
                     
                     // return $view.'<br>'.$read_more.' ('.$read_more_per.'%) <br>'.$amount_page.' ('.$amount_per.'%)';
+
                 })
                 ->addColumn('donate', function($row){
                     // $count_view      = TrackingVisitor::where('program_id', $row->id)->where('page_view', 'landing_page')->count();
@@ -475,7 +516,7 @@ class ProgramController extends Controller
                     //     <br> <i class="fa fa-shopping-cart icon-gradient bg-malibu-beach"></i> '.number_format($checkout).' ('.$checkout_per.'%)
                     //     <br> <i class="fa fa-heart icon-gradient bg-happy-green"></i> '.number_format($count).' ('.$count_per.'%)';
 
-                    return '-';
+                    // return '-';
 
 
                     // $interest = "<i class='fa fa-file icon-gradient bg-malibu-beach'></i> ".number_format($row->count_pra_checkout);
@@ -503,6 +544,8 @@ class ProgramController extends Controller
                     // return $interest.' ('.$interest_per.'%)
                     //     <br> <i class="fa fa-shopping-cart icon-gradient bg-malibu-beach"></i> '.number_format($checkout).' ('.$checkout_per.'%)
                     //     <br> <i class="fa fa-heart icon-gradient bg-happy-green"></i> '.number_format($count).' ('.$count_per.'%)';
+
+                    return number_format($row->donate_sum);
                 })
                 ->addColumn('action', function($row){
                     $url_edit  = route('adm.program.edit', $row->id);
@@ -514,6 +557,7 @@ class ProgramController extends Controller
                                 <a href="'.route('adm.program.detail.fundraiser', $row->id).'" target="_blank" class="edit btn btn-info btn-xs mb-1" title="Fundraiser"><i class="fa fa-people-carry"></i></a>
                                 <a href="'.route('adm.program.detail.fundraiser', $row->id).'" target="_blank" class="edit btn btn-info btn-xs mb-1" title="Penyaluran"><i class="fa fa-hand-holding-heart"></i></a>
                                 <a href="'.route('adm.program.detail.fundraiser', $row->id).'" target="_blank" class="edit btn btn-info btn-xs mb-1" title="Operasional"><i class="fa fa-file-invoice-dollar"></i></a>
+                                <a href="'.route('program.index', $row->slug).'" target="_blank" class="edit btn btn-info btn-xs mb-1" title="Link"><i class="fa fa-external-link-alt"></i></a>
                                 ';
                     return $actionBtn;
                 })
@@ -1329,30 +1373,38 @@ class ProgramController extends Controller
      */
     public function donatePerformance(Request $request)
     {
-        $data    = array();
-        $dn      = date('d-m-Y');
-        $jml     = 10;
-        $program = Program::select('id', 'title', 'donate_sum')
-                    ->where('is_publish', 1)->where('end_date', '>', date('Y-m-d H:i:s'))
-                    ->where(function ($q){
-                        $q->where('is_recommended', 1)->orWhere('is_show_home', 1)->orWhere('is_urgent', 1);
-                    })
-                    ->orderBy('donate_sum', 'DESC')->limit(20)->get();
+        $data        = array();
+        $dn          = date('d-m-Y');
+        $jml_day_of  = 20;
+        $jml_program = 40;
+        
+        $program_trans = Transaction::where("status", "success")
+                        ->where("created_at", ">=", date('Y-m-d', strtotime($dn.'-5 days')).' 00:00:00')
+                        ->groupBy("program_id")->pluck("program_id");
+      
+        $program     = Program::select('id', 'title', 'donate_sum')
+                        ->where('is_publish', 1)->where('end_date', '>', date('Y-m-d H:i:s'))
+                        // ->where(function ($q){
+                        //     $q->where('is_recommended', 1)->orWhere('is_show_home', 1)->orWhere('is_urgent', 1);
+                        // })
+                        ->whereIn("id", $program_trans)
+                        ->orderBy('donate_sum', 'DESC')->limit($jml_program)->get();
         foreach ($program as $v) {
             $donate  = Transaction::select(DB::raw('sum(nominal_final) as sum'), DB::raw('count(id) as count'), DB::raw('DATE(created_at) as created_at'))
                         ->where('program_id', $v->id)->where('status', 'success')
-                        ->where('created_at', '>=', date('Y-m-d', strtotime($dn.'-'.$jml.' days')).' 00:00:00')
+                        ->where('created_at', '>=', date('Y-m-d', strtotime($dn.'-'.$jml_day_of.' days')).' 00:00:00')
                         ->groupBy(DB::raw('DATE(created_at)'))
                         ->orderBy(DB::raw('DATE(created_at)'), 'DESC')
-                        ->limit($jml)->get()->toArray();
+                        ->limit($jml_program)->get()->toArray();
             $date    = (isset($donate[0]['created_at'])) ? date('d-m-y', strtotime($donate[0]['created_at'])) : '-';
             $data[]  = [
+                        'date'       => $date,
                         'title'      => $v->title,
                         'donate_sum' => $v->donate_sum,
                         'donate'     => $donate
                     ];
         }
-
+        //dd($data);
         return view('admin.program.performance', compact('data'));
     }
 

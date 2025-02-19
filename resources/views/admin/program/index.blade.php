@@ -24,7 +24,7 @@
     <div class="main-card mb-3 card">
         <div class="card-body">
             <div class="row">
-                <div class="col-3">
+                <div class="col-2">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 pb-0">
                             <li class="breadcrumb-item"><a href="{{ route('adm.index') }}">Home</a></li>
@@ -32,18 +32,21 @@
                         </ol>
                     </nav>
                 </div>
-                <div class="col-9 fc-rtl">
-                    <button class="btn btn-outline-primary">Non Aktif</button>
-                    <button class="btn btn-outline-primary">Aktif</button>
-                    <button class="btn btn-outline-primary">Winning</button>
-                    <button class="btn btn-outline-primary">Publish 15 Hari Terakhir</button>
-                    <button class="btn btn-outline-primary">Berakhir 15 Hari</button>
+                <div class="col-10 fc-rtl">
+                    <button class="btn btn-primary filter_program" id="filter-active" data-id="active" data-val="1">Aktif</button>
+                    <button class="btn btn-outline-primary filter_program" id="filter-inactive" data-id="inactive" data-val="0">Non Aktif</button>
+                    <button class="btn btn-outline-primary filter_program" id="filter-winning" data-id="winning" data-val="0">> 8jt</button>
+                    <button class="btn btn-outline-primary filter_program" id="filter-publish15day" data-id="publish15day" data-val="0">Baru Publish 15</button>
+                    <button class="btn btn-outline-primary filter_program" id="filter-end15day" data-id="end15day" data-val="0">Berakhir 15 Hari</button>
+                    <button class="btn btn-outline-primary filter_program" id="filter-recom" data-id="recom" data-val="0">Rekom</button>
+                    <button class="btn btn-outline-primary filter_program" id="filter-urgent" data-id="urgent" data-val="0">Mendesak</button>
+                    <button class="btn btn-outline-primary filter_program" id="filter-newest" data-id="newest" data-val="0">Terbaru</button>
                     <!-- <button class="btn btn-outline-primary"><i class="fa fa-filter mr-1"></i> Filter</button> -->
-                    <a href="{{ route('adm.program.create') }}" class="btn btn-outline-primary"><i class="fa fa-plus mr-1"></i> Tambah</a>
+                    <a href="{{ route('adm.program.create') }}" target="_blank" class="btn btn-outline-primary"><i class="fa fa-plus mr-1"></i> Tambah</a>
                 </div>
             </div>
             <div class="divider"></div>
-            <table id="table-donatur" class="table table-hover table-striped table-bordered">
+            <table id="table-program" class="table table-hover table-striped table-bordered">
                 <thead>
                     <tr>
                         <th>Judul</th>
@@ -173,8 +176,123 @@
 
 @section('js_inline')
 <script type="text/javascript">
+    $(".filter_program").on("click", function(){
+        var fil_name = $(this).attr("data-id");
+        var fil_val  = $(this).attr("data-val");
 
-    var table = $('#table-donatur').DataTable({
+        if(fil_name=='active') {
+            if(fil_val==0) {
+                $(this).removeClass('btn-outline-primary');
+                $(this).addClass('btn-primary');
+                $(this).attr("data-val", "1");
+                program_table();
+            } else {
+                $(this).addClass('btn-outline-primary');
+                $(this).removeClass('btn-primary');
+                $(this).attr("data-val", "0");
+                program_table();
+            }
+        } else if(fil_name=='inactive') {
+            if(fil_val==0) {
+                $(this).removeClass('btn-outline-primary');
+                $(this).addClass('btn-primary');
+                $(this).attr("data-val", "1");
+                program_table();
+            } else {
+                $(this).addClass('btn-outline-primary');
+                $(this).removeClass('btn-primary');
+                $(this).attr("data-val", "0");
+                program_table();
+            }
+        } else if(fil_name=='winning') {
+            if(fil_val==0) {
+                $(this).removeClass('btn-outline-primary');
+                $(this).addClass('btn-primary');
+                $(this).attr("data-val", "1");
+                program_table();
+            } else {
+                $(this).addClass('btn-outline-primary');
+                $(this).removeClass('btn-primary');
+                $(this).attr("data-val", "0");
+                program_table();
+            }
+        } else if(fil_name=='publish15day') {
+            if(fil_val==0) {
+                $(this).removeClass('btn-outline-primary');
+                $(this).addClass('btn-primary');
+                $(this).attr("data-val", "1");
+                program_table();
+            } else {
+                $(this).addClass('btn-outline-primary');
+                $(this).removeClass('btn-primary');
+                $(this).attr("data-val", "0");
+                program_table();
+            }
+        } else if(fil_name=='end15day') {
+            if(fil_val==0) {
+                $(this).removeClass('btn-outline-primary');
+                $(this).addClass('btn-primary');
+                $(this).attr("data-val", "1");
+                program_table();
+            } else {
+                $(this).addClass('btn-outline-primary');
+                $(this).removeClass('btn-primary');
+                $(this).attr("data-val", "0");
+                program_table();
+            }
+        } else if(fil_name=='recom') {
+            if(fil_val==0) {
+                $(this).removeClass('btn-outline-primary');
+                $(this).addClass('btn-primary');
+                $(this).attr("data-val", "1");
+                program_table();
+            } else {
+                $(this).addClass('btn-outline-primary');
+                $(this).removeClass('btn-primary');
+                $(this).attr("data-val", "0");
+                program_table();
+            }
+        } else if(fil_name=='urgent') {
+            if(fil_val==0) {
+                $(this).removeClass('btn-outline-primary');
+                $(this).addClass('btn-primary');
+                $(this).attr("data-val", "1");
+                program_table();
+            } else {
+                $(this).addClass('btn-outline-primary');
+                $(this).removeClass('btn-primary');
+                $(this).attr("data-val", "0");
+                program_table();
+            }
+        } else { // newest
+            if(fil_val==0) {
+                $(this).removeClass('btn-outline-primary');
+                $(this).addClass('btn-primary');
+                $(this).attr("data-val", "1");
+                program_table();
+            } else {
+                $(this).addClass('btn-outline-primary');
+                $(this).removeClass('btn-primary');
+                $(this).attr("data-val", "0");
+                program_table();
+            }
+        }
+    });
+
+    function program_table() {
+        let active       = $('#filter-active').attr("data-val");
+        let inactive     = $('#filter-inactive').attr("data-val");
+        let winning      = $('#filter-winning').attr("data-val");
+        let publish15day = $('#filter-publish15day').attr("data-val");
+        let end15day     = $('#filter-end15day').attr("data-val");
+        let recom        = $('#filter-recom').attr("data-val");
+        let urgent       = $('#filter-urgent').attr("data-val");
+        let newest       = $('#filter-newest').attr("data-val");
+
+        table.ajax.url("{{ route('adm.program.datatables') }}/?active="+active+"&inactive="+inactive+"&winning="+winning+"&publish15day="+publish15day+"&end15day="+end15day+"&recom="+recom+"&urgent="+urgent+"&newest="+newest).load();
+    }
+
+    var table = $('#table-program').DataTable({
         processing: true,
         serverSide: true,
         responsive: true,
@@ -184,7 +302,7 @@
         ],
         // order: [[4, 'desc']],
         order: [],
-        ajax: "{{ route('adm.program.datatables') }}",
+        ajax: "{{ route('adm.program.datatables') }}/?active=1",
         columns: [
             {data: 'title', name: 'title'},
             {data: 'nominal', name: 'nominal'},

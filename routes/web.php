@@ -20,6 +20,7 @@ use App\Http\Controllers\DonationController;
 
 // Route::get('/', function () { return view('welcome'); });
 Route::get('/', [Guest\HomeController::class, 'index'])->name('index');
+Route::post('/callback.php', [App\Http\Controllers\WaBlastController::class, 'callbackRuangWa'])->name('wa.callback.ruangwa');
 Route::get('/payment/callback-doku', [PaymentController::class, 'callbackDoku'])->name('payment.callback.doku');
 
 // Donatur auto check
@@ -39,7 +40,7 @@ Route::get('/donatur/wa-fu-2', [DonationController::class, 'donateFu2Sc']);
 Route::get('/donate/sum-donate', [DonationController::class, 'sumDonate']);
 
 // Sum Donate Nominal to Donatur
-Route::get('/donate/sum-donate-donatur', [DonationController::class, 'donateUpdate']);
+Route::get('/donate/sum-donate-donatur', [DonationController::class, 'donateUpdate'])->name('refresh.donatur.donate');
 
 // Cancel Transaction with status=draft dan created at before 5 days ago
 Route::get('/donate/cancel-transaction-status-5day-ago', [DonationController::class, 'updateTransactionStatus']);
@@ -56,6 +57,9 @@ Route::get('/fb-ads-detail-per-campaign', [FbAdsController::class, 'detailPerCam
 Route::get('/fb-ads-auto-rules-off', [FbAdsController::class, 'autoRulesOff']);
 Route::get('/fb-ads-auto-rules-on', [FbAdsController::class, 'autoRulesOn']);
 Route::get('/fb-ads-auto-get-spend', [FbAdsController::class, 'getSpend']);
+
+// Page Campaigner
+Route::get('/campaigner/{id}', [Guest\ProgramController::class, 'campaigner'])->name('campaigner');
 
 Route::group([
     'as'     => 'adm.',   // for route(adm.xx)

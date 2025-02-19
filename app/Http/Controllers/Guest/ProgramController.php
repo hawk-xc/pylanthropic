@@ -159,4 +159,40 @@ class ProgramController extends Controller
             return 'failed';
         }
     }
+
+    /**
+     * Page Campaigner
+     */
+    public function campaigner(Request $request)
+    {
+        $org     = \App\Models\Organization::where('uuid', $request->id)->first();
+
+        if(isset($org->name)) {
+            $jml_program = Program::where("organization_id", $org->id)->count();
+            $jml_donatur = Models\Transaction::select("donatur_id")->join("program", "program.id", "transaction.program_id")
+                            ->where('organization_id', $org->id)->where('transaction.status', 'success')
+                            ->groupBy("donatur_id")->get()->count();
+            $jml_salur   = \App\Models\Payout::select("payout.id")->join("program", "program.id", "payout.program_id")
+                            ->where('organization_id', $org->id)->count();
+            $program     = Program::select('program.*', 'organization.name', 'organization.status')
+                            ->join('organization', 'program.organization_id', 'organization.id')
+                            ->where("organization_id", $org->id)->whereNotNull('program.approved_at')
+                            // ->where('is_publish', 1)->where('end_date', '>', date('Y-m-d'))
+                            ->orderBy("approved_at", "DESC")->limit(18)->get();
+            $program->map(function($program, $key) {
+                        $sum_amount = Models\Transaction::where('program_id', $program->id)->where('status', 'success')
+                                    ->sum('nominal_final');
+                        if($program->show_minus>0 && !is_null($program->show_minus) && $sum_amount>0) {
+                            return $program->sum_amount = $sum_amount-($sum_amount*$program->show_minus/100);
+                        } else {
+                            return $program->sum_amount = $sum_amount;
+                        }
+                    });
+
+            return view('public.campaigner', compact('org', 'program', 'jml_program', 'jml_donatur', 'jml_salur'));
+
+        } else {
+            return view('public.not_found');
+        }
+    }
 }

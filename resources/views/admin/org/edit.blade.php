@@ -83,7 +83,11 @@
                     <label class="form-label fw-semibold required">Tentang Lembaga</label>
                     <textarea class="form-control form-control-sm" name="about" row="6" placeholder="Bisa isi nama lembaga" required>{{ $data->about }}</textarea>
                 </div>
-                <div class="col-12">
+                <div class="col-6">
+                    <label class="form-label fw-semibold">Inisial Link</label>
+                    <input type="text" class="form-control form-control-sm" name="link" placeholder="Contoh : lazisnusleman" value="{{ $data->uuid }}">
+                </div>
+                <div class="col-6">
                     <label class="form-label fw-semibold">Alamat</label>
                     <input type="text" class="form-control form-control-sm" name="address" placeholder="Bisa isi Indonesia" value="{{ $data->address }}">
                 </div>

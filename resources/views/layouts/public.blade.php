@@ -15,8 +15,8 @@
 
     <meta name="og:site_name" content="{{ (isset($second_title) && !empty($second_title) ? $second_title : ' Platform Penggalang Dana - Bantubersama.com') }}"/>
     <meta property="og:title" content="{{ (isset($second_title) && !empty($second_title) ? $second_title : ' Platform Penggalang Dana - Bantubersama.com') }}"/>
-    @if(isset($image) && $image=='pengajuan_bantubersama_lazisnu_diy.jpg')
-      <meta name="og:image" content="{{ asset('public/images/organization/'.$image) }}"/>
+    @if(isset($image) && isset($image_type))
+      <meta name="og:image" content="{{ asset('public/images/fundraiser/'.$image) }}"/>
     @else
       <meta name="og:image" content="{{ isset($image) ? asset('public/images/program/'.$image) : asset('public/images/logo/Bantubersama.png') }}"/>
     @endif

@@ -246,7 +246,7 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
 
             // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
             // $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
-            $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
+            // $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
             $curl  = curl_init();
             curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/check_number');
             curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -256,7 +256,7 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
             curl_setopt($curl, CURLOPT_TIMEOUT,30);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, array(
-                'token'   => $token,
+                'token'   => env('TOKEN_RWA'),
                 'number'  => $telp
             ));
             $response = curl_exec($curl);
@@ -317,7 +317,7 @@ Kepedulian kita masih terus dinantikan, oleh mereka yang membutuhkan.';
 
             // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
             // $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
-            $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
+            // $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
             $curl  = curl_init();
             curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/send_message');
             curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -327,7 +327,7 @@ Kepedulian kita masih terus dinantikan, oleh mereka yang membutuhkan.';
             curl_setopt($curl, CURLOPT_TIMEOUT,30);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, array(
-                'token'   => $token,
+                'token'   => env('TOKEN_RWA'),
                 'number'  => $telp,
                 'message' => $chat,
                 'date'    => date('Y-m-d'),
@@ -348,7 +348,7 @@ Kepedulian kita masih terus dinantikan, oleh mereka yang membutuhkan.';
             \App\Models\Chat::create([
                 'no_telp'        => $telp,
                 'text'           => $chat,
-                'token'          => $token,
+                'token'          => env('TOKEN_RWA'),
                 'vendor'         => 'RuangWA',
                 'url'            => 'https://app.ruangwa.id/api/send_message',
                 'type'           => 'repeat_donate',
@@ -399,7 +399,7 @@ Terimakash';
 
             // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
             // $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
-            $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
+            // $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
             $curl  = curl_init();
             curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/send_message');
             curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -409,7 +409,7 @@ Terimakash';
             curl_setopt($curl, CURLOPT_TIMEOUT,30);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, array(
-                'token'   => $token,
+                'token'   => env('TOKEN_RWA'),
                 'number'  => $telp,
                 'message' => $chat,
                 'date'    => date('Y-m-d'),
@@ -430,7 +430,7 @@ Terimakash';
             \App\Models\Chat::create([
                 'no_telp'        => $telp,
                 'text'           => $chat,
-                'token'          => $token,
+                'token'          => env('TOKEN_RWA'),
                 'vendor'         => 'RuangWA',
                 'url'            => 'https://app.ruangwa.id/api/send_message',
                 'type'           => 'info',
@@ -494,7 +494,7 @@ https://bantubersama.com/bantupalestina';
 
             // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
             // $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
-            $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
+            // $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
             $curl  = curl_init();
             curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/send_message');
             curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -504,7 +504,7 @@ https://bantubersama.com/bantupalestina';
             curl_setopt($curl, CURLOPT_TIMEOUT,30);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, array(
-                'token'   => $token,
+                'token'   => env('TOKEN_RWA'),
                 'number'  => $telp,
                 'message' => $chat,
                 'date'    => date('Y-m-d'),
@@ -527,7 +527,7 @@ https://bantubersama.com/bantupalestina';
             \App\Models\Chat::create([
                 'no_telp'        => $telp,
                 'text'           => $chat,
-                'token'          => $token,
+                'token'          => env('TOKEN_RWA'),
                 'vendor'         => 'RuangWA',
                 'url'            => 'https://app.ruangwa.id/api/send_message',
                 'type'           => 'info',

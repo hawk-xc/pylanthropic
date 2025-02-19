@@ -18,6 +18,11 @@
             margin-left: 8px;
             margin-top: 4px;
         }
+        .percent-donate {
+            font-size: 11px;
+            vertical-align: top;
+/*            color: #16aaff !important;*/
+        }
         .widget-chart { padding:8px !important;  }
         .widget-chart .widget-numbers { margin: 12px auto 14px auto; }
     </style>
@@ -50,15 +55,36 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        <?php
+                                            function percent_donate($a=0, $b=0, $type_not_paid=0) {
+                                                if($a>0 && $b>0) {
+                                                    $result_nominal = round($a/($a+$b)*100);
+                                                    if($type_not_paid=='not_paid') {
+                                                        return '<span class="percent-donate text-info">'.$result_nominal.'%</span>';
+                                                    } else { 
+                                                        if($result_nominal>=85) {
+                                                            $result_span = '<span class="percent-donate text-success">';
+                                                        } elseif($result_nominal>=80) {
+                                                            $result_span = '<span class="percent-donate text-info">';
+                                                        } else {
+                                                            $result_span = '<span class="percent-donate text-warning">';
+                                                        }
+                                                        return $result_span.$result_nominal.'%</span>';
+                                                    }
+                                                } else {
+                                                    return 0;
+                                                }
+                                            }
+                                        ?>
                                         <tr>
                                             <td>JML Dibayar</td>
-                                            <td>{{ number_format($donate_success[0]) }}</td>
-                                            <td>{{ number_format($donate_success[1]) }}</td>
-                                            <td>{{ number_format($donate_success[2]) }}</td>
-                                            <td>{{ number_format($donate_success[3]) }}</td>
-                                            <td>{{ number_format($donate_success[4]) }}</td>
-                                            <td>{{ number_format($donate_success[5]) }}</td>
-                                            <td>{{ number_format($donate_success[6]) }}</td>
+                                            <td>{{ number_format($donate_success[0]) }} {!! percent_donate($donate_success[0], $donate_draft[0]) !!}</td>
+                                            <td>{{ number_format($donate_success[1]) }} {!! percent_donate($donate_success[1], $donate_draft[1]) !!}</td>
+                                            <td>{{ number_format($donate_success[2]) }} {!! percent_donate($donate_success[2], $donate_draft[2]) !!}</td>
+                                            <td>{{ number_format($donate_success[3]) }} {!! percent_donate($donate_success[3], $donate_draft[3]) !!}</td>
+                                            <td>{{ number_format($donate_success[4]) }} {!! percent_donate($donate_success[4], $donate_draft[4]) !!}</td>
+                                            <td>{{ number_format($donate_success[5]) }} {!! percent_donate($donate_success[5], $donate_draft[5]) !!}</td>
+                                            <td>{{ number_format($donate_success[6]) }} {!! percent_donate($donate_success[6], $donate_draft[6]) !!}</td>
                                         </tr>
                                         <tr>
                                             <td>Rp Dibayar</td>
@@ -72,13 +98,13 @@
                                         </tr>
                                         <tr>
                                             <td>JML Blm Dibayar</td>
-                                            <td>{{ number_format($donate_draft[0]) }}</td>
-                                            <td>{{ number_format($donate_draft[1]) }}</td>
-                                            <td>{{ number_format($donate_draft[2]) }}</td>
-                                            <td>{{ number_format($donate_draft[3]) }}</td>
-                                            <td>{{ number_format($donate_draft[4]) }}</td>
-                                            <td>{{ number_format($donate_draft[5]) }}</td>
-                                            <td>{{ number_format($donate_draft[6]) }}</td>
+                                            <td>{{ number_format($donate_draft[0]) }} {!! percent_donate($donate_draft[0], $donate_success[0], 'not_paid') !!}</td>
+                                            <td>{{ number_format($donate_draft[1]) }} {!! percent_donate($donate_draft[1], $donate_success[1], 'not_paid') !!}</td>
+                                            <td>{{ number_format($donate_draft[2]) }} {!! percent_donate($donate_draft[2], $donate_success[2], 'not_paid') !!}</td>
+                                            <td>{{ number_format($donate_draft[3]) }} {!! percent_donate($donate_draft[3], $donate_success[3], 'not_paid') !!}</td>
+                                            <td>{{ number_format($donate_draft[3]) }} {!! percent_donate($donate_draft[4], $donate_success[4], 'not_paid') !!}</td>
+                                            <td>{{ number_format($donate_draft[5]) }} {!! percent_donate($donate_draft[5], $donate_success[5], 'not_paid') !!}</td>
+                                            <td>{{ number_format($donate_draft[6]) }} {!! percent_donate($donate_draft[6], $donate_success[6], 'not_paid') !!}</td>
                                         </tr>
                                         <tr>
                                             <td>Rp Blm Dibayar</td>

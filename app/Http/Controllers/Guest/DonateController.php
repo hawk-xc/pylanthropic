@@ -218,7 +218,134 @@ class DonateController extends Controller
                 $final_nominal = $nominal+$unique_number;
 
                 // Payment Gateway
-                if( ($payment->type=='virtual_account' || $payment->type=='instant') && $payment->key!='qris' ){
+                if($payment->key=='qris') {
+                    $requestBody = array(
+                        'payment_type' => 'qris',    // gopay / shopeepay
+                        'transaction_details' => array(
+                            'order_id'     => $invoice,
+                            'gross_amount' => $final_nominal,
+                        ),
+                        'item_details' => array(
+                            'id'       => $invoice,
+                            'price'    => $final_nominal,
+                            'quantity' => 1,
+                            'name'     => $invoice,
+                        ),
+                        'customer_details' => array(
+                            'first_name' => $donatur_name,
+                            'phone'      => $telp,
+                        ),
+                        'qris' => array(
+                            'acquirer' => 'gopay'
+                        )
+                    );
+
+                    $ch = curl_init(env('GOPAY_URL'));
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                        'Accept:application/json',
+                        'Content-Type:application/json',
+                        'Authorization:Basic '.base64_encode(env('MID_SERVER_KEY')),
+                    ));
+                    $responseJson = curl_exec($ch);
+                    $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    curl_close($ch);
+                    $res          = json_decode($responseJson, true);
+                    dd($res);
+                    // if(isset($res['redirect_url'])) {
+                    //     $redirect_url   = $res['redirect_url'];
+                    //     $token_midtrans = $res['token'];
+                    // } else {
+                    //     return view('public.not_found');    // ada problem payment gateway
+                    // }
+
+                } elseif($payment->key=='gopay') {
+                    $requestBody = array(
+                        'payment_type' => 'gopay',    // gopay / shopeepay
+                        'transaction_details' => array(
+                            'order_id'     => $invoice,
+                            'gross_amount' => $final_nominal,
+                        ),
+                        'item_details' => array(
+                            'id'       => $invoice,
+                            'price'    => $final_nominal,
+                            'quantity' => 1,
+                            'name'     => $invoice,
+                        ),
+                        'customer_details' => array(
+                            'first_name' => $donatur_name,
+                            'phone'      => $telp,
+                        ),
+                        'gopay' => array(
+                            'enable_callback' => false
+                            // 'callback_url'    => route('')
+                        )
+                    );
+
+                    $ch = curl_init(env('GOPAY_URL'));
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                        'Accept:application/json',
+                        'Content-Type:application/json',
+                        'Authorization:Basic '.base64_encode(env('MID_SERVER_KEY')),
+                    ));
+                    $responseJson = curl_exec($ch);
+                    $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    curl_close($ch);
+                    $res          = json_decode($responseJson, true);
+                    dd($res);
+                    // if(isset($res['redirect_url'])) {
+                    //     $redirect_url   = $res['redirect_url'];
+                    //     $token_midtrans = $res['token'];
+                    // } else {
+                    //     return view('public.not_found');    // ada problem payment gateway
+                    // }
+
+                }  elseif($payment->key=='shopeepay') {
+                    $requestBody = array(
+                        'payment_type' => 'shopeepay',    // gopay / shopeepay
+                        'transaction_details' => array(
+                            'order_id'     => $invoice,
+                            'gross_amount' => $final_nominal,
+                        ),
+                        'item_details' => array(
+                            'id'       => $invoice,
+                            'price'    => $final_nominal,
+                            'quantity' => 1,
+                            'name'     => $invoice,
+                        ),
+                        'customer_details' => array(
+                            'first_name' => $donatur_name,
+                            'phone'      => $telp,
+                        ),
+                        'shopeepay' => array(
+                            'callback_url'    => route('program.index', $program->slug)
+                        )
+                    );
+
+                    $ch = curl_init(env('GOPAY_URL'));
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                        'Accept:application/json',
+                        'Content-Type:application/json',
+                        'Authorization:Basic '.base64_encode(env('MID_SERVER_KEY')),
+                    ));
+                    $responseJson = curl_exec($ch);
+                    $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    curl_close($ch);
+                    $res          = json_decode($responseJson, true);
+                    dd($res);
+                    // if(isset($res['redirect_url'])) {
+                    //     $redirect_url   = $res['redirect_url'];
+                    //     $token_midtrans = $res['token'];
+                    // } else {
+                    //     return view('public.not_found');    // ada problem payment gateway
+                    // }
+
+                } elseif( ($payment->type=='virtual_account' || $payment->type=='instant') && $payment->key!='qris' ){
                     $requestBody = array(
                         'transaction_details' => array(
                             'order_id'     => $invoice,
@@ -252,9 +379,6 @@ class DonateController extends Controller
                     } else {
                         return view('public.not_found');    // ada problem payment gateway
                     }
-                } elseif($payment->key=='qris') {
-                    $redirect_url   = 0;
-                    $token_midtrans = 0;
                 } else {        // TRANSFER MANUAL
                     $redirect_url   = 0;
                     $token_midtrans = 0;
@@ -829,7 +953,7 @@ Donasi Belum Dibayar : ".number_format($count_unpaid)." - Rp.".str_replace(',', 
     {
         // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
         // $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
-        $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
+        // $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/send_message');
         curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -839,7 +963,7 @@ Donasi Belum Dibayar : ".number_format($count_unpaid)." - Rp.".str_replace(',', 
         curl_setopt($curl, CURLOPT_TIMEOUT,30);
         curl_setopt($curl, CURLOPT_POST, 1);
         curl_setopt($curl, CURLOPT_POSTFIELDS, array(
-            'token'   => $token,
+            'token'   => env('TOKEN_RWA'),
             'number'  => $telp,
             'message' => $chat,
             'date'    => date('Y-m-d'),
