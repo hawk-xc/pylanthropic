@@ -449,13 +449,13 @@ Terimakash';
      */
     public function waProgramSpecific(Request $request)
     {
-        // $donatur_done = \App\Models\Chat::where('program_id', 33)->where('text', 'like', 'salam%')->groupBy('donatur_id')->pluck('donatur_id');
-        // $donatur      = Donatur::whereNotIn('id', $donatur_done)
-        //                 // ->where('id', 201)->orWhere('id', 208)              // for testing send to Ulul & Isna
-        //                 // ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->get();
-        //                 ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->update([
-        //                     'wa_campaign' => '-'
-        //                 ]);
+        $donatur_done = \App\Models\Chat::where('program_id', 33)->where('text', 'like', 'salam%')->groupBy('donatur_id')->pluck('donatur_id');
+        $donatur      = Donatur::whereNotIn('id', $donatur_done)
+                        // ->where('id', 201)->orWhere('id', 208)              // for testing send to Ulul & Isna
+                        // ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->get();
+                        ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->update([
+                            'wa_campaign' => '-'
+                        ]);
                         
                         
         // print_r($donatur_done);
@@ -492,9 +492,6 @@ Ayo satukan niat untuk memberi harapan kepada saudara kita di Gaza Palestina den
 
 https://bantubersama.com/bantupalestina';
 
-            // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
-            // $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
-            // $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
             $curl  = curl_init();
             curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/send_message');
             curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -539,6 +536,121 @@ https://bantubersama.com/bantupalestina';
         
         echo 'FINISH';
     }
+
+
+    /**
+     * Broadcast to Donatur about specific program
+     */
+    public function waManualProgram(Request $request)
+    {
+        $program_id   = 206;
+        $campaign     = 'ramadhan';
+        // $donatur_done = \App\Models\Chat::where('program_id', $program_id)->where('text', 'like', 'salam%')->groupBy('donatur_id')->pluck('donatur_id');
+        // $donatur      = Donatur::whereNotIn('id', $donatur_done)
+                        // ->where('id', 201)->orWhere('id', 28728)              // for testing send to Ulul & Alifah
+                        // ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->get();
+                        // ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->update([
+                            // 'wa_campaign' => '-'
+                        // ]);
+                        
+                        
+        // print_r($donatur_done);
+        // echo count($donatur).'<br>';
+        // foreach($donatur as $k => $v) {
+        //     echo $v->name.' | '.$v->telp.'<br>';
+        // }
+        // die(' finish');
+
+
+        // $program    = \App\Models\Program::->where('id', $program_id)->first();
+
+        $donatur    = Donatur::where('wa_campaign', '<>', $campaign)->where('created_at', '<', date('Y-m-d', strtotime(date('Y-m-d').'-4 day')))
+                    // ->where('id', 201)->orWhere('id', 28728)              // for testing send to Ulul & Alifah
+                    ->where('want_to_contact', '1')->whereNull('wa_inactive_since')
+                    ->where('is_muslim', '1')
+                    ->orderBy('id', 'asc')->limit(4)->get();
+
+        foreach($donatur as $v){
+            $telp = str_replace(['-', ' ', '(', ')', '+', '.'], '', $v->telp);
+            if (substr($telp, 0, 1) == '0') {
+                $telp = '62' . substr($telp, 1, 20);
+            } elseif (substr($telp, 0, 2) != '62') {
+                $telp = '62' . substr($telp, 0, 20);
+            }
+
+            $chat  = '*📢 Hadirkan Kebahagiaan di Bulan Ramadhan✨*
+
+Assalamu’alaikum, *'.ucwords($v->name).'*
+Ramadhan kembali hadir, saatnya berbagi keberkahan! Mari ikut serta dalam:
+
+🍽️ Buka Puasa – Hidangan berbuka bagi yatim & dhuafa.
+🎁 Santunan Yatim – Hadiahkan kebahagiaan bagi mereka.
+🤲 Kado Pejuang Jalanan – Bantu keluarga prasejahtera.
+🕌 Bersih Masjid – Ciptakan tempat ibadah nyaman.
+👕 Kado Lebaran – Berikan pakaian & kebutuhan Lebaran.
+📖 Alat Ibadah – Sediakan mukena, sarung, & Al-Qur’an.
+
+"Siapa berbuat kebaikan di bulan Ramadhan, ia seperti melakukan kewajiban di bulan lainnya." (HR. Ibn Khuzaimah)
+
+Yuk, berikan sedekah terbaikmu melalui :
+👉 bantubersama.com/sedekahramadhan?ref=WA&k=1
+Jazakumullahu khairan, semoga berkah untuk kita semua. Aamiin✨';
+
+            $curl  = curl_init();
+            curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/send_message');
+            curl_setopt($curl, CURLOPT_HEADER, 0);
+            curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
+            curl_setopt($curl, CURLOPT_TIMEOUT,30);
+            curl_setopt($curl, CURLOPT_POST, 1);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, array(
+                'token'   => env('TOKEN_RWA'),
+                'number'  => $telp,
+                'message' => $chat,
+                'date'    => date('Y-m-d'),
+                'time'    => date('H:i'),
+            ));
+            $response = curl_exec($curl);
+            curl_close($curl);
+            
+            $response = json_decode($response);
+            $now      = date('Y-m-d H:i:s');
+            
+            if($response->result=='true'){
+                Donatur::select('id')->where('id', $v->id)->update([
+                    'wa_campaign' => $campaign, 
+                    'updated_at'  => date('Y-m-d H:i:s')
+                ]);
+            }
+
+            // insert table chat
+            \App\Models\Chat::create([
+                'no_telp'        => $telp,
+                'text'           => $this->removeEmoji($chat),
+                'token'          => env('TOKEN_RWA'),
+                'vendor'         => 'RuangWA',
+                'url'            => 'https://app.ruangwa.id/api/send_message',
+                'type'           => 'info',
+                'transaction_id' => null,
+                'donatur_id'     => $v->id,
+                'program_id'     => $program_id
+            ]);
+        }
+        
+        echo 'FINISH';
+    }
+
+
+    public function removeEmoji($text) {
+        return preg_replace('/[\x{1F600}-\x{1F64F}    # Emoticon
+                            \x{1F300}-\x{1F5FF}    # Simbol dan Pictographs
+                            \x{1F680}-\x{1F6FF}    # Transportasi dan Simbol lainnya
+                            \x{2600}-\x{26FF}      # Simbol Miscellaneous
+                            \x{2700}-\x{27BF}]     # Dingbats
+                            /u', '', $text);
+    }
+
 
     /**
      * Update Sum Donate to program

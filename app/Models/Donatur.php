@@ -30,6 +30,7 @@ class Donatur extends Model
         'sum_donate_paid',
         'wa_campaign',
         'ref_code',
-        'created_at'
+        'created_at',
+        'is_muslim'
     ];
 }

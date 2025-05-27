@@ -567,123 +567,6 @@ class FbAdsController extends Controller
                                 // echo '<br> ini split test';
                             } elseif(str_contains(strtolower($data_api->campaign_name), 'wintraf')) {
                                 // echo '<br> ini split test';
-                            } elseif(str_contains(strtolower($data_api->campaign_name), 'winning')) {
-                                if($spend>1000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('04:30:00')) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($spend>10000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('07:00:00')) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($spend>14000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('09:00:00')) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($spend>19000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('18:30:00')) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($spend>24000 && $result<1 && strtotime(date('H:i:s'))>strtotime('18:30:00')) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-
-                                } elseif($cpr>17000 && strtotime(date('H:i:s'))<=strtotime('09:00:00') && $result==1) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>20000 && strtotime(date('H:i:s'))<=strtotime('09:00:00') && $result>=2 && $result<4) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>22000 && strtotime(date('H:i:s'))<=strtotime('09:00:00') && $result>=4 && $result<6) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>25000 && strtotime(date('H:i:s'))<=strtotime('09:00:00') && $result<10) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-
-                                } elseif($cpr>20000 && strtotime(date('H:i:s'))<=strtotime('14:00:00') && $result==1) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>22000 && strtotime(date('H:i:s'))<=strtotime('14:00:00') && $result>=2 && $result<4) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>25000 && strtotime(date('H:i:s'))<=strtotime('14:00:00') && $result>=4 && $result<7) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                
-                                } elseif($cpr>22000 && strtotime(date('H:i:s'))<=strtotime('18:30:00') && $result>=1 && $result<3) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>24000 && strtotime(date('H:i:s'))<=strtotime('18:30:00') && $result>=3 && $result<5) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>26000 && strtotime(date('H:i:s'))<=strtotime('18:30:00') && $result>=5 && $result<7) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>30000 && strtotime(date('H:i:s'))<=strtotime('18:30:00') && $result>=7 && $result<10) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>32000 && strtotime(date('H:i:s'))<=strtotime('18:30:00')) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-
-                                } elseif($cpr>30000 && strtotime(date('H:i:s'))>strtotime('18:30:00') && $result<3) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>38000 && strtotime(date('H:i:s'))>strtotime('18:30:00') && $result<10) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-
-                                } elseif($cpr>22000 && $tn>=strtotime('22:30:00') && $tn<=strtotime('23:30:00') && $result<5) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>24000 && $tn>=strtotime('22:30:00') && $tn<=strtotime('23:30:00') && $result<10) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>30000 && $tn>=strtotime('22:30:00') && $tn<=strtotime('23:00:00') && $result<20) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                
-                                } elseif($tn>=strtotime('23:30:00') && $tn<=strtotime('23:59:00')) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } else {
-                                    // Good Campaign
-                                }
-                            } else {
-                                if($spend>1000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('04:30:00')) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($spend>10000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('07:00:00')) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($spend>14000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('09:00:00')) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($spend>18000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('18:30:00')) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($spend>21000 && $result<1 && strtotime(date('H:i:s'))>strtotime('18:30:00')) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-
-                                } elseif($cpr>16000 && strtotime(date('H:i:s'))<=strtotime('09:00:00') && $result==1) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>19000 && strtotime(date('H:i:s'))<=strtotime('09:00:00') && $result>=2 && $result<4) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>21000 && strtotime(date('H:i:s'))<=strtotime('09:00:00') && $result>=4 && $result<6) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>24000 && strtotime(date('H:i:s'))<=strtotime('09:00:00') && $result<10) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-
-                                } elseif($cpr>19000 && strtotime(date('H:i:s'))<=strtotime('14:00:00') && $result==1) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>21000 && strtotime(date('H:i:s'))<=strtotime('14:00:00') && $result>=2 && $result<4) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>24000 && strtotime(date('H:i:s'))<=strtotime('14:00:00') && $result>=4 && $result<7) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-
-                                } elseif($cpr>21000 && strtotime(date('H:i:s'))<=strtotime('18:30:00') && $result>=1 && $result<3) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>23000 && strtotime(date('H:i:s'))<=strtotime('18:30:00') && $result>=3 && $result<5) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>25000 && strtotime(date('H:i:s'))<=strtotime('18:30:00') && $result>=5 && $result<7) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>28000 && strtotime(date('H:i:s'))<=strtotime('18:30:00')) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-
-                                } elseif($cpr>28000 && strtotime(date('H:i:s'))>strtotime('18:30:00') && $result<3) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>36000 && strtotime(date('H:i:s'))>strtotime('18:30:00') && $result<10) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-
-                                } elseif($cpr>20000 && $tn>=strtotime('22:30:00') && $tn<=strtotime('23:30:00') && $result<5) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>22000 && $tn>=strtotime('22:30:00') && $tn<=strtotime('23:30:00') && $result<10) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } elseif($cpr>30000 && $tn>=strtotime('22:30:00') && $tn<=strtotime('23:00:00') && $result<20) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                
-                                } elseif($tn>=strtotime('23:30:00') && $tn<=strtotime('23:59:00')) {
-                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
-                                } else {
-                                    // Good Campaign
-                                }
-                            } // END IF OFF CAMPAIGN
-                        } else {  // TGL BAGUS / RAMADHAN
-                            // OFF CAMPAIGN
-                            if(str_contains(strtolower($data_api->campaign_name), 'splittest')) {
-                                // echo '<br> ini split test';
-                            } elseif(str_contains(strtolower($data_api->campaign_name), 'wintraf')) {
-                                // echo '<br> ini split test';
                             } elseif(str_contains(strtolower($data_api->campaign_name), '1winning')) {
                                 if($spend>1000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('04:30:00')) {
                                     $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
@@ -865,6 +748,151 @@ class FbAdsController extends Controller
                                     // Good Campaign
                                 }
                             } // END IF OFF CAMPAIGN
+
+                        } else {  // TGL BAGUS / RAMADHAN
+                            // OFF CAMPAIGN
+                            if(str_contains(strtolower($data_api->campaign_name), 'splittest')) {
+                                // echo '<br> ini split test';
+                            } elseif(str_contains(strtolower($data_api->campaign_name), 'wintraf')) {
+                                // echo '<br> ini split test';
+                            } elseif(str_contains(strtolower($data_api->campaign_name), 'winning')) { // ini harusnya gas winning
+                                // Tidak ada hasil leads
+                                if($spend>2000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('02:30:00')) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($spend>12000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('07:00:00')) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($spend>16000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('11:00:00')) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($spend>20000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('15:00:00')) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($spend>24000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('18:30:00')) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($spend>34000 && $result<1 && strtotime(date('H:i:s'))>strtotime('19:00:00')) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+
+                                } elseif($cpr>20000 && strtotime(date('H:i:s'))<=strtotime('09:00:00') && $result==1) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>26000 && strtotime(date('H:i:s'))<=strtotime('09:00:00') && $result>=2 && $result<4) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>29000 && strtotime(date('H:i:s'))<=strtotime('09:00:00') && $result>=4 && $result<6) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>36000 && strtotime(date('H:i:s'))<=strtotime('09:00:00') && $result>=6 && $result<9) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>39000 && strtotime(date('H:i:s'))<=strtotime('09:00:00') && $result>=9 && $result<15) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+
+                                } elseif($cpr>20000 && strtotime(date('H:i:s'))<=strtotime('14:00:00') && $result==1) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>26000 && strtotime(date('H:i:s'))<=strtotime('14:00:00') && $result>=2 && $result<4) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>32000 && strtotime(date('H:i:s'))<=strtotime('14:00:00') && $result>=4 && $result<6) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>38000 && strtotime(date('H:i:s'))<=strtotime('14:00:00') && $result>=6 && $result<9) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                
+                                } elseif($cpr>22000 && strtotime(date('H:i:s'))<=strtotime('18:00:00') && $result==1) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>26000 && strtotime(date('H:i:s'))<=strtotime('18:00:00') && $result==2) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>30000 && strtotime(date('H:i:s'))<=strtotime('18:00:00') && $result>=3 && $result<5) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>35000 && strtotime(date('H:i:s'))<=strtotime('18:00:00') && $result>=5 && $result<7) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>39000 && strtotime(date('H:i:s'))<=strtotime('18:00:00') && $result>=7 && $result<10) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>32000 && strtotime(date('H:i:s'))<=strtotime('18:00:00')) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+
+                                } elseif($cpr>34000 && strtotime(date('H:i:s'))>strtotime('18:45:00') && $result==1) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>36000 && strtotime(date('H:i:s'))>strtotime('18:45:00') && $result==2) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>39000 && strtotime(date('H:i:s'))>strtotime('18:45:00') && $result>=3 && $result<6) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>43000 && strtotime(date('H:i:s'))>strtotime('18:45:00') && $result>=6 && $result<9) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+
+                                } elseif($cpr>32000 && $tn>=strtotime('22:30:00') && $tn<=strtotime('23:50:00') && $result<5) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>38000 && $tn>=strtotime('22:30:00') && $tn<=strtotime('23:50:00') && $result<8) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>44000 && $tn>=strtotime('22:30:00') && $tn<=strtotime('23:50:00') && $result<11) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                
+                                } elseif($tn>=strtotime('23:30:00') && $tn<=strtotime('23:59:00')) {
+                                    // $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } else {
+                                    // Good Campaign
+                                }
+                            } else {
+                                if($spend>2000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('02:30:00')) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($spend>12000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('07:00:00')) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($spend>16000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('11:00:00')) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($spend>20000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('15:00:00')) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($spend>24000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('18:30:00')) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($spend>34000 && $result<1 && strtotime(date('H:i:s'))>strtotime('19:00:00')) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+
+                                } elseif($cpr>20000 && strtotime(date('H:i:s'))<=strtotime('09:00:00') && $result==1) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>26000 && strtotime(date('H:i:s'))<=strtotime('09:00:00') && $result>=2 && $result<4) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>29000 && strtotime(date('H:i:s'))<=strtotime('09:00:00') && $result>=4 && $result<6) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>36000 && strtotime(date('H:i:s'))<=strtotime('09:00:00') && $result>=6 && $result<9) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>38000 && strtotime(date('H:i:s'))<=strtotime('09:00:00') && $result>=10 && $result<15) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+
+                                } elseif($cpr>20000 && strtotime(date('H:i:s'))<=strtotime('14:00:00') && $result==1) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>26000 && strtotime(date('H:i:s'))<=strtotime('14:00:00') && $result>=2 && $result<4) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>32000 && strtotime(date('H:i:s'))<=strtotime('14:00:00') && $result>=4 && $result<6) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>38000 && strtotime(date('H:i:s'))<=strtotime('14:00:00') && $result>=6 && $result<9) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                
+                                } elseif($cpr>22000 && strtotime(date('H:i:s'))<=strtotime('18:00:00') && $result==1) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>26000 && strtotime(date('H:i:s'))<=strtotime('18:00:00') && $result==2) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>30000 && strtotime(date('H:i:s'))<=strtotime('18:00:00') && $result>=3 && $result<5) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>35000 && strtotime(date('H:i:s'))<=strtotime('18:00:00') && $result>=5 && $result<7) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>39000 && strtotime(date('H:i:s'))<=strtotime('18:00:00') && $result>=7 && $result<10) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>32000 && strtotime(date('H:i:s'))<=strtotime('18:00:00')) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+
+                                } elseif($cpr>34000 && strtotime(date('H:i:s'))>strtotime('18:45:00') && $result==1) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>36000 && strtotime(date('H:i:s'))>strtotime('18:45:00') && $result==2) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>39000 && strtotime(date('H:i:s'))>strtotime('18:45:00') && $result>=3 && $result<6) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>43000 && strtotime(date('H:i:s'))>strtotime('18:45:00') && $result>=6 && $result<9) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+
+                                } elseif($cpr>32000 && $tn>=strtotime('22:30:00') && $tn<=strtotime('23:50:00') && $result<5) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>38000 && $tn>=strtotime('22:30:00') && $tn<=strtotime('23:50:00') && $result<8) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } elseif($cpr>44000 && $tn>=strtotime('22:30:00') && $tn<=strtotime('23:50:00') && $result<11) {
+                                    $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                
+                                } elseif($tn>=strtotime('23:30:00') && $tn<=strtotime('23:59:00')) {
+                                    // $this->updateStatusCampaign($data_api->campaign_id, 'PAUSED');
+                                } else {
+                                    // Good Campaign
+                                }
+                            } // END IF OFF CAMPAIGN
                         } //END IF TGL BAGUS / RAMADHAN
                     } // END IF ISSET DATA
                 } // END IF ISSET RESPONSE
@@ -1004,154 +1032,6 @@ class FbAdsController extends Controller
                                 // ON CAMPAIGN
                                 if(str_contains(strtolower($data_api->campaign_name), 'splittest')) {
                                     // echo '<br> ini split test';
-                                } elseif(str_contains(strtolower($data_api->campaign_name), 'winning1')) {
-                                    if($spend>1) {
-                                        // mengantisipasi campaign yg memang sudah di off kan agar tidak ikut di ON kan
-                                        if($spend<10000 && $result<1 && $tn>=strtotime('04:50:00') && $tn<=strtotime('07:00:00')) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($spend<14000 && $result<1 && $tn>=strtotime('05:00:00') && $tn<=strtotime('06:30:00')) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($spend<10000 && $result<1 && $tn>strtotime('06:30:00') && $tn<=strtotime('09:00:00')) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($spend<16000 && $result<1 && $tn>strtotime('09:00:00') && $tn<=strtotime('12:30:00')) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($spend<18000 && $result<1 && $tn>strtotime('12:30:00') && $tn<=strtotime('14:00:00')) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($spend<20000 && $result<1 && $tn>strtotime('14:00:00') && $tn<=strtotime('17:30:00')) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($spend<22000 && $result<1 && $tn>strtotime('14:00:00') && $tn<=strtotime('19:00:00')) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($spend<33000 && $result<1 && $tn>=strtotime('19:00:00') && $tn<=strtotime('22:50:00')) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-
-                                        } elseif($cpr<16000 && $tn<=strtotime('09:00:00') && $result>=1) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<17000 && $tn<=strtotime('09:00:00') && $result>=2) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<20000 && $tn<=strtotime('09:00:00') && $result>=3) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<22000 && $tn<=strtotime('09:00:00') && $result>=4 && $result<6) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<25000 && $tn<=strtotime('09:00:00') && $result>=6 && $result<20) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-
-                                        } elseif($cpr<17000 && $tn>strtotime('9:00:00') && $tn<=strtotime('12:00:00') && $result>=1) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<20000 && $tn>strtotime('9:00:00') && $tn<=strtotime('12:00:00') && $result>=2) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<22000 && $tn>strtotime('9:00:00') && $tn<=strtotime('12:00:00') && $result>=3) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<24000 && $tn>strtotime('9:00:00') && $tn<=strtotime('12:00:00') && $result>=4 && $result<27) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-
-                                        } elseif($cpr<20000 && $tn>strtotime('12:00:00') && $tn<=strtotime('14:00:00') && $result>=1) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<21000 && $tn>strtotime('12:00:00') && $tn<=strtotime('14:00:00') && $result>=2) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<22000 && $tn>strtotime('12:00:00') && $tn<=strtotime('14:00:00') && $result>=3) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<25000 && $tn>strtotime('12:00:00') && $tn<=strtotime('14:00:00') && $result>=4 && $result<27) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-
-                                        } elseif($cpr<22000 && $tn>strtotime('14:00:00') && $tn<=strtotime('17:30:00') && $result>=1 && $result<3) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<24000 && $tn>strtotime('14:00:00') && $tn<=strtotime('17:30:00') && $result>=3 && $result<5) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<26000 && $tn>strtotime('14:00:00') && $tn<=strtotime('17:30:00') && $result>=5 && $result<27) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        
-                                        } elseif($cpr<23000 && $tn>strtotime('19:00:00') && $tn<strtotime('22:15:00') && $result==1) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<26000 && $tn>strtotime('19:00:00') && $tn<strtotime('22:15:00') && $result==2) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<34000 && $tn>strtotime('19:00:00') && $tn<strtotime('22:15:00') && $result>=3 && $result<5) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<37000 && $tn>strtotime('19:00:00') && $tn<strtotime('22:15:00') && $result>=5 && $result<7) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<38000 && $tn>strtotime('19:00:00') && $tn<strtotime('22:15:00') && $result>=7) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-
-                                        } else {
-                                            // Bad Campaign
-                                        }
-                                    }
-                                } elseif(str_contains(strtolower($data_api->campaign_name), 'luaran')) {  // pihak luar main aman
-
-                                } else {    // internal tapi belum winning
-                                    if($spend>1) {
-                                        // mengantisipasi campaign yg memang sudah di off kan agar tidak ikut di ON kan
-                                        if($spend<10000 && $result<1 && $tn>=strtotime('04:50:00') && $tn<=strtotime('07:00:00')) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($spend<13000 && $result<1 && $tn>=strtotime('05:00:00') && $tn<=strtotime('06:30:00')) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($spend<10000 && $result<1 && $tn>strtotime('06:30:00') && $tn<=strtotime('09:00:00')) {
-                                            // karena selama ramadhan jam ini audience banyak istirahat atau sibuk
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($spend<10000 && $result<1 && $tn>strtotime('09:30:00') && $tn<=strtotime('12:30:00')) {
-                                            // karena selama ramadhan jam ini audience banyak istirahat atau sibuk
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($spend<17000 && $result<1 && $tn>strtotime('12:30:00') && $tn<=strtotime('14:00:00')) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($spend<18000 && $result<1 && $tn>strtotime('14:00:00') && $tn<=strtotime('17:30:00')) {
-                                            // narget ngabuburit, tapi kalau mendekati buka kurang bagus
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($spend<21000 && $result<1 && $tn>=strtotime('19:00:00') && $tn<=strtotime('22:30:00')) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-
-                                        } elseif($cpr<15000 && $tn<=strtotime('09:00:00') && $result>=1) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<17000 && $tn<=strtotime('09:00:00') && $result>=2) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<19000 && $tn<=strtotime('09:00:00') && $result>=3) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<21000 && $tn<=strtotime('09:00:00') && $result>=4 && $result<6) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<24000 && $tn<=strtotime('09:00:00') && $result>=6 && $result<10) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-
-                                        } elseif($cpr<16000 && $tn>strtotime('09:00:00') && $tn<=strtotime('12:00:00') && $result>=1) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<17000 && $tn>strtotime('09:00:00') && $tn<=strtotime('12:00:00') && $result>=2) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<20000 && $tn>strtotime('09:00:00') && $tn<=strtotime('12:00:00') && $result>=3) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<24000 && $tn>strtotime('09:00:00') && $tn<=strtotime('12:00:00') && $result>=4 && $result<7) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-
-                                        } elseif($cpr<19000 && $tn>strtotime('12:00:00') && $tn<=strtotime('14:00:00') && $result>=1) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<21000 && $tn>strtotime('12:00:00') && $tn<=strtotime('14:00:00') && $result>=2 && $result<4) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<24000 && $tn>strtotime('12:00:00') && $tn<=strtotime('14:00:00') && $result>=4 && $result<7) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-
-                                        } elseif($cpr<21000 && $tn>strtotime('14:00:00') && $tn<=strtotime('17:30:00') && $result>=1 && $result<3) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<23000 && $tn>strtotime('14:00:00') && $tn<=strtotime('17:30:00') && $result>=3 && $result<5) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<25000 && $tn>strtotime('14:00:00') && $tn<=strtotime('17:30:00') && $result>=5 && $result<7) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        
-                                        } elseif($cpr<23000 && $tn>strtotime('19:00:00') && $tn<strtotime('22:15:00') && $result==1) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<26000 && $tn>strtotime('19:00:00') && $tn<strtotime('22:15:00') && $result==2) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<32000 && $tn>strtotime('19:00:00') && $tn<strtotime('22:15:00') && $result>=3 && $result<5) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<36000 && $tn>strtotime('19:00:00') && $tn<strtotime('22:15:00') && $result>=5 && $result<7) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-                                        } elseif($cpr<36000 && $tn>strtotime('19:00:00') && $tn<strtotime('22:15:00') && $result>=7) {
-                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
-
-                                        } else {
-                                            // Bad Campaign
-                                        }
-                                    }
-                                } // END IF
-                            } else {  // TGL BAGUS / RAMADHAN
-                                // ON CAMPAIGN
-                                if(str_contains(strtolower($data_api->campaign_name), 'splittest')) {
-                                    // echo '<br> ini split test';
                                 } elseif(str_contains(strtolower($data_api->campaign_name), 'winning')) {
                                     if($spend>1) {
                                         // mengantisipasi campaign yg memang sudah di off kan agar tidak ikut di ON kan
@@ -1264,6 +1144,145 @@ class FbAdsController extends Controller
                                         } elseif($cpr<39000 && $tn>strtotime('19:00:00') && $tn<strtotime('22:30:00') && $result>=5 && $result<7) {
                                             $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
                                         } elseif($cpr<42000 && $tn>strtotime('19:00:00') && $tn<strtotime('22:30:00') && $result>=7) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+
+                                        } else {
+                                            // Bad Campaign
+                                        }
+                                    }
+                                } // END IF
+                            } else {  // TGL BAGUS / RAMADHAN
+                                // ON CAMPAIGN
+                                if(str_contains(strtolower($data_api->campaign_name), 'splittest')) {
+                                    // echo '<br> ini split test';
+                                } elseif(str_contains(strtolower($data_api->campaign_name), 'winning')) {
+                                    if($spend>1) {
+                                        // mengantisipasi campaign yg memang sudah di off kan agar tidak ikut di ON kan
+                                        if($spend<10000 && $result<1 && $tn>=strtotime('02:30:00') && $tn<=strtotime('04:30:00')) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($spend<14000 && $result<1 && $tn>=strtotime('04:30:00') && $tn<=strtotime('08:00:00')) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($spend<16000 && $result<1 && $tn>strtotime('06:30:00') && $tn<=strtotime('08:00:00')) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($spend<18000 && $result<1 && $tn>strtotime('09:00:00') && $tn<=strtotime('12:00:00')) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($spend<20000 && $result<1 && $tn>strtotime('12:00:00') && $tn<=strtotime('15:00:00')) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($spend<22000 && $result<1 && $tn>strtotime('15:00:00') && $tn<=strtotime('17:30:00')) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($spend<24000 && $result<1 && $tn>strtotime('15:00:00') && $tn<=strtotime('19:00:00')) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($spend<33000 && $result<1 && $tn>=strtotime('19:00:00') && $tn<=strtotime('22:50:00')) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+
+                                        } elseif($cpr<19000 && $tn<=strtotime('09:00:00') && $result>=1) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<25000 && $tn<=strtotime('09:00:00') && $result>=2 && $result<4) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<28000 && $tn<=strtotime('09:00:00') && $result>=4 && $result<6) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<35000 && $tn<=strtotime('09:00:00') && $result>=6 && $result<9) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<38000 && $tn<=strtotime('09:00:00') && $result>=9 && $result<15) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+
+                                        } elseif($cpr<19000 && $tn>strtotime('09:00:00') && $tn<=strtotime('14:00:00') && $result>=1) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<25000 && $tn>strtotime('09:00:00') && $tn<=strtotime('14:00:00') && $result>=2 && $result<4) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<31000 && $tn>strtotime('09:00:00') && $tn<=strtotime('14:00:00') && $result>=4 && $result<6) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<37000 && $tn>strtotime('09:00:00') && $tn<=strtotime('14:00:00') && $result>=6 && $result<9) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+
+                                        } elseif($cpr<21000 && $tn>strtotime('14:00:00') && $tn<=strtotime('18:00:00') && $result==1) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<25000 && $tn>strtotime('14:00:00') && $tn<=strtotime('18:00:00') && $result==2) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<29000 && $tn>strtotime('14:00:00') && $tn<=strtotime('18:00:00') && $result>=3 && $result<5) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<34000 && $tn>strtotime('14:00:00') && $tn<=strtotime('18:00:00') && $result>=5 && $result<7) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<38000 && $tn>strtotime('14:00:00') && $tn<=strtotime('18:00:00') && $result>=7 && $result<10) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        
+                                        } elseif($cpr<33000 && $tn>strtotime('18:45:00') && $tn<strtotime('23:00:00') && $result==1) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<35000 && $tn>strtotime('18:45:00') && $tn<strtotime('23:00:00') && $result==2) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<38000 && $tn>strtotime('18:45:00') && $tn<strtotime('23:00:00') && $result>=3 && $result<6) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<42000 && $tn>strtotime('18:45:00') && $tn<strtotime('23:00:00') && $result>=6 && $result<9) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<45000 && $tn>strtotime('18:45:00') && $tn<strtotime('23:00:00') && $result>=10) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+
+                                        } else {
+                                            // Bad Campaign
+                                        }
+                                    }
+                                } elseif(str_contains(strtolower($data_api->campaign_name), 'luaran')) {  // pihak luar main aman
+
+                                } else {    // internal tapi belum winning
+                                    if($spend>1) {
+                                        // mengantisipasi campaign yg memang sudah di off kan agar tidak ikut di ON kan
+                                        if($spend<10000 && $result<1 && $tn>=strtotime('02:30:00') && $tn<=strtotime('04:30:00')) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($spend<14000 && $result<1 && $tn>=strtotime('04:30:00') && $tn<=strtotime('08:00:00')) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($spend<16000 && $result<1 && $tn>strtotime('06:30:00') && $tn<=strtotime('08:00:00')) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($spend<18000 && $result<1 && $tn>strtotime('09:00:00') && $tn<=strtotime('12:00:00')) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($spend<20000 && $result<1 && $tn>strtotime('12:00:00') && $tn<=strtotime('15:00:00')) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($spend<22000 && $result<1 && $tn>strtotime('15:00:00') && $tn<=strtotime('17:30:00')) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($spend<24000 && $result<1 && $tn>strtotime('15:00:00') && $tn<=strtotime('19:00:00')) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($spend<33000 && $result<1 && $tn>=strtotime('19:00:00') && $tn<=strtotime('22:50:00')) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+
+                                        } elseif($cpr<19000 && $tn<=strtotime('09:00:00') && $result>=1) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<25000 && $tn<=strtotime('09:00:00') && $result>=2 && $result<4) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<28000 && $tn<=strtotime('09:00:00') && $result>=4 && $result<6) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<35000 && $tn<=strtotime('09:00:00') && $result>=6 && $result<9) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<38000 && $tn<=strtotime('09:00:00') && $result>=9 && $result<15) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+
+                                        } elseif($cpr<19000 && $tn>strtotime('09:00:00') && $tn<=strtotime('14:00:00') && $result>=1) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<25000 && $tn>strtotime('09:00:00') && $tn<=strtotime('14:00:00') && $result>=2 && $result<4) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<31000 && $tn>strtotime('09:00:00') && $tn<=strtotime('14:00:00') && $result>=4 && $result<6) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<37000 && $tn>strtotime('09:00:00') && $tn<=strtotime('14:00:00') && $result>=6 && $result<9) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+
+                                        } elseif($cpr<21000 && $tn>strtotime('14:00:00') && $tn<=strtotime('18:00:00') && $result==1) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<25000 && $tn>strtotime('14:00:00') && $tn<=strtotime('18:00:00') && $result==2) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<29000 && $tn>strtotime('14:00:00') && $tn<=strtotime('18:00:00') && $result>=3 && $result<5) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<34000 && $tn>strtotime('14:00:00') && $tn<=strtotime('18:00:00') && $result>=5 && $result<7) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<38000 && $tn>strtotime('14:00:00') && $tn<=strtotime('18:00:00') && $result>=7 && $result<10) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        
+                                        } elseif($cpr<33000 && $tn>strtotime('18:45:00') && $tn<strtotime('23:00:00') && $result==1) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<35000 && $tn>strtotime('18:45:00') && $tn<strtotime('23:00:00') && $result==2) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<38000 && $tn>strtotime('18:45:00') && $tn<strtotime('23:00:00') && $result>=3 && $result<6) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<42000 && $tn>strtotime('18:45:00') && $tn<strtotime('23:00:00') && $result>=6 && $result<9) {
+                                            $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
+                                        } elseif($cpr<45000 && $tn>strtotime('18:45:00') && $tn<strtotime('23:00:00') && $result>=10) {
                                             $this->updateStatusCampaign($data_api->campaign_id, 'ACTIVE');
 
                                         } else {

@@ -109,7 +109,163 @@ class AdsController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function adsNeedAction(Request $request)
+    // public function adsNeedAction(Request $request)
+    // {
+    //     $token           = '&access_token='.$this->token;
+
+    //     $id              = $request->id;
+    //     if($id==1) {
+    //         $account_id  = 'act_931003154576114';       // List Campaign di BM 1
+    //     } else {
+    //         $account_id  = 'act_597272662321196';       // List Campaign di BM 4
+    //     }
+
+    //     $dn              = date('Y-m-d H:i:s', strtotime(date('Y-m-d').' 23:59:59 -3 day'));
+
+    //     // List campaign untuk mendapatkan status masing2 campaign
+    //     $host =  $this->host.$account_id."/campaigns?date_preset=today&period=day&time_increment=1&limit=5000";
+    //     $host .= "&fields=id,name,status&filtering=";
+    //     $host .= urlencode("[{'field':'updated_time','operator':'GREATER_THAN','value':'".$dn."'}]").$token;
+
+    //     $curl             = curl_init();
+    //     curl_setopt($curl, CURLOPT_URL, $host);
+    //     curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+
+    //     $response         = curl_exec($curl);
+    //     $err              = curl_error($curl);
+    //     curl_close($curl);
+
+    //     $campaign         = [];
+    //     $campaign_id      = [];
+    //     $campaign_name    = [];
+
+    //     if ($err) {
+    //         echo 'Pesan gagal terkirim, error :' . $err;
+    //     } else {
+    //         $res = json_decode($response);
+
+    //         if(isset($res->data)) {
+    //             $list_campaign = $res->data;
+    //             // Mengurutkan kampanye berdasarkan nama
+    //             usort($list_campaign, function ($a, $b) {
+    //                 return $a->status <=> $b->status;
+    //             });
+
+    //             for($i=0; $i<count($list_campaign); $i++) {
+    //                 $campaign[$list_campaign[$i]->id] = $list_campaign[$i]->status;
+    //                 $campaign_id[]                    = $list_campaign[$i]->id;
+    //                 $campaign_name[]                  = $list_campaign[$i]->name;
+    //             }
+    //         }
+    //     }
+
+
+    //     // Get Data FB ADS PER ID CAMPAIGN
+    //     $param_time      = 'date_preset=today';
+    //     $param_period    = '&period=day';
+    //     $param_increment = '&time_increment=1';
+    //     $param_limit     = '&limit=5000';
+    //     $param_level     = '&level=campaign';
+    //     $param_field     = '&fields=campaign_id,campaign_name,objective,cost_per_conversion,spend,actions';
+
+    //     $need_action     = [];
+    //     $others          = [];
+    //     // $list_campaign   = AdsCampaign::where('adaccount_id', $account_id)->where('updated_time', '>=', $dn)->select('id')->get();
+
+    //     for($i=0; $i<count($campaign_id);  $i++) {
+    //     // foreach($list_campaign as $key => $v) {
+    //         $url         = $this->host.$campaign_id[$i].'/insights?'.$param_time.$param_period.$param_increment.$param_level.$param_limit.$param_field.$token;
+
+    //         $curl        = curl_init();
+    //         curl_setopt($curl, CURLOPT_URL, $url);
+    //         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+
+    //         $response    = curl_exec($curl);
+    //         $err         = curl_error($curl);
+    //         curl_close($curl);
+
+    //         if ($err) {
+    //             echo 'Pesan gagal terkirim, error :' . $err;
+    //         } else {
+    //             if(isset(json_decode($response)->data[0])) {
+    //                 $data_api = json_decode($response)->data[0];
+
+    //                 if(isset($data_api->spend)) {
+    //                     $spend        = round($data_api->spend);
+    //                 } else {
+    //                     $spend        = 0;
+    //                 }
+
+    //                 if(isset($data_api->cost_per_conversion)) {
+    //                     $cpr                = array_filter($data_api->cost_per_conversion, function($cpr_val) {
+    //                                                 return $cpr_val->action_type == 'donate_website';
+    //                                             });
+    //                     if(isset($cpr[0]->value)) {
+    //                         $cpr      = round($cpr[0]->value);
+    //                     } else {
+    //                         $cpr      = 0;
+    //                     }
+    //                 } else {
+    //                     $cpr          = 0;
+    //                 }
+
+    //                 if(isset($data_api->actions)) {
+    //                     if($data_api->objective=='LINK_CLICKS') {
+    //                         $result     = array_filter($data_api->actions, function($result_val) {
+    //                                             return $result_val->action_type == 'link_click';
+    //                                         });
+    //                     } else {
+    //                         $result     = array_filter($data_api->actions, function($result_val) {
+    //                                             return $result_val->action_type == 'offsite_conversion.fb_pixel_custom';
+    //                                         });
+    //                     }
+
+    //                     if(isset($result)) {
+    //                         if(!empty(array_keys($result))) {
+    //                             $result = round($result[max(array_keys($result))]->value);
+    //                         } else {
+    //                             $result = 0;
+    //                         }
+    //                     } else {
+    //                         $result   = 0;
+    //                     }
+    //                 } else {
+    //                     $result       = 0;
+    //                 }
+
+    //                 // NOTIF ADS TEAM
+    //                 if($spend>12000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('09:00:00')) {
+    //                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
+                    
+    //                 } elseif($spend>14000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('18:30:00')) {
+    //                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
+                    
+    //                 }  elseif($spend>20000 && $result<1 && strtotime(date('H:i:s'))>strtotime('18:30:00')) {
+    //                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
+                    
+    //                 } elseif($cpr>14000 && strtotime(date('H:i:s'))<=strtotime('09:00:00')) {
+    //                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
+                    
+    //                 } elseif($cpr>16000 && strtotime(date('H:i:s'))<=strtotime('18:30:00')) {
+    //                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
+                    
+    //                 } elseif($cpr>34000 && strtotime(date('H:i:s'))>strtotime('18:30:00')) {
+    //                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
+                    
+    //                 } else {
+    //                     $others[]      = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
+    //                 }
+
+    //             } else {
+    //                 $others[]      = ['id'=>$campaign_id[$i], 'name' => $campaign_name[$i], 'spend' => 0, 'result' => 0, 'cpr' => 0];
+    //             }
+    //         }  // END IF
+    //     }   // END FOREACH
+
+    //     return view('admin.ads.needaction', compact('id', 'account_id', 'need_action', 'others', 'campaign'));
+    // }
+
+public function adsNeedAction(Request $request)
     {
         $token           = '&access_token='.$this->token;
 
@@ -170,97 +326,116 @@ class AdsController extends Controller
 
         $need_action     = [];
         $others          = [];
-        // $list_campaign   = AdsCampaign::where('adaccount_id', $account_id)->where('updated_time', '>=', $dn)->select('id')->get();
+        $batch_request   = [];
+
 
         for($i=0; $i<count($campaign_id);  $i++) {
-        // foreach($list_campaign as $key => $v) {
-            $url         = $this->host.$campaign_id[$i].'/insights?'.$param_time.$param_period.$param_increment.$param_level.$param_limit.$param_field.$token;
+            $batch_request[] = [
+                'method'       => 'GET',
+                'relative_url' => $campaign_id[$i].'/insights?'.$param_time.$param_period.$param_increment.$param_level.$param_limit.$param_field
+            ];
+        }
 
+        $batches         = array_chunk($batch_request, 50); // Membagi request ke dalam batch karena dibatasi 50 oleh fb ads api
+        $batches_result  = [];
+
+        foreach ($batches as $batch) {
             $curl        = curl_init();
-            curl_setopt($curl, CURLOPT_URL, $url);
+            curl_setopt($curl, CURLOPT_URL, $this->host);
+            curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query([
+                'batch'        => json_encode($batch),
+                'access_token' => $this->token
+            ]));
 
             $response    = curl_exec($curl);
             $err         = curl_error($curl);
             curl_close($curl);
 
-            if ($err) {
-                echo 'Pesan gagal terkirim, error :' . $err;
+            $decoded_response   = json_decode($response, true);
+            if (isset($decoded_response['error'])) {
+                echo "Error: " . $decoded_response['error']['message'] . "\n";
             } else {
-                if(isset(json_decode($response)->data[0])) {
-                    $data_api = json_decode($response)->data[0];
+                $batches_result = array_merge($batches_result, $decoded_response);
+            }
 
-                    if(isset($data_api->spend)) {
-                        $spend        = round($data_api->spend);
-                    } else {
-                        $spend        = 0;
-                    }
+            usleep(100000); // Jeda 0.1 detik (500 ms) untuk menghindari rate limit
+        }
 
-                    if(isset($data_api->cost_per_conversion)) {
-                        $cpr                = array_filter($data_api->cost_per_conversion, function($cpr_val) {
-                                                    return $cpr_val->action_type == 'donate_website';
-                                                });
-                        if(isset($cpr[0]->value)) {
-                            $cpr      = round($cpr[0]->value);
-                        } else {
-                            $cpr      = 0;
-                        }
-                    } else {
-                        $cpr          = 0;
-                    }
+        for($i=0; $i<count($batches_result); $i++) {
+            if(isset(json_decode($batches_result[$i]['body'])->data[0])) {
+                $data_api = json_decode($batches_result[$i]['body'])->data[0];
 
-                    if(isset($data_api->actions)) {
-                        if($data_api->objective=='LINK_CLICKS') {
-                            $result     = array_filter($data_api->actions, function($result_val) {
-                                                return $result_val->action_type == 'link_click';
-                                            });
-                        } else {
-                            $result     = array_filter($data_api->actions, function($result_val) {
-                                                return $result_val->action_type == 'offsite_conversion.fb_pixel_custom';
-                                            });
-                        }
-
-                        if(isset($result)) {
-                            if(!empty(array_keys($result))) {
-                                $result = round($result[max(array_keys($result))]->value);
-                            } else {
-                                $result = 0;
-                            }
-                        } else {
-                            $result   = 0;
-                        }
-                    } else {
-                        $result       = 0;
-                    }
-
-                    // NOTIF ADS TEAM
-                    if($spend>12000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('09:00:00')) {
-                        $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                    
-                    } elseif($spend>14000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('18:30:00')) {
-                        $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                    
-                    }  elseif($spend>20000 && $result<1 && strtotime(date('H:i:s'))>strtotime('18:30:00')) {
-                        $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                    
-                    } elseif($cpr>14000 && strtotime(date('H:i:s'))<=strtotime('09:00:00')) {
-                        $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                    
-                    } elseif($cpr>16000 && strtotime(date('H:i:s'))<=strtotime('18:30:00')) {
-                        $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                    
-                    } elseif($cpr>34000 && strtotime(date('H:i:s'))>strtotime('18:30:00')) {
-                        $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                    
-                    } else {
-                        $others[]      = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                    }
-
+                if(isset($data_api->spend)) {
+                    $spend        = round($data_api->spend);
                 } else {
-                    $others[]      = ['id'=>$campaign_id[$i], 'name' => $campaign_name[$i], 'spend' => 0, 'result' => 0, 'cpr' => 0];
+                    $spend        = 0;
                 }
-            }  // END IF
-        }   // END FOREACH
+
+                if(isset($data_api->cost_per_conversion)) {
+                    $cpr                = array_filter($data_api->cost_per_conversion, function($cpr_val) {
+                                                return $cpr_val->action_type == 'donate_website';
+                                            });
+                    if(isset($cpr[0]->value)) {
+                        $cpr      = round($cpr[0]->value);
+                    } else {
+                        $cpr      = 0;
+                    }
+                } else {
+                    $cpr          = 0;
+                }
+
+                if(isset($data_api->actions)) {
+                    if($data_api->objective=='LINK_CLICKS') {
+                        $result     = array_filter($data_api->actions, function($result_val) {
+                                            return $result_val->action_type == 'link_click';
+                                        });
+                    } else {
+                        $result     = array_filter($data_api->actions, function($result_val) {
+                                            return $result_val->action_type == 'offsite_conversion.fb_pixel_custom';
+                                        });
+                    }
+
+                    if(isset($result)) {
+                        if(!empty(array_keys($result))) {
+                            $result = round($result[max(array_keys($result))]->value);
+                        } else {
+                            $result = 0;
+                        }
+                    } else {
+                        $result   = 0;
+                    }
+                } else {
+                    $result       = 0;
+                }
+
+                // NOTIF ADS TEAM
+                if($spend>12000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('09:00:00')) {
+                    $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
+                
+                } elseif($spend>14000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('18:30:00')) {
+                    $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
+                
+                }  elseif($spend>20000 && $result<1 && strtotime(date('H:i:s'))>strtotime('18:30:00')) {
+                    $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
+                
+                } elseif($cpr>14000 && strtotime(date('H:i:s'))<=strtotime('09:00:00')) {
+                    $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
+                
+                } elseif($cpr>16000 && strtotime(date('H:i:s'))<=strtotime('18:30:00')) {
+                    $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
+                
+                } elseif($cpr>34000 && strtotime(date('H:i:s'))>strtotime('18:30:00')) {
+                    $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
+                
+                } else {
+                    $others[]      = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
+                }
+            } else {
+
+            }
+        }
 
         return view('admin.ads.needaction', compact('id', 'account_id', 'need_action', 'others', 'campaign'));
     }

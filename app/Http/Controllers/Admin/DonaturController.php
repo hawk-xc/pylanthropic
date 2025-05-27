@@ -16,6 +16,17 @@ class DonaturController extends Controller
      */
     public function index()
     {
+        // $donatur_islami = \App\Models\Transaction::join('program', 'program_id', 'program.id')->where('is_islami', 1)
+        //                     ->groupBy('donatur_id')->pluck('donatur_id');
+
+        // Donatur::whereIn('id', $donatur_islami)->update([ 
+        //                     'is_muslim'  => 1,
+        //                     'updated_at' => date('Y-m-d H:i:s')
+        //                 ]);
+        // die('SUCCESS ubah '.count($donatur_islami).' donatur jadi muslim :)');
+
+        // SELECT name, telp, last_donate_paid, count_donate_paid, sum_donate_paid FROM `donatur` WHERE `want_to_contact` = 1 AND `wa_inactive_since` IS NULL AND `is_muslim` = 1;
+
         return view('admin.donatur.index');
     }
 
@@ -40,7 +51,13 @@ class DonaturController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $donatur             = Donatur::select('*')->where('id', $id)->first();
+        $sum_donate_all      = \App\Models\Transaction::where('donatur_id', $id)->sum('nominal_final');
+        $sum_donate_paid     = \App\Models\Transaction::where('donatur_id', $id)->where('status', 'success')->sum('nominal_final');
+        $count_donate_all    = \App\Models\Transaction::where('donatur_id', $id)->count('id');
+        $count_donate_paid   = \App\Models\Transaction::where('donatur_id', $id)->where('status', 'success')->count('id');
+
+        return view('admin.donatur.detail', compact('donatur', 'sum_donate_all', 'sum_donate_paid', 'count_donate_all', 'count_donate_paid'));
     }
 
     /**
@@ -86,10 +103,22 @@ class DonaturController extends Controller
                     $data = $data->where('want_to_contact', '=', 1);
                 }
             }
+
+            if(isset($request->muslim)) {
+                if($request->muslim==1) {
+                    $data = $data->where('is_muslim', '=', 1);
+                }
+            }
             
             if(isset($request->sultan)) {
-                if($request->sultan==1) {
-                    $data = $data->where('sum_donate_paid', '>', 500000);
+                if($request->sultan==500) {
+                    $data = $data->where('sum_donate_paid', '>=', 500000);
+                } elseif($request->sultan==1000) {
+                    $data = $data->where('sum_donate_paid', '>=', 1000000);
+                } elseif($request->sultan==2000) {
+                    $data = $data->where('sum_donate_paid', '>=', 2000000);
+                } elseif($request->sultan==5000) {
+                    $data = $data->where('sum_donate_paid', '>=', 5000000);
                 }
             }
             
@@ -189,7 +218,10 @@ class DonaturController extends Controller
                     }
                 })
                 ->addColumn('action', function($row){
-                    $actionBtn = '<a href="javascript:void(0)" class="edit btn btn-warning btn-sm">Edit</a>';
+                    $url_edit  = route('adm.donatur.edit', $row->id);
+                    $actionBtn = '<a href="'.$url_edit.'" target="_blank" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
+                                <a href="'.route('adm.donatur.show', $row->id).'" target="_blank" class="edit btn btn-info btn-xs mb-1" title="Detail"><i class="fa fa-eye"></i></a>
+                                ';
                     return $actionBtn;
                 })
                 ->rawColumns(['name', 'action', 'last_donate', 'donate_summary', 'chat'])
@@ -611,6 +643,211 @@ class DonaturController extends Controller
                     return $actionBtn;
                 })
                 ->rawColumns(['name', 'action', 'last_donate', 'donate_summary', 'chat'])
+                ->make(true);
+        // }
+    }
+
+        /**
+     * Datatables Program Summary of Donatur
+     */
+    public function datatablesDonaturProgram(Request $request)
+    {
+        // if ($request->ajax()) {
+            $donatur_id   = $request->donatur_id;
+            // $data         = \App\Models\Transaction::where('transaction.donatur_id', $donatur_id)
+            //                 ->join('program', 'program.id', 'transaction.program_id')
+            //                 // ->join('donatur', 'donatur.id', 'transaction.donatur_id')
+            //                 ->select('program_id', 'title', 'slug', 'short_desc', 'about', 'approved_at', 'nominal_approved', 'end_date', 'is_publish', 'is_recommended', 'is_urgent', 'is_show_home', 'donate_sum', 'is_islami')
+            //                 ->groupBy('transaction.program_id')
+            //                 ->orderBy('program.donate_sum', 'DESC');
+            $data         = DB::table('transaction as t1')->where('t1.donatur_id', $donatur_id)
+                            ->join('program', 'program.id', 't1.program_id')
+                            ->select('program_id', 'title', 'slug', 'short_desc', 'about', 'approved_at', 'nominal_approved', 'end_date', 'is_publish', 'is_recommended', 'is_urgent', 'is_show_home', 'donate_sum', 'is_islami')
+                            ->whereRaw('t1.id = (
+                                SELECT MAX(t2.id)
+                                FROM transaction t2
+                                WHERE t2.program_id = t1.program_id
+                                AND t2.donatur_id = '.$donatur_id.'
+                            )')
+                            ->orderBy('program.donate_sum', 'DESC');
+
+            if(isset($request->program_active)) {
+                if($request->program_active==1) {
+                    $data = $data->whereNotNull('approved_at')->where('end_date', '>=', date('Y-m-d H:i:s'))->where('is_publish
+                        ', 1);
+                }
+            }
+
+            if(isset($request->program_sum_donate)) {
+                if($request->wa_mau==5) {
+                    $data = $data->where('donate_sum', '>=', 5000000);
+                } elseif($request->wa_mau==10) {
+                    $data = $data->where('donate_sum', '>=', 10000000);
+                } elseif($request->wa_mau==20) {
+                    $data = $data->where('donate_sum', '>=', 20000000);
+                } elseif($request->wa_mau==50) {
+                    $data = $data->where('donate_sum', '>=', 50000000);
+                } elseif($request->wa_mau==10) {
+                    $data = $data->where('donate_sum', '>=', 100000000);
+                }
+            }
+
+            if(isset($request->program_islami)) {
+                if($request->program_islami==1) {
+                    $data = $data->where('is_islami', '=', 1);
+                }
+            }
+            
+            if(isset($request->trans_time)) {
+                $dn = date('Y-m-d');
+                if($request->trans_time>0) {
+                    $data = $data->where('transaction.created_at', '>=', date('Y-m-d H:i:s', strtotime($dn.'-'.$request->trans_time.' days')));
+                }
+            }
+
+            $order_column = $request->input('order.0.column');
+            $order_dir    = ($request->input('order.0.dir')) ? $request->input('order.0.dir') : 'asc';
+
+            $count_total  = $data->count();
+
+            $search       = $request->input('search.value');
+
+            $count_filter = $count_total;
+            if($search != ''){
+                $data     = $data->where(function ($q) use ($search){
+                            $q->where('program.slug', 'like', '%'.$search.'%')
+                                ->orWhere('program.title', 'like', '%'.$search.'%')
+                                ->orWhere('program.short_desc', 'like', '%'.$search.'%')
+                                ->orWhere('program.about', 'like', '%'.$search.'%');
+                            });
+                $count_filter = $data->count();
+            }
+
+            $pageSize     = ($request->length) ? $request->length : 10;
+            $start        = ($request->start) ? $request->start : 0;
+
+            $data->skip($start)->take($pageSize);
+
+            $data         = $data->get();
+
+        
+            return Datatables::of($data)
+                ->with([
+                    "recordsTotal"    => $count_total,
+                    "recordsFiltered" => $count_filter,
+                ])
+                ->setOffset($start)
+                ->addIndexColumn()
+                ->addColumn('title', function($row) use ($donatur_id) {
+                    if($row->is_publish===1 && $row->end_date>date('Y-m-d H:i:s') && !is_null($row->approved_at)) {
+                        $title = $row->title;
+                    } else {
+                        $title = '<span class="text-danger">'.$row->title.'</span>';
+                    }
+                    return $title;
+                })
+                ->addColumn('detail', function($row){
+                    
+                    // islami, end date, recommend/urgent/home
+                    $islami   = ($row->is_islami==1) ? '<span class="badge badge-pill badge-sm badge-light">Islami</span>' : '<span class="badge badge-pill badge-sm badge-secondary">not set</span>';
+
+                    $end_date = ($row->end_date>date('Y-m-d H:i:s')) ? '<span class="badge badge-pill badge-sm badge-success">'.$row->end_date.'</span>' : '<span class="badge badge-pill badge-sm badge-secondary">'.$row->end_date.'</span>';
+
+                    if($row->is_recommended==1) {
+                        $publish_status = '<span class="badge badge-pill badge-sm badge-success">Pilihan</span>';
+                    } elseif($row->is_urgent==1) {
+                        $publish_status = '<span class="badge badge-pill badge-sm badge-danger">Mendesak</span>';
+                    } elseif($row->is_show_home==1) {
+                        $publish_status = '<span class="badge badge-pill badge-sm badge-success">Terbaru</span>';
+                    } else {
+                        $publish_status = '<span class="badge badge-pill badge-sm badge-light">Biasa</span>';
+                    }
+
+                    return $end_date.' '.$islami.' '.$publish_status;
+                })
+                ->addColumn('nominal', function($row) use ($donatur_id) {
+                    $donatur_nominal_all  = \App\Models\Transaction::where('donatur_id', $donatur_id)
+                                            ->where('program_id', $row->program_id)->sum('nominal_final');
+                    $donatur_nominal_paid = \App\Models\Transaction::where('donatur_id', $donatur_id)
+                                            ->where('program_id', $row->program_id)->where('status', 'success')->sum('nominal_final');
+                    $donatur_nominal = number_format($donatur_nominal_paid).'/'.number_format($donatur_nominal_all);
+                    $program_nominal = number_format($row->donate_sum).'/'.number_format($row->nominal_approved);
+                    return $program_nominal.'<br>'.$donatur_nominal;
+                })
+                ->addColumn('about', function($row){
+                    return substr(strip_tags($row->about), 0, 150).'...';
+                })
+                ->addColumn('action', function($row){
+                    $url_edit  = route('adm.donatur.edit', $row->program_id);
+                    $actionBtn = '<a href="'.$url_edit.'" target="_blank" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
+                                <a href="'.route('adm.donatur.show', $row->program_id).'" target="_blank" class="edit btn btn-info btn-xs mb-1" title="Detail"><i class="fa fa-eye"></i></a>
+                                ';
+                    return $actionBtn;
+                })
+                ->rawColumns(['title', 'detail', 'nominal', 'about', 'action'])
+                ->make(true);
+        // }
+    }
+
+    /**
+     * Datatables Donatur Hampir = Pernah transaksi tapi belum pernah dibayar
+     */
+    public function datatablesDonaturChat(Request $request)
+    {
+        // if ($request->ajax()) {
+            $donatur_id   = $request->donatur_id;
+            $data         = \App\Models\Chat::where('donatur_id', $donatur_id)
+                            ->orderBy('created_at', 'DESC');
+
+            $order_column = $request->input('order.0.column');
+            $order_dir    = ($request->input('order.0.dir')) ? $request->input('order.0.dir') : 'asc';
+
+            $count_total  = $data->count();
+
+            $search       = $request->input('search.value');
+
+            $count_filter = $count_total;
+            if($search != ''){
+                $data     = $data->where(function ($q) use ($search){
+                            $q->where('no_telp', 'like', '%'.$search.'%')
+                                ->orWhere('text', 'like', '%'.$search.'%')
+                                ->orWhere('type', 'like', '%'.$search.'%')
+                                ->orWhere('status', 'like', '%'.$search.'%');
+                            });
+                $count_filter = $data->count();
+            }
+
+            $pageSize     = ($request->length) ? $request->length : 10;
+            $start        = ($request->start) ? $request->start : 0;
+
+            $data->skip($start)->take($pageSize);
+
+            $data         = $data->get();
+
+            return Datatables::of($data)
+                ->with([
+                    "recordsTotal"    => $count_total,
+                    "recordsFiltered" => $count_filter,
+                ])
+                ->setOffset($start)
+                ->addIndexColumn()
+                ->addColumn('type', function($row){
+                    return $row->type;
+                })
+                ->addColumn('text', function($row){
+                    return $row->text;
+                })
+                ->addColumn('created_at', function($row){
+                    return date('Y-m-d H:i', strtotime($row->created_at));
+                })
+                ->addColumn('desc', function($row){
+                    return 'Program | Transaksi';
+                })
+                ->addColumn('action', function($row){
+                    $actionBtn = '<a href="javascript:void(0)" class="edit btn btn-warning btn-xs"><i class="fa fa-edit"></i></a>';
+                    return $actionBtn;
+                })
+                ->rawColumns(['type', 'text', 'created_at', 'desc', 'action'])
                 ->make(true);
         // }
     }

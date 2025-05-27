@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Http\Controllers\PaymentController;
 
+use Illuminate\Support\Facades\Http;
+
 class DonateController extends Controller
 {
     /**
@@ -183,6 +185,7 @@ class DonateController extends Controller
                         ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
         $payment       = PaymentType::where('key', $request->type)->first();
         $va_number     = '0';
+        $link          = null;
 
         if(isset($program->slug) && $nominal>=10000 && isset($payment->name)) {
             // insert donatur
@@ -209,6 +212,7 @@ class DonateController extends Controller
                 $final_nominal  = $is_trans->nominal_final;
                 $redirect_url   = $is_trans->midtrans_url;
                 $token_midtrans = $is_trans->midtrans_token;
+                $link           = $is_trans->link;
             } else {
                 $id_increment = Transaction::select('id')->orderBy('id', 'DESC')->first();
                 $invoice      = 'INV-'.date('Ymd').(isset($id_increment->id)?$id_increment->id+1:1);
@@ -252,13 +256,15 @@ class DonateController extends Controller
                     $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                     curl_close($ch);
                     $res          = json_decode($responseJson, true);
-                    dd($res);
-                    // if(isset($res['redirect_url'])) {
-                    //     $redirect_url   = $res['redirect_url'];
-                    //     $token_midtrans = $res['token'];
-                    // } else {
-                    //     return view('public.not_found');    // ada problem payment gateway
-                    // }
+
+                    if(isset($res['actions'][0]['url'])) {
+                        $redirect_url   = $res['actions'][0]['url'];
+                        $token_midtrans = 0;
+                    } else {
+                        // QRIS Manual
+                        $redirect_url   = asset('public/images/payment/QRIS.png');
+                        $token_midtrans = 0;
+                    }
 
                 } elseif($payment->key=='gopay') {
                     $requestBody = array(
@@ -295,13 +301,27 @@ class DonateController extends Controller
                     $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                     curl_close($ch);
                     $res          = json_decode($responseJson, true);
-                    dd($res);
-                    // if(isset($res['redirect_url'])) {
-                    //     $redirect_url   = $res['redirect_url'];
-                    //     $token_midtrans = $res['token'];
-                    // } else {
-                    //     return view('public.not_found');    // ada problem payment gateway
-                    // }
+
+                    if(isset($res['actions'][0]['url']) && isset($res['actions'][1]['url'])) {
+                        $redirect_url   = $res['actions'][0]['url']; // deeplink
+                        $token_midtrans = 0;
+                        $link           = $res['actions'][1]['url']; // QRIS
+
+                        foreach ($res['actions'] as $action) {
+                            if ($action['name'] === 'deeplink-redirect') {
+                                $redirect_url = $action['url'];
+                            }
+
+                            if ($action['name'] === 'generate-qr-code') {
+                                $link   = $action['url'];
+                            }
+                        }
+                    } else {
+                        // QRIS Manual
+                        $redirect_url   = asset('public/images/payment/QRIS.png');
+                        $token_midtrans = 0;
+                        $link           = asset('public/images/payment/QRIS.png');
+                    }
 
                 }  elseif($payment->key=='shopeepay') {
                     $requestBody = array(
@@ -337,15 +357,18 @@ class DonateController extends Controller
                     $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                     curl_close($ch);
                     $res          = json_decode($responseJson, true);
-                    dd($res);
-                    // if(isset($res['redirect_url'])) {
-                    //     $redirect_url   = $res['redirect_url'];
-                    //     $token_midtrans = $res['token'];
-                    // } else {
-                    //     return view('public.not_found');    // ada problem payment gateway
-                    // }
 
-                } elseif( ($payment->type=='virtual_account' || $payment->type=='instant') && $payment->key!='qris' ){
+                    if(isset($res['actions'][0]['url'])) {
+                        $redirect_url   = $res['actions'][0]['url'];
+                        $token_midtrans = 0;
+                    } else {
+                        // QRIS Manual
+                        
+                        $redirect_url   = asset('public/images/payment/QRIS.png');
+                        $token_midtrans = 0;
+                    }
+
+                } elseif( ($payment->type=='virtual_account' || $payment->type=='instant') && $payment->key!='qris' ){ // belum aktif
                     $requestBody = array(
                         'transaction_details' => array(
                             'order_id'     => $invoice,
@@ -356,7 +379,7 @@ class DonateController extends Controller
                         ),
                         'customer_details' => array(
                             'first_name' => $donatur_name,
-                            'phone' => $telp,
+                            'phone'      => $telp,
                         )
                     );
 
@@ -399,9 +422,31 @@ class DonateController extends Controller
                     'is_show_name'    => $request->has('anonim')?1:0,
                     'midtrans_token'  => $token_midtrans,
                     'midtrans_url'    => $redirect_url,
+                    'link'            => $link,
                     'user_agent'      => '',
                     'ref_code'        => (isset($request->ref)) ? strip_tags($request->ref) : null
                 ]);
+
+                // CAPI - Convertion API for META Ads
+                Http::post('https://graph.facebook.com/v18.0/1278491429470122/events', [
+                    'data' => [
+                        [
+                            'event_name' => 'Donate',
+                            'event_time' => time(),
+                            'event_id'   => $invoice,
+                            'user_data'  => [
+                                  'ph'   => $telp,
+                            ],
+                            'custom_data'   => [
+                                'currency'      => 'IDR',
+                                'value'         => $nominal,
+                            ],
+                            'action_source' => 'website',
+                        ],
+                    ],
+                    'access_token' => env('FACEBOOK_CAPI_TOKEN'),
+                ]);
+                \Log::info('Facebook CAPI response:', [$response->json()]);
             }
 
 
@@ -432,7 +477,7 @@ class DonateController extends Controller
 
             $paid_before     = date('d F Y H:i', strtotime('23 hour')).' WIB';
 
-            return view('public.payment_info', compact('nominal', 'nominal_show', 'nominal_show2', 'paid_before', 'payment', 'va_number', 'transaction', 'program', 'token_midtrans', 'redirect_url'));
+            return view('public.payment_info', compact('nominal', 'nominal_show', 'nominal_show2', 'paid_before', 'payment', 'va_number', 'transaction', 'program', 'token_midtrans', 'redirect_url', 'link'));
 
         } else {
             return view('public.not_found');

@@ -28,6 +28,7 @@ class Transaction extends Model
         'message',
         'midtrans_token',
         'midtrans_url',
+        'link',
         'payment_type_id',
         'paid_at',
         'is_show_name',

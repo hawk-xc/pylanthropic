@@ -38,19 +38,13 @@
         $pixel_id = "1278491429470122";
       }
       ?>
-      
-      fbq('track', 'Donate', {
-        value : {{ (float) $nominal }},
-        currency: 'IDR'
-      }, {
-        eventID: '{{ $transaction->invoice_number }}'
-      });
+      fbq('track', 'Donate');
       window.loadedPixel = []
     </script>
     <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{$pixel_id}}&ev=Donate&noscript=1" /></noscript>
     <!-- End Meta Pixel Code -->
   
-    @if(true)
+
     <!-- Tiktok Analytic Code -->
     <script>
         !function (w, d, t) {
@@ -58,7 +52,7 @@
             var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script")
             ;n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
 
-            ttq.load('D08VCQ3C77U1QSDFHDA0');
+            ttq.load('CR2P7SJC77U8E82N1D2G');
             ttq.page();
             // ttq.track('CompletePayment');
             ttq.track('AddToCart', {
@@ -70,9 +64,6 @@
         }(window, document, 'ttq');
     </script>
     <!-- End Tiktok Analytic Code -->
-    @endif
-
-    @if(false)
     <!-- Tiktok Analytic Code -->
     <script>
         !function (w, d, t) {
@@ -86,15 +77,13 @@
                 value: '{{ $nominal }}',
                 currency: 'IDR',
                 content_id: '{{ $transaction->invoice_number }}'
+                description: '{{ $transaction->invoice_number }}'
             });
         }(window, document, 'ttq');
     </script>
     <!-- End Tiktok Analytic Code -->
-    @endif
-
-    @if(false)
     <!-- Tiktok Analytic Code -->
-    <script>
+    <!-- <script>
         !function (w, d, t) {
             w.TiktokAnalyticsObject=t;var ttq3=w[t]=w[t]||[];ttq3.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq3.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq3.methods.length;i++)ttq3.setAndDefer(ttq3,ttq3.methods[i]);ttq3.instance=function(t){for(
             var e=ttq3._i[t]||[],n=0;n<ttq3.methods.length;n++)ttq3.setAndDefer(e,ttq3.methods[n]);return e},ttq3.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq3._i=ttq3._i||{},ttq3._i[e]=[],ttq3._i[e]._u=r,ttq3._t=ttq3._t||{},ttq3._t[e]=+new Date,ttq3._o=ttq3._o||{},ttq3._o[e]=n||{};n=document.createElement("script")
@@ -104,10 +93,9 @@
             ttq3.page();
             ttq3.track('CompletePayment');
         }(window, document, 'ttq');
-    </script>
+    </script> -->
     <!-- End Tiktok Analytic Code -->
-    @endif
-
+    
 @endsection
 
 
@@ -121,6 +109,8 @@
     <div class="header-panel bg-me header-title">
       <a href="#">
         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="#fff">
+          <!-- <line x1="19" y1="12" x2="5" y2="12"></line> -->
+          <!-- <polyline points="12 19 5 12 12 5"></polyline> -->
         </svg>
       </a>
       <h2 class="fs-16">Instruksi Pembayaran</h2>
@@ -139,23 +129,7 @@
       <ul class="payment-list">
         <li class="cart-add-box payment-card-box gap-0 mt-2">
           <div class="w-100">
-            @if($payment->key=='qris')
-                <div class="py-2 text-center">
-                    <img src="{{ $redirect_url }}" class="img-fluid" alt="QRIS Bantubersama">
-                </div>
-                <div class="text-center pb-1">
-                    <a class="fw-semibold color-me" href="{{ $redirect_url }}" target="_blank">Download QRIS</a>
-                </div>
-            @elseif($payment->key=='gopay')
-                <div class="py-2 text-center">
-                    <img src="{{ $link }}" class="img-fluid" alt="QRIS Bantubersama">
-                </div>
-                <div class="text-center pb-1">
-                    <a class="fw-semibold color-me" href="{{ $link }}" id="download_qris1">Download QRIS</a>
-                </div>
-            @elseif($payment->key=='shopeepay')
-                
-            @elseif($payment->type=='transfer')
+            @if($payment->type=='transfer')
               <div class="payment-detail pb-0">
                 <div class="add-img">
                   <img class="img" src="{{ asset('public/images/payment/'.$payment->img) }}" alt="mastercard" />
@@ -177,53 +151,20 @@
                 <!-- <a href="#" class="fw-semibold color-me">Salin</a> -->
               </div>
               <!-- <div class="fs-14 fw-medium text-secondary pb-1">{{ $payment->name }}</div> -->
+            @elseif($payment->key=='qris')
+              <div class="py-2 text-center">
+                <!-- <img src="{{ asset('public/images/payment/qris_bri.png') }}"> -->
+                <img src="{{ asset('public/images/payment/QRIS.png') }}">
+              </div>
+              <div class="text-center pb-1">
+                <a class="fw-semibold color-me" href="#" id="download_qris">Download QRIS</a>
+              </div>
             @else
               <!-- debit / credit -->
             @endif
           </div>
         </li>
-
-        @if($payment->key=='qris')
-            <li class="cart-add-box payment-card-box gap-0 mt-2">
-                <div class="w-100">
-                  <div class="payment-detail">
-                    <div class="d-flex justify-content-between align-items-center w-100">
-                      <div class="fs-16">Donasi sebesar</div>
-                      <h5 class="fw-semibold fs-18">{{ trim($nominal_show) }}<span class="highlight-digit">{{ $nominal_show2 }}</span></h5>
-                    </div>
-                  </div>
-                </div>
-            </li>
-        @elseif($payment->key=='gopay' || $payment->key=='shopeepay')
-            <div class="fs-15 mt-4 text-center">Klik tombol dibawah jika aplikasi tidak otomatis terbuka</div>
-            <li class="cart-add-box payment-card-box gap-0 mt-2">
-                <a href="{{ $redirect_url }}" class="w-100 payment-type" target="_blank">
-                    <div class="payment-detail">
-                        <div class="add-img">
-                          <img class="img" src="{{ asset('public/images/payment').'/'.$payment->key.'.png' }}" alt="{{ $payment->key }} Bantubersama.com" />
-                        </div>
-                        <div class="add-content">
-                          <div>
-                            <h5 class="fw-medium fs-15">Bantubersama.com</h5>
-                          </div>
-                        </div>
-                        <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 48 48">
-                            <path d="M 35.484375 5.984375 A 1.50015 1.50015 0 0 0 34.439453 8.5605469 L 36.878906 11 L 35.5 11 C 23.64339 11 14 20.64339 14 32.5 A 1.50015 1.50015 0 1 0 17 32.5 C 17 22.26461 25.26461 14 35.5 14 L 36.878906 14 L 34.439453 16.439453 A 1.50015 1.50015 0 1 0 36.560547 18.560547 L 41.431641 13.689453 A 1.50015 1.50015 0 0 0 41.423828 11.302734 L 36.560547 6.4394531 A 1.50015 1.50015 0 0 0 35.484375 5.984375 z M 12.5 6 C 8.9280619 6 6 8.9280619 6 12.5 L 6 35.5 C 6 39.071938 8.9280619 42 12.5 42 L 35.5 42 C 39.071938 42 42 39.071938 42 35.5 L 42 27.5 A 1.50015 1.50015 0 1 0 39 27.5 L 39 35.5 C 39 37.450062 37.450062 39 35.5 39 L 12.5 39 C 10.549938 39 9 37.450062 9 35.5 L 9 12.5 C 9 10.549938 10.549938 9 12.5 9 L 20.5 9 A 1.50015 1.50015 0 1 0 20.5 6 L 12.5 6 z"></path>
-                        </svg>
-                    </div>
-                </a>
-            </li>
-            <li class="cart-add-box payment-card-box gap-0 mt-4">
-                <div class="w-100">
-                  <div class="payment-detail">
-                    <div class="d-flex justify-content-between align-items-center w-100">
-                      <div class="fs-16">Donasi sebesar</div>
-                      <h5 class="fw-semibold fs-18">{{ trim($nominal_show) }}<span class="highlight-digit">{{ $nominal_show2 }}</span></h5>
-                    </div>
-                  </div>
-                </div>
-            </li>
-        @elseif($payment->type=='transfer')
+        @if($payment->type=='transfer' || $payment->key=='qris')
           <div class="fs-15 fw-medium my-3">Donasi sebesar</div>
           <li class="cart-add-box payment-card-box gap-0 mt-1">
             <div class="w-100">
@@ -419,15 +360,33 @@
 
 
 @section('js_inline')
-    @if($payment->key=='gopay' || $payment->key=='shopeepay')
+  @if( ($payment->type=='virtual_account' || $payment->type=='instant') && $transaction->status=='draft' && $payment->key!='qris' )
+    <script type="text/javascript" src="https://app.midtrans.com/snap/snap.js" data-client-key="{{ env('MID_CLIENT_KEY') }}"></script>
+
     <script type="text/javascript">
-        $(window).on("load", function () {
-            setTimeout(function () {
-                window.open("{{ $redirect_url }}", "_blank");
-            }, 2000);
+      $(document).ready(function() {
+        snapPay();
+      })
+
+      setTimeout(function() {
+          snapPay()
+      }, 500)
+
+      function snapPay() {
+        snap.pay('{{ $token_midtrans }}', {
+          onSuccess: function(result) {
+              window.history.back();
+          },
+          onPending: function(result) {
+              window.history.back();
+          },
+          onError: function(result) {
+              window.history.back();
+          }
         });
+      }
     </script>
-    @endif
+  @endif
 
   <script type="text/javascript">
     $(document).ready(function(){
@@ -450,6 +409,7 @@
     $("#download_qris").on("click", function() {
       var link = document.createElement("a");
       link.setAttribute('download', '');
+      // link.href = "{{ asset('public/images/payment/qris_bri.png') }}";
       link.href = "{{ asset('public/images/payment/QRIS.png') }}";
       document.body.appendChild(link);
       link.click();

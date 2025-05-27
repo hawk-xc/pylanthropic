@@ -42,6 +42,7 @@ class Program extends Model
         'show_minus',
         'donate_sum',
         'donate_sum_last_updated',
+        'is_islami',
         'created_at',
         'updated_at',
         'created_by',

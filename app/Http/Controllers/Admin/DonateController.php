@@ -381,9 +381,15 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
                 }
             }
 
-            if(isset($request->donatur_title)) {     // program title
-                if($request->donatur_title!='') {
+            if(isset($request->program_title)) {     // program title
+                if($request->program_title!='') {
                     $data = $data->where('program.title', 'like', '%'.urldecode($request->donatur_title).'%');
+                }
+            }
+
+            if(isset($request->donatur_id)) {     // Donatur ID
+                if($request->donatur_id!='') {
+                    $data = $data->where('donatur.id', $request->donatur_id);
                 }
             }
 
@@ -753,10 +759,10 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
                 ->setOffset($start)
                 ->addIndexColumn()
                 ->addColumn('invoice', function($row){
-                    $content = TrackingVisitor::where('program_id', $row->program_id)->where('ref_code', $row->ref_code)
-                                ->where('created_at', 'like', date('Y-m-d H:i', strtotime($row->created_at)).'%')
-                                ->where('payment_type_id', $row->payment_type_id)->where('nominal', $row->nominal)
-                                ->where('page_view', 'invoice')->whereNotNull('utm_content')->first();
+                    // $content = TrackingVisitor::where('program_id', $row->program_id)->where('ref_code', $row->ref_code)
+                    //             ->where('created_at', 'like', date('Y-m-d H:i', strtotime($row->created_at)).'%')
+                    //             ->where('payment_type_id', $row->payment_type_id)->where('nominal', $row->nominal)
+                    //             ->where('page_view', 'invoice')->whereNotNull('utm_content')->first();
                     if(isset($content->utm_content)) {
                         $content = ' - '.$content->utm_content;
                     } else {

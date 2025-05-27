@@ -28,6 +28,7 @@ Route::get('/donatur/wa-check', [DonationController::class, 'talentWACheck']);
 Route::get('/donatur/wa-dorman', [DonationController::class, 'waDorman']);
 Route::get('/donatur/wa-summary-donate', [DonationController::class, 'waSummaryDonate']);
 Route::get('/donatur/wa-promosi-program', [DonationController::class, 'waProgramSpecific']);
+Route::get('/donatur/wa-promosi-program-manual', [DonationController::class, 'waManualProgram']);
 
 // FU GOPAY ke-1
 Route::get('/donatur/wa-fu-1-gopay', [DonationController::class, 'donateFu1Gopay']);
@@ -86,6 +87,8 @@ Route::group([
         Route::get('/donatur-tetap-datatables', [Admin\DonaturController::class, 'datatablesDonaturTetap'])->name('donatur.tetap.datatables');
         Route::get('/donatur-sultan-datatables', [Admin\DonaturController::class, 'datatablesDonaturSultan'])->name('donatur.sultan.datatables');
         Route::get('/donatur-hampir-datatables', [Admin\DonaturController::class, 'datatablesDonaturHampir'])->name('donatur.hampir.datatables');
+        Route::get('/donatur-program-datatables', [Admin\DonaturController::class, 'datatablesDonaturProgram'])->name('donatur.program.datatables');
+        Route::get('/donatur-chat-datatables', [Admin\DonaturController::class, 'datatablesDonaturChat'])->name('donatur.chat.datatables');
         Route::get('/donate-datatables', [Admin\DonateController::class, 'datatablesDonate'])->name('donate.datatables');
         Route::get('/donate-mutation-datatables', [Admin\DonateController::class, 'datatablesDonateMutation'])->name('donate.mutation.datatables');
         Route::get('/donate-qurban-datatables', [Admin\DonateController::class, 'datatablesDonateQurban'])->name('donate.qurban.datatables');
