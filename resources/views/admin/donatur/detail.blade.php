@@ -40,7 +40,7 @@
                     </nav>
                 </div>
                 <div class="col-7 fc-rtl">
-                    <a class="btn btn-primary" href={{ route('adm.donatur.index') }}>Kembali</a>
+                    <a class="btn btn-outline-primary" href={{ route('adm.donatur.index') }}>Kembali</a>
                 </div>
             </div>
             <div class="divider"></div>
@@ -113,16 +113,16 @@
                 </div>
             </div>
             <!-- <div class="divider"></div>
-                                <div class="row">
-                                    <div class="col-12 form-inline">
-                                        <span>Filter :</span>
-                                        <input type="text" id="donatur_name" placeholder="Jenis" class="form-control form-control-sm me-1 ms-2">
-                                        <input type="text" id="donatur_telp" placeholder="Dari/Ke Telp ex: 8574..." class="form-control form-control-sm me-1">
-                                        <input type="text" id="filter_nominal" placeholder="Isi Chat" class="form-control form-control-sm me-1">
-                                        <input type="text" id="donatur_title" placeholder="Keterangan" class="form-control form-control-sm me-1">
-                                        <button class="btn btn-sm btn-primary" id="filter_search">Cari</button>
-                                    </div>
-                                </div> -->
+                                                <div class="row">
+                                                    <div class="col-12 form-inline">
+                                                        <span>Filter :</span>
+                                                        <input type="text" id="donatur_name" placeholder="Jenis" class="form-control form-control-sm me-1 ms-2">
+                                                        <input type="text" id="donatur_telp" placeholder="Dari/Ke Telp ex: 8574..." class="form-control form-control-sm me-1">
+                                                        <input type="text" id="filter_nominal" placeholder="Isi Chat" class="form-control form-control-sm me-1">
+                                                        <input type="text" id="donatur_title" placeholder="Keterangan" class="form-control form-control-sm me-1">
+                                                        <button class="btn btn-sm btn-primary" id="filter_search">Cari</button>
+                                                    </div>
+                                                </div> -->
             <div class="divider"></div>
             <table id="table-donatur-loyal" class="table table-hover table-striped table-bordered">
                 <thead>

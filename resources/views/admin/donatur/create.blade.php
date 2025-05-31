@@ -37,7 +37,7 @@
                     </nav>
                 </div>
                 <div class="col-7 fc-rtl">
-                    <a class="btn btn-primary" href={{ route('adm.donatur.index') }}>Kembali</a>
+                    <a class="btn btn-outline-primary" href={{ route('adm.donatur.index') }}>Kembali</a>
                 </div>
             </div>
             <div class="divider"></div>
