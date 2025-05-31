@@ -19,7 +19,7 @@ class Chat extends Model
     protected $table    = 'chat';
     protected $fillable = [
         'no_telp',
-        'text', 
+        'text',
         'image',
         'token',
         'vendor',
@@ -32,4 +32,9 @@ class Chat extends Model
         'updated_at',
         'created_at'
     ];
+
+    public function donatur()
+    {
+        return $this->belongsTo(Donatur::class, 'donatur_id');
+    }
 }

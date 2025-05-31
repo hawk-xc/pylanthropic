@@ -19,7 +19,7 @@ class Transaction extends Model
     protected $table    = 'transaction';
     protected $fillable = [
         'program_id',
-        'donatur_id', 
+        'donatur_id',
         'invoice_number',
         'status',
         'nominal',
@@ -37,4 +37,11 @@ class Transaction extends Model
         'user_agent',
         'ref_code'
     ];
+
+    // update model relation method
+
+    public function donatur()
+    {
+        return $this->belongsTo(Donatur::class, 'donatur_id');
+    }
 }

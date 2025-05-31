@@ -19,7 +19,7 @@ class Donatur extends Model
     protected $table    = 'donatur';
     protected $fillable = [
         'name',
-        'telp', 
+        'telp',
         'want_to_contact',
         'wa_inactive_since',
         'email',
@@ -31,6 +31,20 @@ class Donatur extends Model
         'wa_campaign',
         'ref_code',
         'created_at',
-        'is_muslim'
+        'is_muslim',
+        // new migration
+        'religion'
     ];
+
+    // add model relation method
+    public function chat()
+    {
+        return $this->hasMany(Chat::class, 'donatur_id', 'id');
+    }
+
+    public function transaction()
+    {
+        return $this->hasMany(Transaction::class, 'donatur_id', 'id');
+    }
 }
+
