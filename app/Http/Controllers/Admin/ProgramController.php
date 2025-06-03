@@ -3,16 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Program;
+use App\Models\TrackingVisitor;
+use App\Models\Transaction;
+use DataTables;
+
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
-
-use App\Models\Program;
-use App\Models\Transaction;
-use App\Models\TrackingVisitor;
-
-use DataTables;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class ProgramController extends Controller
 {
@@ -35,26 +39,84 @@ class ProgramController extends Controller
     /**
      * Store image content
      */
+    // public function storeImagecontent(Request $request)
+    // {
+    //     $number   = $request->number;
+    //     $number   = str_replace('img', '', $number);
+
+    //     $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->name));
+    //     $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
+
+    //     // upload image content
+    //     $file     = $request->file('file');
+    //     $filename = $filename.'_'.$number.'.'.$file->guessExtension();
+    //     // $file->move(public_path('public/images/program/content'), $filename);
+    //     $file->storeAs('public/images/program/content', $filename, 'public_uploads');
+
+    //     $link_img = url('/public/images/program/content').'/'.$filename;
+
+    //     return array(
+    //         'link'   => $link_img,
+    //         'full'   => '<img data-original="'.$link_img.'" class="lazyload" alt="'.ucwords($request->name).' - Bantubersama.com" />'
+    //     );
+    // }
+
     public function storeImagecontent(Request $request)
     {
-        $number   = $request->number;
-        $number   = str_replace('img', '', $number);
+        $number = $request->number;
+        $number = str_replace('img', '', $number);
 
         $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->name));
         $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
 
-        // upload image content
-        $file     = $request->file('file');
-        $filename = $filename.'_'.$number.'.'.$file->guessExtension();
-        // $file->move(public_path('public/images/program/content'), $filename);
-        $file->storeAs('public/images/program/content', $filename, 'public_uploads');
+        $file = $request->file('file');
+        $filename = $filename.'_'.$number.'.'.$file->getClientOriginalExtension();
 
-        $link_img = url('/public/images/program/content').'/'.$filename;
+        // Simpan file ke public/images/program/content
+        $file->move(public_path('images/program/content'), $filename);
 
-        return array(
-            'link'   => $link_img,
-            'full'   => '<img data-original="'.$link_img.'" class="lazyload" alt="'.ucwords($request->name).' - Bantubersama.com" />'
-        );
+        // Generate URL yang benar
+        $link_img = url('images/program/content/'.$filename);
+
+        return [
+            'link' => $link_img,
+            'full' => '<img data-original="'.$link_img.'" class="lazyload" alt="'.ucwords($request->name).' - Bantubersama.com" />'
+        ];
+    }
+
+    public function uploadImageContent(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => [
+                    'message' => $validator->errors()->first()
+                ]
+            ], 400);
+        }
+
+        try {
+            $file = $request->file('file');
+            $filename = time().'_'.Str::random(10).'.'.$file->getClientOriginalExtension();
+
+            // Simpan file
+            $file->move(public_path('images/program/content'), $filename);
+
+            $url = asset('images/program/content/'.$filename);
+
+            return response()->json([
+                'location' => $url
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => [
+                    'message' => $e->getMessage()
+                ]
+            ], 500);
+        }
     }
 
     /**
@@ -88,88 +150,115 @@ class ProgramController extends Controller
             'nominal'      => 'required',
             'date_end'     => 'required|date',
             'show'         => 'required',
-            'thumbnail'    => 'required|file',
             'img_primary'  => 'required|file',
             'caption'      => 'required',
             'story'        => 'required'
         ]);
 
-        $data                   = new Program;
-        $data->title            = $request->title;
-        $data->slug             = urlencode($request->url);
-        $data->organization_id  = $request->organization;
-        $data->nominal_request  = str_replace('.', '', $request->nominal);
-        $data->nominal_approved = str_replace('.', '', $request->nominal);
-        $data->end_date         = $request->date_end;
-        $data->short_desc       = $request->caption;
-
-        $story                  = str_replace('&lt;', '<', $request->story);
-        $story                  = str_replace('&gt;', '>', $story);
-        $story                  = str_replace('Bantubersama.com" /></p>', 'Bantubersama.com" />', $story);
-        $story                  = str_replace('<p><img', '<img', $story);
-        $data->about            = $story.'<img class="lazyload" data-original="https://bantubersama.com/public/images/program/cara_donasi.webp" alt="Cara Berdonasi di Bantubersama.com" />';
-
-        if($request->show == 1){
-            $data->is_publish       = 1;
-            $data->is_recommended   = 0;
-            $data->is_show_home     = 0;
-        } elseif($request->show == 2) {
-            $data->is_publish       = 1;
-            $data->is_recommended   = 1;
-            $data->is_show_home     = 0;
-        } elseif($request->show == 3) {
-            $data->is_publish       = 1;
-            $data->is_recommended   = 0;
-            $data->is_show_home     = 1;
-        } elseif($request->show == 4) {
-            $data->is_publish       = 0;
-            $data->is_recommended   = 0;
-            $data->is_show_home     = 0;
+        if (!$request->has('same_as_thumbnail')) {
+            $request->validate([
+                'thumbnail' => 'required|file',
+            ]);
         }
 
-        $filename          = str_replace([' ', '-', '&', ':'], '_', trim($request->title));
-        $filename          = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
+        try {
+            $data                   = new Program;
+            $data->title            = $request->title;
+            $data->slug             = urlencode($request->url);
+            $data->organization_id  = $request->organization;
+            $data->nominal_request  = str_replace('.', '', $request->nominal);
+            $data->nominal_approved = str_replace('.', '', $request->nominal);
+            $data->end_date         = $request->date_end;
+            $data->short_desc       = $request->caption;
 
-        // upload image primary        
-        $filei             = $request->file('img_primary');
-        // $filei->move(public_path('public/images/program'), $filename.'.'.$filei->getClientOriginalExtension());
-        $filei->storeAs('public/images/program', $filename.'.'.$filei->getClientOriginalExtension(), 'public_uploads');
-        $data->image       = $filename.'.'.$filei->getClientOriginalExtension();
+            $story                  = str_replace('&lt;', '<', $request->story);
+            $story                  = str_replace('&gt;', '>', $story);
+            $story                  = str_replace('Bantubersama.com" /></p>', 'Bantubersama.com" />', $story);
+            $story                  = str_replace('<p><img', '<img', $story);
+            $data->about            = $story.'<img class="lazyload" data-original="https://bantubersama.com/public/images/program/cara_donasi.webp" alt="Cara Berdonasi di Bantubersama.com" />';
 
-        // upload thumbnail
-        $filet             = $request->file('thumbnail');
-        $filename          = 'thumbnail_'.$filename.'.'.$filet->getClientOriginalExtension();
-        // $filet->move(public_path('public/images/program'), $filename);
-        $filet->storeAs('public/images/program', $filename, 'public_uploads');
-        $data->thumbnail   = $filename;
+            if($request->show == 1){
+                $data->is_publish       = 1;
+                $data->is_recommended   = 0;
+                $data->is_show_home     = 0;
+            } elseif($request->show == 2) {
+                $data->is_publish       = 1;
+                $data->is_recommended   = 1;
+                $data->is_show_home     = 0;
+            } elseif($request->show == 3) {
+                $data->is_publish       = 1;
+                $data->is_recommended   = 0;
+                $data->is_show_home     = 1;
+            } elseif($request->show == 4) {
+                $data->is_publish       = 0;
+                $data->is_recommended   = 0;
+                $data->is_show_home     = 0;
+            }
 
-        $data->approved_at = date('Y-m-d H:i:s');
-        $data->approved_by = 1;
-        $data->created_by  = 1;
-        $data->save();
-        $program_id        = $data->id;
+            $filename          = str_replace([' ', '-', '&', ':'], '_', trim($request->title));
+            $filename          = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
 
-        // insert program categories
-        if(count($request->category)>1) {
-            for($i=0; $i<count($request->category); $i++) {
+            // upload image primary
+            $filei             = $request->file('img_primary');
+            $filei->move(public_path('public/images/program'), $filename.'.'.$filei->getClientOriginalExtension());
+            // $filei->storeAs('public/images/program', $filename.'.'.$filei->getClientOriginalExtension(), 'public_uploads');
+            $data->image       = $filename.'.'.$filei->getClientOriginalExtension();
+
+            if ($request->has('same_as_thumbnail')) {
+                $data->thumbnail = $filename.'.'.$filei->getClientOriginalExtension();
+                $data->same_as_thumbnail = true;
+            } else {
+                // upload thumbnail
+                $filet             = $request->file('thumbnail');
+                $filename          = 'thumbnail_'.$filename.'.'.$filet->getClientOriginalExtension();
+                $filet->move(public_path('public/images/program'), $filename);
+                // $filet->storeAs('public/images/program', $filename, 'public_uploads');
+                $data->thumbnail   = $filename;
+            }
+
+            // // upload image primary
+            // $filei = $request->file('img_primary');
+            // $imageName = $filename.'.'.$filei->getClientOriginalExtension();
+            // $filei->move('public/images/program', $imageName);
+            // $data->image = $imageName;
+
+            // // upload thumbnail
+            // $filet = $request->file('thumbnail');
+            // $thumbnailName = 'thumbnail_'.$filename.'.'.$filet->getClientOriginalExtension();
+            // $filet->move('public/images/program', $thumbnailName);
+            // $data->thumbnail = $thumbnailName;
+
+            $data->approved_at = date('Y-m-d H:i:s');
+            $data->approved_by = 1;
+            $data->created_by  = 1;
+            $data->save();
+            $program_id        = $data->id;
+
+            // insert program categories
+            if(count($request->category)>1) {
+                for($i=0; $i<count($request->category); $i++) {
+                    $data_categories                      = new \App\Models\ProgramCategories;
+                    $data_categories->program_id          = $program_id;
+                    $data_categories->program_category_id = $request->category[$i];
+                    $data_categories->is_active           = 1;
+                    $data_categories->save();
+
+                    $data_categories = '';      // reset data tersimpan
+                }
+            } else {
                 $data_categories                      = new \App\Models\ProgramCategories;
                 $data_categories->program_id          = $program_id;
-                $data_categories->program_category_id = $request->category[$i];
+                $data_categories->program_category_id = $request->category[0];
                 $data_categories->is_active           = 1;
                 $data_categories->save();
-
-                $data_categories = '';      // reset data tersimpan
             }
-        } else {
-            $data_categories                      = new \App\Models\ProgramCategories;
-            $data_categories->program_id          = $program_id;
-            $data_categories->program_category_id = $request->category[0];
-            $data_categories->is_active           = 1;
-            $data_categories->save();
-        }
 
-        // echo "FINISHED";
-        return redirect()->back();
+            // echo "FINISHED";
+            // return redirect()->back();
+            return redirect(route('adm.program.index'))->with('success', 'Berhasil menambahkan program baru');
+        } catch (Exception $e) {
+            return redirect(route('adm.program.index'))->with('error', 'Gagal menambahkan program: '.$e->getMessage());
+        }
     }
 
     /**
@@ -204,6 +293,11 @@ class ProgramController extends Controller
             'date_end'     => 'required|date',
             'show'         => 'required',
             'caption'      => 'required'
+        ], [
+            'required' => 'Kolom :attribute wajib diisi.',
+            'string' => 'Kolom :attribute harus berupa teks.',
+            'numeric' => 'Kolom :attribute harus berupa angka.',
+            'date' => 'Kolom :attribute harus berupa tanggal yang valid.'
         ]);
 
         try {
@@ -248,21 +342,53 @@ class ProgramController extends Controller
             $filename          = str_replace([' ', '-', '&', ':'], '_', trim($request->title));
             $filename          = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
 
-            // upload image primary
-            if($request->file('img_primary') !== null) {
-                $filei             = $request->file('img_primary');
-                // $filei->move(public_path('public/images/program'), $filename.'.'.$filei->getClientOriginalExtension());
-                $filei->storeAs('public/images/program', $filename.'.'.$filei->getClientOriginalExtension(), 'public_uploads');
-                $data->image       = $filename.'.'.$filei->getClientOriginalExtension();
+            // Handle image upload
+            if ($request->file('img_primary') !== null) {
+                $filei = $request->file('img_primary');
+                $imageFilename = $filename . '.' . $filei->getClientOriginalExtension();
+                $filei->move(public_path('public/images/program'), $imageFilename);
+                $data->image = $imageFilename;
+
+                // Jika same_as_thumbnail true, gunakan gambar utama sebagai thumbnail
+                if ($request->same_as_thumbnail) {
+                    $data->thumbnail = $imageFilename;
+                    $data->same_as_thumbnail = true;
+                }
             }
 
-            // upload thumbnail
-            if($request->file('thumbnail') !== null) {
-                $filet             = $request->file('thumbnail');
-                $filename          = 'thumbnail_'.$filename.'.'.$filet->getClientOriginalExtension();
-                // $filet->move(public_path('public/images/program'), $filename);
-                $filet->storeAs('public/images/program', $filename, 'public_uploads');
-                $data->thumbnail   = $filename;
+            // Handle thumbnail upload (jika same_as_thumbnail false atau diubah dari true ke false)
+            if (!$request->same_as_thumbnail && $request->file('thumbnail')) {
+                $request->validate([
+                    'thumbnail' => 'required|file',
+                ], [
+                    'thumbnail.required' => 'Kolom thumbnail wajib diisi ketika tidak menggunakan gambar utama sebagai thumbnail.',
+                    'thumbnail.file' => 'Kolom thumbnail harus berupa file.',
+                ]);
+
+                $filet = $request->file('thumbnail');
+                $thumbnailFilename = 'thumbnail_' . $filename . '.' . $filet->getClientOriginalExtension();
+                $filet->move(public_path('public/images/program'), $thumbnailFilename);
+                $data->thumbnail = $thumbnailFilename;
+                $data->same_as_thumbnail = false;
+            }
+
+            // Handle case ketika same_as_thumbnail diubah dari true ke false tanpa upload thumbnail baru
+            if (!$request->same_as_thumbnail && !$request->file('thumbnail') && $data->same_as_thumbnail) {
+                // Jika sebelumnya same_as_thumbnail true dan diubah ke false tanpa upload thumbnail baru
+                // Kita bisa mempertahankan thumbnail lama atau mengembalikan error
+                // Contoh: kembalikan error
+                throw ValidationException::withMessages([
+                    'thumbnail' => 'Anda harus mengupload thumbnail baru ketika memilih untuk menggunakan thumbnail berbeda.'
+                ]);
+            }
+
+            // Handle case ketika same_as_thumbnail diubah dari false ke true
+            if ($request->same_as_thumbnail && !$data->same_as_thumbnail) {
+                // Gunakan gambar utama sebagai thumbnail
+                if (isset($data->image)) {
+                    $data->thumbnail = $data->image;
+                    $data->same_as_thumbnail = true;
+                }
             }
 
             $data->updated_by  = Auth::user()->id;
@@ -270,9 +396,9 @@ class ProgramController extends Controller
             $data->save();
             $program_id        = $data->id;
 
-            return redirect()->back()->with('success', 'Berhasil update data program');
+            return redirect(route('adm.program.index'))->with('success', 'Berhasil mengubah program baru');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal update, ada kesalahan teknis');
+            return redirect()->back()->with('error', 'Gagal update, ada kesalahan teknis' + $e);
         }
     }
 
@@ -375,7 +501,7 @@ class ProgramController extends Controller
 
             $data         = $data->get();
 
-            
+
             return Datatables::of($data)
                 ->with([
                     "recordsTotal"    => $count_total,
@@ -402,7 +528,7 @@ class ProgramController extends Controller
 
                     return '<span class="badge badge-light" style="cursor:pointer" onclick="showSummary('.$param.')">
                         <i class="fa fa-check-double icon-gradient bg-happy-green"></i> Rp.'.str_replace(',', '.', number_format($row->nominal_approved)).'</span>
-                        <br> 
+                        <br>
                         <span class="badge badge-light modal_status" style="cursor:pointer" onclick="showDonate('.$param.')">
                         <i class="fa fa-money-bill icon-gradient bg-happy-green"></i> Rp.'.number_format($sum).' ('.$sum_percent.'%)</span>
                         <br>
@@ -460,7 +586,7 @@ class ProgramController extends Controller
                     // } else {
                     //     $count_payment_page_per  = 0;
                     // }
-                    
+
                     // return $view.'<br>'.$amount_page.' ('.$amount_per.'%) <br>'.$payment_page.' ('.$count_payment_page_per.'%)';
 
                     return'-';
@@ -482,7 +608,7 @@ class ProgramController extends Controller
                     // } else {
                     //     $read_more_per  = 0;
                     // }
-                    
+
                     // return $view.'<br>'.$read_more.' ('.$read_more_per.'%) <br>'.$amount_page.' ('.$amount_per.'%)';
 
                 })
@@ -493,7 +619,7 @@ class ProgramController extends Controller
                     // $interest = "<i class='fa fa-file icon-gradient bg-malibu-beach'></i> ".number_format($count_form_page);
                     // $checkout = \App\Models\Transaction::where('program_id', $row->id)->count('id');
                     // $count    = \App\Models\Transaction::where('program_id', $row->id)->where('status', 'success')->count('id');
-                    
+
                     // if($count_view>0 && $count_form_page>0) {
                     //     $interest_per  = round($count_form_page/$count_view*100, 2);
                     // } else {
@@ -505,7 +631,7 @@ class ProgramController extends Controller
                     // } else {
                     //     $checkout_per = 0;
                     // }
-                    
+
                     // if($count>0 && $checkout>0) {
                     //     $count_per = round($count/$checkout*100, 2);
                     // } else {
@@ -522,7 +648,7 @@ class ProgramController extends Controller
                     // $interest = "<i class='fa fa-file icon-gradient bg-malibu-beach'></i> ".number_format($row->count_pra_checkout);
                     // $checkout = \App\Models\Transaction::where('program_id', $row->id)->count('id');
                     // $count    = \App\Models\Transaction::where('program_id', $row->id)->where('status', 'success')->count('id');
-                    
+
                     // if($row->count_view>0 && $row->count_pra_checkout>0) {
                     //     $interest_per  = round($row->count_pra_checkout/$row->count_view*100, 2);
                     // } else {
@@ -534,7 +660,7 @@ class ProgramController extends Controller
                     // } else {
                     //     $checkout_per = 0;
                     // }
-                    
+
                     // if($count>0 && $checkout>0) {
                     //     $count_per = round($count/$checkout*100, 2);
                     // } else {
@@ -550,14 +676,14 @@ class ProgramController extends Controller
                 ->addColumn('action', function($row){
                     $url_edit  = route('adm.program.edit', $row->id);
                     // $url_edit  = route('adm.report.settlement');
-                    $actionBtn = '<a href="'.$url_edit.'" target="_blank" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
-                                <a href="'.route('adm.program.detail.stats', $row->id).'" target="_blank" class="edit btn btn-info btn-xs mb-1" title="Statistik"><i class="fa fa-chart-line"></i></a>
-                                <a href="'.route('adm.program.detail.fundraiser', $row->id).'" target="_blank" class="edit btn btn-info btn-xs mb-1" title="Donasi"><i class="fa fa-donate"></i></a>
-                                <a href="'.route('adm.program.detail.donatur', $row->id).'" target="_blank" class="edit btn btn-info btn-xs mb-1" title="Donatur"><i class="fa fa-users"></i></a>
-                                <a href="'.route('adm.program.detail.fundraiser', $row->id).'" target="_blank" class="edit btn btn-info btn-xs mb-1" title="Fundraiser"><i class="fa fa-people-carry"></i></a>
-                                <a href="'.route('adm.program.detail.fundraiser', $row->id).'" target="_blank" class="edit btn btn-info btn-xs mb-1" title="Penyaluran"><i class="fa fa-hand-holding-heart"></i></a>
-                                <a href="'.route('adm.program.detail.fundraiser', $row->id).'" target="_blank" class="edit btn btn-info btn-xs mb-1" title="Operasional"><i class="fa fa-file-invoice-dollar"></i></a>
-                                <a href="'.route('program.index', $row->slug).'" target="_blank" class="edit btn btn-info btn-xs mb-1" title="Link"><i class="fa fa-external-link-alt"></i></a>
+                    $actionBtn = '<a href="'.$url_edit.'" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
+                                <a href="'.route('adm.program.detail.stats', $row->id).'" class="edit btn btn-info btn-xs mb-1" title="Statistik"><i class="fa fa-chart-line"></i></a>
+                                <a href="'.route('adm.program.detail.fundraiser', $row->id).'" class="edit btn btn-info btn-xs mb-1" title="Donasi"><i class="fa fa-donate"></i></a>
+                                <a href="'.route('adm.program.detail.donatur', $row->id).'" class="edit btn btn-info btn-xs mb-1" title="Donatur"><i class="fa fa-users"></i></a>
+                                <a href="'.route('adm.program.detail.fundraiser', $row->id).'" class="edit btn btn-info btn-xs mb-1" title="Fundraiser"><i class="fa fa-people-carry"></i></a>
+                                <a href="'.route('adm.program.detail.fundraiser', $row->id).'" class="edit btn btn-info btn-xs mb-1" title="Penyaluran"><i class="fa fa-hand-holding-heart"></i></a>
+                                <a href="'.route('adm.program.detail.fundraiser', $row->id).'" class="edit btn btn-info btn-xs mb-1" title="Operasional"><i class="fa fa-file-invoice-dollar"></i></a>
+                                <a href="'.route('program.index', $row->slug).'" class="edit btn btn-info btn-xs mb-1" title="Link" target="_blank"><i class="fa fa-external-link-alt"></i></a>
                                 ';
                     return $actionBtn;
                 })
@@ -581,7 +707,7 @@ class ProgramController extends Controller
                             ->orWhere('is_show_home', 1)
                             ->orWhere('is_urgent', 1);
                         });
-                    
+
             if(isset($request->is_publish)) {
                 $data = $data->where('is_publish', $request->is_publish)->where('end_date', '>', date('Y-m-d H:i:s'));
             }
@@ -636,7 +762,7 @@ class ProgramController extends Controller
 
                     return '<span class="badge badge-light" style="cursor:pointer" onclick="showSummary('.$param.')">
                         <i class="fa fa-check-double icon-gradient bg-happy-green"></i> Rp.'.str_replace(',', '.', number_format($row->nominal_approved)).'</span>
-                        <br> 
+                        <br>
                         <span class="badge badge-light modal_status" style="cursor:pointer" onclick="showDonate('.$param.')">
                         <i class="fa fa-money-bill icon-gradient bg-happy-green"></i> Rp.'.number_format($sum).' ('.$sum_percent.'%)</span>
                         <br>
@@ -714,7 +840,7 @@ class ProgramController extends Controller
                     } else {
                         $count_payment_page_per  = 0;
                     }
-                    
+
                     return $view.'<br>'.$amount_page.' ('.$amount_per.'%) <br>'.$payment_page.' ('.$count_payment_page_per.'%)';
                 })
                 ->addColumn('donate', function($row){
@@ -727,7 +853,7 @@ class ProgramController extends Controller
                     $checkout = \App\Models\Transaction::where('program_id', $row->id)->where('created_at', 'like', date('Y-m-d').'%')->count('id');
                     $count    = \App\Models\Transaction::where('program_id', $row->id)->where('status', 'success')
                                 ->where('created_at', 'like', date('Y-m-d').'%')->count('id');
-                    
+
                     if($count_view>0 && $count_form_page>0) {
                         $interest_per  = round($count_form_page/$count_view*100, 2);
                     } else {
@@ -739,7 +865,7 @@ class ProgramController extends Controller
                     } else {
                         $checkout_per = 0;
                     }
-                    
+
                     if($count>0 && $checkout>0) {
                         $count_per = round($count/$checkout*100, 2);
                     } else {
@@ -761,7 +887,7 @@ class ProgramController extends Controller
 
 
     /**
-     * Get stats of visitor 
+     * Get stats of visitor
      */
     public function statsVisitor(Request $request)
     {
@@ -804,7 +930,7 @@ class ProgramController extends Controller
             //     $data[] = '-';
             // }
         }
-        
+
         return $data;
     }
 
@@ -1161,7 +1287,7 @@ class ProgramController extends Controller
     {
         $id            = $request->id;
         $dn            = date('Y-m-d');
-        
+
         $payout_paid    = \App\Models\Payout::where('status', 'paid')->where('program_id', $id)->sum('nominal_approved');
         $payout_req     = \App\Models\Payout::where('status', 'request')->where('program_id', $id)->sum('nominal_approved');
         $payout_process = \App\Models\Payout::where('status', 'process')->where('program_id', $id)->sum('nominal_approved');
@@ -1180,8 +1306,8 @@ class ProgramController extends Controller
         } else {
             $optimation_fee_final = 0;
         }
-        
-        
+
+
         // hitung mana yg lebih besar ads_spent atau 20% anggaran ads, maka itu yg dimasukkan hitungan pengurangan penghimpunan
         if($ads_spent>$ads_fee) {
             $final_ads_fee = $ads_spent;
@@ -1369,7 +1495,7 @@ class ProgramController extends Controller
     }
 
     /**
-     * 
+     *
      */
     public function donatePerformance(Request $request)
     {
@@ -1377,11 +1503,11 @@ class ProgramController extends Controller
         $dn          = date('d-m-Y');
         $jml_day_of  = 20;
         $jml_program = 40;
-        
+
         $program_trans = Transaction::where("status", "success")
                         ->where("created_at", ">=", date('Y-m-d', strtotime($dn.'-5 days')).' 00:00:00')
                         ->groupBy("program_id")->pluck("program_id");
-      
+
         $program     = Program::select('id', 'title', 'donate_sum')
                         ->where('is_publish', 1)->where('end_date', '>', date('Y-m-d H:i:s'))
                         // ->where(function ($q){
