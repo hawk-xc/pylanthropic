@@ -64,7 +64,7 @@ Route::get('/campaigner/{id}', [Guest\ProgramController::class, 'campaigner'])->
 
 Route::group([
     'as'     => 'adm.',   // for route(adm.xx)
-    'prefix' => 'adm'       // for uri 
+    'prefix' => 'adm'       // for uri
 ], function() {
     // Login
     Route::group([
@@ -219,3 +219,6 @@ Route::post('/{slug}/checkout-do', [Guest\DonateController::class, 'checkoutDo']
 Route::post('/{slug}/payment-info', [Guest\DonateController::class, 'paymentInfo'])->name('donate.payment_info');
 Route::post('/{slug}/program-read-more-count', [Guest\ProgramController::class, 'countReadMore'])->name('program.count.read_more');
 
+Route::post('/program-submit-image-content', [Admin\ProgramController::class, 'uploadImageContent'])
+    ->middleware(['web', 'auth'])
+    ->name('adm.program.image.content.submit');
