@@ -259,7 +259,7 @@
 
 @section('js_plugins')
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-    <script src="https://cdn.tiny.cloud/1/cwr0gleaw96v89pa0jnes11yfy617v1ef0nl4akq5qdl1cdn/tinymce/7/tinymce.min.js"
+    <script src="https://cdn.tiny.cloud/1/wphaz17bf6i1tsqq7cjt8t5w6r275bw3b8acq6u2gi4hnan4/tinymce/7/tinymce.min.js"
         referrerpolicy="origin"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 @endsection
