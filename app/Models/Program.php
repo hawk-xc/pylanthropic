@@ -19,7 +19,7 @@ class Program extends Model
     protected $table    = 'program';
     protected $fillable = [
         'organization_id',
-        'title', 
+        'title',
         'slug ',
         'thumbnail',
         'image',
@@ -46,6 +46,8 @@ class Program extends Model
         'created_at',
         'updated_at',
         'created_by',
-        'updated_by'
+        'updated_by',
+        // new column
+        'same_as_thumbnail'
     ];
 }
