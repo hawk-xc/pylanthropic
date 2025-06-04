@@ -55,14 +55,21 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
         ],
-        
+
+        // 'public_uploads' => [
+        //     'driver' => 'local',
+        //     'root' => base_path('../public_html/bantubersama/'), // Path ke folder uploads di dalam public_html
+        //     'url' => env('APP_URL') .'/storage',
+        //     // 'url' => env('APP_URL') .'/bantubersama',
+        //     'visibility' => 'public',
+        // ],
+
         'public_uploads' => [
             'driver' => 'local',
-            'root' => base_path('../public_html/bantubersama/'), // Path ke folder uploads di dalam public_html
-            'url' => env('APP_URL') .'/storage',
+            'root' => base_path('../public_html/public'), // Perhatikan tambahan /public di sini
+            'url' => env('APP_URL'), // Tanpa /storage
             'visibility' => 'public',
         ],
-
     ],
 
     /*

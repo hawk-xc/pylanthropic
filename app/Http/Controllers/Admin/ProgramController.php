@@ -52,6 +52,7 @@ class ProgramController extends Controller
     //     $filename = $filename.'_'.$number.'.'.$file->guessExtension();
     //     // $file->move(public_path('public/images/program/content'), $filename);
     //     $file->storeAs('public/images/program/content', $filename, 'public_uploads');
+    //     $file->storeAs('public/images/program/content', $filename, 'public_uploads');
 
     //     $link_img = url('/public/images/program/content').'/'.$filename;
 
@@ -61,64 +62,125 @@ class ProgramController extends Controller
     //     );
     // }
 
+    // public function storeImagecontent(Request $request)
+    // {
+    //     $number = $request->number;
+    //     $number = str_replace('img', '', $number);
+
+    //     $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->name));
+    //     $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
+
+    //     $file = $request->file('file');
+    //     $filename = $filename.'_'.$number.'.'.$file->getClientOriginalExtension();
+
+    //     // Simpan file ke public/images/program/content
+    //     // $file->move(public_path('images/program/content'), $filename);
+    //     $file->storeAs('public/images/program/content', $filename, 'public_uploads');
+
+    //     // Generate URL yang benar
+    //     // $link_img = url('images/program/content/'.$filename);
+    //     $link_img = url('public/images/program/content/'.$filename);
+
+    //     return [
+    //         'link' => $link_img,
+    //         'full' => '<img data-original="'.$link_img.'" class="lazyload" alt="'.ucwords($request->name).' - Bantubersama.com" />'
+    //     ];
+    // }
+
     public function storeImagecontent(Request $request)
-    {
-        $number = $request->number;
-        $number = str_replace('img', '', $number);
+{
+    $number = $request->number;
+    $number = str_replace('img', '', $number);
 
-        $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->name));
-        $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
+    $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->name));
+    $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
 
-        $file = $request->file('file');
-        $filename = $filename.'_'.$number.'.'.$file->getClientOriginalExtension();
+    $file = $request->file('file');
+    $filename = $filename.'_'.$number.'.'.$file->getClientOriginalExtension();
 
-        // Simpan file ke public/images/program/content
-        $file->move(public_path('images/program/content'), $filename);
+    // Simpan file menggunakan disk 'public_uploads' yang konsisten
+    $file->storeAs('images/program/content', $filename, 'public_uploads');
 
-        // Generate URL yang benar
-        $link_img = url('images/program/content/'.$filename);
+    // Generate URL yang konsisten dengan method lainnya
+    $link_img = url('public/images/program/content/'.$filename);
 
-        return [
-            'link' => $link_img,
-            'full' => '<img data-original="'.$link_img.'" class="lazyload" alt="'.ucwords($request->name).' - Bantubersama.com" />'
-        ];
-    }
+    return [
+        'link' => $link_img,
+        'full' => '<img data-original="'.$link_img.'" class="lazyload" alt="'.ucwords($request->name).' - Bantubersama.com" />'
+    ];
+}
+
+    // public function uploadImageContent(Request $request)
+    // {
+    //     $validator = Validator::make($request->all(), [
+    //         'file' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+    //     ]);
+
+    //     if ($validator->fails()) {
+    //         return response()->json([
+    //             'error' => [
+    //                 'message' => $validator->errors()->first()
+    //             ]
+    //         ], 400);
+    //     }
+
+    //     try {
+    //         $file = $request->file('file');
+    //         $filename = time().'_'.Str::random(10).'.'.$file->getClientOriginalExtension();
+
+    //         // Simpan file
+    //         $file->move(public_path('images/program/content'), $filename);
+    //         // $file->storeAs('public/images/program/content', $filename, 'public_uploads');
+
+    //         $url = asset('public/images/program/content/'.$filename);
+
+    //         return response()->json([
+    //             'location' => $url
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'error' => [
+    //                 'message' => $e->getMessage()
+    //             ]
+    //         ], 500);
+    //     }
+    // }
 
     public function uploadImageContent(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'file' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        'file' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => [
-                    'message' => $validator->errors()->first()
-                ]
-            ], 400);
-        }
-
-        try {
-            $file = $request->file('file');
-            $filename = time().'_'.Str::random(10).'.'.$file->getClientOriginalExtension();
-
-            // Simpan file
-            $file->move(public_path('images/program/content'), $filename);
-
-            $url = asset('images/program/content/'.$filename);
-
-            return response()->json([
-                'location' => $url
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => [
-                    'message' => $e->getMessage()
-                ]
-            ], 500);
-        }
+    if ($validator->fails()) {
+        return response()->json([
+            'error' => [
+                'message' => $validator->errors()->first()
+            ]
+        ], 400);
     }
 
+    try {
+        $file = $request->file('file');
+        $filename = time().'_'.Str::random(10).'.'.$file->getClientOriginalExtension();
+
+        // Simpan file
+        $file->storeAs('images/program/content', $filename, 'public_uploads');
+
+        // Generate URL
+        $url = url('public/images/program/content/'.$filename);
+
+        return response()->json([
+            'location' => $url
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => [
+                'message' => $e->getMessage()
+            ]
+        ], 500);
+    }
+}
     /**
      * Store image content
      */
@@ -200,8 +262,8 @@ class ProgramController extends Controller
 
             // upload image primary
             $filei             = $request->file('img_primary');
-            $filei->move(public_path('public/images/program'), $filename.'.'.$filei->getClientOriginalExtension());
-            // $filei->storeAs('public/images/program', $filename.'.'.$filei->getClientOriginalExtension(), 'public_uploads');
+            // $filei->move(public_path('public/images/program'), $filename.'.'.$filei->getClientOriginalExtension());
+            $filei->storeAs('images/program', $filename.'.'.$filei->getClientOriginalExtension(), 'public_uploads');
             $data->image       = $filename.'.'.$filei->getClientOriginalExtension();
 
             if ($request->has('same_as_thumbnail')) {
@@ -211,8 +273,8 @@ class ProgramController extends Controller
                 // upload thumbnail
                 $filet             = $request->file('thumbnail');
                 $filename          = 'thumbnail_'.$filename.'.'.$filet->getClientOriginalExtension();
-                $filet->move(public_path('public/images/program'), $filename);
-                // $filet->storeAs('public/images/program', $filename, 'public_uploads');
+                // $filet->move(public_path('public/images/program'), $filename);
+                $filet->storeAs('images/program', $filename, 'public_uploads');
                 $data->thumbnail   = $filename;
             }
 
@@ -257,7 +319,7 @@ class ProgramController extends Controller
             // return redirect()->back();
             return redirect(route('adm.program.index'))->with('success', 'Berhasil menambahkan program baru');
         } catch (Exception $e) {
-            return redirect(route('adm.program.index'))->with('error', 'Gagal menambahkan program: '.$e->getMessage());
+            return redirect()->back()->with('error', 'Gagal update, ada kesalahan teknis: ' . $e->getMessage());
         }
     }
 
@@ -398,7 +460,7 @@ class ProgramController extends Controller
 
             return redirect(route('adm.program.index'))->with('success', 'Berhasil mengubah program baru');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal update, ada kesalahan teknis' + $e);
+            return redirect()->back()->with('error', 'Gagal update, ada kesalahan teknis' . $e);
         }
     }
 
