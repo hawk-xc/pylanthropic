@@ -21,7 +21,7 @@ use App\Http\Controllers\DonationController;
 // Route::get('/', function () { return view('welcome'); });
 Route::get('/', [Guest\HomeController::class, 'index'])->name('index');
 Route::post('/callback.php', [App\Http\Controllers\WaBlastController::class, 'callbackRuangWa'])->name('wa.callback.ruangwa');
-Route::get('/payment/callback-doku', [PaymentController::class, 'callbackDoku'])->name('payment.callback.doku');
+// Route::get('/payment/callback-doku', [PaymentController::class, 'callbackDoku'])->name('payment.callback.doku');
 
 // Donatur auto check
 Route::get('/donatur/wa-check', [DonationController::class, 'talentWACheck']);
@@ -104,6 +104,8 @@ Route::group([
         Route::get('/report/settlement/transaction-datatables', [Admin\ReportController::class, 'datatablesTransaction'])
         ->name('report.transaction.datatables');
         Route::get('/chat-datatables', [Admin\ChatController::class, 'datatablesChat'])->name('chat.datatables');
+        // donatur loyal datatable-all
+        Route::get('/donatur-loyal-datatables', [Admin\DonaturLoyalController::class, 'datatablesDonaturLoyal'])->name('donatur-loyal.datatables');
 
         // PROGRAM
         Route::get('/program-show-donate', [Admin\ProgramController::class, 'showDonate'])->name('program.show.donate');
@@ -195,6 +197,8 @@ Route::group([
             'organization'     => Admin\OrganizationController::class,
             'program-category' => Admin\ProgramCategoryController::class,
             'donatur'          => Admin\DonaturController::class,
+            // donatur loyal controller
+            'donatur-loyal'    => Admin\DonaturLoyalController::class,
             'fundraiser'       => Admin\FundraiserController::class,
             'user'             => Admin\UserController::class,
             'donate'           => Admin\DonateController::class,
