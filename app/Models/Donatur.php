@@ -46,5 +46,10 @@ class Donatur extends Model
     {
         return $this->hasMany(Transaction::class, 'donatur_id', 'id');
     }
+
+    public function donaturLoyal()
+    {
+        return $this->hasMany(DonaturLoyal::class, 'donatur_id', 'id');
+    }
 }
 

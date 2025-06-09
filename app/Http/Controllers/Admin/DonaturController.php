@@ -150,7 +150,8 @@ class DonaturController extends Controller
      */
     public function datatablesDonatur(Request $request)
     {
-        $data = Donatur::orderBy('count_donate_paid', 'DESC');
+        // $data = Donatur::orderBy('count_donate_paid', 'DESC');
+        $data = Donatur::with(['chat', 'transaction'])->orderBy('count_donate_paid', 'DESC');
         if(isset($request->wa_aktif)) {
             if($request->wa_aktif==1) {
                 $data = $data->whereNull('wa_inactive_since');
