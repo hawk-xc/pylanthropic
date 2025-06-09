@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('program', function (Blueprint $table) {
-            $table->boolean('same_as_thumbnail')->default(0);
-        });
+        if (!Schema::hasColumn('program', 'same_as_thumbnail')) {
+            Schema::table('program', function (Blueprint $table) {
+                $table->boolean('same_as_thumbnail')->default(0);
+            });
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('program', function (Blueprint $table) {
-            $table->dropColumn('same_as_thumbnail');
-        });
+        if (Schema::hasColumn('program', 'same_as_thumbnail')) {
+            Schema::table('program', function (Blueprint $table) {
+                $table->dropColumn('same_as_thumbnail');
+            });
+        }
     }
 };
