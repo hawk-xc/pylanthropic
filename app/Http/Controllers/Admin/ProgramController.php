@@ -88,27 +88,27 @@ class ProgramController extends Controller
     // }
 
     public function storeImagecontent(Request $request)
-{
-    $number = $request->number;
-    $number = str_replace('img', '', $number);
+    {
+        $number = $request->number;
+        $number = str_replace('img', '', $number);
 
-    $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->name));
-    $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
+        $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->name));
+        $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
 
-    $file = $request->file('file');
-    $filename = $filename.'_'.$number.'.'.$file->getClientOriginalExtension();
+        $file = $request->file('file');
+        $filename = $filename.'_'.$number.'.'.$file->getClientOriginalExtension();
 
-    // Simpan file menggunakan disk 'public_uploads' yang konsisten
-    $file->storeAs('images/program/content', $filename, 'public_uploads');
+        // Simpan file menggunakan disk 'public_uploads' yang konsisten
+        $file->storeAs('images/program/content', $filename, 'public_uploads');
 
-    // Generate URL yang konsisten dengan method lainnya
-    $link_img = url('public/images/program/content/'.$filename);
+        // Generate URL yang konsisten dengan method lainnya
+        $link_img = url('public/images/program/content/'.$filename);
 
-    return [
-        'link' => $link_img,
-        'full' => '<img data-original="'.$link_img.'" class="lazyload" alt="'.ucwords($request->name).' - Bantubersama.com" />'
-    ];
-}
+        return [
+            'link' => $link_img,
+            'full' => '<img data-original="'.$link_img.'" class="lazyload" alt="'.ucwords($request->name).' - Bantubersama.com" />'
+        ];
+    }
 
     // public function uploadImageContent(Request $request)
     // {
@@ -147,40 +147,40 @@ class ProgramController extends Controller
     // }
 
     public function uploadImageContent(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'file' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
-    ]);
-
-    if ($validator->fails()) {
-        return response()->json([
-            'error' => [
-                'message' => $validator->errors()->first()
-            ]
-        ], 400);
-    }
-
-    try {
-        $file = $request->file('file');
-        $filename = time().'_'.Str::random(10).'.'.$file->getClientOriginalExtension();
-
-        // Simpan file
-        $file->storeAs('images/program/content', $filename, 'public_uploads');
-
-        // Generate URL
-        $url = url('public/images/program/content/'.$filename);
-
-        return response()->json([
-            'location' => $url
+    {
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => [
-                'message' => $e->getMessage()
-            ]
-        ], 500);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => [
+                    'message' => $validator->errors()->first()
+                ]
+            ], 400);
+        }
+
+        try {
+            $file = $request->file('file');
+            $filename = time().'_'.Str::random(10).'.'.$file->getClientOriginalExtension();
+
+            // Simpan file
+            $file->storeAs('images/program/content', $filename, 'public_uploads');
+
+            // Generate URL
+            $url = url('public/images/program/content/'.$filename);
+
+            return response()->json([
+                'location' => $url
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => [
+                    'message' => $e->getMessage()
+                ]
+            ], 500);
+        }
     }
-}
     /**
      * Store image content
      */
