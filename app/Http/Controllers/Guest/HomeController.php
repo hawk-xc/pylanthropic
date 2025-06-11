@@ -60,4 +60,18 @@ class HomeController extends Controller
         return view('public.index', compact('category', 'slider', 'selected', 'newest', 'urgent'));
     }
 
+    public function aboutUs()
+    {
+        return view('public.public-page.about');
+    }
+
+    public function termsAndCondition()
+    {
+        return view('public.public-page.terms');
+    }
+
+    public function questionsCenter()
+    {
+        return view('public.public-page.faq');
+    }
 }
