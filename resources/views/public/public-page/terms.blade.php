@@ -359,9 +359,9 @@
     <section class="empty-section section-t-space section-b-space pb-0">
         <div class="custom-container footer pb-3 pt-3">
             <div class="fw-medium text-grey pt-2 fs-14">
-                <a class="text-grey" href="">Tentang Kami</a> |
-                <a class="text-grey" href="">Syarat & Ketentuan</a> |
-                <a class="text-grey" href="">Pusat Bantuan</a>
+                <a class="text-grey" href="{{ route('aboutus') }}">Tentang Kami</a> |
+                <a class="text-grey" href="{{ route('termsandcondition') }}">Syarat & Ketentuan</a> |
+                <a class="text-grey" href="{{ route('questionscenter') }}">Pusat Bantuan</a>
             </div>
             <div class="mt-3 text-grey fs-14">
                 Temukan kami di <br>

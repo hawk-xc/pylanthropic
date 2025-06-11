@@ -20,6 +20,11 @@ use App\Http\Controllers\DonationController;
 
 // Route::get('/', function () { return view('welcome'); });
 Route::get('/', [Guest\HomeController::class, 'index'])->name('index');
+Route::group(['prefix' => 'page'], function () {
+    Route::get('/about-us', [Guest\HomeController::class, 'aboutUs'])->name('aboutus');
+    Route::get('/terms-and-condition', [Guest\HomeController::class, 'termsAndCondition'])->name('termsandcondition');
+    Route::get('/faq', [Guest\HomeController::class, 'questionsCenter'])->name('questionscenter');
+});
 Route::post('/callback.php', [App\Http\Controllers\WaBlastController::class, 'callbackRuangWa'])->name('wa.callback.ruangwa');
 // Route::get('/payment/callback-doku', [PaymentController::class, 'callbackDoku'])->name('payment.callback.doku');
 
