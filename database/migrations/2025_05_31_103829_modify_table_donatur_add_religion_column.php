@@ -11,9 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('donatur', function (Blueprint $table) {
-            $table->string('religion')->nullable(true);
-        });
+        if (Schema::hasTable('donatur')) {
+            if (!Schema::hasColumn('donatur', 'religion')) {
+                Schema::table('donatur', function (Blueprint $table) {
+                    $table->string('religion')->nullable(true);
+                });
+            }
+        }
     }
 
     /**
@@ -21,8 +25,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('donatur', function (Blueprint $table) {
-            $table->dropColumn('religion');
-        });
+        if (Schema::hasTable('donatur') && Schema::hasColumn('donatur', 'religion')) {
+            Schema::table('donatur', function (Blueprint $table) {
+                $table->dropColumn('religion');
+            });
+        }
     }
 };
