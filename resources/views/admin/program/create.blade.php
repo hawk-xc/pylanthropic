@@ -145,10 +145,14 @@
                 <div class="col-6">
                     <label class="form-label fw-semibold">Gambar Utama (600 x 320 px)</label>
                     <input type="file" class="form-control form-control-sm" name="img_primary" required>
+                    {{-- start image preview --}}
+                    <img id="primary_image_preview" src="" class="mt-2 img-preview w-100">
+                    {{-- end image preview --}}
                     <div class="d-flex align-items-center mt-2">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="same_as_thumbnail"
                                 name="same_as_thumbnail">
+
                             <label class="form-check-label mt-1" for="same_as_thumbnail">
                                 Gambar utama sama dengan thumbnail
                             </label>
@@ -163,6 +167,9 @@
                 <div class="col-6">
                     <label class="form-label fw-semibold">Thumbnail (292 x 156 px)</label>
                     <input type="file" class="form-control form-control-sm" name="thumbnail" required>
+                    {{-- start image preview --}}
+                    <img id="thumbnail_image_preview" src="" class="mt-2 img-preview w-100">
+                    {{-- end image preview --}}
                     @error('thumbnail')
                         <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i> {{ $message }}
                         </div>
@@ -397,6 +404,30 @@
                     $('input[name="thumbnail"]').attr('required', 'required');
                 }
             }
+
+            $('input[name="img_primary"]').change(function(e) {
+                if (this.files && this.files[0]) {
+                    var reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        $('#primary_image_preview').attr('src', e.target.result).show();
+                    }
+
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+
+            $('input[name="thumbnail"]').change(function(e) {
+                if (this.files && this.files[0]) {
+                    var reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        $('#thumbnail_image_preview').attr('src', e.target.result).show();
+                    }
+
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
         });
 
         $("#program_title").on("keyup change", function() {
