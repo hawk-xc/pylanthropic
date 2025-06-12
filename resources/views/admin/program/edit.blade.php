@@ -420,7 +420,7 @@
                     // Jika checkbox tidak dicentang, tampilkan input thumbnail
                     $('input[name="thumbnail"]').closest('.col-6').show();
                     // Tambahkan required attribute kembali
-                    $('input[name="thumbnail"]').attr('required', 'required');
+                    // $('input[name="thumbnail"]').attr('required', 'required');
                 }
             }
 
