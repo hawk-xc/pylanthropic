@@ -131,25 +131,21 @@
                             </div>
                             <ul class="list-unstyled lh-lg ps-2">
                                 <li class="mb-2 d-flex">
-                                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-circle me-2 mt-1"
-                                        style="width: 26px; height: 24px; display: flex; justify-content: center; align-items: center;">1</span>
+                                    <span class="badge-circle">1</span>
                                     Memfasilitasi donasi yang transparan dan mudah untuk mendukung berbagai program
                                     sosial
                                 </li>
                                 <li class="mb-2 d-flex">
-                                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-circle me-2 mt-1"
-                                        style="width: 26px; height: 24px; display: flex; justify-content: center; align-items: center;">2</span>
+                                    <span class="badge-circle">2</span>
                                     Mendorong partisipasi masyarakat dalam aksi kemanusiaan melalui inovasi digital
                                 </li>
                                 <li class="mb-2 d-flex">
-                                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-circle me-2 mt-1"
-                                        style="width: 26px; height: 24px; display: flex; justify-content: center; align-items: center;">3</span>
+                                    <span class="badge-circle">3</span>
                                     Menyediakan bantuan tepat sasaran di sektor kesehatan, pendidikan, ekonomi, dan
                                     kebencanaan
                                 </li>
                                 <li class="d-flex">
-                                    <span class="badge bg-primary bg-opacity-10 text-primary rounded-circle me-2 mt-1"
-                                        style="width: 26px; height: 24px; display: flex; justify-content: center; align-items: center;">4</span>
+                                    <span class="badge-circle">4</span>
                                     Membangun komunitas peduli untuk menciptakan perubahan positif di Indonesia
                                 </li>
                             </ul>
@@ -255,6 +251,21 @@
 
         .text-slate-500 {
             color: #4d5756;
+        }
+
+        .badge-circle {
+            width: 26px !important;
+            height: 26px !important;
+            aspect-ratio: 1 !important;
+            background-color: rgba(13, 110, 253, 0.1);
+            color: #0d6efd;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            margin-top: 4px;
+            margin-right: 8px;
         }
     </style>
 @endsection
