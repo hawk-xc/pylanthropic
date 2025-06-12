@@ -276,6 +276,7 @@ class ProgramController extends Controller
                 // $filet->move(public_path('public/images/program'), $filename);
                 $filet->storeAs('images/program', $filename, 'public_uploads');
                 $data->thumbnail   = $filename;
+                $data->same_as_thumbnail = false;
             }
 
             // // upload image primary
@@ -408,7 +409,8 @@ class ProgramController extends Controller
             if ($request->file('img_primary') !== null) {
                 $filei = $request->file('img_primary');
                 $imageFilename = $filename . '.' . $filei->getClientOriginalExtension();
-                $filei->move(public_path('public/images/program'), $imageFilename);
+                // $filei->move(public_path('public/images/program'), $imageFilename);
+                $filei->storeAs('images/program', $filename.'.'.$filei->getClientOriginalExtension(), 'public_uploads');
                 $data->image = $imageFilename;
 
                 // Jika same_as_thumbnail true, gunakan gambar utama sebagai thumbnail
@@ -429,7 +431,8 @@ class ProgramController extends Controller
 
                 $filet = $request->file('thumbnail');
                 $thumbnailFilename = 'thumbnail_' . $filename . '.' . $filet->getClientOriginalExtension();
-                $filet->move(public_path('public/images/program'), $thumbnailFilename);
+                // $filet->move(public_path('public/images/program'), $thumbnailFilename);
+                $filet->storeAs('images/program', $thumbnailFilename, 'public_uploads');
                 $data->thumbnail = $thumbnailFilename;
                 $data->same_as_thumbnail = false;
             }
