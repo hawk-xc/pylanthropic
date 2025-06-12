@@ -54,31 +54,24 @@
 
 
 @section('content')
-    <!-- navbar section starts -->
-    <section class="navbar-section" style="padding-top: 0px;">
-        <nav class="navbar bg-primary bg-opacity-10 py-2">
-            <div class="container-fluid">
-                <!-- Back Button -->
-                <a href="{{ url('/') }}"
-                    class="navbar-brand ms-2 d-inline-flex align-items-center justify-content-center rounded-circle hover-bg-lightblue">
-                    <svg width="30" height="30" fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                        class="text-primary">
-                        <path d="M14 16l-4-4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            fill="none" />
-                    </svg>
-                </a>
-
-                <!-- Center Title -->
-                <div class="navbar-title mx-auto">
-                    <h5 class="mb-0 fw-bold text-primary">Tentang Kami</h5>
-                </div>
-
-                <!-- Empty div for balance -->
-                <div class="d-flex" style="width: 40px;"></div>
-            </div>
-        </nav>
-    </section>
-    <!-- navbar section end -->
+    <!-- header start -->
+    <header class="section-t-space pt-0">
+        <!-- <div class="custom-container"> -->
+        <div class="header-panel bg-me header-title">
+            <!-- <div class="header-title"> -->
+            <a href="{{ url('/') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="#fff">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </a>
+            <h2 class="fs-16">Tentang Kami</h2>
+            <!-- </div> -->
+        </div>
+        <!-- </div> -->
+    </header>
+    <!-- header end -->
 
     <!-- About Us Content Section -->
     <section class="about-content py-5">
@@ -96,7 +89,7 @@
                     <div class="mb-5 px-lg-2">
                         <p class="lead text-center fw-bold text-dark mb-4">
                             Bantu Bersama hadir sebagai solusi digital untuk memudahkan berbagi kebaikan
-                        <p class="text-justify lh-lg mb-4 text-slate-500">
+                        <p class="text-justify lh-lg mb-4 text-slate-500" style="text-align: justify;">
                             Melalui <a href="https://bantubersama.com" class="fw-bold"
                                 style="color: rgb(136, 88, 217);">bantubersama.com</a>, kami
                             menyediakan platform
@@ -106,7 +99,7 @@
                             landasannya, Bantu Bersama berkomitmen menciptakan kesetaraan sosial dan membantu
                             peningkatan kualitas hidup masyarakat di seluruh Indonesia.
                         </p>
-                        <p class="text-justify lh-lg text-slate-500">
+                        <p class="text-justify lh-lg text-slate-500" style="text-align: justify;">
                             Donatur dapat memilih berkontribusi dalam beragam program seperti kesehatan, pendidikan,
                             ekonomi, hingga bantuan bencana melalui sistem yang transparan dan akuntabel.
                         </p>
@@ -118,9 +111,9 @@
                     <div class="card h-100 border-0 shadow-sm bg-white rounded-3">
                         <div class="card-body p-4">
                             <div class="d-flex align-items-center mb-3">
-                                <h3 class="card-title fw-bold text-primary mb-0">Visi Kami</h3>
+                                <h3 class="card-title fw-bold text-primary mb-0">Visi</h3>
                             </div>
-                            <p class="mb-0 lh-lg ps-2 text-slate-500">
+                            <p class="mb-0 lh-lg ps-2 text-slate-500" style="text-align: justify;">
                                 Menjadi jembatan kebaikan yang menghubungkan dermawan dan penerima manfaat,
                                 menciptakan masyarakat yang lebih sejahtera dan berdaya melalui teknologi digital
                                 yang inklusif.
@@ -134,7 +127,7 @@
                     <div class="card h-100 border-0 shadow-sm bg-white rounded-3">
                         <div class="card-body p-4">
                             <div class="d-flex align-items-center mb-3">
-                                <h3 class="card-title fw-bold text-primary mb-0">Misi Kami</h3>
+                                <h3 class="card-title fw-bold text-primary mb-0">Misi</h3>
                             </div>
                             <ul class="list-unstyled lh-lg ps-2">
                                 <li class="mb-2 d-flex">

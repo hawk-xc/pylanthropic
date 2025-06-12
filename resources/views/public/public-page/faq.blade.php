@@ -54,31 +54,24 @@
 
 
 @section('content')
-    <!-- navbar section starts -->
-    <section class="navbar-section" style="padding-top: 0px;">
-        <nav class="navbar bg-primary bg-opacity-10 py-2">
-            <div class="container-fluid">
-                <!-- Back Button -->
-                <a href="{{ url('/') }}"
-                    class="navbar-brand ms-2 d-inline-flex align-items-center justify-content-center rounded-circle hover-bg-lightblue">
-                    <svg width="30" height="30" fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                        class="text-primary">
-                        <path d="M14 16l-4-4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            fill="none" />
-                    </svg>
-                </a>
-
-                <!-- Center Title -->
-                <div class="navbar-title mx-auto">
-                    <h5 class="mb-0 fw-bold text-primary">Pusat Bantuan</h5>
-                </div>
-
-                <!-- Empty div for balance -->
-                <div class="d-flex" style="width: 40px;"></div>
-            </div>
-        </nav>
-    </section>
-    <!-- navbar section end -->
+    <!-- header start -->
+    <header class="section-t-space pt-0">
+        <!-- <div class="custom-container"> -->
+        <div class="header-panel bg-me header-title">
+            <!-- <div class="header-title"> -->
+            <a href="{{ url('/') }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="#fff">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </a>
+            <h2 class="fs-16">Pusat Bantuan</h2>
+            <!-- </div> -->
+        </div>
+        <!-- </div> -->
+    </header>
+    <!-- header end -->
 
     <!-- Help Center Content Section -->
     <section class="help-content py-5">
@@ -105,7 +98,7 @@
                                     <div class="text-start">
                                         <h6 class="mb-1">WhatsApp</h6>
                                         <a href="https://wa.me/6281234567890" class="text-decoration-none">+62
-                                            851-8338-8344</a>
+                                            815-5555-849</a>
                                     </div>
                                 </div>
 
@@ -119,7 +112,7 @@
                                     <div class="text-start">
                                         <h6 class="mb-1">Email</h6>
                                         <a href="mailto:help@bantubersama.com"
-                                            class="text-decoration-none">bantuberamalbersama@gmail .com</a>
+                                            class="text-decoration-none">bantuberamalbersama@gmail.com</a>
                                     </div>
                                 </div>
                             </div>
