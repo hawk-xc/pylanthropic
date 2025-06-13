@@ -97,8 +97,8 @@
 
                                     <div class="text-start">
                                         <h6 class="mb-1">WhatsApp</h6>
-                                        <a href="https://wa.me/6281234567890" class="text-decoration-none">+62
-                                            815-5555-849</a>
+                                        <a href="https://wa.me/628155555849" class="text-decoration-none"
+                                            target="_blank">+6281-55555-849</a>
                                     </div>
                                 </div>
 
@@ -111,8 +111,8 @@
                                     </svg>
                                     <div class="text-start">
                                         <h6 class="mb-1">Email</h6>
-                                        <a href="mailto:help@bantubersama.com"
-                                            class="text-decoration-none">bantuberamalbersama@gmail.com</a>
+                                        <a href="mailto:help@bantubersama.com" class="text-decoration-none"
+                                            target="_blank">bantuberamalbersama@gmail.com</a>
                                     </div>
                                 </div>
                             </div>

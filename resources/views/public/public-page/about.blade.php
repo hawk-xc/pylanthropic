@@ -82,14 +82,14 @@
                     <figure class="text-center mb-5">
                         <img src="{{ asset('aboutusbanner.png') }}" alt="Tim Bantu Bersama sedang beraktivitas"
                             class="img-fluid rounded-4 shadow" style="max-height: 450px; object-fit: cover;">
-                        <figcaption class="mt-2 text-muted small">Komunitas Bantu Bersama dalam aksi sosial</figcaption>
+                        {{-- <figcaption class="mt-2 text-muted small">Komunitas Bantu Bersama dalam aksi sosial</figcaption> --}}
                     </figure>
 
                     <!-- Introduction Paragraph -->
-                    <div class="mb-5 px-lg-2">
-                        <p class="lead text-center fw-bold text-dark mb-4">
+                    <div class="mb-3 px-lg-2 mb-4">
+                        <p class="lead text-start fw-bold text-dark mb-4">
                             Bantu Bersama hadir sebagai solusi digital untuk memudahkan berbagi kebaikan
-                        <p class="text-justify lh-lg mb-4 text-slate-500" style="text-align: justify;">
+                        <p class="text-justify lh-md mb-4 text-slate-500" style="text-align: justify;">
                             Melalui <a href="https://bantubersama.com" class="fw-bold"
                                 style="color: rgb(136, 88, 217);">bantubersama.com</a>, kami
                             menyediakan platform
@@ -99,70 +99,64 @@
                             landasannya, Bantu Bersama berkomitmen menciptakan kesetaraan sosial dan membantu
                             peningkatan kualitas hidup masyarakat di seluruh Indonesia.
                         </p>
-                        <p class="text-justify lh-lg text-slate-500" style="text-align: justify;">
+                        <p class="text-justify lh-md text-slate-500" style="text-align: justify;">
                             Donatur dapat memilih berkontribusi dalam beragam program seperti kesehatan, pendidikan,
                             ekonomi, hingga bantuan bencana melalui sistem yang transparan dan akuntabel.
                         </p>
                     </div>
                 </div>
 
-                <!-- section visi -->
-                <div class="col-lg-11">
-                    <div class="card h-100 border-0 shadow-sm bg-white rounded-3">
-                        <div class="card-body p-4">
-                            <div class="d-flex align-items-center mb-3">
-                                <h3 class="card-title fw-bold text-primary mb-0">Visi</h3>
-                            </div>
-                            <p class="mb-0 lh-lg ps-2 text-slate-500" style="text-align: justify;">
-                                Menjadi jembatan kebaikan yang menghubungkan dermawan dan penerima manfaat,
-                                menciptakan masyarakat yang lebih sejahtera dan berdaya melalui teknologi digital
-                                yang inklusif.
-                            </p>
+                {{-- visi --}}
+                <div class="col-lg-11 col-md-11">
+                    <div class="mb-3 px-lg-2">
+                        <div class="d-flex align-items-center mb-3">
+                            <h3 class="fw-bold text-primary mb-0">Visi</h3>
                         </div>
+                        <p class="mb-0 lh-md text-slate-500 mb-4" style="text-align: justify;">
+                            Menjadi jembatan kebaikan yang menghubungkan dermawan dan penerima manfaat,
+                            menciptakan masyarakat yang lebih sejahtera dan berdaya melalui teknologi digital
+                            yang inklusif.
+                        </p>
                     </div>
                 </div>
 
-                <!-- Section misi -->
-                <div class="col-lg-11">
-                    <div class="card h-100 border-0 shadow-sm bg-white rounded-3">
-                        <div class="card-body p-4">
-                            <div class="d-flex align-items-center mb-3">
-                                <h3 class="card-title fw-bold text-primary mb-0">Misi</h3>
-                            </div>
-                            <ul class="list-unstyled lh-lg ps-2">
-                                <li class="mb-2 d-flex">
-                                    <span class="badge-circle">1</span>
-                                    Memfasilitasi donasi yang transparan dan mudah untuk mendukung berbagai program
-                                    sosial
-                                </li>
-                                <li class="mb-2 d-flex">
-                                    <span class="badge-circle">2</span>
-                                    Mendorong partisipasi masyarakat dalam aksi kemanusiaan melalui inovasi digital
-                                </li>
-                                <li class="mb-2 d-flex">
-                                    <span class="badge-circle">3</span>
-                                    Menyediakan bantuan tepat sasaran di sektor kesehatan, pendidikan, ekonomi, dan
-                                    kebencanaan
-                                </li>
-                                <li class="d-flex">
-                                    <span class="badge-circle">4</span>
-                                    Membangun komunitas peduli untuk menciptakan perubahan positif di Indonesia
-                                </li>
-                            </ul>
+                {{-- misi --}}
+                <div class="col-lg-11 col-md-11">
+                    <div class="mb-3 px-lg-2">
+                        <div class="d-flex align-items-center mb-3">
+                            <h3 class="card-title fw-bold text-primary mb-0">Misi</h3>
                         </div>
+                        <ul class="list-unstyled lh-md ps-2 text-slate-500 mb-4">
+                            <li class="mb-1 d-flex">
+                                <span class="badge-circle">1</span>
+                                Memfasilitasi donasi yang transparan dan mudah untuk mendukung berbagai program
+                                sosial
+                            </li>
+                            <li class="mb-1 d-flex">
+                                <span class="badge-circle">2</span>
+                                Mendorong partisipasi masyarakat dalam aksi kemanusiaan melalui inovasi digital
+                            </li>
+                            <li class="mb-1 d-flex">
+                                <span class="badge-circle">3</span>
+                                Menyediakan bantuan tepat sasaran di sektor kesehatan, pendidikan, ekonomi, dan
+                                kebencanaan
+                            </li>
+                            <li class="d-flex">
+                                <span class="badge-circle">4</span>
+                                Membangun komunitas peduli untuk menciptakan perubahan positif di Indonesia
+                            </li>
+                        </ul>
                     </div>
                 </div>
 
-                <!-- Section legalitas -->
-                <div class="col-lg-11">
-                    <div class="card h-100 border-0 shadow-sm bg-white rounded-3">
-                        <div class="card-body p-4">
-                            <div class="d-flex align-items-center mb-3">
-                                <h3 class="card-title fw-bold text-primary mb-0">Legalitas</h3>
-                            </div>
-                            <div>
-                                <img src="{{ asset('legalitas_bantubersama.png') }}" alt="" class="img-fluid w-100">
-                            </div>
+                {{-- Legalitas --}}
+                <div class="col-lg-11 col-md-11">
+                    <div class="mb-3 px-lg-2">
+                        <div class="d-flex align-items-center mb-2">
+                            <h3 class="card-title fw-bold text-primary mb-0">Legalitas</h3>
+                        </div>
+                        <div>
+                            <img src="{{ asset('legalitas_bantubersama.png') }}" alt="" class="img-fluid w-100">
                         </div>
                     </div>
                 </div>
@@ -266,6 +260,10 @@
             font-size: 14px;
             margin-top: 4px;
             margin-right: 8px;
+        }
+
+        li {
+            font-size: 16px;
         }
     </style>
 @endsection

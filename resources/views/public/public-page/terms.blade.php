@@ -80,7 +80,7 @@
                 <div class="col-lg-11 col-md-11">
                     <!-- Introduction Paragraph -->
                     <div class="mb-3 px-lg-2">
-                        <p class="text-justify lh-lg mb-4 text-slate-500" style="text-align: justify;">
+                        <p class="text-justify lh-md mb-3 text-slate-500" style="text-align: justify;">
                             Bantubersama menetapkan Ketentuan Umum dan Khusus terkait program yang dibuat oleh Campaigner
                             dengan tujuan untuk menjaga keaslian, kebenaran, dan keamanan setiap program yang dipublikasi
                             di situs Bantubersama.com.
@@ -90,7 +90,7 @@
                         <div class="d-flex align-items-center mb-3">
                             <h3 class="card-title fw-bold text-primary mb-0">Apa itu Campaigner?</h3>
                         </div>
-                        <p class="mb-0 lh-lg text-slate-500" style="text-align: justify;">
+                        <p class="mb-0 lh-md text-slate-500" style="text-align: justify;">
                             Campaigner adalah orang / lembaga yang bertanggung jawab dalam suatu kegiatan atau program dalam
                             konteks penggalangan dana. Campaigner yang mengawasi dan mengelola seluruh proses penggalangan
                             dana untuk memastikan semuanya berjalan lancar dan sesuai rencana sampai kegiatan atau program
@@ -107,7 +107,7 @@
                         <div class="ms-4 mb-3 text-slate-500"> <!-- Indentasi 1 level -->
                             <p class="mb-2 text-slate-500 fw-bold">Verifikasi akun</p>
 
-                            <ul class="list-unstyled lh-lg ps-2 text-slate-500">
+                            <ul class="list-unstyled lh-md ps-2 text-slate-500">
                                 <li class="mb-2 d-flex">
                                     <span class="badge-circle">1</span>
                                     Campaigner diwajibkan untuk mengisi informasi akurat guna melakukan
@@ -124,7 +124,7 @@
                         <div class="ms-4 mb-3 text-slate-700"> <!-- Indentasi 1 level -->
                             <p class="mb-2 text-slate-500 fw-bold">Program</p>
 
-                            <ul class="list-unstyled lh-lg ps-2 text-slate-500">
+                            <ul class="list-unstyled lh-md ps-2 text-slate-500">
                                 <li class="mb-2 d-flex">
                                     <span class="badge-circle">1</span>
                                     Campaigner menjamin bahwa semua teks, foto, dan video yang diunggah ke situs
@@ -157,7 +157,7 @@
                         <div class="ms-4 mb-3 text-slate-700"> <!-- Indentasi 1 level -->
                             <p class="mb-2 text-slate-500 fw-bold">Program dilarang jika mengandung unsur:</p>
 
-                            <ul class="list-unstyled lh-lg ps-2 text-slate-500">
+                            <ul class="list-unstyled lh-md ps-2 text-slate-500">
                                 <li class="mb-2 d-flex">
                                     <span class="badge-circle">I</span>
                                     Pornografi, konten dewasa, dan unsur seksual
@@ -190,7 +190,7 @@
                             </h3>
                         </div>
                         <div class="ms-2 mb-3">
-                            <ul class="list-unstyled lh-lg ps-2 text-slate-500">
+                            <ul class="list-unstyled lh-md ps-2 text-slate-500">
                                 <li class="mb-2 d-flex">
                                     <span class="badge-circle">1</span>
                                     Jika ada perjanjian kerjasama khusus antara Campaigner dan pengelola Bantu Bersama, maka
@@ -245,7 +245,7 @@
                             </h3>
                         </div>
                         <div class="ms-2 mb-3 text-slate-700">
-                            <p class="mb-0 lh-lg text-slate-500" style="text-align: justify;">
+                            <p class="mb-0 lh-md text-slate-500" style="text-align: justify;">
                                 Campaigner setuju untuk bertanggung jawab jika terjadi penyalahgunaan dana program yang
                                 telah diterima atau tindakan melanggar hukum lainnya, dan bersedia menerima tuntutan hukum
                                 jika hal tersebut terjadi. Oleh karena itu, Campaigner menyatakan dan setuju untuk mengganti
@@ -253,61 +253,61 @@
                                 dari tuntutan hukum di masa mendatang terkait hal-hal berikut, tetapi tidak terbatas pada:
                             </p>
                             <ul class="list-unstyled ps-0 mt-2 text-slate-500">
-                                <li class="mb-2 d-flex align-items-start lh-lg">
+                                <li class="mb-2 d-flex align-items-start lh-md">
                                     <span class="badge-circle">i</span>
                                     <div>Pelaksanaan program yang tidak selesai atau tidak sesuai dengan apa yang
                                         disampaikan kepada pengelola maupun yang tertera di situs</div>
                                 </li>
-                                <li class="mb-2 d-flex align-items-start lh-lg">
+                                <li class="mb-2 d-flex align-items-start lh-md">
                                     <span class="badge-circle">ii</span>
                                     <div>Penggelapan dana dan/atau penyalahgunaan donasi yang telah ditransfer oleh
                                         pengelola kepada pemilik program</div>
                                 </li>
-                                <li class="mb-2 d-flex align-items-start lh-lg">
+                                <li class="mb-2 d-flex align-items-start lh-md">
                                     <span class="badge-circle">iii</span>
                                     <div>Kelalaian dalam pengelolaan program yang telah diajukan</div>
                                 </li>
-                                <li class="mb-2 d-flex align-items-start lh-lg">
+                                <li class="mb-2 d-flex align-items-start lh-md">
                                     <span class="badge-circle">iv</span>
                                     <div>Tindakan melanggar hukum lainnya yang terjadi selama proses penggalangan dana
                                         dan/atau implementasi program</div>
                                 </li>
                             </ul>
 
-                            <p class="mb-0 lh-lg text-slate-500" style="text-align: justify;">
+                            <p class="mb-0 lh-md text-slate-500" style="text-align: justify;">
                                 Campaigner bersedia untuk mengikuti ketentuan yang ditetapkan oleh pengelola Bantu Bersama
                                 jika terjadi hal-hal berikut, tetapi tidak terbatas pada:
                             </p>
 
                             <ul class="ps-0 text-slate-500">
-                                <li class="mb-3 d-flex align-items-start lh-lg">
+                                <li class="mb-3 d-flex align-items-start lh-md">
                                     <span class="badge-circle">i</span>
                                     <div>Jika donasi telah melebihi target penghimpunan</div>
                                 </li>
-                                <li class="mb-3 d-flex align-items-start lh-lg">
+                                <li class="mb-3 d-flex align-items-start lh-md">
                                     <span class="badge-circle">ii</span>
                                     <div>Jika kebutuhan dana telah terpenuhi dan disalurkan sepenuhnya namun masih
                                         terdapat sisa donasi</div>
                                 </li>
-                                <li class="mb-3 d-flex align-items-start lh-lg">
+                                <li class="mb-3 d-flex align-items-start lh-md">
                                     <span class="badge-circle">iii</span>
                                     <div>Jika tidak ada lagi biaya yang diperlukan untuk program yang diajukan</div>
                                 </li>
-                                <li class="mb-3 d-flex align-items-start lh-lg">
+                                <li class="mb-3 d-flex align-items-start lh-md">
                                     <span class="badge-circle">iv</span>
                                     <div>Jika dana yang diberikan tidak disalurkan sesuai mestinya</div>
                                 </li>
-                                <li class="mb-3 d-flex align-items-start lh-lg">
+                                <li class="mb-3 d-flex align-items-start lh-md">
                                     <span class="badge-circle">v</span>
                                     <div>Jika Campaigner atau penerima manfaat tidak dapat dihubungi</div>
                                 </li>
-                                <li class="mb-3 d-flex align-items-start lh-lg">
+                                <li class="mb-3 d-flex align-items-start lh-md">
                                     <span class="badge-circle">vi</span>
                                     <div>Khusus untuk program bantuan kesehatan, jika penerima manfaat telah meninggal
                                         dunia dan tidak memiliki tanggungan biaya pengobatan.</div>
                                 </li>
                             </ul>
-                            <p class="mb-0 lh-lg text-slate-500" style="text-align: justify;">
+                            <p class="mb-0 lh-md text-slate-500" style="text-align: justify;">
                                 Dalam hal ini, kelebihan dana akan dialihkan untuk program lain yang menggalang dana melalui
                                 Bantu Bersama sesuai dengan kebutuhan dan kategori penggunaan dana. Hal ini dilakukan agar
                                 lebih banyak penerima manfaat dapat terbantu.
@@ -422,6 +422,10 @@
             color: #64748b;
             /* Warna slate-500 */
             margin-right: 0.5rem;
+        }
+
+        li {
+            font-size: 16px;
         }
 
         .badge-circle {
