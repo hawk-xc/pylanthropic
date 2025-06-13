@@ -80,7 +80,7 @@
                 <div class="col-lg-11 col-md-11">
                     <!-- Featured Image with Caption -->
                     <figure class="text-center mb-5">
-                        <img src="{{ asset('images/about-hero.jpg') }}" alt="Tim Bantu Bersama sedang beraktivitas"
+                        <img src="{{ asset('aboutusbanner.png') }}" alt="Tim Bantu Bersama sedang beraktivitas"
                             class="img-fluid rounded-4 shadow" style="max-height: 450px; object-fit: cover;">
                         <figcaption class="mt-2 text-muted small">Komunitas Bantu Bersama dalam aksi sosial</figcaption>
                     </figure>
