@@ -74,7 +74,7 @@
     <!-- header end -->
 
     <!-- About Us Content Section -->
-    <section class="about-content py-5">
+    <section class="about-content pt-5 pb-0">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-11 col-md-11">
