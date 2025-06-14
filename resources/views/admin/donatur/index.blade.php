@@ -9,8 +9,8 @@
 @section('css_plugins')
     <link href="{{ asset('admin/dataTables.bootstrap5.min.css') }}" rel="stylesheet">
     <!-- <link href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css" rel="stylesheet">
-                    <link href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css" rel="stylesheet">
-                 -->
+                                                        <link href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+                                                     -->
 @endsection
 
 @section('content')
@@ -40,6 +40,8 @@
                         data-val="0">>5jt</button>
                     <button class="btn btn-outline-primary filter_donatur" id="filter-setia" data-id="setia"
                         data-val="0">Setia</button>
+                    <button class="btn btn-outline-primary filter_donatur" id="filter-rutin" data-id="rutin"
+                        data-val="0">Rutin</button>
                     <button class="btn btn-outline-primary filter_donatur" id="filter-muslim" data-id="muslim"
                         data-val="0">Muslim</button>
                     <button class="btn btn-outline-primary filter_donatur" id="filter-dorman" data-id="dorman"
@@ -207,11 +209,13 @@
             let wa_mau = $('#filter-wa-mau').attr("data-val");
             let sultan = $('#sultan_val').val();
             let setia = $('#filter-setia').attr("data-val");
+            let rutin = $('#filter-rutin').attr("data-val");
             let muslim = $('#filter-muslim').attr("data-val");
             let dorman = $('#filter-dorman').attr("data-val");
 
             table.ajax.url("{{ route('adm.donatur.datatables') }}/?wa_aktif=" + wa_aktif + "&wa_mau=" + wa_mau +
-                "&sultan=" + sultan + "&setia=" + setia + "&muslim=" + muslim + "&dorman=" + dorman).load();
+                    "&sultan=" + sultan + "&setia=" + setia + "&rutin=" + rutin + "&muslim=" + muslim + "&dorman=" + dorman)
+                .load();
         }
 
         var table = $('#table-donatur').DataTable({
