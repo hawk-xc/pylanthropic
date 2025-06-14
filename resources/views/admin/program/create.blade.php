@@ -140,6 +140,23 @@
                     @enderror
                 </div>
 
+                <div class="col-12">
+                    <div class="mt-2 p-3 rounded" style="background-color: rgb(224, 243, 255);">
+                        <div class="form-check d-flex align-items-center">
+                            <input class="form-check-input input-lg mb-2" type="checkbox" name="is_islami"
+                                id="is_islami">
+                            <label class="form-check-label fw-bold" for="is_islami">
+                                Program Islami
+                            </label>
+                        </div>
+                        <small class="text-dark">
+                            Centang jika program memiliki nuansa atau nilai-nilai Islami, seperti adanya tausiyah, doa
+                            bersama, atau tema Islami lainnya.
+                        </small>
+                    </div>
+                </div>
+
+
                 <div class="divider mt-4"></div>
 
                 <div class="col-6">

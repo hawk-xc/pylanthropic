@@ -232,6 +232,7 @@ class ProgramController extends Controller
             $data->nominal_approved = str_replace('.', '', $request->nominal);
             $data->end_date         = $request->date_end;
             $data->short_desc       = $request->caption;
+            $data->is_islami        = $request->is_islami ? 1 : 0;
 
             $story                  = str_replace('&lt;', '<', $request->story);
             $story                  = str_replace('&gt;', '>', $story);
@@ -372,6 +373,7 @@ class ProgramController extends Controller
             $data->nominal_approved = str_replace('.', '', $request->nominal);
             $data->end_date = $request->date_end;
             $data->short_desc = $request->caption;
+            $data->is_islami = $request->is_islami ? 1 : 0;
             $data->optimation_fee = $request->optimation_fee;
             $data->show_minus = $request->show_minus;
             $data->same_as_thumbnail = $request->has('same_as_thumbnail');
