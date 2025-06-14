@@ -569,6 +569,9 @@
                 'alignright alignjustify | bullist numlist outdent indent | ' +
                 'removeformat | help | image',
 
+            // Menambahkan menu konteks (klik kanan)
+            contextmenu: 'paste | link image inserttable | cell row column deletetable',
+
             // Konfigurasi khusus untuk gambar
             image_dimensions: true, // Aktifkan pengaturan dimensi
             image_description: true, // Nonaktifkan deskripsi jika tidak diperlukan
