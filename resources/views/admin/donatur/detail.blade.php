@@ -102,7 +102,7 @@
     </div>
 
 
-    <div class="main-card mb-3 mt-3 card">
+    <div class="main-card mb-2 mt-3 card">
         <div class="card-body">
             <div class="row">
                 <div class="col-2">
@@ -131,6 +131,7 @@
                 </table>
             </div>
         </div>
+    </div>
 
         <div class="main-card mb-2 mt-3 card">
             <div class="card-body">
@@ -199,7 +200,7 @@
         <input type="hidden" id="gopay_val" value="0">
 
 
-        <div class="main-card mb-3 mt-3 card">
+        <div class="main-card mb-2 mt-3 card">
             <div class="card-body">
                 <div class="row">
                     <div class="col-3">
@@ -253,7 +254,7 @@
         </div>
 
 
-        <div class="main-card mb-3 mt-3 card">
+        <div class="main-card mb-2 mt-3 card">
             <div class="card-body">
                 <div class="row">
                     <div class="col-2">

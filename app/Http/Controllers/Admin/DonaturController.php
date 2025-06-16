@@ -260,8 +260,8 @@ class DonaturController extends Controller
             })
             ->addColumn('action', function($row){
                 $url_edit  = route('adm.donatur.edit', $row->id);
-                $actionBtn = '<a href="'.$url_edit.'" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
-                            <a href="'.route('adm.donatur.show', $row->id).'" class="edit btn btn-info btn-xs mb-1" title="Detail"><i class="fa fa-eye"></i></a>
+                $actionBtn = '<a href="'.$url_edit.'" target="_blank" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
+                            <a href="'.route('adm.donatur.show', $row->id).'" target="_blank" class="edit btn btn-info btn-xs mb-1" title="Detail"><i class="fa fa-eye"></i></a>
                             ';
                 return $actionBtn;
             })

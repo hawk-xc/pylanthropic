@@ -116,6 +116,26 @@
                                             <td>{{ number_format($donate_draft_rp[5]) }}</td>
                                             <td>{{ number_format($donate_draft_rp[6]) }}</td>
                                         </tr>
+                                        <tr>
+                                            <td>Total JML</td>
+                                            <td>{{ number_format($donate_draft[0]+$donate_success[0]) }}</td>
+                                            <td>{{ number_format($donate_draft[1]+$donate_success[1]) }}</td>
+                                            <td>{{ number_format($donate_draft[2]+$donate_success[2]) }}</td>
+                                            <td>{{ number_format($donate_draft[3]+$donate_success[3]) }}</td>
+                                            <td>{{ number_format($donate_draft[4]+$donate_success[4]) }}</td>
+                                            <td>{{ number_format($donate_draft[5]+$donate_success[5]) }}</td>
+                                            <td>{{ number_format($donate_draft[6]+$donate_success[6]) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Total Rp</td>
+                                            <td>{{ number_format($donate_draft_rp[0]+$donate_success_rp[0]) }}</td>
+                                            <td>{{ number_format($donate_draft_rp[1]+$donate_success_rp[1]) }}</td>
+                                            <td>{{ number_format($donate_draft_rp[2]+$donate_success_rp[2]) }}</td>
+                                            <td>{{ number_format($donate_draft_rp[3]+$donate_success_rp[3]) }}</td>
+                                            <td>{{ number_format($donate_draft_rp[4]+$donate_success_rp[4]) }}</td>
+                                            <td>{{ number_format($donate_draft_rp[5]+$donate_success_rp[5]) }}</td>
+                                            <td>{{ number_format($donate_draft_rp[6]+$donate_success_rp[6]) }}</td>
+                                        </tr>
                                     </tbody>
                                 </table>
                             </div>

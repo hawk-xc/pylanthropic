@@ -149,7 +149,7 @@ class DonateController extends Controller
     public function paymentStatus(Request $request)
     {
         // check any transaction
-        $is_trans = Transaction::where('invoice_number', $request->order_id)->first();
+        $is_trans = Transaction::where('invoice_number', $request->inv)->first();
         if(isset($is_trans->status)) {
             $nominal        = $is_trans->nominal_final;
             $nominal_show   = str_replace(',', '.', $nominal);
@@ -162,8 +162,9 @@ class DonateController extends Controller
             $payment        = PaymentType::where('id', $is_trans->payment_type_id)->first();
             $transaction    = $is_trans;
             $program        = Program::where('id', $is_trans->program_id)->first();
+            $link           = $is_trans->link;
 
-            return view('public.payment_info', compact('nominal', 'nominal_show', 'nominal_show2', 'paid_before', 'payment', 'va_number', 'transaction', 'program', 'token_midtrans', 'redirect_url'));
+            return view('public.payment_info', compact('nominal', 'nominal_show', 'nominal_show2', 'paid_before', 'payment', 'va_number', 'transaction', 'program', 'token_midtrans', 'redirect_url', 'link'));
         } else {
             return view('public.not_found');
         }

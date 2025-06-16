@@ -154,10 +154,10 @@
         </ul>
         <hr>
         <div class="form-input mt-4">
-          <input type="text" name="fullname" class="form-control fs-14 form-payment" placeholder="Nama Lengkap" required />
+          <input type="text" name="fullname" class="form-control fs-14 form-payment" value="{{ request('name') ?? '' }}" placeholder="Nama Lengkap" required />
         </div>
         <div class="form-input mt-2">
-          <input type="text" name="telp" class="form-control fs-14 form-payment" placeholder="Nomor Telpon : 08....." required />
+          <input type="text" name="telp" class="form-control fs-14 form-payment" value="{{ request('telp') ?? '' }}" placeholder="Nomor Telpon : 08....." required />
         </div>
         <label class="alert alert-avail-contact disclaimer-detail mt-2">
           <input type="checkbox" name="want_to_contact" class="me-2" checked>
