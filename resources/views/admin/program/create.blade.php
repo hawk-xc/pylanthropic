@@ -140,15 +140,36 @@
                     @enderror
                 </div>
 
+                <div class="col-12">
+                    <div class="mt-2 p-3 rounded" style="background-color: rgb(224, 243, 255);">
+                        <div class="form-check d-flex align-items-center">
+                            <input class="form-check-input input-lg mb-2" type="checkbox" name="is_islami"
+                                id="is_islami">
+                            <label class="form-check-label fw-bold" for="is_islami">
+                                Program Islami
+                            </label>
+                        </div>
+                        <small class="text-dark">
+                            Centang jika program memiliki nuansa atau nilai-nilai Islami, seperti adanya tausiyah, doa
+                            bersama, atau tema Islami lainnya.
+                        </small>
+                    </div>
+                </div>
+
+
                 <div class="divider mt-4"></div>
 
                 <div class="col-6">
                     <label class="form-label fw-semibold">Gambar Utama (600 x 320 px)</label>
                     <input type="file" class="form-control form-control-sm" name="img_primary" required>
+                    {{-- start image preview --}}
+                    <img id="primary_image_preview" src="" class="mt-2 img-preview w-100">
+                    {{-- end image preview --}}
                     <div class="d-flex align-items-center mt-2">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="1" id="same_as_thumbnail"
                                 name="same_as_thumbnail">
+
                             <label class="form-check-label mt-1" for="same_as_thumbnail">
                                 Gambar utama sama dengan thumbnail
                             </label>
@@ -163,6 +184,9 @@
                 <div class="col-6">
                     <label class="form-label fw-semibold">Thumbnail (292 x 156 px)</label>
                     <input type="file" class="form-control form-control-sm" name="thumbnail" required>
+                    {{-- start image preview --}}
+                    <img id="thumbnail_image_preview" src="" class="mt-2 img-preview w-100">
+                    {{-- end image preview --}}
                     @error('thumbnail')
                         <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i> {{ $message }}
                         </div>
@@ -397,6 +421,30 @@
                     $('input[name="thumbnail"]').attr('required', 'required');
                 }
             }
+
+            $('input[name="img_primary"]').change(function(e) {
+                if (this.files && this.files[0]) {
+                    var reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        $('#primary_image_preview').attr('src', e.target.result).show();
+                    }
+
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+
+            $('input[name="thumbnail"]').change(function(e) {
+                if (this.files && this.files[0]) {
+                    var reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        $('#thumbnail_image_preview').attr('src', e.target.result).show();
+                    }
+
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
         });
 
         $("#program_title").on("keyup change", function() {
@@ -569,21 +617,22 @@
             plugins: [
                 'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
                 'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                'insertdatetime', 'media', 'table', 'help', 'wordcount', 'image'
+                'insertdatetime', 'media', 'table', 'help', 'wordcount', 'image', 'paste'
             ],
             toolbar: 'undo redo | blocks | ' +
                 'bold italic backcolor | alignleft aligncenter ' +
                 'alignright alignjustify | bullist numlist outdent indent | ' +
                 'removeformat | help | image',
 
-            // Konfigurasi khusus untuk gambar
-            image_dimensions: true, // Aktifkan pengaturan dimensi
-            image_description: true, // Nonaktifkan deskripsi jika tidak diperlukan
-            image_title: true, // Aktifkan title untuk gambar
+            // Menambahkan menu konteks (klik kanan)
+            contextmenu: 'paste | link image inserttable | cell row column deletetable',
 
-            // Dialog gambar yang dimodifikasi
-            image_advtab: true, // Aktifkan tab advanced untuk opsi lebih banyak
-            image_caption: true, // Nonaktifkan caption jika tidak diperlukan
+            // Konfigurasi khusus untuk gambar
+            image_dimensions: true,
+            image_description: true,
+            image_title: true,
+            image_advtab: true,
+            image_caption: true,
 
             images_upload_url: "{{ route('adm.program.image.content.submit') }}",
             images_upload_handler: function(blobInfo, progress) {
@@ -623,42 +672,37 @@
                     xhr.send(formData);
                 });
             },
-            // Konfigurasi untuk mengontrol gambar
-            image_dimensions: false, // Nonaktifkan pengubahan dimensi otomatis
             image_class_list: [{
                 title: 'Responsive',
                 value: 'img-responsive'
             }],
-            // Style untuk konten editor
             content_style: `
-            body {
-                font-family: Helvetica, Arial, sans-serif;
-                font-size: 16px;
-                max-width: 100%;
-            }
-            img {
-                max-width: 100%;
-                height: auto;
-                display: block;
-                margin: 10px auto;
-            }
-            .img-responsive {
-                max-width: 100%;
-                height: auto;
-            }
-            .mce-content-body {
-                max-width: 800px; /* Sesuaikan dengan lebar maksimal yang Anda inginkan */
-                margin: 0 auto;
-            }
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            font-size: 16px;
+            max-width: 100%;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 10px auto;
+        }
+        .img-responsive {
+            max-width: 100%;
+            height: auto;
+        }
+        .mce-content-body {
+            max-width: 800px;
+            margin: 0 auto;
+        }
         `,
-            // Setup untuk editor
             setup: function(editor) {
                 editor.on('init', function() {
-                    this.getDoc().body.style.maxWidth = '800px'; // Sesuaikan dengan kebutuhan
+                    this.getDoc().body.style.maxWidth = '800px';
                     this.getDoc().body.style.margin = '0 auto';
                 });
 
-                // Menambahkan class otomatis ke gambar yang diupload
                 editor.on('SetContent', function() {
                     tinymce.activeEditor.dom.addClass(tinymce.activeEditor.dom.select('img'),
                         'img-responsive');

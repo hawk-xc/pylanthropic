@@ -232,6 +232,7 @@ class ProgramController extends Controller
             $data->nominal_approved = str_replace('.', '', $request->nominal);
             $data->end_date         = $request->date_end;
             $data->short_desc       = $request->caption;
+            $data->is_islami        = $request->is_islami ? 1 : 0;
 
             $story                  = str_replace('&lt;', '<', $request->story);
             $story                  = str_replace('&gt;', '>', $story);
@@ -276,6 +277,7 @@ class ProgramController extends Controller
                 // $filet->move(public_path('public/images/program'), $filename);
                 $filet->storeAs('images/program', $filename, 'public_uploads');
                 $data->thumbnail   = $filename;
+                $data->same_as_thumbnail = false;
             }
 
             // // upload image primary
@@ -363,104 +365,89 @@ class ProgramController extends Controller
         ]);
 
         try {
-            $data                   = Program::findOrFail($id);
-            $data->title            = $request->title;
-            $data->slug             = urlencode($request->url);
-            $data->organization_id  = $request->organization;
-            $data->nominal_request  = str_replace('.', '', $request->nominal);
+            $data = Program::findOrFail($id);
+            $data->title = $request->title;
+            $data->slug = urlencode($request->url);
+            $data->organization_id = $request->organization;
+            $data->nominal_request = str_replace('.', '', $request->nominal);
             $data->nominal_approved = str_replace('.', '', $request->nominal);
-            $data->end_date         = $request->date_end;
-            $data->short_desc       = $request->caption;
-            $data->optimation_fee   = $request->optimation_fee;
-            $data->show_minus       = $request->show_minus;
+            $data->end_date = $request->date_end;
+            $data->short_desc = $request->caption;
+            $data->is_islami = $request->is_islami ? 1 : 0;
+            $data->optimation_fee = $request->optimation_fee;
+            $data->show_minus = $request->show_minus;
+            $data->same_as_thumbnail = $request->has('same_as_thumbnail');
 
-            if($request->show == 1){        // Pencarian saja
-                $data->is_publish       = 1;
-                $data->is_recommended   = 0;
-                $data->is_show_home     = 0;
-                $data->is_urgent        = 0;
-            } elseif($request->show == 2) { // Tampil di Pilihan
-                $data->is_publish       = 1;
-                $data->is_recommended   = 1;
-                $data->is_show_home     = 0;
-                $data->is_urgent        = 0;
-            } elseif($request->show == 3) { // Tampil di Terbaru
-                $data->is_publish       = 1;
-                $data->is_recommended   = 0;
-                $data->is_show_home     = 1;
-                $data->is_urgent        = 0;
-            } elseif($request->show == 4) { // Sembunyikan
-                $data->is_publish       = 0;
-                $data->is_recommended   = 0;
-                $data->is_show_home     = 0;
-                $data->is_urgent        = 0;
-            } elseif($request->show == 5) { // Mendesak
-                $data->is_publish       = 1;
-                $data->is_recommended   = 0;
-                $data->is_show_home     = 0;
-                $data->is_urgent        = 1;
+            // Handle show options
+            switch ($request->show) {
+                case 1: // Pencarian saja
+                    $data->is_publish = 1;
+                    $data->is_recommended = 0;
+                    $data->is_show_home = 0;
+                    $data->is_urgent = 0;
+                    break;
+                case 2: // Tampil di Pilihan
+                    $data->is_publish = 1;
+                    $data->is_recommended = 1;
+                    $data->is_show_home = 0;
+                    $data->is_urgent = 0;
+                    break;
+                case 3: // Tampil di Terbaru
+                    $data->is_publish = 1;
+                    $data->is_recommended = 0;
+                    $data->is_show_home = 1;
+                    $data->is_urgent = 0;
+                    break;
+                case 4: // Sembunyikan
+                    $data->is_publish = 0;
+                    $data->is_recommended = 0;
+                    $data->is_show_home = 0;
+                    $data->is_urgent = 0;
+                    break;
+                case 5: // Mendesak
+                    $data->is_publish = 1;
+                    $data->is_recommended = 0;
+                    $data->is_show_home = 0;
+                    $data->is_urgent = 1;
+                    break;
             }
 
-            $filename          = str_replace([' ', '-', '&', ':'], '_', trim($request->title));
-            $filename          = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
+            $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->title));
+            $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
 
-            // Handle image upload
-            if ($request->file('img_primary') !== null) {
+            // Handle primary image upload
+            if ($request->file('img_primary')) {
                 $filei = $request->file('img_primary');
-                $imageFilename = $filename . '.' . $filei->getClientOriginalExtension();
-                $filei->move(public_path('public/images/program'), $imageFilename);
-                $data->image = $imageFilename;
+                $filei->storeAs('images/program', $filename.'.'.$filei->getClientOriginalExtension(), 'public_uploads');
+                $data->image = $filename.'.'.$filei->getClientOriginalExtension();
 
-                // Jika same_as_thumbnail true, gunakan gambar utama sebagai thumbnail
-                if ($request->same_as_thumbnail) {
-                    $data->thumbnail = $imageFilename;
-                    $data->same_as_thumbnail = true;
+                // Jika same_as_thumbnail true, update thumbnail juga
+                if ($data->same_as_thumbnail) {
+                    $data->thumbnail = $data->image;
                 }
             }
 
-            // Handle thumbnail upload (jika same_as_thumbnail false atau diubah dari true ke false)
-            if (!$request->same_as_thumbnail && $request->file('thumbnail')) {
-                $request->validate([
-                    'thumbnail' => 'required|file',
-                ], [
-                    'thumbnail.required' => 'Kolom thumbnail wajib diisi ketika tidak menggunakan gambar utama sebagai thumbnail.',
-                    'thumbnail.file' => 'Kolom thumbnail harus berupa file.',
-                ]);
-
+            // Handle thumbnail upload (hanya jika same_as_thumbnail false)
+            if (!$data->same_as_thumbnail && $request->file('thumbnail')) {
                 $filet = $request->file('thumbnail');
                 $thumbnailFilename = 'thumbnail_' . $filename . '.' . $filet->getClientOriginalExtension();
-                $filet->move(public_path('public/images/program'), $thumbnailFilename);
+                $filet->storeAs('images/program', $thumbnailFilename, 'public_uploads');
                 $data->thumbnail = $thumbnailFilename;
-                $data->same_as_thumbnail = false;
             }
 
-            // Handle case ketika same_as_thumbnail diubah dari true ke false tanpa upload thumbnail baru
-            if (!$request->same_as_thumbnail && !$request->file('thumbnail') && $data->same_as_thumbnail) {
-                // Jika sebelumnya same_as_thumbnail true dan diubah ke false tanpa upload thumbnail baru
-                // Kita bisa mempertahankan thumbnail lama atau mengembalikan error
-                // Contoh: kembalikan error
-                throw ValidationException::withMessages([
-                    'thumbnail' => 'Anda harus mengupload thumbnail baru ketika memilih untuk menggunakan thumbnail berbeda.'
-                ]);
+            // Jika same_as_thumbnail true dan tidak ada upload gambar utama baru,
+            // tetapi sebelumnya thumbnail berbeda, update thumbnail dari gambar utama yang ada
+            if ($data->same_as_thumbnail && !$request->file('img_primary') && $data->image && $data->thumbnail != $data->image) {
+                $data->thumbnail = $data->image;
             }
 
-            // Handle case ketika same_as_thumbnail diubah dari false ke true
-            if ($request->same_as_thumbnail && !$data->same_as_thumbnail) {
-                // Gunakan gambar utama sebagai thumbnail
-                if (isset($data->image)) {
-                    $data->thumbnail = $data->image;
-                    $data->same_as_thumbnail = true;
-                }
-            }
-
-            $data->updated_by  = Auth::user()->id;
-            $data->updated_at  = date('Y-m-d H:i:s');
+            $data->updated_by = Auth::user()->id;
+            $data->updated_at = now();
             $data->save();
-            $program_id        = $data->id;
 
-            return redirect(route('adm.program.index'))->with('success', 'Berhasil mengubah program baru');
+            return redirect(route('adm.program.index'))->with('success', 'Berhasil mengubah program');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal update, ada kesalahan teknis' . $e);
+            return redirect()->back()->with('error', 'Gagal update: ' . $e->getMessage());
         }
     }
 

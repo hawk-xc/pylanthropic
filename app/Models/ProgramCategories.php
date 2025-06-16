@@ -19,9 +19,25 @@ class ProgramCategories extends Model
     protected $table    = 'program_categories';
     protected $fillable = [
         'program_id',
-        'program_category_id', 
+        'program_category_id',
         'is_active ',
         'created_at',
         'updated_at'
     ];
+
+    /**
+     * Relasi ke Program
+     */
+    public function program()
+    {
+        return $this->belongsTo(Program::class);
+    }
+
+    /**
+     * Relasi ke ProgramCategory
+     */
+    public function category()
+    {
+        return $this->belongsTo(ProgramCategory::class, 'program_category_id');
+    }
 }

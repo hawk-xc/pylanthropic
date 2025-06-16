@@ -20,7 +20,7 @@ class ProgramCategory extends Model
     protected $fillable = [
         'name',
         'slug',
-        'sort_number', 
+        'sort_number',
         'icon',
         'is_show ',
         'created_at',
@@ -28,4 +28,23 @@ class ProgramCategory extends Model
         'updated_at',
         'updated_by'
     ];
+
+    /**
+     * Relasi many-to-many dengan Program melalui tabel pivot ProgramCategories
+     */
+    public function programs()
+    {
+        return $this->belongsToMany(Program::class, 'program_categories', 'program_category_id', 'program_id')
+                    ->using(ProgramCategories::class)
+                    ->withPivot('is_active')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Relasi ke tabel pivot untuk akses langsung
+     */
+    public function programCategories()
+    {
+        return $this->hasMany(ProgramCategories::class, 'program_category_id');
+    }
 }

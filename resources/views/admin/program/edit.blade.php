@@ -166,6 +166,21 @@
                         <div class="mt-2 text-danger">{{ $message }}</div>
                     @enderror
                 </div>
+                <div class="col-12">
+                    <div class="mt-2 p-3 rounded" style="background-color: rgb(224, 243, 255);">
+                        <div class="form-check d-flex align-items-center">
+                            <input class="form-check-input input-lg mb-2" type="checkbox" name="is_islami"
+                                id="is_islami" @checked($program->is_islami == 1)>
+                            <label class="form-check-label fw-bold" for="is_islami">
+                                Program Islami
+                            </label>
+                        </div>
+                        <small class="text-dark">
+                            Centang jika program memiliki nuansa atau nilai-nilai Islami, seperti adanya tausiyah, doa
+                            bersama, atau tema Islami lainnya.
+                        </small>
+                    </div>
+                </div>
 
                 <div class="divider mt-4"></div>
 
@@ -198,8 +213,11 @@
                 <div class="col-6">
                     <label class="form-label fw-semibold">Gambar Utama (600 x 320 px)</label>
                     <input type="file" class="form-control form-control-sm" name="img_primary">
+                    {{-- start image preview --}}
+                    <img id="primary_image_preview" src="" class="mt-2 img-preview w-100">
+                    {{-- end image preview --}}
                     @if (isset($program->image) && $program->image != '')
-                        <img src="{{ asset('public/images/program/' . $program->image) }}"
+                        <img id="primary_image_main" src="{{ asset('public/images/program/' . $program->image) }}"
                             class="mt-2 img-preview w-100">
                     @else
                         <div class="mt-2 text-danger">Belum ada gambar utama</div>
@@ -222,8 +240,11 @@
                 <div class="col-6">
                     <label class="form-label fw-semibold">Thumbnail (292 x 156 px)</label>
                     <input type="file" class="form-control form-control-sm" name="thumbnail">
+                    {{-- start image preview --}}
+                    <img id="thumbnail_image_preview" src="" class="mt-2 img-preview w-100">
+                    {{-- end image preview --}}
                     @if (isset($program->thumbnail) && $program->thumbnail != '')
-                        <img src="{{ asset('public/images/program/' . $program->thumbnail) }}"
+                        <img id="thumbnail_image_main" src="{{ asset('public/images/program/' . $program->thumbnail) }}"
                             class="mt-2 img-preview w-100">
                     @else
                         <div class="mt-2 text-danger">Belum ada thumbnail</div>
@@ -402,7 +423,10 @@
             });
 
             function toggleThumbnailInput() {
-                if ($('#same_as_thumbnail').is(':checked') || {{ old('same_as_thumbnail') }}) {
+                // Periksa apakah checkbox dicentang atau ada nilai old dari Laravel
+                var isChecked = $('#same_as_thumbnail').is(':checked') || {{ old('same_as_thumbnail', 'false') }};
+
+                if (isChecked) {
                     // Jika checkbox dicentang, sembunyikan input thumbnail
                     $('input[name="thumbnail"]').closest('.col-6').hide();
                     // Hapus required attribute jika ada
@@ -411,9 +435,35 @@
                     // Jika checkbox tidak dicentang, tampilkan input thumbnail
                     $('input[name="thumbnail"]').closest('.col-6').show();
                     // Tambahkan required attribute kembali
-                    $('input[name="thumbnail"]').attr('required', 'required');
+                    // $('input[name="thumbnail"]').attr('required', 'required');
                 }
             }
+
+            $('input[name="img_primary"]').change(function(e) {
+                if (this.files && this.files[0]) {
+                    var reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        $('#primary_image_preview').attr('src', e.target.result).show();
+                        $('#primary_image_main').hide();
+                    }
+
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+
+            $('input[name="thumbnail"]').change(function(e) {
+                if (this.files && this.files[0]) {
+                    var reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        $('#thumbnail_image_preview').attr('src', e.target.result).show();
+                        $('#thumbnail_image_main').hide();
+                    }
+
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
         });
 
         $("#program_title").on("keyup change", function() {
@@ -533,6 +583,9 @@
                 'bold italic backcolor | alignleft aligncenter ' +
                 'alignright alignjustify | bullist numlist outdent indent | ' +
                 'removeformat | help | image',
+
+            // Menambahkan menu konteks (klik kanan)
+            contextmenu: 'paste | link image inserttable | cell row column deletetable',
 
             // Konfigurasi khusus untuk gambar
             image_dimensions: true, // Aktifkan pengaturan dimensi

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use \App\Models\ProgramCategory;
 use Illuminate\Database\Eloquent\Model;
 
 class Program extends Model
@@ -50,4 +51,23 @@ class Program extends Model
         // new column
         'same_as_thumbnail'
     ];
+
+    /**
+     * Relasi many-to-many dengan ProgramCategory melalui tabel pivot ProgramCategories
+     */
+    public function categories()
+    {
+        return $this->belongsToMany(ProgramCategory::class, 'program_categories', 'program_id', 'program_category_id')
+            ->using(ProgramCategories::class)
+            ->withPivot('is_active')
+            ->withTimestamps();
+    }
+
+    /**
+     * Relasi ke tabel pivot untuk akses langsung
+     */
+    public function programCategories()
+    {
+        return $this->hasMany(ProgramCategories::class, 'program_id');
+    }
 }
