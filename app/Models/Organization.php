@@ -39,6 +39,6 @@ class Organization extends Model
 
     public function program()
     {
-        return $this->belongsTo(Program::class, 'program_id', 'id');
+        return $this->hasMany(Program::class, 'organization_id', 'id');
     }
 }

@@ -73,6 +73,6 @@ class Program extends Model
 
     public function programOrganization()
     {
-        return $this->hasOne(Organization::class, 'id', 'organization_id');
+        return $this->belongsTo(Organization::class, 'organization_id');
     }
 }
