@@ -287,28 +287,54 @@ class ProgramCategoryController extends Controller
     public function datatableProgramCategoryDetail(Request $request)
     {
         $category_id = $request->category_id;
-
         $category = ProgramCategory::findOrFail($category_id);
 
-        // Get pivot records with programs and organization
+        // Gunakan query builder dengan eager loading yang benar
         $query = $category->programCategories()
-            ->with(['program' => function($query) {
-                $query->select('id', 'title', 'slug', 'organization_id', 'donate_sum')
-                      ->with('programOrganization:id,name');
-            }]);
+            ->with([
+                'program' => function($query) {
+                    $query->select('id', 'title', 'slug', 'donate_sum', 'organization_id') // Pastikan organization_id termasuk
+                        ->with(['programOrganization' => function($query) {
+                            $query->select('id', 'name');
+                        }]);
+                }
+            ]);
 
         return DataTables::of($query)
             ->addColumn('title', function($pivot) {
-                return $pivot->program->title;
+                return $pivot->program->title ?? '-';
             })
             ->addColumn('organization', function($pivot) {
+                // Debugging - uncomment untuk melihat struktur data
+                // logger(json_encode($pivot->program->programOrganization));
                 return $pivot->program->programOrganization->name ?? '-';
             })
             ->addColumn('donate', function($pivot) {
-                return 'Rp ' . number_format((float)$pivot->program->donate_sum, 0, ',', '.');
+                return 'Rp ' . number_format((float)($pivot->program->donate_sum ?? 0), 0, ',', '.');
             })
             ->addColumn('action', function($pivot) {
-                return '<a href="'.route('program.index', $pivot->program->slug).'" class="edit btn btn-info btn-xs mb-1" title="Link" target="_blank"><i class="fa fa-external-link-alt"></i></a>';
+                $slug = $pivot->program->slug ?? '';
+                return $slug ? '<a href="'.route('program.index', $slug).'" class="edit btn btn-info btn-xs mb-1" title="Link" target="_blank"><i class="fa fa-external-link-alt"></i></a>' : '';
+            })
+            ->filter(function ($query) use ($request) {
+                if ($request->has('search') && !empty($request->search['value'])) {
+                    $search = $request->search['value'];
+                    $query->whereHas('program', function($q) use ($search) {
+                        $q->where('title', 'like', '%'.$search.'%')
+                          ->orWhereHas('programOrganization', function($q) use ($search) {
+                              $q->where('name', 'like', '%'.$search.'%');
+                          });
+                    });
+                }
+            })
+            ->orderColumn('title', function($query, $order) {
+                $query->join('programs', 'program_categories.program_id', '=', 'programs.id')
+                    ->orderBy('programs.title', $order);
+            })
+            ->orderColumn('organization', function($query, $order) {
+                $query->join('programs', 'program_categories.program_id', '=', 'programs.id')
+                    ->leftJoin('organizations', 'programs.organization_id', '=', 'organizations.id')
+                    ->orderBy('organizations.name', $order);
             })
             ->rawColumns(['action'])
             ->make(true);
