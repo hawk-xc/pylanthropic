@@ -112,6 +112,8 @@ Route::group([
         // donatur loyal datatable-all
         Route::get('/donatur-loyal-datatables', [Admin\DonaturLoyalController::class, 'datatablesDonaturLoyal'])->name('donatur-loyal.datatables');
         Route::get('/program-category-datatables', [Admin\ProgramCategoryController::class, 'datatablesProgramCategory'])->name('program-category.datatables');
+        // program detail on category datatable
+        Route::get('/program-in-detail-category-datatables', [Admin\ProgramCategoryController::class, 'datatableProgramCategoryDetail'])->name('program-in-detail-category.datatables');
 
         // PROGRAM
         Route::get('/program-show-donate', [Admin\ProgramController::class, 'showDonate'])->name('program.show.donate');

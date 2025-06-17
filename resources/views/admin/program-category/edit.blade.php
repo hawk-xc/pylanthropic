@@ -15,6 +15,63 @@
             content: "*";
             color: red;
         }
+
+        .required:after {
+            content: "*";
+            color: red;
+        }
+
+        .sort-box-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .sort-box {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #dee2e6;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            background-color: white;
+        }
+
+        .sort-box:hover {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .sort-box.active {
+            background-color: #0d6efd;
+            color: white;
+            border-color: #0d6efd;
+        }
+
+        .sort-box.disabled {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+            border-color: #ced4da;
+        }
+
+        .sort-box.disabled:hover {
+            box-shadow: none;
+            border-color: #ced4da;
+        }
+
+        .load-more-btn {
+            margin-top: 15px;
+        }
+
+        #sort-value {
+            font-weight: bold;
+        }
     </style>
 @endsection
 
@@ -46,9 +103,10 @@
                 </div>
             @endif
 
-            <form action="{{ route('adm.program-category.store') }}" method="post" enctype="multipart/form-data"
-                accept-charset="utf-8" class="row gy-3">
+            <form action="{{ route('adm.program-category.update', $category->id) }}" method="post"
+                enctype="multipart/form-data" accept-charset="utf-8" class="row gy-3">
                 @csrf
+                @method('PUT')
                 <div class="col-12">
                     <label class="form-label fw-semibold">Nama Kategori (max 50 karakter) {!! printRequired() !!} - <span
                             id="count_title" class="fw-normal"></span></label>
@@ -72,8 +130,34 @@
                     </div>
                 </div>
 
+                {{-- sort box --}}
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Urutan Kategori {!! printRequired() !!}</label>
+                    <p>Pilih posisi urutan untuk kategori ini. Posisi yang sudah terisi ditandai dengan warna abu-abu.</p>
+
+                    <input type="hidden" name="sort_number" id="sort-input" value="{{ old('sort_number', '') }}" required>
+                    <p>Posisi saat ini: <span id="sort-in_edit">{{ $category->sort_number }}</span></p>
+                    <p id="sort-value_container" hidden>Posisi terpilih: <span id="sort-value">Belum dipilih</span></p>
+
+                    <div class="sort-box-container" id="sort-boxes">
+                        {{-- sort box --}}
+                    </div>
+
+                    <button type="button" class="btn btn-sm btn-outline-secondary load-more-btn" id="load-more">
+                        Tampilkan lebih banyak
+                    </button>
+
+                    @error('sort_number')
+                        <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i> {{ $message }}</div>
+                    @enderror
+                </div>
+
                 <div class="col-12 p-3">
                     <div class="d-flex flex-row border p-3 rounded">
+                        <div id="imageContainer" class="col-2 d-flex justify-content-center align-items-center">
+                            <img src="{{ asset('public/images/categories/' . $category->icon) }}" alt=""
+                                class="img-fluid" />
+                        </div>
                         <div id="inputFileContainer" class="col-12">
                             <label class="form-label fw-semibold">Logo Kategori {!! printRequired() !!}</label>
                             <input type="file" class="form-control form-control-sm" name="logo_image" id="imageUpload">
@@ -214,6 +298,60 @@
                 document.getElementById('url').removeAttribute('readonly');
             } else {
                 document.getElementById('url').readOnly = true;
+            }
+        });
+
+        $(document).ready(function() {
+            // Kode yang sudah ada tetap sama
+
+            // Fungsi untuk mengelola kotak urutan
+            let currentMax = 10;
+            const occupiedPositions = @json($occupiedPositions ?? []); // Data dari controller
+
+            function renderSortBoxes(max) {
+                $('#sort-boxes').empty();
+                for (let i = 1; i <= max; i++) {
+                    const isOccupied = occupiedPositions.includes(i);
+                    const isSelected = $('#sort-input').val() == i;
+
+                    const box = $('<div>')
+                        .addClass('sort-box')
+                        .addClass(isOccupied ? 'disabled' : '')
+                        .addClass(isSelected ? 'active' : '')
+                        .text(i)
+                        .attr('data-value', i);
+
+                    if (!isOccupied) {
+                        box.on('click', function() {
+                            $('#sort-value_container').removeAttr('hidden');
+                            $('.sort-box').removeClass('active');
+                            $(this).addClass('active');
+                            $('#sort-input').val(i);
+                            $('#sort-value').text(i);
+                        });
+                    }
+
+                    $('#sort-boxes').append(box);
+                }
+            }
+
+            // Inisialisasi kotak urutan
+            renderSortBoxes(currentMax);
+
+            // Tombol "Tampilkan lebih banyak"
+            $('#load-more').on('click', function() {
+                currentMax += 10;
+                renderSortBoxes(currentMax);
+
+                if (currentMax >= 50) { // Batas maksimal
+                    $(this).prop('disabled', true);
+                }
+            });
+
+            // Set nilai awal jika ada dari old input
+            if ($('#sort-input').val()) {
+                $('#sort-value_container').removeAttr('hidden');
+                $('#sort-value').text($('#sort-input').val());
             }
         });
     </script>

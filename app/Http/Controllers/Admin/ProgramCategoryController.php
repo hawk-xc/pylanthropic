@@ -24,7 +24,11 @@ class ProgramCategoryController extends Controller
      */
     public function create()
     {
-        return view('admin.program-category.create');
+        $occupiedPositions = ProgramCategory::pluck('sort_number')->toArray();
+
+        return view('admin.program-category.create', [
+            'occupiedPositions' => $occupiedPositions
+        ]);
     }
 
     /**
@@ -35,7 +39,8 @@ class ProgramCategoryController extends Controller
         $request->validate([
             'title' => 'required|string',
             'url' => 'required|string|unique:program_category,slug',
-            'logo_image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:5120'
+            'logo_image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:5120',
+            'sort_number' => 'required|integer|unique:program_category,sort_number'
         ], [
             'title.required' => 'Judul harus diisi.',
             'title.string' => 'Judul harus berupa teks.',
@@ -45,21 +50,17 @@ class ProgramCategoryController extends Controller
             'logo_image.image' => 'Logo harus berupa gambar.',
             'logo_image.mimes' => 'Logo harus berupa file bertipe: jpeg, png, jpg, gif, svg.',
             'logo_image.max' => 'Logo tidak boleh lebih besar dari 2048 kilobytes.',
+            'sort_number.required' => 'Nomor urut harus diisi.',
+            'sort_number.integer' => 'Nomor urut harus berupa angka.',
+            'sort_number.unique' => 'Nomor urut sudah digunakan.',
         ]);
 
-        $latestCategory = ProgramCategory::latest()->first();
-
-        if ($latestCategory) {
-            $sortNumber = $latestCategory->sort_number + 1;
-        } else {
-            $sortNumber = 1;
-        }
 
         try {
             $programCategory = new ProgramCategory();
             $programCategory->name = $request->title;
             $programCategory->slug = Str::slug($request->url);
-            $programCategory->sort_number = $sortNumber;
+            $programCategory->sort_number = $request->sort_number;
             $programCategory->created_by = auth()->user()->id;
             $programCategory->is_show = $request->has('is_show') ? 1 : 0;
 
@@ -88,7 +89,24 @@ class ProgramCategoryController extends Controller
     {
         $category = ProgramCategory::findOrFail($id);
 
-        return view('admin.program-category.show', compact('category'));
+        $pivotRecords = $category->programCategories()
+            ->with('program:id,title,donate_sum')
+            ->get();
+
+            $data = [];
+
+        $programs = $pivotRecords->map(function($pivotRecord) {
+            $data[] = $pivotRecord;
+            return $pivotRecord->program;
+        });
+
+        $totalDonations = $programs->sum('donate_sum');
+
+        return view('admin.program-category.show', [
+            'category' => $category,
+            'totalPrograms' => $programs,
+            'totalDonations' => $totalDonations
+        ]);
     }
 
     /**
@@ -97,9 +115,11 @@ class ProgramCategoryController extends Controller
     public function edit(string $id)
     {
         $category = ProgramCategory::findOrFail($id);
+        $occupiedPositions = ProgramCategory::pluck('sort_number')->toArray();
 
         return view('admin.program-category.edit', [
             'category' => $category,
+            'occupiedPositions' => $occupiedPositions
         ]);
     }
 
@@ -108,7 +128,55 @@ class ProgramCategoryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'title' => 'required|string',
+            'url' => 'required|string|unique:program_category,slug,' . $id,
+            'logo_image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:5120',
+            'sort_number' => 'unique:program_category,sort_number'
+        ], [
+            'title.required' => 'Judul harus diisi.',
+            'title.string' => 'Judul harus berupa teks.',
+            'url.required' => 'URL harus diisi.',
+            'url.string' => 'URL harus berupa teks.',
+            'url.unique' => 'URL sudah digunakan.',
+            'logo_image.image' => 'Logo harus berupa gambar.',
+            'logo_image.mimes' => 'Logo harus berupa file bertipe: jpeg, png, jpg, gif, svg.',
+            'logo_image.max' => 'Logo tidak boleh lebih besar dari 2048 kilobytes.',
+            'sort_number.unique' => 'Nomor urut sudah digunakan.',
+        ]);
+
+        try {
+            $programCategory = ProgramCategory::findOrFail($id);
+            $programCategory->name = $request->title;
+            $programCategory->slug = Str::slug($request->url);
+            $programCategory->is_show = $request->has('is_show') ? 1 : 0;
+
+            if ($request->sort_number !== null) {
+                $programCategory->sort_number = $request->sort_number;
+            }
+
+            if ($request->hasFile('logo_image')) {
+                $logoImage = $request->file('logo_image');
+                $logoImageName = time() . '.' . $logoImage->getClientOriginalExtension();
+
+                $destinationPath = public_path('public/images/categories');
+
+                if ($programCategory->icon && file_exists($destinationPath . '/' . $programCategory->icon)) {
+                    unlink($destinationPath . '/' . $programCategory->icon);
+                }
+
+                $logoImage->move($destinationPath, $logoImageName);
+
+                $programCategory->icon = $logoImageName;
+            }
+
+            $programCategory->save();
+
+            return redirect()->route('adm.program-category.index')->with('success', 'Program Category berhasil diperbarui.');
+        } catch (\Exception $e) {
+            dd($e);
+            return redirect()->route('adm.program-category.index')->with('error', 'Terjadi kesalahan saat memperbarui Program Category.');
+        }
     }
 
     /**
@@ -116,7 +184,14 @@ class ProgramCategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $category = ProgramCategory::find($id);
+
+        if ($category) {
+            $category->delete();
+            return redirect()->route('adm.program-category.index')->with('success', 'Program Category berhasil dihapus.');
+        } else {
+            return redirect()->route('adm.program-category.index')->with('error', 'Program Category tidak ditemukan.');
+        }
     }
 
     /**
@@ -149,6 +224,9 @@ class ProgramCategoryController extends Controller
         ]);
     }
 
+    /**
+     * Display all data from resource.
+     */
     public function datatablesProgramCategory(Request $request)
     {
         $data = ProgramCategory::withCount('programs')->orderBy('sort_number', 'asc');
@@ -204,6 +282,36 @@ class ProgramCategoryController extends Controller
             })
             ->rawColumns(['name', 'is_show', 'program_count', 'action'])
             ->toJson();
+    }
+
+    public function datatableProgramCategoryDetail(Request $request)
+    {
+        $category_id = $request->category_id;
+
+        $category = ProgramCategory::findOrFail($category_id);
+
+        // Get pivot records with programs and organization
+        $query = $category->programCategories()
+            ->with(['program' => function($query) {
+                $query->select('id', 'title', 'slug', 'organization_id', 'donate_sum')
+                      ->with('programOrganization:id,name');
+            }]);
+
+        return DataTables::of($query)
+            ->addColumn('title', function($pivot) {
+                return $pivot->program->title;
+            })
+            ->addColumn('organization', function($pivot) {
+                return $pivot->program->programOrganization->name ?? '-';
+            })
+            ->addColumn('donate', function($pivot) {
+                return 'Rp ' . number_format((float)$pivot->program->donate_sum, 0, ',', '.');
+            })
+            ->addColumn('action', function($pivot) {
+                return '<a href="'.route('program.index', $pivot->program->slug).'" class="edit btn btn-info btn-xs mb-1" title="Link" target="_blank"><i class="fa fa-external-link-alt"></i></a>';
+            })
+            ->rawColumns(['action'])
+            ->make(true);
     }
 
     /**
