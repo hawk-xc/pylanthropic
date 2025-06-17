@@ -155,15 +155,17 @@
             },
             columns: [{
                     data: 'title',
-                    name: 'title'
+                    name: 'program.title'
                 },
                 {
                     data: 'organization',
-                    name: 'organization'
+                    name: 'programOrganization.name'
                 },
                 {
                     data: 'donate',
-                    name: 'donate'
+                    name: 'program.donate_sum',
+                    orderable: true,
+                    searchable: false
                 },
                 {
                     data: 'action',
@@ -175,8 +177,8 @@
             columnDefs: [{
                 "width": "22%",
                 "targets": 0
-            }],
-            order: []
+            }]
+            // Hapus order: [] untuk mengaktifkan sorting default
         });
 
         $('#refresh_table_category-program').on('click', function() {

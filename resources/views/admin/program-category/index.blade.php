@@ -341,7 +341,8 @@
             },
             columns: [{
                     data: 'name',
-                    name: 'name'
+                    name: 'name',
+                    orderable: true,
                 },
                 {
                     data: 'is_show',
