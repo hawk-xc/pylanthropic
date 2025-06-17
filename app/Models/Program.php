@@ -70,4 +70,9 @@ class Program extends Model
     {
         return $this->hasMany(ProgramCategories::class, 'program_id');
     }
+
+    public function programOrganization()
+    {
+        return $this->hasOne(Organization::class, 'id', 'organization_id');
+    }
 }

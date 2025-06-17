@@ -19,7 +19,7 @@ class Organization extends Model
     protected $table    = 'organization';
     protected $fillable = [
         'uuid',
-        'name', 
+        'name',
         'phone',
         'email',
         'password',
@@ -36,4 +36,9 @@ class Organization extends Model
         'created_by',
         'updated_by'
     ];
+
+    public function program()
+    {
+        return $this->belongsTo(Program::class, 'program_id', 'id');
+    }
 }
