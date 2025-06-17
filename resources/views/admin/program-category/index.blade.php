@@ -349,7 +349,9 @@
                 },
                 {
                     data: 'program_count',
-                    name: 'programs_count'
+                    name: 'programs_count',
+                    orderable: false,
+                    searchable: false
                 },
                 {
                     data: 'action',
