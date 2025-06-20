@@ -306,62 +306,8 @@
 
 
     @section('content_modal')
-        <!-- Modal Edit Status -->
-        {{-- <div class="modal fade" id="modal_status" tabindex="-1" aria-labelledby="exampleModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog modal-md">
-                <div class="modal-content">
-                    <div class="modal-header pt-2 pb-2">
-                        <h1 class="modal-title fs-5" id="modalTitle">Modal title</h1>
-                        <button type="button" class="btn-close pt-4" data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body text-center pt-4">
-                        <input type="radio" class="btn-check" name="status" id="status_draft" autocomplete="off"
-                            value="draft">
-                        <label class="btn btn-outline-primary" for="status_draft">Belum Dibayar</label>
-                        <input type="radio" class="btn-check" name="status" id="status_paid" autocomplete="off"
-                            value="success">
-                        <label class="btn btn-outline-success" for="status_paid">Sudah Dibayar</label>
-                        <input type="radio" class="btn-check" name="status" id="status_cancel" autocomplete="off"
-                            value="cancel">
-                        <label class="btn btn-outline-danger" for="status_cancel">Dibatalkan</label>
-                        <div class="mt-2 " style="width: 68%; margin: auto;">
-                            <div class="input-group input-group-sm">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text">RP</span>
-                                </div>
-                                <input class="form-control form-control-sm" id="rupiah" name="amount"
-                                    placeholder="0" type="text" value="" />
-                                <div class="input-group-append">
-                                    <span class="input-group-text">
-                                        <div class="form-check big-checkbox mb-0 ms-1">
-                                            <input class="form-check-input" type="checkbox" value=""
-                                                id="checkgenap">
-                                            <label class="form-check-label" for="checkgenap"> Genapkan</label>
-                                        </div>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-check form-switch mt-2">
-                            <input class="form-check-input" type="checkbox" name="sendwa" checked role="switch"
-                                id="checkboxwa">
-                            <label class="form-check-label" for="checkboxwa">Kirim WA Terimakasih?</label>
-                        </div>
-                    </div>
-                    <div class="modal-footer pt-2 pb-2">
-                        <input type="hidden" id="id_trans" name="id_trans" value="">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                        <button type="button" class="btn btn-primary" id="save_status">Simpan</button>
-                    </div>
-                </div>
-            </div>
-        </div> --}}
-
         <!-- Modal Tambah Donatur Loyal -->
-        <div class="modal fade" id="modal_donatur_loyal" tabindex="-1" aria-labelledby="donaturModalLabel"
-            aria-hidden="true">
+        <div class="modal fade" id="modal_donatur_loyal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true" aria-labelledby="donaturModalLabel">
             <div class="modal-dialog modal-md">
                 <div class="modal-content">
                     <form id="donaturLoyalForm" action="{{ route('adm.donatur-loyal.store') }}" method="post">
@@ -407,7 +353,7 @@
                                     </div>
                                     <input class="form-control form-control-lg" id="rupiah" name="amount"
                                         placeholder="0" type="text" value="" />
-                                    <div class="input-group-append">
+                                    {{-- <div class="input-group-append">
                                         <span class="input-group-text">
                                             <div class="form-check big-checkbox mb-0 ms-1">
                                                 <input class="form-check-input" type="checkbox" value=""
@@ -415,7 +361,7 @@
                                                 <label class="form-check-label" for="checkgenap"> Genapkan</label>
                                             </div>
                                         </span>
-                                    </div>
+                                    </div> --}}
                                 </div>
                                 @error('amount')
                                     <div class="invalid-feedback d-block">
@@ -435,7 +381,7 @@
                                         id="_status">Aktif</span>)</label>
                                 <input type="hidden" name="status_donasi_tetap_hidden" id="status_donasi_tetap_hidden"
                                     value="1">
-                            </div>
+                            </div> 
                         </div>
                         <div class="modal-footer pt-2 pb-2">
                             <input type="hidden" id="id_trans" name="id_trans" value="">
@@ -466,7 +412,7 @@
                         <div class="modal-body text-start pt-4">
                             <div class="mb-3">
                                 <label class="form-label fw-semibold required">Pilih Program</label>
-                                <input type="text" class="form-control form-control-sm" name="edit_program"
+                                <input type="text" class="form-control form-control-sm" name="program"
                                     id="edit_program" disabled>
                                 @error('edit_program')
                                     <div class="invalid-feedback d-block">
@@ -493,7 +439,7 @@
                                     </div>
                                     <input class="form-control form-control-lg" id="edit_rupiah" name="amount"
                                         placeholder="0" type="text" value="" />
-                                    <div class="input-group-append">
+                                    {{-- <div class="input-group-append">
                                         <span class="input-group-text">
                                             <div class="form-check big-checkbox mb-0 ms-1">
                                                 <input class="form-check-input" type="checkbox" value=""
@@ -501,7 +447,7 @@
                                                 <label class="form-check-label" for="checkgenap"> Genapkan</label>
                                             </div>
                                         </span>
-                                    </div>
+                                    </div> --}}
                                 </div>
                                 @error('amount')
                                     <div class="invalid-feedback d-block">
@@ -582,6 +528,30 @@
             .toast.show {
                 transform: translateY(0);
                 opacity: 1;
+            }
+
+            .select2-container {
+                z-index: 999999 !important;
+            }
+
+            .select2-dropdown {
+                z-index: 999999 !important;
+            }
+
+            .select2-results__options {
+                z-index: 999999 !important;
+            }
+
+            .modal {
+                z-index: 1050 !important;
+            }
+
+            .modal-backdrop {
+                z-index: 1040 !important;
+            }
+
+            .select2-container--open {
+                z-index: 999999 !important;
             }
         </style>
 
@@ -1374,6 +1344,7 @@
         <script type="text/javascript">
             $(document).ready(function() {
                 $("#program-select2").select2({
+                    dropdownParent: $('#modal_donatur_loyal'),
                     placeholder: 'Cari Program',
                     theme: 'bootstrap-5',
                     allowClear: true,
