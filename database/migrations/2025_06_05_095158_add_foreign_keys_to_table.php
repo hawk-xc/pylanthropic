@@ -1,8 +1,9 @@
 <?php
 
-use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
 
 return new class extends Migration
 {
@@ -11,22 +12,28 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // donatur loyal schema
+        // 1. Ubah donatur.id menjadi unsigned
+        DB::statement('ALTER TABLE donatur MODIFY id BIGINT UNSIGNED AUTO_INCREMENT');
+        
+        // 2. Ubah program.id menjadi unsigned (jika belum)
+        DB::statement('ALTER TABLE program MODIFY id BIGINT UNSIGNED AUTO_INCREMENT');
+        
+        // 3. Tambahkan foreign keys setelah memastikan semua tipe cocok
         Schema::table('donatur_loyal', function (Blueprint $table) {
-            if (!Schema::hasColumn('donatur_loyal', 'donatur_id')) {
-                $table->unsignedBigInteger('donatur_id');
-            }
-
-            $table->foreign('donatur_id')->references('id')->on('donatur')->onDelete('cascade');
-        });
-
-        // program schema
-        Schema::table('donatur_loyal', function (Blueprint $table) {
-            if (!Schema::hasColumn('donatur_loyal', 'program_id')) {
-                $table->unsignedBigInteger('program_id');
-            }
-
-            $table->foreign('program_id')->references('id')->on('program')->onDelete('cascade');
+            // Pastikan kolom referensi juga unsigned
+            $table->unsignedBigInteger('donatur_id')->change();
+            $table->unsignedBigInteger('program_id')->change();
+            
+            // Tambahkan foreign keys
+            $table->foreign('donatur_id')
+                  ->references('id')
+                  ->on('donatur')
+                  ->onDelete('cascade');
+            
+            $table->foreign('program_id')
+                  ->references('id')
+                  ->on('program')
+                  ->onDelete('cascade');
         });
     }
 
@@ -37,10 +44,11 @@ return new class extends Migration
     {
         Schema::table('donatur_loyal', function (Blueprint $table) {
             $table->dropForeign(['donatur_id']);
-        });
-
-        Schema::table('donatur_loyal', function (Blueprint $table) {
             $table->dropForeign(['program_id']);
         });
+        
+        // Kembalikan ke signed (opsional)
+        DB::statement('ALTER TABLE donatur MODIFY id BIGINT AUTO_INCREMENT');
+        DB::statement('ALTER TABLE program MODIFY id BIGINT AUTO_INCREMENT');
     }
 };
