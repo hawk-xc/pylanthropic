@@ -141,7 +141,7 @@ class DonaturController extends Controller
      */
     public function edit(string $id)
     {
-        $data = \App\Models\Donatur::findOrFail($id)->select($this->donaturColumn);
+        $data = \App\Models\Donatur::select($this->donaturColumn)->findOrFail($id);
 
         return view('admin.donatur.edit', [
             'data' => $data
