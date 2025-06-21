@@ -583,113 +583,119 @@
                 'bold italic backcolor | alignleft aligncenter ' +
                 'alignright alignjustify | bullist numlist outdent indent | ' +
                 'removeformat | help | image',
-
-            // Menambahkan menu konteks (klik kanan)
+                
             contextmenu: 'paste | link image inserttable | cell row column deletetable',
-
-            // Konfigurasi khusus untuk gambar
-            image_dimensions: true, // Aktifkan pengaturan dimensi
-            image_description: true, // Nonaktifkan deskripsi jika tidak diperlukan
-            image_title: true, // Aktifkan title untuk gambar
-
-            // Dialog gambar yang dimodifikasi
-            image_advtab: true, // Aktifkan tab advanced untuk opsi lebih banyak
-            image_caption: true, // Nonaktifkan caption jika tidak diperlukan
-
+            image_advtab: true,
+            image_caption: true,
             images_upload_url: "{{ route('adm.program.image.content.submit') }}",
+                
             images_upload_handler: function(blobInfo, progress) {
                 return new Promise((resolve, reject) => {
                     const formData = new FormData();
                     formData.append('file', blobInfo.blob(), blobInfo.filename());
-
+                
                     const xhr = new XMLHttpRequest();
                     xhr.open('POST', "{{ route('adm.program.image.content.submit') }}", true);
                     xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
-
+                
                     xhr.upload.onprogress = function(e) {
                         progress(e.loaded / e.total * 100);
                     };
-
+                
                     xhr.onload = function() {
                         if (xhr.status < 200 || xhr.status >= 300) {
                             reject('HTTP Error: ' + xhr.status);
                             return;
                         }
-
+                    
                         const json = JSON.parse(xhr.responseText);
-
+                    
                         if (!json || typeof json.location != 'string') {
                             reject('Invalid JSON: ' + xhr.responseText);
                             return;
                         }
-
+                    
                         resolve(json.location);
                     };
-
+                
                     xhr.onerror = function() {
-                        reject('Image upload failed due to a XHR Transport error. Status: ' + xhr
-                            .status);
+                        reject('Image upload failed due to a XHR Transport error. Status: ' + xhr.status);
                     };
-
+                
                     xhr.send(formData);
                 });
             },
-            // Konfigurasi untuk mengontrol gambar
-            image_dimensions: false, // Nonaktifkan pengubahan dimensi otomatis
+            
             image_class_list: [{
                 title: 'Responsive',
                 value: 'img-responsive'
             }],
-            // Style untuk konten editor
+            
             content_style: `
-            body {
-                font-family: Helvetica, Arial, sans-serif;
-                font-size: 16px;
-                max-width: 100%;
-            }
-            img {
-                max-width: 100%;
-                height: auto;
-                display: block;
-                margin: 10px auto;
-            }
-            .img-responsive {
-                max-width: 100%;
-                height: auto;
-            }
-            .mce-content-body {
-                max-width: 800px; /* Sesuaikan dengan lebar maksimal yang Anda inginkan */
-                margin: 0 auto;
-            }
-        `,
+                body {
+                    font-family: Helvetica, Arial, sans-serif;
+                    font-size: 16px;
+                    max-width: 100%;
+                }
+                img {
+                    max-width: 100%;
+                    height: auto;
+                    display: block;
+                    margin: 10px auto;
+                }
+                .img-responsive {
+                    max-width: 100%;
+                    height: auto;
+                }
+                .mce-content-body {
+                    max-width: 800px;
+                    margin: 0 auto;
+                }
+            `,
+            
             setup: function(editor) {
                 editor.on('init', function() {
-                    // Perbaiki path gambar dan konversi lazyload ke src biasa untuk editor
                     let content = editor.getContent();
-
-                    // 1. Perbaiki path gambar relatif
+                    
+                    // Perbaiki path gambar relatif (../../public/images/...)
+                    content = content.replace(
+                        /src="(\.\.\/)+public\/images\/([^"]+)"/g,
+                        'src="{{ url('/') }}/public/images/$2"'
+                    );
+                    
+                    // Perbaiki path yang mungkin tanpa public
                     content = content.replace(
                         /src="(\.\.\/)+images\/([^"]+)"/g,
-                        'src="{{ url('/') }}/images/$2"'
+                        'src="{{ url('/') }}/public/images/$2"'
                     );
-
-                    // 2. Konversi lazyload menjadi src biasa untuk keperluan editor
+                    
+                    // Konversi lazyload ke src biasa untuk editor
                     content = content.replace(
                         /<img[^>]+class="lazyload"[^>]+data-original="([^"]+)"[^>]*>/g,
                         function(match, src) {
-                            return match.replace('class="lazyload"',
-                                    'class="lazyload img-responsive"')
-                                .replace('data-original="' + src + '"', 'src="' + src +
-                                    '" data-original="' + src + '"');
+                            return match.replace('class="lazyload"', 'class="lazyload img-responsive"')
+                                .replace('data-original="' + src + '"', 'src="' + src + '" data-original="' + src + '"');
                         }
                     );
-
+                    
                     editor.setContent(content);
                 });
-
+            
                 // Sebelum disimpan, kembalikan ke format lazyload asli
                 editor.on('BeforeSetContent', function(e) {
                     if (e.content) {
+                        // Perbaiki path gambar sebelum disimpan
+                        e.content = e.content.replace(
+                            /src="(\.\.\/)+public\/images\/([^"]+)"/g,
+                            'src="/public/images/$2"'
+                        );
+                        
+                        e.content = e.content.replace(
+                            /src="(\.\.\/)+images\/([^"]+)"/g,
+                            'src="/public/images/$2"'
+                        );
+                        
+                        // Kembalikan ke format lazyload
                         e.content = e.content.replace(
                             /<img[^>]+class="[^"]*lazyload[^"]*"[^>]+src="([^"]+)"[^>]*>/g,
                             '<img class="lazyload" data-original="$1" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="">'

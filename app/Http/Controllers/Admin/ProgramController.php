@@ -377,6 +377,7 @@ class ProgramController extends Controller
             $data->optimation_fee = $request->optimation_fee;
             $data->show_minus = $request->show_minus;
             $data->same_as_thumbnail = $request->has('same_as_thumbnail');
+            $data->about = $request->story;
 
             // Handle show options
             switch ($request->show) {
