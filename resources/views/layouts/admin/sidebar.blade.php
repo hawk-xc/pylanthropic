@@ -128,6 +128,12 @@
                                 <i class="metismenu-icon"></i> Lembaga
                             </a>
                         </li>
+                        <li>
+                            <a href="{{ route('adm.shorten-link.index') }}"
+                                class="{{ $sidebar_submenu == 'shorten_link' ? 'mm-active' : '' }}">
+                                <i class="metismenu-icon"></i> Tautan Pendek
+                            </a>
+                        </li>
                     </ul>
                 </li>
                 <li class="{{ $sidebar_menu == 'leads' ? 'mm-active' : '' }}">
