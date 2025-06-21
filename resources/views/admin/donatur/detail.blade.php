@@ -120,9 +120,10 @@
                     <thead>
                         <tr>
                             <th>Periode Setiap</th>
-                            <th>Status</th>
                             <th>Nominal</th>
                             <th>Program</th>
+                            <th>Deskripsi/Keterangan</th>
+                            <th>Status</th>
                             <th>Aksi</th>
                         </tr>
                     </thead>
@@ -1579,12 +1580,17 @@
                             "targets": 2
                         },
                         {
-                            "width": "35%",
+                            "width": "30%",
                             "targets": 3
                         },
                         {
-                            "width": "16%",
+                            "width": "10%",
                             "targets": 4,
+                            "orderable": false
+                        },
+                        {
+                            "width": "10%",
+                            "targets": 5,
                             "orderable": false
                         }
                     ],
@@ -1593,16 +1599,20 @@
                             name: 'schedule'
                         },
                         {
-                            data: 'status',
-                            name: 'status'
-                        },
-                        {
                             data: 'nominal',
                             name: 'nominal'
                         },
                         {
                             data: 'program',
                             name: 'program.title'
+                        },
+                        {
+                            data: 'desc',
+                            name: 'desc'
+                        },
+                        {
+                            data: 'status',
+                            name: 'status'
                         },
                         {
                             data: 'action',
