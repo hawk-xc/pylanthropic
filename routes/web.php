@@ -20,6 +20,8 @@ use App\Http\Controllers\DonationController;
 
 // Route::get('/', function () { return view('welcome'); });
 Route::get('/', [Guest\HomeController::class, 'index'])->name('index');
+Route::get('/s/{code}', [Guest\HomeController::class, 'shortLink'])->name('shortlink');
+
 Route::group(['prefix' => 'page'], function () {
     Route::get('/about-us', [Guest\HomeController::class, 'aboutUs'])->name('aboutus');
     Route::get('/terms-and-condition', [Guest\HomeController::class, 'termsAndCondition'])->name('termsandcondition');
@@ -203,6 +205,8 @@ Route::group([
         // Organization
         Route::get('/datatables-org', [Admin\OrganizationController::class, 'orgDatatables'])->name('org.datatables');
 
+        Route::get('/short-link', [Admin\ShortenLinkController::class, 'shortenLinkDatatableAll'])->name('short-link.datatables');
+
         Route::resources([
             'program'          => Admin\ProgramController::class,
             'organization'     => Admin\OrganizationController::class,
@@ -216,6 +220,7 @@ Route::group([
             'chat'             => Admin\ChatController::class,
             'ads'              => Admin\AdsController::class,
             'payout'           => Admin\PayoutController::class,
+            'shorten-link'     => Admin\ShortenLinkController::class,
         ]);
     });
 });
