@@ -153,34 +153,55 @@ class ProgramController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'error' => [
-                    'message' => $validator->errors()->first()
-                ]
-            ], 400);
+            return response()->json(
+                [
+                    'error' => [
+                        'message' => $validator->errors()->first(),
+                    ],
+                ],
+                400,
+            );
         }
 
         try {
             $file = $request->file('file');
-            $filename = time().'_'.Str::random(10).'.'.$file->getClientOriginalExtension();
+            $programTitle = $request->input('program_title');
 
-            // Simpan file
+            $baseName = Str::slug($programTitle, '_');
+            $extension = $file->getClientOriginalExtension();
+
+            $counter = 1;
+            $filename = $baseName . '_' . $counter . '.' . $extension;
+
+            $existingFiles = glob(public_path('images/program/content/' . $baseName . '_*.' . $extension));
+            if (!empty($existingFiles)) {
+                $lastFile = end($existingFiles);
+                preg_match('/_(\d+)\.' . $extension . '$/', $lastFile, $matches);
+                if (isset($matches[1])) {
+                    $counter = (int) $matches[1] + 1;
+                }
+                $filename = $baseName . '_' . $counter . '.' . $extension;
+            }
+
             $file->storeAs('images/program/content', $filename, 'public_uploads');
 
-            // Generate URL
-            $url = url('public/images/program/content/'.$filename);
+            $url = url('public/images/program/content/' . $filename);
 
             return response()->json([
-                'location' => $url
+                'location' => $url,
             ]);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => [
-                    'message' => $e->getMessage()
-                ]
-            ], 500);
+            return response()->json(
+                [
+                    'error' => [
+                        'message' => $e->getMessage(),
+                    ],
+                ],
+                500,
+            );
         }
     }
+
     /**
      * Store image content
      */

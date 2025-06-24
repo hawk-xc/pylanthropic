@@ -583,122 +583,153 @@
                 'bold italic backcolor | alignleft aligncenter ' +
                 'alignright alignjustify | bullist numlist outdent indent | ' +
                 'removeformat | help | image',
-                
+
             contextmenu: 'paste | link image inserttable | cell row column deletetable',
             image_advtab: true,
             image_caption: true,
             images_upload_url: "{{ route('adm.program.image.content.submit') }}",
-                
+
             images_upload_handler: function(blobInfo, progress) {
                 return new Promise((resolve, reject) => {
                     const formData = new FormData();
                     formData.append('file', blobInfo.blob(), blobInfo.filename());
-                
+                    // Tambahkan judul program ke formData
+                    formData.append('program_title', document.getElementById('program_title').value);
+
                     const xhr = new XMLHttpRequest();
                     xhr.open('POST', "{{ route('adm.program.image.content.submit') }}", true);
                     xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
-                
+
                     xhr.upload.onprogress = function(e) {
                         progress(e.loaded / e.total * 100);
                     };
-                
+
                     xhr.onload = function() {
                         if (xhr.status < 200 || xhr.status >= 300) {
                             reject('HTTP Error: ' + xhr.status);
                             return;
                         }
-                    
+
                         const json = JSON.parse(xhr.responseText);
-                    
+
                         if (!json || typeof json.location != 'string') {
                             reject('Invalid JSON: ' + xhr.responseText);
                             return;
                         }
-                    
+
                         resolve(json.location);
                     };
-                
+
                     xhr.onerror = function() {
-                        reject('Image upload failed due to a XHR Transport error. Status: ' + xhr.status);
+                        reject('Image upload failed due to a XHR Transport error. Status: ' + xhr
+                            .status);
                     };
-                
+
                     xhr.send(formData);
                 });
             },
-            
+
             image_class_list: [{
                 title: 'Responsive',
                 value: 'img-responsive'
             }],
-            
+
             content_style: `
-                body {
-                    font-family: Helvetica, Arial, sans-serif;
-                    font-size: 16px;
-                    max-width: 100%;
-                }
-                img {
-                    max-width: 100%;
-                    height: auto;
-                    display: block;
-                    margin: 10px auto;
-                }
-                .img-responsive {
-                    max-width: 100%;
-                    height: auto;
-                }
-                .mce-content-body {
-                    max-width: 800px;
-                    margin: 0 auto;
-                }
-            `,
-            
+            body {
+                font-family: Helvetica, Arial, sans-serif;
+                font-size: 16px;
+                max-width: 100%;
+            }
+            img {
+                max-width: 100%;
+                height: auto;
+                display: block;
+                margin: 10px auto;
+            }
+            .img-responsive {
+                max-width: 100%;
+                height: auto;
+            }
+            .mce-content-body {
+                max-width: 800px;
+                margin: 0 auto;
+            }
+        `,
+
             setup: function(editor) {
                 editor.on('init', function() {
                     let content = editor.getContent();
-                    
-                    // Perbaiki path gambar relatif (../../public/images/...)
+
+                    // Perbaiki path gambar yang relatif
                     content = content.replace(
                         /src="(\.\.\/)+public\/images\/([^"]+)"/g,
                         'src="{{ url('/') }}/public/images/$2"'
                     );
-                    
-                    // Perbaiki path yang mungkin tanpa public
+
                     content = content.replace(
                         /src="(\.\.\/)+images\/([^"]+)"/g,
                         'src="{{ url('/') }}/public/images/$2"'
                     );
-                    
-                    // Konversi lazyload ke src biasa untuk editor
+
+                    // Tangani gambar yang sudah memiliki format lazyload
                     content = content.replace(
                         /<img[^>]+class="lazyload"[^>]+data-original="([^"]+)"[^>]*>/g,
                         function(match, src) {
-                            return match.replace('class="lazyload"', 'class="lazyload img-responsive"')
-                                .replace('data-original="' + src + '"', 'src="' + src + '" data-original="' + src + '"');
+                            // Pastikan path src sudah benar
+                            let fixedSrc = src;
+                            if (src.startsWith('../../../public/')) {
+                                fixedSrc = src.replace('../../../public/',
+                                    '{{ url('/') }}/public/');
+                            } else if (src.startsWith('/public/')) {
+                                fixedSrc = '{{ url('/') }}' + src;
+                            }
+                            return '<img class="lazyload img-responsive" src="' + fixedSrc +
+                                '" data-original="' + fixedSrc + '" alt="">';
                         }
                     );
-                    
+
+                    // Tangani gambar biasa yang perlu diubah ke lazyload
+                    content = content.replace(
+                        /<img[^>]+src="([^"]+)"(?!.*data-original)[^>]*>/g,
+                        function(match, src) {
+                            let fixedSrc = src;
+                            if (src.startsWith('../../../public/')) {
+                                fixedSrc = src.replace('../../../public/',
+                                    '{{ url('/') }}/public/');
+                            } else if (src.startsWith('/public/')) {
+                                fixedSrc = '{{ url('/') }}' + src;
+                            }
+                            return '<img class="lazyload img-responsive" src="' + fixedSrc +
+                                '" data-original="' + fixedSrc + '" alt="">';
+                        }
+                    );
+
                     editor.setContent(content);
                 });
-            
-                // Sebelum disimpan, kembalikan ke format lazyload asli
+
+                // Sebelum disimpan, format ulang gambar
                 editor.on('BeforeSetContent', function(e) {
                     if (e.content) {
                         // Perbaiki path gambar sebelum disimpan
                         e.content = e.content.replace(
-                            /src="(\.\.\/)+public\/images\/([^"]+)"/g,
-                            'src="/public/images/$2"'
+                            new RegExp('src="{{ url('/') }}/public/images/([^"]+)"', 'g'),
+                            'src="/public/images/$1"'
                         );
-                        
+
+                        // Format lazyload untuk gambar yang belum memiliki format tersebut
                         e.content = e.content.replace(
-                            /src="(\.\.\/)+images\/([^"]+)"/g,
-                            'src="/public/images/$2"'
-                        );
-                        
-                        // Kembalikan ke format lazyload
-                        e.content = e.content.replace(
-                            /<img[^>]+class="[^"]*lazyload[^"]*"[^>]+src="([^"]+)"[^>]*>/g,
+                            /<img[^>]+src="([^"]+)"(?!.*data-original)[^>]*>/g,
                             '<img class="lazyload" data-original="$1" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="">'
+                        );
+                    }
+                });
+
+                // Saat mengambil konten untuk disimpan, pastikan path konsisten
+                editor.on('PostProcess', function(e) {
+                    if (e.get) {
+                        e.content = e.content.replace(
+                            new RegExp('src="{{ url('/') }}/public/images/([^"]+)"', 'g'),
+                            'src="/public/images/$1"'
                         );
                     }
                 });

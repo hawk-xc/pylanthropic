@@ -617,28 +617,24 @@
             plugins: [
                 'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
                 'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                'insertdatetime', 'media', 'table', 'help', 'wordcount', 'image', 'paste'
+                'insertdatetime', 'media', 'table', 'help', 'wordcount', 'image'
             ],
             toolbar: 'undo redo | blocks | ' +
                 'bold italic backcolor | alignleft aligncenter ' +
                 'alignright alignjustify | bullist numlist outdent indent | ' +
                 'removeformat | help | image',
 
-            // Menambahkan menu konteks (klik kanan)
             contextmenu: 'paste | link image inserttable | cell row column deletetable',
-
-            // Konfigurasi khusus untuk gambar
-            image_dimensions: true,
-            image_description: true,
-            image_title: true,
             image_advtab: true,
             image_caption: true,
-
             images_upload_url: "{{ route('adm.program.image.content.submit') }}",
+
             images_upload_handler: function(blobInfo, progress) {
                 return new Promise((resolve, reject) => {
                     const formData = new FormData();
                     formData.append('file', blobInfo.blob(), blobInfo.filename());
+                    // Tambahkan judul program ke formData
+                    formData.append('program_title', document.getElementById('program_title').value);
 
                     const xhr = new XMLHttpRequest();
                     xhr.open('POST', "{{ route('adm.program.image.content.submit') }}", true);
@@ -672,42 +668,112 @@
                     xhr.send(formData);
                 });
             },
+
             image_class_list: [{
                 title: 'Responsive',
                 value: 'img-responsive'
             }],
+
             content_style: `
-        body {
-            font-family: Helvetica, Arial, sans-serif;
-            font-size: 16px;
-            max-width: 100%;
-        }
-        img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            margin: 10px auto;
-        }
-        .img-responsive {
-            max-width: 100%;
-            height: auto;
-        }
-        .mce-content-body {
-            max-width: 800px;
-            margin: 0 auto;
-        }
+            body {
+                font-family: Helvetica, Arial, sans-serif;
+                font-size: 16px;
+                max-width: 100%;
+            }
+            img {
+                max-width: 100%;
+                height: auto;
+                display: block;
+                margin: 10px auto;
+            }
+            .img-responsive {
+                max-width: 100%;
+                height: auto;
+            }
+            .mce-content-body {
+                max-width: 800px;
+                margin: 0 auto;
+            }
         `,
+
             setup: function(editor) {
                 editor.on('init', function() {
-                    this.getDoc().body.style.maxWidth = '800px';
-                    this.getDoc().body.style.margin = '0 auto';
+                    let content = editor.getContent();
+
+                    // Perbaiki path gambar yang relatif
+                    content = content.replace(
+                        /src="(\.\.\/)+public\/images\/([^"]+)"/g,
+                        'src="{{ url('/') }}/public/images/$2"'
+                    );
+
+                    content = content.replace(
+                        /src="(\.\.\/)+images\/([^"]+)"/g,
+                        'src="{{ url('/') }}/public/images/$2"'
+                    );
+
+                    // Tangani gambar yang sudah memiliki format lazyload
+                    content = content.replace(
+                        /<img[^>]+class="lazyload"[^>]+data-original="([^"]+)"[^>]*>/g,
+                        function(match, src) {
+                            // Pastikan path src sudah benar
+                            let fixedSrc = src;
+                            if (src.startsWith('../../../public/')) {
+                                fixedSrc = src.replace('../../../public/',
+                                    '{{ url('/') }}/public/');
+                            } else if (src.startsWith('/public/')) {
+                                fixedSrc = '{{ url('/') }}' + src;
+                            }
+                            return '<img class="lazyload img-responsive" src="' + fixedSrc +
+                                '" data-original="' + fixedSrc + '" alt="">';
+                        }
+                    );
+
+                    // Tangani gambar biasa yang perlu diubah ke lazyload
+                    content = content.replace(
+                        /<img[^>]+src="([^"]+)"(?!.*data-original)[^>]*>/g,
+                        function(match, src) {
+                            let fixedSrc = src;
+                            if (src.startsWith('../../../public/')) {
+                                fixedSrc = src.replace('../../../public/',
+                                    '{{ url('/') }}/public/');
+                            } else if (src.startsWith('/public/')) {
+                                fixedSrc = '{{ url('/') }}' + src;
+                            }
+                            return '<img class="lazyload img-responsive" src="' + fixedSrc +
+                                '" data-original="' + fixedSrc + '" alt="">';
+                        }
+                    );
+
+                    editor.setContent(content);
                 });
 
-                editor.on('SetContent', function() {
-                    tinymce.activeEditor.dom.addClass(tinymce.activeEditor.dom.select('img'),
-                        'img-responsive');
+                // Sebelum disimpan, format ulang gambar
+                editor.on('BeforeSetContent', function(e) {
+                    if (e.content) {
+                        // Perbaiki path gambar sebelum disimpan
+                        e.content = e.content.replace(
+                            new RegExp('src="{{ url('/') }}/public/images/([^"]+)"', 'g'),
+                            'src="/public/images/$1"'
+                        );
+
+                        // Format lazyload untuk gambar yang belum memiliki format tersebut
+                        e.content = e.content.replace(
+                            /<img[^>]+src="([^"]+)"(?!.*data-original)[^>]*>/g,
+                            '<img class="lazyload" data-original="$1" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="">'
+                        );
+                    }
                 });
-            },
+
+                // Saat mengambil konten untuk disimpan, pastikan path konsisten
+                editor.on('PostProcess', function(e) {
+                    if (e.get) {
+                        e.content = e.content.replace(
+                            new RegExp('src="{{ url('/') }}/public/images/([^"]+)"', 'g'),
+                            'src="/public/images/$1"'
+                        );
+                    }
+                });
+            }
         });
     </script>
 @endsection
