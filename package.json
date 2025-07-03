@@ -192,6 +192,7 @@
     "globals": "^11.12.0",
     "globby": "^10.0.2",
     "graceful-fs": "^4.2.11",
+    "gridstack": "^12.2.1",
     "growly": "^1.3.0",
     "handle-thing": "^2.0.1",
     "has": "^1.0.3",

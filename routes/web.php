@@ -185,6 +185,7 @@ Route::group([
         // SELECT2
         Route::get('/organization-select2-all', [Admin\OrganizationController::class, 'select2'])->name('organization.select2.all');
         Route::get('/category-select2-all', [Admin\ProgramCategoryController::class, 'select2'])->name('category.select2.all');
+        Route::get('/donatur-select2-all', [Admin\DonaturController::class,'select2'])->name('donatur.select2.all');
 
         // LEADS
         Route::get('/grab-amalsholeh', [Admin\LeadsController::class, 'grabLeadsAmalsholeh'])->name('leads.grab.amalsholeh');
@@ -205,7 +206,12 @@ Route::group([
         // Organization
         Route::get('/datatables-org', [Admin\OrganizationController::class, 'orgDatatables'])->name('org.datatables');
 
+        // Shorten Link
         Route::get('/short-link', [Admin\ShortenLinkController::class, 'shortenLinkDatatableAll'])->name('short-link.datatables');
+
+        // List all Leads CRM
+        Route::get('/leads-crm-list', [Admin\LeadsCRMController::class, 'listAllLeads'])->name('leads-crm.list');
+        Route::post('/update-leads-crm-list/{id}', [Admin\LeadsCRMController::class, 'updateLeads'])->name('leads-crm.update');
 
         Route::resources([
             'program'          => Admin\ProgramController::class,
@@ -221,6 +227,8 @@ Route::group([
             'ads'              => Admin\AdsController::class,
             'payout'           => Admin\PayoutController::class,
             'shorten-link'     => Admin\ShortenLinkController::class,
+            // Leads-CRM
+            'leads-crm'        => Admin\LeadsCRMController::class
         ]);
     });
 });
