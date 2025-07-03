@@ -8,6 +8,9 @@ use Laravel\Sanctum\HasApiTokens;
 use \App\Models\ProgramCategory;
 use Illuminate\Database\Eloquent\Model;
 
+// model relation definition
+use App\Models\LeadsCRM;
+
 class Program extends Model
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -74,5 +77,9 @@ class Program extends Model
     public function programOrganization()
     {
         return $this->belongsTo(Organization::class, 'organization_id');
+    }
+
+    public function leadsCRM() {
+        $this->hasMany(LeadsCRM::class, 'program_id', 'id');
     }
 }
