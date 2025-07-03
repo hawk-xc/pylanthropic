@@ -1466,4 +1466,34 @@ https://bantubersama.com/bantupalestina';
 
         echo 'FINISH';
     }
+
+    /**
+     * Select2 Donatur
+     */
+    public function select2(Request $request)
+    {
+        $data = Donatur::query()->select('id', 'name', 'email');
+        $last_page = null;
+
+        if ($request->has('search') && $request->search != '') {
+            // Apply search param
+            $data = $data->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->has('page')) {
+            // If request has page parameter, add paginate to eloquent
+            $data->paginate(10);
+            // Get last page
+            $last_page = $data->paginate(10)->lastPage();
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data Fetched',
+            'data' => $data->get(),
+            'extra_data' => [
+                'last_page' => $last_page,
+            ],
+        ]);
+    }
 }
