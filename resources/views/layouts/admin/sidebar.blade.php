@@ -134,6 +134,12 @@
                                 <i class="metismenu-icon"></i> Tautan Pendek
                             </a>
                         </li>
+                        <li>
+                            <a href="{{ route('adm.leads-crm.index') }}"
+                                class="{{ $sidebar_submenu == 'leads-crm' ? 'mm-active' : '' }}">
+                                <i class="metismenu-icon"></i> Leads CRM
+                            </a>
+                        </li>
                     </ul>
                 </li>
                 <li class="{{ $sidebar_menu == 'leads' ? 'mm-active' : '' }}">
