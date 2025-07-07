@@ -135,8 +135,8 @@
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('adm.leads-crm.index') }}"
-                                class="{{ $sidebar_submenu == 'leads-crm' ? 'mm-active' : '' }}">
+                            <a href="{{ route('adm.crm-leads.index') }}"
+                                class="{{ $sidebar_submenu == 'crm-leads' ? 'mm-active' : '' }}">
                                 <i class="metismenu-icon"></i> Leads CRM
                             </a>
                         </li>

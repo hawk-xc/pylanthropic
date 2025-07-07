@@ -186,6 +186,9 @@ Route::group([
         Route::get('/organization-select2-all', [Admin\OrganizationController::class, 'select2'])->name('organization.select2.all');
         Route::get('/category-select2-all', [Admin\ProgramCategoryController::class, 'select2'])->name('category.select2.all');
         Route::get('/donatur-select2-all', [Admin\DonaturController::class,'select2'])->name('donatur.select2.all');
+        Route::get('/users-select2-all', [Admin\UserController::class,'select2'])->name('users.select2.all');
+
+        // Route::get('/leads-select2-all', [Admin\LeadsController::class, 'select2'])->name('leads.select2.all');
 
         // LEADS
         Route::get('/grab-amalsholeh', [Admin\LeadsController::class, 'grabLeadsAmalsholeh'])->name('leads.grab.amalsholeh');
@@ -203,6 +206,9 @@ Route::group([
         Route::get('/list-leads-org-add', [Admin\LeadsController::class, 'orgCreate'])->name('leads.org.add');
         Route::post('/list-leads-org-store', [Admin\LeadsController::class, 'orgStore'])->name('leads.org.store');
 
+        // LEADS CRM
+        Route::get('/get-leads-info', [Admin\LeadsController::class, 'getLeadsInfo'])->name('get.leads.info');
+
         // Organization
         Route::get('/datatables-org', [Admin\OrganizationController::class, 'orgDatatables'])->name('org.datatables');
 
@@ -212,6 +218,34 @@ Route::group([
         // List all Leads CRM
         Route::get('/leads-crm-list', [Admin\LeadsCRMController::class, 'listAllLeads'])->name('leads-crm.list');
         Route::post('/update-leads-crm-list/{id}', [Admin\LeadsCRMController::class, 'updateLeads'])->name('leads-crm.update');
+
+        // get all CRM Leads
+        Route::get('/crm-leads-list', [Admin\Pipeline\CRMPipelineController::class, 'listAllPipelines'])->name('crm-pipeline.list');
+        Route::get('/crm-prospect-list/{pipeline}', [Admin\Pipeline\CRMProspectController::class, 'listProspects'])->name('crm-prospect.list');
+        Route::get('/crm-prospect-activity-list/{pipeline}', [Admin\Pipeline\CRMProspectActivityController::class, 'listProspectActivity'])->name('crm-prospect-activity.list');
+
+        Route::prefix('crm-prospect-activity')->group(function() {
+            Route::get('/list/{pipeline}', [Admin\Pipeline\CRMProspectActivityController::class, 'listAllActivities'])
+                ->name('crm-prospect-activity.list');
+
+            Route::post('/{activity_id}/update-prospect', [Admin\Pipeline\CRMProspectActivityController::class, 'updateActivityStage'])
+                ->name('crm-prospect-activity.update');
+
+            Route::get('/{activity_id}/info', [Admin\Pipeline\CRMProspectActivityController::class, 'getActivityInfo'])
+                ->name('crm-prospect-activity.info');
+        });
+
+        Route::prefix('crm-leads')->group(function() {
+           Route::get('crm-leads-list', [Admin\Pipeline\CRMLeadsController::class, 'listAllLeads'])->name('crm-leads.list'); 
+        });
+
+        Route::prefix('crm-pipeline')->group(function() {
+            Route::get('crm-pipeline-all/{leads}', [Admin\Pipeline\CRMPipelineController::class, 'getAllPipelines'])->name('crm-pipeline.list');
+        });
+
+        Route::prefix('crm-prospect')->group(function() {
+           Route::post('{prospectId}/update-pipeline', [Admin\Pipeline\CRMProspectController::class, 'updatePipeline'])->name('crm-prospect.update'); 
+        });
 
         Route::resources([
             'program'          => Admin\ProgramController::class,
@@ -228,7 +262,11 @@ Route::group([
             'payout'           => Admin\PayoutController::class,
             'shorten-link'     => Admin\ShortenLinkController::class,
             // Leads-CRM
-            'leads-crm'        => Admin\LeadsCRMController::class
+            'crm-leads'        => Admin\Pipeline\CRMLeadsController::class,
+            // CRM Pipeline
+            'crm-pipeline'     => Admin\Pipeline\CRMPipelineController::class,
+            'crm-prospect'     => Admin\Pipeline\CRMProspectController::class,
+            'crm-prospect-activity' => Admin\Pipeline\CRMProspectActivityController::class
         ]);
     });
 });
