@@ -775,7 +775,7 @@
                      data-pipeline-id="${pipeline.id}">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <h6 class="mb-1"><a href="/adm/crm-prospect/${prospect.id}">${prospect.name}</a></h6>
+                            <h6 class="mb-1"><a href="/adm/crm-prospect/${prospect.id}?leads=${currentLeadsId}">${prospect.name}</a></h6>
                             <p class="mb-1">${prospect.description || 'Tidak ada deskripsi'}</p>
                             <small class="text-muted">Nominal: ${formatCurrency(prospect.nominal)}</small>
                         </div>

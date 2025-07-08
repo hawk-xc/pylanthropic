@@ -6,6 +6,8 @@ use Exception;
 use App\Models\CRMPipeline;
 use App\Models\CRMLeads;
 use App\Models\CRMProspect;
+use App\Models\CRMProspectLogs;
+use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 
@@ -83,7 +85,10 @@ class CRMProspectController extends Controller
      */
     public function show(string $id)
     {
-        return view('admin.crm-prospect.show');
+        $crm_prospect = CRMProspect::findOrFail($id);
+        $crm_prospect_pic = User::findOrFail($crm_prospect->id);
+
+        return view('admin.crm-prospect.show', ['crm_prospect' => $crm_prospect, 'crm_prospect_pic' => $crm_prospect_pic]);
     }
 
     /**
@@ -154,6 +159,15 @@ class CRMProspectController extends Controller
             if ($prospect) {
                 $prospect->crm_pipeline_id = $request->new_pipeline_id;
                 $prospect->save();
+
+                // prospect logs
+                $prospect_logs = new CRMProspectLogs;
+                $prospect_logs->pipeline_name = CRMPipeline::findOrFail($request->new_pipeline_id)->name;
+                $prospect_logs->crm_prospect_id = $prospectId;
+                $prospect_logs->crm_pipeline_id = $request->new_pipeline_id;
+                $prospect_logs->created_by = auth()->user()->id;
+                
+                $prospect_logs->save();
 
                 return response()->json(
                     [

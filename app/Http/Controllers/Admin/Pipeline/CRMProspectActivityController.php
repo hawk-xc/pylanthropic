@@ -28,40 +28,33 @@ class CRMProspectActivityController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'pipeline' => 'required|numeric',
-            'type' => 'required|in:wa,sms,email,call,meeting,note,task',
-            'content' => 'required|string',
-            'description' => 'required|string',
-            'date' => 'required|date',
+            'prospect_id' => 'required|string',
+            'type_name' => 'required|string|in:wa,sms,email,call,meeting,note,task',
+            'content' => 'nullable|string',
+            'description' => 'nullable|string',
+            'date_time' => 'required',
         ], [
-            'pipeline.required' => 'Pipeline wajib diisi.',
-            'pipeline.numeric' => 'Pipeline harus berupa angka.',
-            'type.required' => 'Tipe wajib diisi.',
-            'type.in' => 'Tipe harus berupa WA, SMS, Email, Call, Meeting, Note, atau Task.',
-            'content.required' => 'Konten wajib diisi.',
-            'content.string' => 'Konten harus berupa teks.',
-            'description.required' => 'Deskripsi wajib diisi.',
-            'description.string' => 'Deskripsi harus berupa teks.',
-            'date.required' => 'Tanggal wajib diisi.',
-            'date.date' => 'Tanggal harus berupa tanggal yang valid.',
+            'prospect_id.required' => 'ID Prospek harus diisi',
+            'type_name.required' => 'Tipe harus diisi',
+            'type_name.in' => 'Tipe harus berupa wa, sms, email, call, meeting, note, atau task',
+            'content.string' => 'Konten harus berupa string',
+            'description.string' => 'Deskripsi harus berupa string',
+            'date_time.required' => 'Tanggal harus diisi',
+            'date_time.datetime' => 'Tanggal harus berupa tanggal dan waktu yang valid',
         ]);
 
         try {
-            $prospect_activity = new CRMProspectActivity;
+            $crmProspectActivity = new CRMProspectActivity;
+            $crmProspectActivity->crm_prospect_id = $request->prospect_id;
+            $crmProspectActivity->type = $request->type_name;
+            $crmProspectActivity->content = $request->content;
+            $crmProspectActivity->description = $request->description;
+            $crmProspectActivity->date = $request->date_time;
+            $crmProspectActivity->created_by = auth()->user()->id;
 
-            $prospect_activity->crm_prospect_id = $request->pipeline;
-            $prospect_activity->type = $request->type;
-            $prospect_activity->content = $request->content;
-            $prospect_activity->description = $request->description;
-            $prospect_activity->date = $request->date;
+            $crmProspectActivity->save();
 
-            $prospect_activity->created_by = auth()->user()->id;
-
-            $prospect_activity->save();
-            
-            $pipelines_name = CRMPipeline::where('id', $request->pipeline)->first()->type;
-
-            return redirect()->to('adm/crm-pipeline?type=' . $pipelines_name)->with('success', 'Data berhasil ditambahkan');
+            return back()->with('success', 'Activity berhasil ditambahkan');
         } catch (Exception $err) {
             dd($err);
             return back()->with('error', $err->getMessage());
