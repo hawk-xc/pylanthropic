@@ -266,7 +266,8 @@ Route::group([
             // CRM Pipeline
             'crm-pipeline'     => Admin\Pipeline\CRMPipelineController::class,
             'crm-prospect'     => Admin\Pipeline\CRMProspectController::class,
-            'crm-prospect-activity' => Admin\Pipeline\CRMProspectActivityController::class
+            'crm-prospect-activity' => Admin\Pipeline\CRMProspectActivityController::class,
+            'crm-prospect-logs' => Admin\Pipeline\CRMProspectLogsController::class
         ]);
     });
 });
