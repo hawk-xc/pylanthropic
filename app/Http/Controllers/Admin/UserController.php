@@ -4,62 +4,37 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\User;
 
 class UserController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Select2 User
      */
-    public function index()
+    public function select2(Request $request)
     {
-        //
-    }
+        $data = User::query()->select('id', 'name');
+        $last_page = null;
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+        if ($request->has('search') && $request->search != '') {
+            // Apply search param
+            $data = $data->where('name', 'like', '%' . $request->search . '%');
+        }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        if ($request->has('page')) {
+            // If request has page parameter, add paginate to eloquent
+            $data->paginate(10);
+            // Get last page
+            $last_page = $data->paginate(10)->lastPage();
+        }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data Fetched',
+            'data' => $data->get(),
+            'extra_data' => [
+                'last_page' => $last_page,
+            ],
+        ]);
     }
 }
