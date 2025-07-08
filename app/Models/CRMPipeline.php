@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\CRMProspect;
 use App\Models\CRMLeads;
+use App\Models\CRMProspectLogs;
 
 class CRMPipeline extends Model
 {
@@ -33,4 +34,9 @@ class CRMPipeline extends Model
     {
         return $this->belongsTo(CRMLeads::class, 'crm_leads_id', 'id');
     } 
+
+    public function crm_prospect_logs()
+    {
+        return $this->hasMany(CRMProspectLogs::class, 'crm_pipeline_id', 'id');
+    }
 }

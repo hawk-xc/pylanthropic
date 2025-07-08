@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\CRMPipeline;
 use App\Models\CRMProspectActivity;
+use App\Models\CRMProspectLogs;
+use App\Models\Donatur;
 
 class CRMProspect extends Model
 {
@@ -29,8 +31,18 @@ class CRMProspect extends Model
         return $this->belongsTo(CRMPipeline::class, 'id', 'crm_pipeline_id');
     }
 
-    public function crm_prospect_activity()
+    public function crm_prospect_activities()
     {
         return $this->hasMany(CRMProspectActivity::class, 'crm_prospect_id', 'id');
+    }
+
+    public function crm_prospect_donatur()
+    {
+        return $this->belongsTo(Donatur::class, 'donatur_id', 'id');
+    }
+
+    public function crm_prospect_logs()
+    {
+        return $this->hasMany(CRMProspectLogs::class, 'crm_prospect_id', 'id');
     }
 }

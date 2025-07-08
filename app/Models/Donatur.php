@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\CRMProspect;
 
 class Donatur extends Model
 {
@@ -52,9 +53,9 @@ class Donatur extends Model
         return $this->hasMany(DonaturLoyal::class, 'donatur_id', 'id');
     }
 
-    public function leadsCRM()
+    public function crm_prospects()
     {
-        return $this->hasMany(leadsCRM::class, 'donatur_id', 'id');
+        return $this->hasMany(CRMProspect::class, 'donatur_id', 'id');
     }
 }
 
