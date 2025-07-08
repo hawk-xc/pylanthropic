@@ -15,7 +15,11 @@ class CRMLeadsController extends Controller
      */
     public function index()
     {
-        return view('admin.crm-leads.index');
+        $leads = CRMLeads::all();
+
+        return view('admin.crm-leads.index', [
+            'leads' => $leads
+        ]);
     }
 
     /**
