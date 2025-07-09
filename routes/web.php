@@ -215,10 +215,6 @@ Route::group([
         // Shorten Link
         Route::get('/short-link', [Admin\ShortenLinkController::class, 'shortenLinkDatatableAll'])->name('short-link.datatables');
 
-        // List all Leads CRM
-        Route::get('/leads-crm-list', [Admin\LeadsCRMController::class, 'listAllLeads'])->name('leads-crm.list');
-        Route::post('/update-leads-crm-list/{id}', [Admin\LeadsCRMController::class, 'updateLeads'])->name('leads-crm.update');
-
         // get all CRM Leads
         Route::get('/crm-leads-list', [Admin\Pipeline\CRMPipelineController::class, 'listAllPipelines'])->name('crm-pipeline.list');
         Route::get('/crm-prospect-list/{pipeline}', [Admin\Pipeline\CRMProspectController::class, 'listProspects'])->name('crm-prospect.list');

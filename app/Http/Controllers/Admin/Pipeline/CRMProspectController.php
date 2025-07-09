@@ -14,22 +14,13 @@ use App\Http\Controllers\Controller;
 class CRMProspectController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
      * Show the form for creating a new resource.
      */
     public function create(Request $request)
     {
         $leads_name = $request->leads;
 
-        $pipelines = CRMLeads::where('name', 'like', '%' . $leads_name . '%')
-            ->first()->crm_pipelines;
+        $pipelines = CRMLeads::where('name', 'like', '%' . $leads_name . '%')->first()->crm_pipelines;
 
         return view('admin.crm-prospect.create', ['pipelines' => $pipelines]);
     }
@@ -39,27 +30,30 @@ class CRMProspectController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => 'required|string',
-            'pipeline' => 'required|numeric',
-            'donatur' => 'required|numeric',
-            'assign_to' => 'required|numeric',
-            'description' => 'required|string',
-            'nominal' => 'required|string',
-            'is_potential' => 'required|in:1,0',
-        ], [
-            'name.required' => 'Nama prospect harus diisi.',
-            'pipeline.required' => 'Pipeline harus dipilih.',
-            'donatur.required' => 'Donatur harus dipilih.',
-            'assign_to.required' => 'Assign to harus dipilih.',
-            'description.required' => 'Deskripsi harus diisi.',
-            'nominal.required' => 'Nominal harus diisi.',
-            'is_potential.required' => 'Status potential harus dipilih.',
-            'is_potential.in' => 'Nilai status potential tidak valid.',
-        ]);
+        $request->validate(
+            [
+                'name' => 'required|string',
+                'pipeline' => 'required|numeric',
+                'donatur' => 'required|numeric',
+                'assign_to' => 'required|numeric',
+                'description' => 'required|string',
+                'nominal' => 'required|string',
+                'is_potential' => 'required|in:1,0',
+            ],
+            [
+                'name.required' => 'Nama prospect harus diisi.',
+                'pipeline.required' => 'Pipeline harus dipilih.',
+                'donatur.required' => 'Donatur harus dipilih.',
+                'assign_to.required' => 'Assign to harus dipilih.',
+                'description.required' => 'Deskripsi harus diisi.',
+                'nominal.required' => 'Nominal harus diisi.',
+                'is_potential.required' => 'Status potential harus dipilih.',
+                'is_potential.in' => 'Nilai status potential tidak valid.',
+            ],
+        );
 
         try {
-            $prospect = new CRMProspect;
+            $prospect = new CRMProspect();
             $prospect->name = $request->name;
             $prospect->crm_pipeline_id = $request->pipeline;
             $prospect->donatur_id = $request->donatur;
@@ -67,14 +61,16 @@ class CRMProspectController extends Controller
             $prospect->description = $request->description;
             $prospect->nominal = str_replace('.', '', $request->nominal);
             $prospect->is_potential = $request->is_potential;
-            
+
             $prospect->created_by = auth()->user()->id;
-            
+
             $prospect->save();
 
             $pipeline_name = CRMPipeline::where('id', $request->pipeline)->first()->crm_lead->name;
 
-            return redirect()->to('adm/crm-pipeline?leads=' . $pipeline_name)->with('success', 'Data berhasil ditambahkan');
+            return redirect()
+                ->to('adm/crm-pipeline?leads=' . $pipeline_name)
+                ->with('success', 'Data berhasil ditambahkan');
         } catch (Exception $err) {
             return back()->with('error', $err->getMessage());
         }
@@ -86,7 +82,7 @@ class CRMProspectController extends Controller
     public function show(string $id)
     {
         $crm_prospect = CRMProspect::findOrFail($id);
-        $crm_prospect_pic = User::findOrFail($crm_prospect->id);
+        $crm_prospect_pic = User::findOrFail($crm_prospect->assign_to);
 
         return view('admin.crm-prospect.show', ['crm_prospect' => $crm_prospect, 'crm_prospect_pic' => $crm_prospect_pic]);
     }
@@ -94,9 +90,19 @@ class CRMProspectController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(Request $request, string $id)
     {
-        //
+        $leads_name = $request->leads;
+
+        $pipelines = CRMLeads::where('name', 'like', '%' . $leads_name . '%')->first()->crm_pipelines;
+
+        $crm_prospect = CRMProspect::with(['crm_prospect_donatur', 'crm_prospect_pic'])->findOrFail($id);
+
+        return view('admin.crm-prospect.edit', [
+            'crm_prospect' => $crm_prospect,
+            'pipelines' => $pipelines,
+            'leads_name' => $leads_name,
+        ]);
     }
 
     /**
@@ -104,7 +110,49 @@ class CRMProspectController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $leads_name = $request->leads;
+
+        $request->validate(
+            [
+                'name' => 'required|string',
+                'pipeline' => 'required|numeric',
+                'donatur' => 'required|numeric',
+                'assign_to' => 'required|numeric',
+                'description' => 'string',
+                'nominal' => 'required|string',
+                'is_potential' => 'required|in:1,0',
+            ],
+            [
+                'name.required' => 'Nama prospect harus diisi.',
+                'pipeline.required' => 'Pipeline harus dipilih.',
+                'donatur.required' => 'Donatur harus dipilih.',
+                'assign_to.required' => 'Assign to harus dipilih.',
+                'nominal.required' => 'Nominal harus diisi.',
+                'is_potential.required' => 'Status potential harus dipilih.',
+                'is_potential.in' => 'Nilai status potential tidak valid.',
+            ],
+        );
+
+        try {
+            $prospect = CRMProspect::findOrFail($id);
+            $prospect->name = $request->name;
+            $prospect->crm_pipeline_id = $request->pipeline;
+            $prospect->donatur_id = $request->donatur;
+            $prospect->assign_to = $request->assign_to;
+            $prospect->description = $request->description;
+            $prospect->nominal = str_replace('.', '', $request->nominal);
+            $prospect->is_potential = $request->is_potential;
+
+            $prospect->updated_by = auth()->user()->id;
+            $prospect->save();
+
+            return redirect()
+                ->to('adm/crm-prospect/'. $id .'?leads=' . $leads_name)
+                ->with('success', 'Data berhasil diubah');
+        } catch (Exception $err) {
+            dd($err);
+            return back()->with('error', $err->getMessage());
+        }
     }
 
     /**
@@ -112,10 +160,23 @@ class CRMProspectController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $leadsId = request()->input('leads') ?? request()->query('leads');
+
+        try {
+            $prospect = CRMProspect::findOrFail($id);
+            $prospect->delete();
+
+            return redirect()
+                ->to('adm/crm-pipeline?leads=' . $leadsId)
+                ->with('success', 'Data berhasil dihapus');
+        } catch (Exception $err) {
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal menghapus data: ' . $err->getMessage());
+        }
     }
 
-    public function listProspects(Request $request) 
+    public function listProspects(Request $request)
     {
         $prospect_type = $request->pipeline;
 
@@ -139,7 +200,6 @@ class CRMProspectController extends Controller
                     403,
                 );
             }
-
         } catch (Exception $err) {
             response()->json(
                 [
@@ -151,8 +211,8 @@ class CRMProspectController extends Controller
         }
     }
 
-    public function updatePipeline(Request $request, string $prospectId) 
-    {                
+    public function updatePipeline(Request $request, string $prospectId)
+    {
         try {
             $prospect = CRMProspect::find($prospectId);
 
@@ -161,12 +221,12 @@ class CRMProspectController extends Controller
                 $prospect->save();
 
                 // prospect logs
-                $prospect_logs = new CRMProspectLogs;
+                $prospect_logs = new CRMProspectLogs();
                 $prospect_logs->pipeline_name = CRMPipeline::findOrFail($request->new_pipeline_id)->name;
                 $prospect_logs->crm_prospect_id = $prospectId;
                 $prospect_logs->crm_pipeline_id = $request->new_pipeline_id;
                 $prospect_logs->created_by = auth()->user()->id;
-                
+
                 $prospect_logs->save();
 
                 return response()->json(

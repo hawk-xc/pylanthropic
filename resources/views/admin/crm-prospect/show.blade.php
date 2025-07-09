@@ -91,8 +91,23 @@
                     </nav>
                 </div>
                 <div class="col-7 fc-rtl">
+                    <form action="{{ route('adm.crm-prospect.destroy', $crm_prospect->id) }}" method="POST"
+                        class="d-inline">
+                        @csrf
+                        @method('DELETE')
+                        <input type="hidden" name="leads" value="{{ request()->query('leads') }}">
+                        <button type="button" class="btn btn-outline-danger delete-prospect-btn">
+                            <i class="fa fa-trash-alt mr-1"></i> Hapus
+                        </button>
+                    </form>
                     <a class="btn btn-outline-primary"
-                        href={{ route('adm.crm-leads.index', ['leads' => request()->query('leads')]) }}>Kembali</a>
+                        href="{{ route('adm.crm-prospect.edit', $crm_prospect->id) }}?leads={{ request()->query('leads') }}">
+                        <i class="fa fa-edit mr-1"></i> Edit
+                    </a>
+                    <a class="btn btn-outline-dark"
+                        href={{ route('adm.crm-leads.index', ['leads' => request()->query('leads')]) }}>
+                        <i class="fa fa-arrow-left mr-1"></i> Kembali
+                    </a>
                 </div>
             </div>
             <div class="divider"></div>
@@ -217,33 +232,42 @@
                                                 @switch($crm_prospect_activity->type)
                                                     @case('wa')
                                                         <i class="fas fa-comment" style="font-size: 21px; color: white;"></i>
-                                                        @break
+                                                    @break
+
                                                     @case('sms')
                                                         <i class="fas fa-sms" style="font-size: 21px; color: white;"></i>
-                                                        @break
+                                                    @break
+
                                                     @case('email')
                                                         <i class="fas fa-envelope" style="font-size: 21px; color: white;"></i>
-                                                        @break
+                                                    @break
+
                                                     @case('call')
                                                         <i class="fas fa-phone" style="font-size: 21px; color: white;"></i>
-                                                        @break
+                                                    @break
+
                                                     @case('meeting')
                                                         <i class="fas fa-calendar-check" style="font-size: 21px; color: white;"></i>
-                                                        @break
+                                                    @break
+
                                                     @case('note')
                                                         <i class="fas fa-sticky-note" style="font-size: 21px; color: white;"></i>
-                                                        @break
+                                                    @break
+
                                                     @case('task')
                                                         <i class="fas fa-tasks" style="font-size: 21px; color: white;"></i>
-                                                        @break
+                                                    @break
+
                                                     @default
                                                 @endswitch
-                                                
+
                                             </div>
                                         </div>
                                         <div class="flex-grow-1">
                                             <div class="d-flex justify-content-between">
-                                                <h6 class="mb-1"><span class="fw-bold">{{ $crm_prospect_activity->type }}</span> : {{ $crm_prospect_activity->content }}</h6>
+                                                <h6 class="mb-1"><span
+                                                        class="fw-bold">{{ $crm_prospect_activity->type }}</span> :
+                                                    {{ $crm_prospect_activity->content }}</h6>
                                                 <small class="text-muted">{{ $crm_prospect_activity->date }}</small>
                                             </div>
                                             <p class="mb-0 text-muted">
@@ -251,149 +275,175 @@
                                             </p>
                                         </div>
                                     </div>
-                                @empty
-                                    <div class="d-flex w-100 justify-content-center align-items-center align-content-center"
-                                        style="color: #797d83;">
-                                        <h6 class="mb-1">Belum ada Aktifitas</h6>
-                                    </div>
-                                @endforelse
-                            </div>
+                                    @empty
+                                        <div class="d-flex w-100 justify-content-center align-items-center align-content-center"
+                                            style="color: #797d83;">
+                                            <h6 class="mb-1">Belum ada Aktifitas</h6>
+                                        </div>
+                                    @endforelse
+                                </div>
 
-                            <div class="p-3 border-bottom d-flex justify-content-between align-items-center"></div>
+                                <div class="p-3 border-bottom d-flex justify-content-between align-items-center"></div>
 
-                            <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0">Riwayat Prospect <span class="fw-bold"
-                                        style="color: #5a63db;">{{ $crm_prospect->name }}</span></h5>
-                                {{-- <div>
+                                <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Riwayat Prospect <span class="fw-bold"
+                                            style="color: #5a63db;">{{ $crm_prospect->name }}</span></h5>
+                                    {{-- <div>
                                     <button class="btn btn-sm btn-outline-primary me-2">
                                         <i class="fas fa-filter"></i>
                                     </button>
                                 </div> --}}
-                            </div>
+                                </div>
 
-                            <!-- Timeline Container -->
-                            <div class="px-4 py-3 flex-grow-1 overflow-auto"
-                                style="max-height: 50vh; height: 30vh; overflow: scroll">
-                                <ul class="timeline list-unstyled position-relative">
-                                    @forelse ($crm_prospect->crm_prospect_logs as $index => $crm_prospect_log)
-                                        <li class="mb-5 position-relative ps-4">
-                                            <div
-                                                class="timeline-icon {{ $loop->last ? 'bg-primary' : 'bg-success' }} text-white d-flex align-items-center justify-content-center">
-                                                @if ($loop->last)
-                                                    <i class="fas fa-circle"></i>
-                                                @else
-                                                    <i class="fas fa-check"></i>
-                                                @endif
+                                <!-- Timeline Container -->
+                                <div class="px-4 py-3 flex-grow-1 overflow-auto"
+                                    style="max-height: 50vh; height: 30vh; overflow: scroll">
+                                    <ul class="timeline list-unstyled position-relative">
+                                        @forelse ($crm_prospect->crm_prospect_logs as $index => $crm_prospect_log)
+                                            <li class="mb-5 position-relative ps-4">
+                                                <div
+                                                    class="timeline-icon {{ $loop->last ? 'bg-primary' : 'bg-success' }} text-white d-flex align-items-center justify-content-center">
+                                                    @if ($loop->last)
+                                                        <i class="fas fa-circle"></i>
+                                                    @else
+                                                        <i class="fas fa-check"></i>
+                                                    @endif
+                                                </div>
+                                                <div class="timeline-content ml-4">
+                                                    <h6 class="fw-bold mb-1">{{ $crm_prospect_log->pipeline_name }}
+                                                        @if ($loop->last)
+                                                            (Saat ini)
+                                                        @endif
+                                                    </h6>
+                                                    <small class="text-muted">{{ $crm_prospect_log->created_at }}</small>
+                                                    <p class="mb-0 text-muted">Perubahan oleh :
+                                                        {{ $crm_prospect_log->user->name }} </p>
+                                                </div>
+                                            </li>
+                                        @empty
+                                            <div class="d-flex w-100 justify-content-center align-items-center align-content-center"
+                                                style="color: #797d83;">
+                                                <h6 class="mb-1">Belum ada riwayat</h6>
                                             </div>
-                                            <div class="timeline-content ml-4">
-                                                <h6 class="fw-bold mb-1">{{ $crm_prospect_log->pipeline_name }} @if ($loop->last) (Saat ini) @endif</h6>
-                                                <small class="text-muted">{{ $crm_prospect_log->created_at }}</small>
-                                                <p class="mb-0 text-muted">Perubahan oleh :
-                                                    {{ $crm_prospect_log->user->name }} </p>
-                                            </div>
-                                        </li>
-                                    @empty
-                                        <div class="d-flex w-100 justify-content-center align-items-center align-content-center"
-                                            style="color: #797d83;">
-                                            <h6 class="mb-1">Belum ada riwayat</h6>
-                                        </div>
-                                    @endforelse
-                                </ul>
+                                        @endforelse
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-@endsection
+    @endsection
 
-@section('content_modal')
-    <!-- Modal Tambah Prospect Activity -->
-    <div class="modal fade" id="modal_add_prospect_activity" class="modal fade" tabindex="-1" role="dialog"
-        aria-hidden="true" aria-labelledby="prospectActivityAddModal">
-        <div class="modal-dialog modal-md">
-            <div class="modal-content">
-                <form id="prospectActivityAddForm" action="{{ route('adm.crm-prospect-activity.store') }}"
-                    method="post">
-                    @csrf
-                    <input type="hidden" name="prospect_id" value="{{ $crm_prospect->id }}">
-                    <div class="modal-header pt-2 pb-2">
-                        <h1 class="modal-title fs-5" id="modalTitle">Tambah Aktifitas Prospect</h1>
-                        <button type="button" class="btn-close pt-4" data-bs-dismiss="modal"
-                            aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body text-start pt-4">
-                        <div class="mb-3">
-                            <label for="type" class="form-label">Tipe Aktifitas</label>
-                            <input type="hidden" name="type_name" id="type_name" />
-                            <select id="activityTypeSelect" id="type" name="type" class="form-select">
-                                @foreach ($menus as $menu)
-                                    <option value="{{ strtolower($menu['label']) }}" {{ old('type') === $menu['label'] ? 'selected' : '' }}>
-                                        <i class="{{ $menu['icon'] }}"></i> {{ $menu['label'] }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('type')
-                                <div class="invalid-feedback d-block">
-                                    {{ $message }}
-                                </div>
-                            @enderror
+    @section('content_modal')
+        <!-- Modal Tambah Prospect Activity -->
+        <div class="modal fade" id="modal_add_prospect_activity" class="modal fade" tabindex="-1" role="dialog"
+            aria-hidden="true" aria-labelledby="prospectActivityAddModal">
+            <div class="modal-dialog modal-md">
+                <div class="modal-content">
+                    <form id="prospectActivityAddForm" action="{{ route('adm.crm-prospect-activity.store') }}"
+                        method="post">
+                        @csrf
+                        <input type="hidden" name="prospect_id" value="{{ $crm_prospect->id }}">
+                        <div class="modal-header pt-2 pb-2">
+                            <h1 class="modal-title fs-5" id="modalTitle">Tambah Aktifitas Prospect</h1>
+                            <button type="button" class="btn-close pt-4" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
                         </div>
-                        <div class="mb-3">
-                            <label for="content" class="form-label">Konten</label>
-                            <textarea class="form-control" id="contennt" name="content" rows="3"
-                                placeholder="Masukkan Konten Aktifitas Prospect"></textarea>
+                        <div class="modal-body text-start pt-4">
+                            <div class="mb-3">
+                                <label for="type" class="form-label">Tipe Aktifitas</label>
+                                <input type="hidden" name="type_name" id="type_name" />
+                                <select id="activityTypeSelect" id="type" name="type" class="form-select">
+                                    @foreach ($menus as $menu)
+                                        <option value="{{ strtolower($menu['label']) }}"
+                                            {{ old('type') === $menu['label'] ? 'selected' : '' }}>
+                                            <i class="{{ $menu['icon'] }}"></i> {{ $menu['label'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('type')
+                                    <div class="invalid-feedback d-block">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+                            <div class="mb-3">
+                                <label for="content" class="form-label">Konten</label>
+                                <textarea class="form-control" id="contennt" name="content" rows="3"
+                                    placeholder="Masukkan Konten Aktifitas Prospect"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Deskripsi</label>
+                                <textarea class="form-control" id="description" name="description" rows="3"
+                                    placeholder="Masukkan deskripsi Aktifitas Prospect"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="date_time" class="form-label">Tanggal dan Jam</label>
+                                <input type="datetime-local" class="form-control" id="date_time" name="date_time"
+                                    value="{{ date('Y-m-d\TH:i') }}">
+                            </div>
                         </div>
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Deskripsi</label>
-                            <textarea class="form-control" id="description" name="description" rows="3"
-                                placeholder="Masukkan deskripsi Aktifitas Prospect"></textarea>
+                        <div class="modal-footer pt-2 pb-2">
+                            <input type="hidden" id="id_trans" name="id_trans" value="">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                            <button class="btn btn-primary" type="submit">Simpan</button>
                         </div>
-                        <div class="mb-3">
-                            <label for="date_time" class="form-label">Tanggal dan Jam</label>
-                            <input type="datetime-local" class="form-control" id="date_time" name="date_time"
-                                value="{{ date('Y-m-d\TH:i') }}">
-                        </div>
-                    </div>
-                    <div class="modal-footer pt-2 pb-2">
-                        <input type="hidden" id="id_trans" name="id_trans" value="">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                        <button class="btn btn-primary" type="submit">Simpan</button>
-                    </div>
-                </form>
+                    </form>
+                </div>
             </div>
         </div>
-    </div>
-@endsection
+    @endsection
 
-@section('js_plugins')
-    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"
-        integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous">
-    </script>
-@endsection
+    @section('js_plugins')
+        <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"
+            integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous">
+        </script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @endsection
 
-@section('js_inline')
-    <script type="text/javascript">
-        function openProspectActivityAddModal(type) {
-            $('#activityTypeSelect').prop('disabled', true);
+    @section('js_inline')
+        <script type="text/javascript">
+            function openProspectActivityAddModal(type) {
+                $('#activityTypeSelect').prop('disabled', true);
 
-            $('#type_name').val(type.toLowerCase());
+                $('#type_name').val(type.toLowerCase());
 
-            $('#activityTypeSelect').val(function() {
-                // Cari value yang cocok (case-insensitive)
-                let matchedValue = '';
-                $(this).find('option').each(function() {
-                    if ($(this).val().toLowerCase() === type.toLowerCase()) {
-                        matchedValue = $(this).val();
-                        return false; // break loop
+                $('#activityTypeSelect').val(function() {
+                    // Cari value yang cocok (case-insensitive)
+                    let matchedValue = '';
+                    $(this).find('option').each(function() {
+                        if ($(this).val().toLowerCase() === type.toLowerCase()) {
+                            matchedValue = $(this).val();
+                            return false; // break loop
+                        }
+                    });
+                    return matchedValue;
+                });
+
+                $('#modal_add_prospect_activity').modal('show');
+            }
+
+            $(document).on('click', '.delete-prospect-btn', function(e) {
+                e.preventDefault();
+                const form = $(this).closest('form');
+
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: "Data prospect akan dihapus secara permanen!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, Hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
                     }
                 });
-                return matchedValue;
             });
-
-            $('#modal_add_prospect_activity').modal('show');
-        }
-    </script>
-@endsection
+        </script>
+    @endsection

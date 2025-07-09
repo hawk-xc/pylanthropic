@@ -45,4 +45,9 @@ class CRMProspect extends Model
     {
         return $this->hasMany(CRMProspectLogs::class, 'crm_prospect_id', 'id');
     }
+
+    public function crm_prospect_pic()
+    {
+        return $this->belongsTo(User::class, 'assign_to');
+    }
 }
