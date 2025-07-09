@@ -85,7 +85,7 @@
                         <ol class="breadcrumb mb-0 pb-0 pl-0">
                             <li class="breadcrumb-item"><a href="{{ route('adm.index') }}">Home</a></li>
                             <li class="breadcrumb-item active" aria-current="page"><a
-                                    href="{{ route('adm.program.index') }}">CRM Leads</a></li>
+                                    href="{{ route('adm.crm-leads.index') }}">CRM Leads</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Detail Prospect</li>
                         </ol>
                     </nav>
