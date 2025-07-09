@@ -159,7 +159,7 @@
                         var items = $.map(data.data, function(obj) {
                             let donatur_name = obj.name;
                             obj.id = obj.id;
-                            obj.text = `${donatur_name}`
+                            obj.text = `${donatur_name} (${obj.telp})`
                             return obj;
                         });
                         params.page = params.page || 1

@@ -175,10 +175,10 @@
                     },
                     processResults: function(data, params) {
                         var items = $.map(data.data, function(obj) {
-                            return {
-                                id: obj.id,
-                                text: obj.name
-                            };
+                            let donatur_name = obj.name;
+                            obj.id = obj.id;
+                            obj.text = `${donatur_name} (${obj.telp})`
+                            return obj;
                         });
                         return {
                             results: items,

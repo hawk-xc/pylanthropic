@@ -1472,12 +1472,12 @@ https://bantubersama.com/bantupalestina';
      */
     public function select2(Request $request)
     {
-        $data = Donatur::query()->select('id', 'name', 'email');
+        $data = Donatur::query()->select('id', 'name', 'email', 'telp');
         $last_page = null;
 
         if ($request->has('search') && $request->search != '') {
             // Apply search param
-            $data = $data->where('name', 'like', '%' . $request->search . '%');
+            $data = $data->where('name', 'like', '%' . $request->search . '%')->orWhere('telp', 'like', '%' . $request->search . '%');
         }
 
         if ($request->has('page')) {
