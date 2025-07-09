@@ -24,6 +24,36 @@
         .big-checkbox {
             min-height: auto !important;
         }
+
+        .leads-box {
+            background-color: #f5f7fa;
+            color: rgb(42, 28, 28);
+            width: 160px;
+            border-radius: 10px;
+            height: 50px;
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+
+        .leads-box:hover {
+            background-color: #e9ecef;
+            transform: scale(1.05);
+        }
+
+        .create-leads-box {
+            outline: #c1c3c7 1px dashed;
+            color: rgb(42, 28, 28);
+            width: 160px;
+            border-radius: 10px;
+            height: 50px;
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+
+        .create-leads-box:hover {
+            background-color: #e9ecef;
+            transform: scale(1.05);
+        }
     </style>
 @endsection
 
@@ -266,13 +296,18 @@
                         <ol class="breadcrumb mb-0 pb-0">
                             <li class="breadcrumb-item"><a href="{{ route('adm.index') }}">Home</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Leads CRM</li>
+                            @if (request()->query('leads'))
+                                <li class="breadcrumb-item active" aria-current="page">{{ request()->query('leads') }}</li>
+                            @endif
                         </ol>
                     </nav>
                     <div class="d-flex flex-col gap-2">
-                        <a id="crm_prospect-id" href="/adm/crm-prospect/create?leads_id={{ request()->query('leads') }}"
-                            class="btn btn-primary">
-                            Tambah Prospect
-                        </a>
+                        @if (request()->query('leads'))
+                            <a id="crm_prospect-id" href="/adm/crm-prospect/create?leads_id={{ request()->query('leads') }}"
+                                class="btn btn-primary">
+                                Tambah Prospect
+                            </a>
+                        @endif
                         <div class="dropdown">
                             <button class="btn btn-outline-primary dropdown-toggle" type="button" id="leadsDropdown"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
@@ -298,27 +333,48 @@
 
             <!-- Container untuk multiple rows -->
             <div class="kanban-container">
-                <div class="kanban-row">
-                    <div class="kanban-board">
-                        <!-- Kolom kanban akan di-generate secara dinamis oleh JavaScript -->
-                        <a class="kanban-column" id="add-pipeline"
-                            href="/adm/crm-pipeline/create?leads={{ request()->query('leads') }}"
-                            style="text-decoration: none;">
-                            <div class="prospect-card-adder">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" fill="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <rect x="2" y="2" width="20" height="20" rx="4" ry="4"
-                                        fill="none" stroke="currentColor" stroke-width="2" />
-                                    <line x1="12" y1="8" x2="12" y2="16" stroke="currentColor"
-                                        stroke-width="2" />
-                                    <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor"
-                                        stroke-width="2" />
-                                </svg>
-                                <h5>Tambah Pipeline</h5>
+                @if (!request()->query('leads'))
+                    <div class="kanban-col d-flex flex-column justify-content-center gap-3 align-items-center justify-items-center"
+                        style="height: 75vh; width: 100%;">
+                        <h4>Pilih Leads</h4>
+                        <div class="d-flex flex-row gap-5 flex-wrap justify-content-center align-items-center"
+                            style="width: 80vh;">
+                            @foreach ($leads as $lead)
+                                <div onclick="window.location.href='/adm/crm-leads?leads={{ $lead->name }}'"
+                                    class="d-flex flex-column justify-content-center align-items-center leads-box">
+                                    {{ $lead->name }}
+                                </div>
+                            @endforeach
+                            <div data-toggle="modal" data-target="#addLeadModal"
+                                class="d-flex flex-row gap-2 justify-content-center align-items-center create-leads-box">
+                                <i class="fa fa-plus"></i>
+                                <span>Tambah Leads</span>
                             </div>
-                        </a>
+                        </div>
                     </div>
-                </div>
+                @else
+                    <div class="kanban-row">
+                        <div class="kanban-board">
+                            <!-- Kolom kanban akan di-generate secara dinamis oleh JavaScript -->
+                            <a class="kanban-column" id="add-pipeline"
+                                href="/adm/crm-pipeline/create?leads={{ request()->query('leads') }}"
+                                style="text-decoration: none;">
+                                <div class="prospect-card-adder">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44"
+                                        fill="currentColor" viewBox="0 0 24 24">
+                                        <rect x="2" y="2" width="20" height="20" rx="4" ry="4"
+                                            fill="none" stroke="currentColor" stroke-width="2" />
+                                        <line x1="12" y1="8" x2="12" y2="16"
+                                            stroke="currentColor" stroke-width="2" />
+                                        <line x1="8" y1="12" x2="16" y2="12"
+                                            stroke="currentColor" stroke-width="2" />
+                                    </svg>
+                                    <h5>Tambah Pipeline</h5>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
@@ -704,22 +760,33 @@
                 // Kosongkan semua kolom kecuali tombol tambah
                 $kanbanBoard.children().not('.kanban-column[href]').remove();
 
+                // Fungsi untuk memotong teks dan menambahkan tooltip
+                const truncateTextWithTooltip = (text, maxWords) => {
+                    if (!text) return 'Tidak ada deskripsi';
+
+                    const words = text.split(' ');
+                    if (words.length <= maxWords) return text;
+
+                    const truncated = words.slice(0, maxWords).join(' ') + '...';
+                    return `<span title="${text.replace(/"/g, '&quot;')}" style="cursor: help;">${truncated}</span>`;
+                };
+
                 // Buat kolom untuk setiap pipeline
                 pipelines.forEach(pipeline => {
                     const columnId = `pipeline-${pipeline.id}-column`;
 
                     const $column = $(`
-                    <div class="kanban-column">
-                        <div class="kanban-column-header">
-                            <h6 class="fw-bold">${pipeline.name}</h6>
-                            <small>${pipeline.description || 'Tidak ada deskripsi'}</small>
-                            <div class="mt-1">
-                                <small class="text-muted">Deals: ${pipeline.percentage_deals}%</small>
+                        <div class="kanban-column">
+                            <div class="kanban-column-header">
+                                <h6 class="fw-bold">${pipeline.name}</h6>
+                                <small>${truncateTextWithTooltip(pipeline.description, 5)}</small>
+                                <div class="mt-1">
+                                    <small class="text-muted">Deals: ${pipeline.percentage_deals}%</small>
+                                </div>
                             </div>
+                            <div class="kanban-column-body" id="${columnId}"></div>
                         </div>
-                        <div class="kanban-column-body" id="${columnId}"></div>
-                    </div>
-                `);
+                    `);
 
                     // Sisipkan sebelum tombol tambah
                     $column.insertBefore($kanbanBoard.find('.kanban-column[href]'));
@@ -769,22 +836,33 @@
 
             // Fungsi untuk membuat card prospect
             function createProspectCard(pipeline, prospect) {
+                // Fungsi untuk memotong teks dan menambahkan tooltip
+                const truncateTextWithTooltip = (text, maxWords) => {
+                    if (!text) return 'Tidak ada deskripsi';
+
+                    const words = text.split(' ');
+                    if (words.length <= maxWords) return text;
+
+                    const truncated = words.slice(0, maxWords).join(' ') + '...';
+                    return `<span title="${text.replace(/"/g, '&quot;')}" style="cursor: help;">${truncated}</span>`;
+                };
+
                 return $(`
-                <div class="kanban-card" 
-                     data-prospect-id="${prospect.id}" 
-                     data-pipeline-id="${pipeline.id}">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h6 class="mb-1"><a href="/adm/crm-prospect/${prospect.id}?leads=${currentLeadsId}">${prospect.name}</a></h6>
-                            <p class="mb-1">${prospect.description || 'Tidak ada deskripsi'}</p>
-                            <small class="text-muted">Nominal: ${formatCurrency(prospect.nominal)}</small>
+                    <div class="kanban-card" 
+                         data-prospect-id="${prospect.id}" 
+                         data-pipeline-id="${pipeline.id}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1"><a href="/adm/crm-prospect/${prospect.id}?leads=${currentLeadsId}">${prospect.name}</a></h6>
+                                <p class="mb-1">${truncateTextWithTooltip(prospect.description, 20)}</p>
+                                <small class="text-muted">Nominal: ${formatCurrency(prospect.nominal)}</small>
+                            </div>
+                            <span class="badge bg-light text-dark">
+                                ${formatDate(prospect.created_at)}
+                            </span>
                         </div>
-                        <span class="badge bg-light text-dark">
-                            ${formatDate(prospect.created_at)}
-                        </span>
                     </div>
-                </div>
-            `);
+                `);
             }
 
             // Format tanggal
@@ -901,6 +979,7 @@
                     currentLeadsId = data.text;
                     fetchLeadsData();
                     history.pushState(null, null, `?leads=${data.text.toLowerCase()}`);
+                    window.location.reload();
                 }
             });
         });
