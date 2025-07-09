@@ -66,6 +66,13 @@ class CRMProspectController extends Controller
 
             $prospect->save();
 
+            $prospect_logs = new CRMProspectLogs();
+            $prospect_logs->pipeline_name = CRMPipeline::findOrFail($request->pipeline)->name;
+            $prospect_logs->crm_prospect_id = $prospect->id;
+            $prospect_logs->crm_pipeline_id = $request->pipeline;
+            $prospect_logs->created_by = auth()->user()->id;
+            $prospect_logs->save();
+
             $pipeline_name = CRMPipeline::where('id', $request->pipeline)->first()->crm_lead->name;
 
             return redirect()
