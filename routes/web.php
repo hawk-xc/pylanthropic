@@ -220,6 +220,7 @@ Route::group([
         Route::get('/crm-prospect-list/{pipeline}', [Admin\Pipeline\CRMProspectController::class, 'listProspects'])->name('crm-prospect.list');
         Route::get('/crm-prospect-activity-list/{pipeline}', [Admin\Pipeline\CRMProspectActivityController::class, 'listProspectActivity'])->name('crm-prospect-activity.list');
 
+        // CRM Prospect
         Route::prefix('crm-prospect-activity')->group(function() {
             Route::get('/list/{pipeline}', [Admin\Pipeline\CRMProspectActivityController::class, 'listAllActivities'])
                 ->name('crm-prospect-activity.list');
@@ -243,6 +244,16 @@ Route::group([
            Route::post('{prospectId}/update-pipeline', [Admin\Pipeline\CRMProspectController::class, 'updatePipeline'])->name('crm-prospect.update'); 
         });
 
+        Route::prefix('donatur-short-link')->group(function() {
+            Route::get('/donatur-short-link/{id}', [Admin\DonaturController::class, 'donaturShortLink'])->name('donatur.shorten-link.index');
+            Route::get('/get-donatur-short-link/{id}', [Admin\DonaturController::class, 'getDonaturShortLink'])->name('donatur.shorten-link.get');
+            Route::get('/create-donatur-short-link/{id}', [Admin\DonaturController::class, 'createDonaturShortLink'])->name('donatur.shorten-link.create');
+            Route::post('/store-donatur-short-link', [Admin\DonaturController::class, 'storeDonaturShortLink'])->name('donatur.shorten-link.store');
+            Route::get('/edit-donatur-short-link/{id}', [Admin\DonaturController::class, 'editDonaturShortLink'])->name('donatur.shorten-link.edit');
+            Route::post('/update-donatur-short-link/{id}', [Admin\DonaturController::class, 'updateDonaturShortLink'])->name('donatur.shorten-link.update');
+            Route::delete('/delete-donatur-short-link/{id}', [Admin\DonaturController::class, 'deleteDonaturShortLink'])->name('donatur.shorten-link.delete');
+        });
+
         Route::resources([
             'program'          => Admin\ProgramController::class,
             'organization'     => Admin\OrganizationController::class,
@@ -263,7 +274,7 @@ Route::group([
             'crm-pipeline'     => Admin\Pipeline\CRMPipelineController::class,
             'crm-prospect'     => Admin\Pipeline\CRMProspectController::class,
             'crm-prospect-activity' => Admin\Pipeline\CRMProspectActivityController::class,
-            'crm-prospect-logs' => Admin\Pipeline\CRMProspectLogsController::class
+            'crm-prospect-logs' => Admin\Pipeline\CRMProspectLogsController::class,
         ]);
     });
 });
