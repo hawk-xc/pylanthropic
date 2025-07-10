@@ -2013,7 +2013,7 @@ class ProgramController extends Controller
      */
     public function select2(Request $request)
     {
-        $data = Program::query()->select('id', 'title', 'nominal_approved');
+        $data = Program::query()->select('id', 'title', 'nominal_approved', 'slug');
         $last_page = null;
 
         if ($request->has('search') && $request->search != '') {
