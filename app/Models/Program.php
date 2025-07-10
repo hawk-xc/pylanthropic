@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 
 // model relation definition
 use App\Models\LeadsCRM;
+use App\Models\DonaturSortLink;
 
 class Program extends Model
 {
@@ -81,5 +82,10 @@ class Program extends Model
 
     public function leadsCRM() {
         $this->hasMany(LeadsCRM::class, 'program_id', 'id');
+    }
+
+    public function donatur_short_links()
+    {
+        $this->hasMany(DonaturSortLink::class, 'program_id', 'id');
     }
 }

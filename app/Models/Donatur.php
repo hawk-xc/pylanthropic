@@ -7,6 +7,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\CRMProspect;
+use App\Models\DonaturSortLink;
 
 class Donatur extends Model
 {
@@ -56,6 +57,11 @@ class Donatur extends Model
     public function crm_prospects()
     {
         return $this->hasMany(CRMProspect::class, 'donatur_id', 'id');
+    }
+
+    public function donatur_short_links()
+    {
+        return $this->hasMany(DonaturSortLink::class, 'donatur_id', 'id');
     }
 }
 
