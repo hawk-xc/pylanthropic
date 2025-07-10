@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use App\Models\Donatur;
-use DataTables;
-
 use Exception;
+use Illuminate\Support\Str;
+use App\Models\Donatur;
+use App\Models\Program;
+use App\Models\DonaturShortLink;
 use Illuminate\Http\Request;
+
+use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 
 class DonaturController extends Controller
 {
@@ -459,9 +462,14 @@ class DonaturController extends Controller
             })
             ->addColumn('action', function($row){
                 $url_edit  = route('adm.donatur.edit', $row->id);
-                $actionBtn = '<a href="'.$url_edit.'" target="_blank" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
-                            <a href="'.route('adm.donatur.show', $row->id).'" target="_blank" class="edit btn btn-info btn-xs mb-1" title="Detail"><i class="fa fa-eye"></i></a>
-                            ';
+
+                $actionButton = [
+                    'edit' => '<a href="'.$url_edit.'" target="_blank" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>',
+                    'show' => '<a href="'.route('adm.donatur.show', $row->id).'" target="_blank" class="edit btn btn-info btn-xs mb-1" title="Detail"><i class="fa fa-eye"></i></a>',
+                    'shortlink' => '<a href="'.route('adm.donatur.shorten-link.index', $row->id).'?name='.urlencode($row->name).'" target="_blank" class="edit btn btn-primary btn-xs mb-1" title="Buat Short Link"><i class="fa fa-link"></i></a>',
+                ];
+
+                $actionBtn = $actionButton['edit'].' '.$actionButton['show'].' '.$actionButton['shortlink'];
                 return $actionBtn;
             })
             ->rawColumns(['name', 'action', 'last_donate', 'donate_summary', 'chat'])
@@ -1495,5 +1503,237 @@ https://bantubersama.com/bantupalestina';
                 'last_page' => $last_page,
             ],
         ]);
+    }
+
+    public function donaturShortLink(string $id)
+    {
+        $donatur = Donatur::findOrFail($id);
+
+        return view('admin.donatur.short-link.index', ['donatur' => $donatur]);
+    }
+
+    public function createDonaturShortLink(string $id) {
+        $donatur = Donatur::findOrFail($id);
+        $payment_types = \App\Models\PaymentType::select(['id', 'key', 'name'])->get();
+
+        return view('admin.donatur.short-link.create', ['donatur' => $donatur, 'payment_types' => $payment_types]);
+    }
+
+    public function storeDonaturShortLink(Request $request) {
+        $request->validate([
+            'donatur_id' => 'required|numeric',
+            'name' => 'required|string',
+            'program' => 'required|numeric',
+            'payment_type' => 'required|string',
+            'amount' => 'required|string',
+            'description' => 'string',
+            'is_active' => 'string|in:on,off'
+        ], [
+            'donatur_id.required' => 'Kolom Donatur ID wajib diisi.',
+            'donatur_id.numeric' => 'Kolom Donatur ID harus berupa angka.',
+            'program.required' => 'Kolom Program ID wajib diisi.',
+            'program.numeric' => 'Kolom Program ID harus berupa angka.',
+            'payment_type.required' => 'Kolom Metode Pembayaran wajib diisi.',
+            'payment_type.string' => 'Kolom Metode Pembayaran harus berupa teks.',
+            'amount.required' => 'Kolom Jumlah wajib diisi.',
+            'amount.string' => 'Kolom Jumlah harus berupa teks.',
+            'is_active.string' => 'Kolom Status harus berupa teks.',
+            'is_active.in' => 'Kolom Status harus salah satu dari: on, off.'
+        ]);
+
+        try {
+            $donaturShortLink = new DonaturShortLink;
+            $donaturShortLink->program_id = $request->program;
+            $donaturShortLink->donatur_id = $request->donatur_id;
+            $donaturShortLink->name = $request->name;
+            $donaturShortLink->is_active = $request->is_active === 'on' ? 1 : 0;
+            $donaturShortLink->description = $request->description;
+            $donaturShortLink->created_by = auth()->user()->id;
+
+            $donaturShortLink->payment_type = $request->payment_type;
+
+            $donaturShortLink->code = $this->generateUniqueCode(10);
+
+            // save the params
+            $donatur = Donatur::find($request->donatur_id);
+            $program = Program::find($request->program);
+            $amount = (int) str_replace('.', '', $request->amount);
+
+            $donaturShortLink->amount = $amount;
+
+            $donaturShortLink->direct_link = 'https://bantubersama.com/' 
+            . $program->slug 
+            . '/checkout/' 
+            . $amount 
+            . '/' 
+            . $request->payment_type 
+            . '?name=' 
+            . urlencode($donatur->name) 
+            . '&telp=' 
+            . urlencode($donatur->telp);
+
+            $donaturShortLink->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil menyimpan data.',
+                'data' => $donaturShortLink,
+                'short_url' => url('/s/' . $donaturShortLink->code),
+            ]);
+        }
+        catch (Exception $err) {
+            return response()->json(
+            [
+                'success' => false,
+                'message' => 'err: ' . $err->getMessage(),
+                'errors' => 'error happen',
+            ],
+        422);
+        }
+    }
+            
+    public function deleteDonaturShortLink(string $id) {}
+            
+    public function editDonaturShortLink(string $id) {
+        $donaturShortId = DonaturShortLink::findOrFail($id);
+        $payment_types = \App\Models\PaymentType::select(['id', 'key', 'name'])->get();
+
+        return view('admin.donatur.short-link.edit', ['donatur_short_link' => $donaturShortId, 'payment_types' => $payment_types]);
+    }
+
+    public function updateDonaturShortLink(string $id, Request $request) {
+        $request->validate([
+            'donatur_id' => 'required|numeric',
+            'name' => 'required|string',
+            'program' => 'required|numeric',
+            'payment_type' => 'required|string',
+            'amount' => 'required|string',
+            'description' => 'string',
+            'is_active' => 'string|in:on,off'
+        ], [
+            'donatur_id.required' => 'Kolom Donatur ID wajib diisi.',
+            'donatur_id.numeric' => 'Kolom Donatur ID harus berupa angka.',
+            'program.required' => 'Kolom Program ID wajib diisi.',
+            'program.numeric' => 'Kolom Program ID harus berupa angka.',
+            'payment_type.required' => 'Kolom Metode Pembayaran wajib diisi.',
+            'payment_type.string' => 'Kolom Metode Pembayaran harus berupa teks.',
+            'amount.required' => 'Kolom Jumlah wajib diisi.',
+            'amount.string' => 'Kolom Jumlah harus berupa teks.',
+            'is_active.string' => 'Kolom Status harus berupa teks.',
+            'is_active.in' => 'Kolom Status harus salah satu dari: on, off.'
+        ]);
+
+        try {
+            $donaturShortLink = DonaturShortLink::findOrFail($id);
+            $donaturShortLink->program_id = $request->program;
+            $donaturShortLink->donatur_id = $request->donatur_id;
+            $donaturShortLink->name = $request->name;
+            $donaturShortLink->is_active = $request->is_active === 'on' ? 1 : 0;
+            $donaturShortLink->description = $request->description;
+            $donaturShortLink->updated_by = auth()->user()->id;
+
+            $donaturShortLink->payment_type = $request->payment_type;
+
+            // save the params
+            $donatur = Donatur::find($request->donatur_id);
+            $program = Program::find($request->program);
+            $amount = (int) str_replace('.', '', $request->amount);
+
+            $donaturShortLink->amount = $amount;
+
+            $donaturShortLink->direct_link = 'https://bantubersama.com/' 
+            . $program->slug 
+            . '/checkout/' 
+            . $amount 
+            . '/' 
+            . $request->payment_type 
+            . '?name=' 
+            . urlencode($donatur->name) 
+            . '&telp=' 
+            . urlencode($donatur->telp);
+
+            $donaturShortLink->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil update data.',
+                'data' => $donaturShortLink,
+                'short_url' => url('/s/' . $donaturShortLink->code),
+            ]);
+        }
+        catch (Exception $err) {
+            return response()->json(
+            [
+                'success' => false,
+                'message' => 'err: ' . $err->getMessage(),
+                'errors' => 'error happen',
+            ],
+        422);
+        }
+    }
+
+    public function getDonaturShortLink(string $id) {
+        $query = DonaturShortLink::query();
+
+        $query->where('donatur_id', $id);
+
+        return DataTables::of($query)
+            ->addColumn('action', function ($shortLink) {
+                $editUrl = '<a href="' . route('adm.donatur.shorten-link.edit', $shortLink->id) . '" class="btn btn-warning btn-xs" title="Edit"><i class="fa fa-edit"></i></a>';
+
+                $deleteUrl = '<form class="d-inline delete-form" action="' . route('adm.donatur.shorten-link.delete', $shortLink->id) . '" method="POST">' . csrf_field() . method_field('DELETE') . '<button type="submit" class="btn btn-danger btn-xs delete-btn" title="Delete"><i class="fas fa-trash"></i></button></form>';
+
+                $shortUrl = '<a href="' . url('/s/' . $shortLink->code) . '" target="_blank" class="btn btn-primary btn-xs" title="Show"><i class="fas fa-external-link-alt"></i></a>';
+
+                return $editUrl . ' ' . $shortUrl . ' ' . $deleteUrl;
+            })
+            ->editColumn('is_active', function ($shortLink) {
+                return $shortLink->is_active ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-danger">Inactive</span>';
+            })
+            ->editColumn('direct_link', function ($link) {
+                return '<a href="' . $link->direct_link . '" target="_blank">' . Str::limit($link->direct_link, 30) . '</a>';
+            })
+            ->addColumn('short_url_column', function ($shortLink) {
+                $shortUrl = url('/s/' . $shortLink->code);
+                return '
+                <div class="input-group input-group-sm">
+                    <input type="text" class="form-control form-control-sm short-url-input" value="' .
+                    $shortUrl .
+                    '" readonly>
+                    <button class="btn btn-outline-secondary copy-short-url" type="button" data-url="' .
+                    $shortUrl .
+                    '">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>';
+            })
+            ->rawColumns(['action', 'is_active', 'direct_link', 'short_url_column'])
+            ->make(true);
+    }
+
+    protected function generateUniqueCode($length = 10)
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $charactersLength = strlen($characters);
+        $maxAttempts = 10;
+        $attempt = 0;
+
+        do {
+            $code = '';
+            for ($i = 0; $i < $length; $i++) {
+                $code .= $characters[rand(0, $charactersLength - 1)];
+            }
+
+            $existsInShortLinks = \App\Models\ShortLinkModel::where('code', $code)->exists();
+            $existsInDonaturLinks = \App\Models\DonaturShortLink::where('code', $code)->exists();
+
+            $attempt++;
+
+            if ($attempt >= $maxAttempts) {
+                throw new Exception('Failed to generate unique code after ' . $maxAttempts . ' attempts');
+            }
+        } while ($existsInShortLinks || $existsInDonaturLinks);
+
+        return $code;
     }
 }
