@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models;
 use App\Models\ShortLinkModel;
+use App\Models\DonaturShortLink;
 
 class HomeController extends Controller
 {
@@ -63,7 +64,7 @@ class HomeController extends Controller
         return view('public.public-page.faq');
     }
 
-    public function shortLink($code)
+    public function shortLink(string $code)
     {
         $shortLink = ShortLinkModel::where('code', $code)->where('is_active', 1)->first();
 
@@ -74,9 +75,25 @@ class HomeController extends Controller
         // for click counter purpose
         // $shortLink->increment('click_count');
         // $shortLink->last_accessed_at = now();
-        
+
         $shortLink->save();
 
         return redirect()->away('https://bantubersama.com/' . $shortLink->direct_link);
+    }
+
+    public function userShortLink(string $code)
+    {
+        $shortLink = DonaturShortLink::where('code', $code)->where('is_active', 1)->first();
+
+        if (!$shortLink) {
+            abort(404, 'Short link not found or inactive');
+        }
+
+        $shortLink->click_counter = $shortLink->increment+1;
+        $shortLink->last_accessed_at = now();
+
+        $shortLink->save();
+
+        return redirect()->away($shortLink->direct_link);
     }
 }

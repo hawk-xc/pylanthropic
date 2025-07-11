@@ -21,6 +21,7 @@ use App\Http\Controllers\DonationController;
 // Route::get('/', function () { return view('welcome'); });
 Route::get('/', [Guest\HomeController::class, 'index'])->name('index');
 Route::get('/s/{code}', [Guest\HomeController::class, 'shortLink'])->name('shortlink');
+Route::get('/s/u/{code}', [Guest\HomeController::class, 'userShortLink'])->name('userShortLink');
 
 Route::group(['prefix' => 'page'], function () {
     Route::get('/about-us', [Guest\HomeController::class, 'aboutUs'])->name('aboutus');
@@ -233,7 +234,7 @@ Route::group([
         });
 
         Route::prefix('crm-leads')->group(function() {
-           Route::get('crm-leads-list', [Admin\Pipeline\CRMLeadsController::class, 'listAllLeads'])->name('crm-leads.list'); 
+           Route::get('crm-leads-list', [Admin\Pipeline\CRMLeadsController::class, 'listAllLeads'])->name('crm-leads.list');
         });
 
         Route::prefix('crm-pipeline')->group(function() {
@@ -241,7 +242,7 @@ Route::group([
         });
 
         Route::prefix('crm-prospect')->group(function() {
-           Route::post('{prospectId}/update-pipeline', [Admin\Pipeline\CRMProspectController::class, 'updatePipeline'])->name('crm-prospect.update'); 
+           Route::post('{prospectId}/update-pipeline', [Admin\Pipeline\CRMProspectController::class, 'updatePipeline'])->name('crm-prospect.update');
         });
 
         Route::prefix('donatur-short-link')->group(function() {

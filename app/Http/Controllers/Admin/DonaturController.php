@@ -1549,7 +1549,7 @@ https://bantubersama.com/bantupalestina';
                 'success' => true,
                 'message' => 'Berhasil menyimpan data.',
                 'data' => $donaturShortLink,
-                'short_url' => url('/s/' . $donaturShortLink->code),
+                'short_url' => url('/s/u/' . $donaturShortLink->code),
             ]);
         } catch (Exception $err) {
             return response()->json(
@@ -1642,7 +1642,7 @@ https://bantubersama.com/bantupalestina';
                 'success' => true,
                 'message' => 'Berhasil update data.',
                 'data' => $donaturShortLink,
-                'short_url' => url('/s/' . $donaturShortLink->code),
+                'short_url' => url('/s/u/' . $donaturShortLink->code),
             ]);
         } catch (Exception $err) {
             return response()->json(
@@ -1668,7 +1668,7 @@ https://bantubersama.com/bantupalestina';
 
                 $deleteUrl = '<form class="d-inline delete-form" action="' . route('adm.donatur.shorten-link.delete', $shortLink->id) . '" method="POST">' . csrf_field() . method_field('DELETE') . '<button type="submit" class="btn btn-danger btn-xs delete-btn" title="Delete"><i class="fas fa-trash"></i></button></form>';
 
-                $shortUrl = '<a href="' . url('/s/' . $shortLink->code) . '" target="_blank" class="btn btn-primary btn-xs" title="Show"><i class="fas fa-external-link-alt"></i></a>';
+                $shortUrl = '<a href="' . url('/s/u/' . $shortLink->code) . '" target="_blank" class="btn btn-primary btn-xs" title="Show"><i class="fas fa-external-link-alt"></i></a>';
 
                 return $editUrl . ' ' . $shortUrl . ' ' . $deleteUrl;
             })
@@ -1679,7 +1679,7 @@ https://bantubersama.com/bantupalestina';
                 return '<a href="' . $link->direct_link . '" target="_blank">' . Str::limit($link->direct_link, 30) . '</a>';
             })
             ->addColumn('short_url_column', function ($shortLink) {
-                $shortUrl = url('/s/' . $shortLink->code);
+                $shortUrl = url('/s/u/' . $shortLink->code);
                 return '
                 <div class="input-group input-group-sm">
                     <input type="text" class="form-control form-control-sm short-url-input" value="' .
