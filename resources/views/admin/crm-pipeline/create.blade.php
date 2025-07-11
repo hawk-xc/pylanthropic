@@ -626,8 +626,8 @@
                     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
                 }
 
-                table.content-table, 
-                table.content-table th, 
+                table.content-table,
+                table.content-table th,
                 table.content-table td {
                     border: 1px solid #34495e !important;
                 }
@@ -745,5 +745,28 @@
                 });
             }
         });
+    </script>
+
+    <script>
+        @if (session('message'))
+            Swal.fire({
+                toast: true,
+                position: 'bottom-end',
+                icon: '{{ session('message')['type'] }}',
+                title: '{{ session('message')['text'] }}',
+                showConfirmButton: false,
+                timer: 15000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'rounded shadow-sm px-3 py-2 border-0 d-flex flex-row align-middle-center justify-content-center'
+                },
+                background: '{{ session('message')['type'] === 'success' ? '#d1fae5' : '#fee2e2' }}',
+                color: '{{ session('message')['type'] === 'success' ? '#065f46' : '#b91c1c' }}',
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+        @endif
     </script>
 @endsection

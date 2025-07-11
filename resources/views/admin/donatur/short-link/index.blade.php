@@ -34,7 +34,6 @@
     </style>
 @endsection
 
-
 @section('content')
     <div class="main-card mb-3 card">
         <div class="card-body">
@@ -56,8 +55,8 @@
                     <button class="btn btn-outline-primary">Lembaga</button> --}}
                     <button class="btn btn-outline-primary mr-1" id="refresh_table_short-link"><i class="fa fa-sync"></i>
                         Refresh</button>
-                    <a href="{{ route('adm.donatur.shorten-link.create', $donatur->id) }}" target="_blank" class="btn btn-outline-primary"><i
-                            class="fa fa-plus mr-1"></i> Tambah</a>
+                    <a href="{{ route('adm.donatur.shorten-link.create', $donatur->id) }}" target="_blank"
+                        class="btn btn-outline-primary"><i class="fa fa-plus mr-1"></i> Tambah</a>
                 </div>
             </div>
             <div class="divider"></div>
@@ -77,7 +76,6 @@
         </div>
     </div>
 @endsection
-
 
 @section('js_plugins')
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
@@ -203,5 +201,28 @@
         $("#refresh_table_short-link").on("click", function() {
             table.ajax.reload();
         });
+    </script>
+
+    <script>
+        @if (session('message'))
+            Swal.fire({
+                toast: true,
+                position: 'bottom-end',
+                icon: '{{ session('message')['type'] }}',
+                title: '{{ session('message')['text'] }}',
+                showConfirmButton: false,
+                timer: 15000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'rounded shadow-sm px-3 py-2 border-0 d-flex flex-row align-middle-center justify-content-center'
+                },
+                background: '{{ session('message')['type'] === 'success' ? '#d1fae5' : '#fee2e2' }}',
+                color: '{{ session('message')['type'] === 'success' ? '#065f46' : '#b91c1c' }}',
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+        @endif
     </script>
 @endsection

@@ -73,7 +73,7 @@
                     </div>
                 </div>
                 <input type="hidden" name="donatur_id" value="{{ $donatur->id }}">
-                
+
                 {{-- url asal --}}
                 <div class="col-12">
                     <label class="form-label required fw-semibold">Nama Tautan {!! printRequired() !!}</label>
@@ -153,7 +153,7 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <a href="{{ route('adm.shorten-link.index') }}" class="btn btn-primary w-100">
+                            <a href="{{ route('adm.donatur.shorten-link.index', $donatur->id) }}" class="btn btn-primary w-100">
                                 <i class="fas fa-list"></i> Lihat semua Tautan Pendek
                             </a>
                         </div>
@@ -308,7 +308,7 @@
                         return obj;
                     });
                     params.page = params.page || 1;
-                
+
                     return {
                         results: items,
                         pagination: {
