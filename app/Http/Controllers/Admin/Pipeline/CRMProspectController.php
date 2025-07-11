@@ -77,9 +77,16 @@ class CRMProspectController extends Controller
 
             return redirect()
                 ->to('adm/crm-pipeline?leads=' . $pipeline_name)
-                ->with('success', 'Data berhasil ditambahkan');
+                ->with('message', [
+                    'type' => 'success',
+                    'text' => 'Berhasil menambah data Prospek!',
+                ])
+                ;
         } catch (Exception $err) {
-            return back()->with('error', $err->getMessage());
+            return back()->with('message', [
+                'type' => 'error',
+                'text' => $err->getMessage(),
+            ]);
         }
     }
 
@@ -155,10 +162,15 @@ class CRMProspectController extends Controller
 
             return redirect()
                 ->to('adm/crm-prospect/'. $id .'?leads=' . $leads_name)
-                ->with('success', 'Data berhasil diubah');
+                ->with('message', [
+                    'type' => 'success',
+                    'text' => 'Berhasil mengubah data Prospek!',
+                ]);
         } catch (Exception $err) {
-            dd($err);
-            return back()->with('error', $err->getMessage());
+            return back()->with('message', [
+                'type' => 'error',
+                'text' => $err->getMessage(),
+            ]);
         }
     }
 
@@ -175,11 +187,17 @@ class CRMProspectController extends Controller
 
             return redirect()
                 ->to('adm/crm-pipeline?leads=' . $leadsId)
-                ->with('success', 'Data berhasil dihapus');
+                ->with('message', [
+                    'type' => 'success',
+                    'text' => 'Data Short Link berhasil dihapus!',
+                ]);
         } catch (Exception $err) {
             return redirect()
                 ->back()
-                ->with('error', 'Gagal menghapus data: ' . $err->getMessage());
+                ->with('message', [
+                    'type' => 'error',
+                    'text' => 'Gagal menghapus data: ' . $err->getMessage(),
+                ]);
         }
     }
 

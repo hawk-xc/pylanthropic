@@ -45,8 +45,11 @@ class CRMLeadsController extends Controller
             $crm_leads->sort_number = $request->sort_number;
             $crm_leads->created_by = auth()->user()->id;
             $crm_leads->save();
-            
-            return back()->with('success', 'Berhasil menambahkan data');
+
+            return back()->with('message', [
+                'type' => 'success',
+                'text' => 'Berhasil menambah data Pipeline!',
+            ]);
         } catch(Exception $err) {
             return response()->json([
                 'success' => false,
@@ -87,7 +90,7 @@ class CRMLeadsController extends Controller
         //
     }
 
-    public function listAllLeads(Request $request) 
+    public function listAllLeads(Request $request)
     {
         $query = CRMLeads::query();
 

@@ -69,10 +69,16 @@ class CRMPipelineController extends Controller
             $leads_name = strtolower(CRMLeads::find($request->leads_id)->name);
             return redirect()->to('adm/crm-pipeline?leads=' . $leads_name)->with('success', 'Data berhasil ditambahkan');
            }
-           
-           return back()->with('error', 'Gagal tambah, ada kesalahan teknis');
+
+           return back()->with('message', [
+                'type' => 'success',
+                'text' => 'Berhasil menambah Data prospek!',
+            ]);
         } catch (Exception $err) {
-            return back()->with('error', $err->getMessage());
+            return back()->with('message', [
+                'type' => 'error',
+                'text' => $err->getMessage()
+            ]);
         }
     }
 
@@ -151,7 +157,7 @@ class CRMPipelineController extends Controller
                     'type' => $request->type,
                     'is_active' => $request->is_active,
                 ]);
-                
+
                 response()->json(
                     [
                         'success' => true,
@@ -180,7 +186,7 @@ class CRMPipelineController extends Controller
         }
     }
 
-    public function getAllPipelines(Request $request) 
+    public function getAllPipelines(Request $request)
     {
         $leads_name = $request->leads;
 
@@ -199,12 +205,18 @@ class CRMPipelineController extends Controller
                     200,
                 );
             } else {
-                dd('asdas');
+                return response()->json(
+                    [
+                        'success' => false,
+                        'data' => 'err on load pipeline data',
+                    ],
+                    200,
+                );
             }
         } catch (Exception $err) {
             return response()->json(
                 [
-                    'success' => true,
+                    'success' => false,
                     'data' => $err,
                 ],
                 403,

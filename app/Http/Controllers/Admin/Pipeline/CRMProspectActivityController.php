@@ -54,14 +54,19 @@ class CRMProspectActivityController extends Controller
 
             $crmProspectActivity->save();
 
-            return back()->with('success', 'Activity berhasil ditambahkan');
+            return back()->with('message', [
+                'type' => 'success',
+                'text' => 'Berhasil menambah data Aktifitas Prospek!',
+            ]);
         } catch (Exception $err) {
-            dd($err);
-            return back()->with('error', $err->getMessage());
+            return back()->with('message', [
+                'type' => 'error',
+                'text' => $err->getMessage()
+            ]);
         }
     }
 
-    public function listProspectActivity(Request $request) 
+    public function listProspectActivity(Request $request)
     {
         $prospect_type = $request->pipeline;
 
@@ -82,7 +87,7 @@ class CRMProspectActivityController extends Controller
         } catch (Exception $err) {
             return response()->json(
                 [
-                    'success' => true,
+                    'success' => false,
                     'data' => $err,
                 ],
                 403,
