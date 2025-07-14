@@ -1628,8 +1628,8 @@ https://bantubersama.com/bantupalestina';
             $donaturShortLink->payment_type = $request->payment_type;
 
             // save the params
-            $donatur = Donatur::find($request       ->donatur_id);
-                    $program = Program::find($request->program)     ;
+            $donatur = Donatur::find($request->donatur_id);
+            $program = Program::find($request->program);
             $amount = (int) str_replace('.', '', $request->amount);
 
             $donaturShortLink->amount = $amount;
