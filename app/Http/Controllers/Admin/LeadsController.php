@@ -846,7 +846,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                         ]);
                     }
                 }
-            case 'shading_happiness':
+            case 'sharing_happiness':
                 $count_inp_org = 0;
                 $count_inp_program = 0;
 
@@ -858,85 +858,89 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                 curl_close($curl);
 
                 if ($err) {
-                    echo 'Pesan gagal terkirim, error :' . $err;
-                } else {
-                    $res = json_decode($response);
+                    return response()->json([
+                        'status' => 'failed',
+                        'message' => 'Pesan gagal terkirim, error: ' . $err,
+                    ]);
+                }
 
-                    if (isset($res->result)) {
-                        $data = $res->result->data;
+                $res = json_decode($response);
 
-                        for ($i = 0; $i < count($data); $i++) {
-                            if (isset($data[$i]->user->name)) {
-                                $org = DB::table('grab_organization')
-                                    ->select('user_id')
-                                    ->where('name', $data[$i]->user->name)
-                                    ->first();
-                                if (!isset($org->user_id)) {
-                                    $user_id = DB::table('grab_organization')->insertGetId([
-                                        'user_id' => date('ymdhis'),
-                                        'name' => $data[$i]->user->name,
-                                        'avatar' => $data[$i]->user->picture,
-                                        'platform' => 'sharinghappiness',
-                                    ]);
+                if (!isset($res->result)) {
+                    return response()->json([
+                        'status' => 'failed',
+                        'message' => 'Data tidak valid dari API',
+                    ]);
+                }
 
-                                    $count_inp_org++;
-                                } else {
-                                    $user_id = $org->user_id;
-                                }
-                            } else {
-                                $user_id = null;
-                            }
+                $data = $res->result->data;
 
-                            $program = DB::table('grab_program')->select('id_grab')->where('id_grab', $data[$i]->id)->first();
-                            if (!isset($program->id_grab) && isset($data[$i]->galleries[0]->image) && !is_null($data[$i]->galleries[0]->image) && !is_null($data[$i]->cover_picture->image)) {
-                                DB::table('grab_program')->insertGetId([
-                                    'id_grab' => $data[$i]->id,
-                                    'platform_id' => $platform_id,
-                                    'category_slug' => isset($data[$i]->category->slug) ? $data[$i]->category->slug : null,
-                                    'name' => isset($data[$i]->title) ? $this->removeEmoji($data[$i]->title) : null,
-                                    'slug' => $data[$i]->slug,
-                                    'permalink' => 'https://sharinghappiness.org/' . $data[$i]->slug,
-                                    'headline' => isset($data[$i]->city->name) ? $this->removeEmoji($data[$i]->city->name) : null,
-                                    'content' => null,
-                                    'status' => $data[$i]->status,
-                                    'target_status' => null,
-                                    'target_type' => null,
-                                    'target_at' => $data[$i]->end_date,
-                                    'target_amount' => str_replace([' ', '.', 'Rp', ',', '-'], '', $data[$i]->target),
-                                    'collect_amount' => str_replace([' ', '.', 'Rp', ',', '-'], '', $data[$i]->collected),
-                                    'remaining_amount' => 0,
-                                    'over_at' => $data[$i]->end_date != 'null' && date('Y', strtotime($data[$i]->end_date)) > 1970 ? $data[$i]->end_date : null,
-                                    'is_featured' => $data[$i]->is_optimized,
-                                    'is_populer_search' => $data[$i]->is_recommended,
-                                    'status_percent' => $data[$i]->discount_price,
-                                    'status_date' => null,
-                                    'image_url' => isset($data[$i]->galleries[0]->image) ? $data[$i]->galleries[0]->image : $data[$i]->cover_picture->image,
-                                    'image_url_thumb' => $data[$i]->cover_picture->image,
-                                    'user_id' => $user_id,
-                                    'total_donatur' => str_replace('.', '', $data[$i]->transaction_count),
-                                    'fb_pixel' => null,
-                                    'gtm' => null,
-                                    'toggle_dana' => null,
-                                    'program_created_at' => date('Y-m-d', strtotime($data[$i]->created_at)) ? date('Y-m-d', strtotime($data[$i]->created_at)) : date('Y-m-d'),
-                                    'tags_name' => null,
-                                    'is_favorite' => 0,
-                                    'fund_display' => null,
-                                ]);
+                foreach ($data as $index => $item) {
+                    $organization_id = null;
+
+                    if (isset($item->user)) {
+                        $org = \App\Models\GrabOrganization::where('name', $item->user->name)->first();
+
+                        if (!$org) {
+                            $desc = isset($item->user->profile) ? $this->removeEmoji($item->user->profile->about) : null;
+                            $new_org = new \App\Models\GrabOrganization();
+                            $new_org->user_id = $item->user_id;
+                            $new_org->platform_id = $platform_id;
+                            $new_org->name = $item->user->name;
+                            $new_org->avatar = $item->user->picture;
+                            $new_org->description = $desc;
+
+                            $new_org->save();
+
+                            $count_inp_org++;
+                            $organization_id = $new_org->id;
+                        } else {
+                            $organization_id = $org->id;
+                        }
+                    }
+
+                    // store the program
+                    if ($organization_id) {
+                        $program = \App\Models\GrabProgram::where('grab_organization_id', $organization_id)->where('slug', $item->slug)->first();
+
+                        if ($program === null) {
+                            try {
+                                $new_program = new \App\Models\GrabProgram();
+                                $new_program->user_id = $organization_id;
+                                $new_program->platform_id = $platform_id;
+                                $new_program->grab_organization_id = $organization_id;
+                                $new_program->id_grab = $item->id ?? null;
+                                $new_program->name = $item->title;
+                                $new_program->slug = $item->slug;
+                                $new_program->permalink = 'https://sharinghappiness.org/' . $item->slug;
+                                $new_program->target_status = $item->status;
+                                $new_program->target_amount = $item->target;
+                                $new_program->collect_amount = $item->collected;
+                                $new_program->over_at = $item->end_date;
+                                $new_program->status_percent = null;
+                                $new_program->image_url = $item->cover_picture->image ?? '-';
+                                $new_program->program_created_at = $item->created_at;
+
+                                $simpan = $new_program->save();
                                 $count_inp_program++;
+                            } catch (Exception $e) {
+                                return response()->json([
+                                    'status' => 'failed',
+                                    'message' => 'Pesan gagal terkirim, error: ' . $e->getMessage(),
+                                ]);
                             }
                         }
-
-                        return response()->json([
-                            'status' => 'success',
-                            'message' => 'data berhasil diambil',
-                        ]);
-                    } else {
-                        return response()->json([
-                            'status' => 'failed',
-                            'message' => 'data gagal diambil',
-                        ]);
                     }
                 }
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Proses selesai',
+                    'data' => [
+                        'organisasi_baru' => $count_inp_org,
+                        'program_baru' => $count_inp_program,
+                    ],
+                ]);
             case 'bantu_tetangga':
                 $count_inp_org = 0;
                 $count_inp_program = 0;
@@ -967,10 +971,9 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                 $data = $res->data->data;
 
                 foreach ($data as $index => $item) {
-                    // Proses Organisasi
                     $organization_id = null;
 
-                    if (isset($item->campaigner->slug)) {
+                    if (isset($item->slug)) {
                         $org = \App\Models\GrabOrganization::where('name', $item->campaigner->name)->first();
 
                         if (!$org) {
@@ -1006,7 +1009,6 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                         }
                     }
 
-                    // Proses Program hanya jika organization_id valid
                     if ($organization_id) {
                         $program = \App\Models\GrabProgram::where('grab_organization_id', $organization_id)->where('slug', $item->slug)->first();
 
