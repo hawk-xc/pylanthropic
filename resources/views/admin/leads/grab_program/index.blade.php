@@ -23,6 +23,7 @@
                     <ol class="breadcrumb mb-0 pb-0">
                         <li class="breadcrumb-item"><a href="{{ route('adm.index') }}">Home</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Leads</li>
+                        <li class="breadcrumb-item active" aria-current="page">List Grab Program</li>
                     </ol>
                 </nav>
             </div>
@@ -35,12 +36,13 @@
             </div>
         </div>
         <div class="divider"></div>
-        <table id="table-donatur" class="table table-hover table-striped table-bordered">
+        <table id="table-list_grab_program" class="table table-hover table-striped table-bordered">
             <thead>
                 <tr>
                     <th>Judul</th>
                     <th>Image</th>
                     <th>Nominal & Lembaga</th>
+                    <th>Platform</th>
                     <th>Tanggal</th>
                     <th>Headline</th>
                 </tr>
@@ -69,7 +71,7 @@
 @section('js_inline')
 <script type="text/javascript">
     $.fn.DataTable.ext.pager.numbers_length = 20;
-    var table = $('#table-donatur').DataTable({
+    var table = $('#table-list_grab_program').DataTable({
         orderCellsTop: true,
         fixedHeader: true,
         processing: true,
@@ -88,12 +90,13 @@
             {data: 'name', name: 'name'},
             {data: 'images', name: 'images'},
             {data: 'nominal', name: 'nominal'},
+            {data: 'platform', name: 'platform'},
             {data: 'date', name: 'date'},
             {data: 'headline', name: 'headline'},
             ]
     });
-    $('#table-donatur thead tr').clone(true).appendTo( '#table-donatur thead' );
-    $('#table-donatur tr:eq(1) th').each( function (i) {
+    $('#table-list_grab_program thead tr').clone(true).appendTo( '#table-list_grab_program thead' );
+    $('#table-list_grab_program tr:eq(1) th').each( function (i) {
         var title = $(this).text();
         $(this).html( '<input type="text" class="form-control form-control-sm" placeholder="Search '+title+'" />' );
 
@@ -158,7 +161,7 @@
         } else {
             var result = confirm("Tidak jadi MENARIK?");
         }
-        
+
         if (result) {
             $.ajax({
                 type: "GET",
@@ -187,7 +190,7 @@
         } else {
             var result = confirm("Tidak jadi MENARIK?");
         }
-        
+
         if (result) {
             $.ajax({
                 type: "GET",
