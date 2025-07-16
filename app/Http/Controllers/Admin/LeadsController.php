@@ -743,109 +743,97 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                 $count_inp_program = 0;
 
                 $curl = curl_init();
-                curl_setopt($curl, CURLOPT_URL, 'https://core.sholeh.app/api/v1/programs?s=' . $search . '&per_page=' . $data_count . '&page=' . $page);
+                curl_setopt($curl, CURLOPT_URL, 'https://core.sholeh.app/api/v1/programs?s='.$search.'&per_page='.$data_count.'&page=' . $page);
                 curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
                 $response = curl_exec($curl);
                 $err = curl_error($curl);
                 curl_close($curl);
 
                 if ($err) {
-                    echo 'Pesan gagal terkirim, error :' . $err;
-                } else {
-                    $res = json_decode($response);
+                    return response()->json([
+                        'status' => 'failed',
+                        'message' => 'Pesan gagal terkirim, error: ' . $err,
+                    ]);
+                }
 
-                    if (isset($res->data)) {
-                        $data = $res->data->data;
+                $res = json_decode($response);
 
-                        for ($i = 0; $i < count($data); $i++) {
-                            if (isset($data[$i]->user->id)) {
-                                $org = DB::table('grab_organization')
-                                    ->select('user_id')
-                                    ->where('user_id', $data[$i]->user->id)
-                                    ->first();
-                                if (!isset($org->user_id)) {
-                                    if (isset($data[$i]->user->description)) {
-                                        $desc = $this->removeEmoji($data[$i]->user->description);
-                                    } else {
-                                        $desc = null;
-                                    }
+                if (!isset($res->data)) {
+                    return response()->json([
+                        'status' => 'failed',
+                        'message' => 'Data tidak valid dari API',
+                    ]);
+                }
 
-                                    $user_id = DB::table('grab_organization')->insertGetId([
-                                        'user_id' => $data[$i]->user->id,
-                                        'platform_id' => $platform_id,
-                                        'name' => $data[$i]->user->name,
-                                        'avatar' => $data[$i]->user->avatar,
-                                        'domicile' => isset($data[$i]->user->domicile->text) ? $data[$i]->user->domicile->text : null,
-                                        'address' => $data[$i]->user->address,
-                                        'fb_pixel' => isset($data[$i]->user->fb_pixel) ? $data[$i]->user->fb_pixel : null,
-                                        'gtm' => isset($data[$i]->user->gtm) ? $data[$i]->user->gtm : null,
-                                        'twitter' => isset($data[$i]->user->twitter) ? $data[$i]->user->twitter : null,
-                                        'instagram' => isset($data[$i]->user->instagram) ? $data[$i]->user->instagram : null,
-                                        'facebook' => isset($data[$i]->user->facebook) ? $data[$i]->user->facebook : null,
-                                        'youtube' => isset($data[$i]->user->youtube) ? $data[$i]->user->youtube : null,
-                                        'description' => $desc,
-                                    ]);
+                $data = $res->data->data;
 
-                                    $count_inp_org++;
-                                } else {
-                                    $user_id = $org->user_id;
-                                }
-                            } else {
-                                $user_id = null;
-                            }
+                foreach ($data as $index => $item) {
+                    $organization_id = null;
 
-                            // ambil data program
-                            $program = DB::table('grab_program')->select('id_grab')->where('id_grab', $data[$i]->id)->first();
-                            if (!isset($program->id_grab)) {
-                                DB::table('grab_program')->insertGetId([
-                                    'id_grab' => $data[$i]->id,
-                                    'category_slug' => $data[$i]->category_slug,
-                                    'platform_id' => $platform_id,
-                                    'type' => $data[$i]->type,
-                                    'name' => isset($data[$i]->name) ? $this->removeEmoji($data[$i]->name) : null,
-                                    'slug' => $data[$i]->slug,
-                                    'permalink' => $data[$i]->permalink,
-                                    'headline' => isset($data[$i]->headline) ? $this->removeEmoji($data[$i]->headline) : null,
-                                    'content' => isset($data[$i]->content) ? $this->removeEmoji($data[$i]->content) : null,
-                                    'status' => $data[$i]->status,
-                                    'target_status' => $data[$i]->target_status,
-                                    'target_type' => $data[$i]->target_type,
-                                    'target_at' => $data[$i]->target_at,
-                                    'target_amount' => str_replace([' ', '.', 'Rp', ',', '-'], '', $data[$i]->target_amount),
-                                    'collect_amount' => str_replace([' ', '.', 'Rp', ',', '-'], '', $data[$i]->collect_amount),
-                                    'remaining_amount' => str_replace([' ', '.', 'Rp', ',', '-'], '', $data[$i]->remaining_amount),
-                                    'over_at' => $data[$i]->over_at != 'null' ? date('Y-m-d H:i:s', strtotime($data[$i]->over_at)) : null,
-                                    'is_featured' => $data[$i]->is_featured,
-                                    'is_populer_search' => $data[$i]->is_populer_search,
-                                    'status_percent' => $data[$i]->status_percent,
-                                    'status_date' => $data[$i]->status_date == 'false' ? null : $data[$i]->status_date,
-                                    'image_url' => $data[$i]->image_url,
-                                    'image_url_thumb' => $data[$i]->image_url_thumb,
-                                    'user_id' => $user_id,
-                                    'total_donatur' => str_replace('.', '', $data[$i]->total_donatur),
-                                    'fb_pixel' => $data[$i]->fb_pixel,
-                                    'gtm' => $data[$i]->gtm,
-                                    'toggle_dana' => $data[$i]->toggle_dana,
-                                    'program_created_at' => date('Y-m-d', strtotime($data[$i]->program_created_at)) ? date('Y-m-d', strtotime($data[$i]->program_created_at)) : date('Y-m-d'),
-                                    'tags_name' => isset($data[$i]->tags->title) ? $data[$i]->tags->title : null,
-                                    'is_favorite' => $data[$i]->is_favorite == 'false' ? 0 : 1,
-                                    'fund_display' => $data[$i]->fund_display,
-                                ]);
+                    if (isset($item->user)) {
+                        $org = \App\Models\GrabOrganization::where('name', $item->user->name)->first();
+
+                        if (!$org) {
+                            $desc = isset($item->user) ? $this->removeEmoji($item->user->description) : null;
+                            $new_org = new \App\Models\GrabOrganization();
+                            $new_org->user_id = $item->user->id;
+                            $new_org->platform_id = $platform_id;
+                            $new_org->name = $item->user->name;
+                            $new_org->avatar = $item->user->avatar;
+                            $new_org->description = $desc;
+
+                            $new_org->save();
+
+                            $count_inp_org++;
+                            $organization_id = $new_org->id;
+                        } else {
+                            $organization_id = $org->id;
+                        }
+                    }
+
+                    // store the program
+                    if ($organization_id) {
+                        $program = \App\Models\GrabProgram::where('grab_organization_id', $organization_id)->where('slug', $item->slug)->first();
+
+                        if ($program === null) {
+                            try {
+                                $new_program = new \App\Models\GrabProgram();
+                                $new_program->user_id = $organization_id;
+                                $new_program->platform_id = $platform_id;
+                                $new_program->grab_organization_id = $organization_id;
+                                $new_program->id_grab = $item->id ?? null;
+                                $new_program->name = $item->name;
+                                $new_program->slug = $item->slug;
+                                $new_program->permalink = $item->permalink;
+                                $new_program->target_status = $item->status;
+                                $new_program->target_amount = (int)str_replace(['Rp', ' ', '.'], '', $item->target_amount);
+                                $new_program->collect_amount = (int)str_replace(['Rp', ' ', '.'], '', $item->target_at);
+                                $new_program->over_at = \Carbon\Carbon::parse($item->target_at)->format('Y-m-d H:i:s');
+                                $new_program->status_percent = $item->status_percent;
+                                $new_program->image_url = $item->image_url ?? '-';
+                                $new_program->headline = $item->headline;
+                                $new_program->program_created_at = \Carbon\Carbon::createFromFormat('d M Y', $item->program_created_at)->format('Y-m-d') . ' 00:00:00';
+
+                                $new_program->save();
                                 $count_inp_program++;
+                            } catch (Exception $e) {
+                                return response()->json([
+                                    'status' => 'failed',
+                                    'message' => 'Pesan gagal terkirim, error: ' . $e->getMessage(),
+                                ]);
                             }
                         }
-
-                        return response()->json([
-                            'status' => 'success',
-                            'message' => 'data berhasil diambil',
-                        ]);
-                    } else {
-                        return response()->json([
-                            'status' => 'failed',
-                            'message' => 'data gagal diambil',
-                        ]);
                     }
                 }
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Proses selesai',
+                    'data' => [
+                        'organisasi_baru' => $count_inp_org,
+                        'program_baru' => $count_inp_program,
+                    ],
+                ]);
             case 'sharing_happiness':
                 $count_inp_org = 0;
                 $count_inp_program = 0;
