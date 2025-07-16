@@ -117,6 +117,8 @@ Route::group([
         Route::get('/program-category-datatables', [Admin\ProgramCategoryController::class, 'datatablesProgramCategory'])->name('program-category.datatables');
         // program detail on category datatable
         Route::get('/program-in-detail-category-datatables', [Admin\ProgramCategoryController::class, 'datatableProgramCategoryDetail'])->name('program-in-detail-category.datatables');
+        // Leads Platform
+        Route::get('/leads-platform-datatables', [Admin\LeadsController::class, 'getLeadsPlatformDatatable'])->name('leads-platform.datatables');
 
         // PROGRAM
         Route::get('/program-show-donate', [Admin\ProgramController::class, 'showDonate'])->name('program.show.donate');
@@ -192,6 +194,7 @@ Route::group([
         // Route::get('/leads-select2-all', [Admin\LeadsController::class, 'select2'])->name('leads.select2.all');
 
         // LEADS
+        Route::get('/leads-grabdo-platform', [Admin\LeadsController::class, 'grabdoPlatformLeads'])->name('leads.grabdo.platform');
         Route::get('/grab-amalsholeh', [Admin\LeadsController::class, 'grabLeadsAmalsholeh'])->name('leads.grab.amalsholeh');
         Route::get('/grab-sharinghappiness', [Admin\LeadsController::class, 'grabLeadsSharingHappiness'])->name('leads.grab.sharinghappiness');
         Route::get('/list-leads-grab', [Admin\LeadsController::class, 'grabList'])->name('leads.grab.list');
@@ -206,6 +209,7 @@ Route::group([
         Route::get('/list-leads-org-datatables', [Admin\LeadsController::class, 'orgDatatables'])->name('leads.org.datatables');
         Route::get('/list-leads-org-add', [Admin\LeadsController::class, 'orgCreate'])->name('leads.org.add');
         Route::post('/list-leads-org-store', [Admin\LeadsController::class, 'orgStore'])->name('leads.org.store');
+        Route::post('/grapdo-platform', [Admin\LeadsController::class, 'grabdoPlatform'])->name('leads.grabdo.platform-data');
 
         // LEADS CRM
         Route::get('/get-leads-info', [Admin\LeadsController::class, 'getLeadsInfo'])->name('get.leads.info');
