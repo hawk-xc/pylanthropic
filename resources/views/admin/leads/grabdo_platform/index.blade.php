@@ -251,6 +251,7 @@
                     submitBtn.prop('disabled', false);
                     closeBtn.prop('disabled', false);
                     submitBtn.text('Grab');
+                    table.ajax.reload(null, false);
                 },
                 error: function(xhr) {
                     // Handle error if needed
