@@ -157,7 +157,7 @@
                         <li>
                             <a href="{{ route('adm.leads.grab.list') }}"
                                 class="{{ $sidebar_submenu == 'grab' ? 'mm-active' : '' }}">
-                                <i class="metismenu-icon"></i> List Grab
+                                <i class="metismenu-icon"></i> List Grab Program
                             </a>
                         </li>
                         <li>
@@ -167,7 +167,7 @@
                             </a>
                         </li>
                         <li>
-                            <a href="{{ route('adm.leads.grab.amalsholeh') }}"
+                            <a href="{{ route('adm.leads.grabdo.platform') }}"
                                 class="{{ $sidebar_submenu == 'grab_do' ? 'mm-active' : '' }}">
                                 <i class="metismenu-icon"></i> Grab Do
                             </a>
