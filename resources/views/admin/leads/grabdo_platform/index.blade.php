@@ -183,7 +183,7 @@
         ajax: "{{ route('adm.leads-platform.datatables') }}",
         columns: [
             {data: 'name', name: 'name'},
-            {data: 'name', name: 'name'},
+            {data: 'program_count', name: 'program_count'},
             {data: 'status', name: 'status', orderable: false, searchable: false},
             {
                 data: 'action',

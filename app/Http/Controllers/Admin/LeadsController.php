@@ -1071,11 +1071,18 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                     return '<span class="badge badge-pill badge-danger">Tidak Aktif</span>';
                 }
             })
+            ->addColumn('program_count', function ($row) {
+                return $row->grab_programs->count();
+            })
             ->addColumn('action', function ($row) {
-                $btn_edit = '<a href="" target="_blank" class="badge badge-sm badge-primary"><i class="fa fa-list"></i></a>';
-                $btn_grab = '<a style="cursor: pointer;" onClick="openDonaturLoyalModal(`' . $row->name . '`)" class="badge badge-sm badge-success"><i class="fa fa-database"></i></button>';
+                if ($row->is_active) {
+                    $btn_edit = '<a href="" target="_blank" class="badge badge-sm badge-primary"><i class="fa fa-list"></i></a>';
+                    $btn_grab = '<a style="cursor: pointer;" onClick="openDonaturLoyalModal(`' . $row->name . '`)" class="badge badge-sm badge-success"><i class="fa fa-database"></i></button>';
 
-                return $btn_edit . ' ' . $btn_grab;
+                    return $btn_edit . ' ' . $btn_grab;
+                } else {
+                    return '-';
+                }
             })
             ->addIndexColumn()
             ->rawColumns(['status', 'action'])
