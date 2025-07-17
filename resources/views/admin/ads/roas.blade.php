@@ -24,7 +24,7 @@
 @section('content')
 <div class="main-card mb-3 card">
     <div class="card-body">
-        <div class="row"><!-- 
+        <div class="row"><!--
             <div class="col-4">
                 @if($ref!='')
                     <span class="font-weight-bold">Ref Code = {{ strtoupper($ref) }}</span>
@@ -223,9 +223,9 @@
             {data: 'invoice', name: 'invoice'},
             {data: 'created_at', name: 'created_at'},
             // {
-            //     data: 'action', 
-            //     name: 'action', 
-            //     orderable: false, 
+            //     data: 'action',
+            //     name: 'action',
+            //     orderable: false,
             //     searchable: false
             // },
         ]
@@ -234,7 +234,7 @@
     $('#table-donatur tr:eq(1) th').each( function (i) {
         var title = $(this).text();
         $(this).html( '<input type="text" class="form-control form-control-sm" placeholder="Search '+title+'" />' );
-    
+
         $( 'input', this ).on( 'keyup change', function () {
             if ( table.column(i).search() !== this.value ) {
                 table
@@ -255,7 +255,7 @@
             data: function (params) {
                 var query = {
                     search: params.term,
-                    page: params.page || 1
+                    // page: params.page || 1
                 }
 
                 // Query parameters will be ?search=[term]&type=public
