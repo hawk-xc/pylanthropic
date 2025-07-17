@@ -236,22 +236,22 @@ class AdsController extends Controller
     //                 // NOTIF ADS TEAM
     //                 if($spend>12000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('09:00:00')) {
     //                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                    
+
     //                 } elseif($spend>14000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('18:30:00')) {
     //                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                    
+
     //                 }  elseif($spend>20000 && $result<1 && strtotime(date('H:i:s'))>strtotime('18:30:00')) {
     //                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                    
+
     //                 } elseif($cpr>14000 && strtotime(date('H:i:s'))<=strtotime('09:00:00')) {
     //                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                    
+
     //                 } elseif($cpr>16000 && strtotime(date('H:i:s'))<=strtotime('18:30:00')) {
     //                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                    
+
     //                 } elseif($cpr>34000 && strtotime(date('H:i:s'))>strtotime('18:30:00')) {
     //                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                    
+
     //                 } else {
     //                     $others[]      = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
     //                 }
@@ -413,22 +413,22 @@ public function adsNeedAction(Request $request)
                 // NOTIF ADS TEAM
                 if($spend>12000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('09:00:00')) {
                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                
+
                 } elseif($spend>14000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('18:30:00')) {
                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                
+
                 }  elseif($spend>20000 && $result<1 && strtotime(date('H:i:s'))>strtotime('18:30:00')) {
                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                
+
                 } elseif($cpr>14000 && strtotime(date('H:i:s'))<=strtotime('09:00:00')) {
                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                
+
                 } elseif($cpr>16000 && strtotime(date('H:i:s'))<=strtotime('18:30:00')) {
                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                
+
                 } elseif($cpr>34000 && strtotime(date('H:i:s'))>strtotime('18:30:00')) {
                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-                
+
                 } else {
                     $others[]      = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
                 }
@@ -611,7 +611,7 @@ public function adsNeedAction(Request $request)
                 $all         = $all->first();
                 $paid        = $paid->first();
             }
-            
+
             $param_limit     = '&limit=5000';
             $param_level     = '&level=campaign';
             $param_field     = '&fields=campaign_id,campaign_name,objective,cost_per_conversion,spend,actions';
@@ -728,19 +728,19 @@ public function adsNeedAction(Request $request)
                         if ($action['action_type'] == 'video_view') {
                             $view_video = $action['value'];
                         }
-                        
+
                         if ($action['action_type'] == 'offsite_conversion.fb_pixel_view_content') {
                             $view_lp = $action['value'];
                         }
-                        
+
                         if ($action['action_type'] == 'offsite_conversion.fb_pixel_lead') {
                             $click_donate = $action['value'];
                         }
-                        
+
                         if ($action['action_type'] == 'offsite_conversion.fb_pixel_add_payment_info') {
                             $payment_info = $action['value'];
                         }
-                        
+
                         if ($action['action_type'] == 'offsite_conversion.fb_pixel_initiate_checkout') {
                             $form = $action['value'];
                         }
@@ -905,7 +905,7 @@ public function adsNeedAction(Request $request)
      */
     public function datatablesChat()
     {
-        
+
     }
 
 
@@ -914,40 +914,35 @@ public function adsNeedAction(Request $request)
      */
     public function select2(Request $request)
     {
-        $data      = AdsCampaign::select('id', 'name', 'ref_code');
-        $last_page = null;
+        $query = AdsCampaign::select('id', 'name', 'ref_code');
+        $perPage = 10;
 
         if($request->has('ref_code') && $request->ref_code == 'ada'){
-            $data = $data->whereNotNull('ref_code');
+            $query = $query->whereNotNull('ref_code');
         }
 
         if($request->has('search') && $request->search != ''){
-            // Apply search param
-            $data = $data->where('name', 'like', '%'.$request->search.'%');
+            $query = $query->where('name', 'like', '%'.$request->search.'%');
         }
 
-        if($request->has('page')){
-            // If request has page parameter, add paginate to eloquent
-            $data->paginate(10);
-            // Get last page
-            $last_page = $data->paginate(10)->lastPage();
-        }
+        // Selalu gunakan paginasi
+        $paginator = $query->paginate($perPage);
+        $data = $paginator->items();
 
-        $data = $data->get();
-        $data = $data->map(function ($data) {
+        $data = collect($data)->map(function ($item) {
             return [
-                'id'       => $data->id.'',
-                'ref_code' => $data->ref_code,
-                'name'     => $data->name
+                'id' => (string)$item['id'],
+                'ref_code' => $item['ref_code'],
+                'name' => $item['name'],
+                'text' => $item['name'].' - '.$item['ref_code'] // Tambahkan text untuk Select2
             ];
         });
 
         return response()->json([
-            'status'     => 'success',
-            'message'    => 'Data Fetched',
-            'data'       => $data,
-            'extra_data' => [
-                'last_page' => $last_page,
+            'status' => 'success',
+            'data' => $data,
+            'pagination' => [
+                'more' => $paginator->hasMorePages()
             ]
         ]);
     }

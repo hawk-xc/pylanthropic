@@ -252,54 +252,33 @@
         ajax: {
             url: "{{ route('adm.ads.select2.all').'/?ref_code=ada' }}",
             delay: 250,
+            dataType: 'json',
             data: function (params) {
-                var query = {
+                return {
                     search: params.term,
-                    // page: params.page || 1
-                }
-
-                // Query parameters will be ?search=[term]&type=public
-                return query;
+                    page: params.page || 1
+                };
             },
             processResults: function (data, params) {
-                var items = $.map(data.data, function(obj){
-                    let lembaga_name = obj.name+' - '+obj.ref_code;
-                    obj.id = obj.id;
-                    obj.text = `${lembaga_name}`;
-
-                    return obj;
-                });
                 params.page = params.page || 1;
 
-                // console.log(items);
-                // Transforms the top-level key of the response object from 'items' to 'results'
                 return {
-                    results: items,
+                    results: data.data,
                     pagination: {
-                        more: params.page < data.last_page
+                        more: data.pagination.more
                     }
                 };
             },
+            cache: true
         },
         templateResult: function (item) {
-            // console.log(item);
-            // No need to template the searching text
             if (item.loading) {
                 return item.text;
             }
-
-            var term = select2_query.term || '';
-            // var $result = markMatch(item.text, term);
-            var $result = item.text, term;
-
-            return $result;
+            return item.text;
         },
         language: {
             searching: function (params) {
-                // Intercept the query as it is happening
-                select2_query = params;
-
-                // Change this to be appropriate for your application
                 return 'Searching...';
             }
         }
