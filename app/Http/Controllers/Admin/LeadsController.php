@@ -165,8 +165,8 @@ class LeadsController extends Controller
     public function grabDatatables(Request $request)
     {
         $data = \App\Models\GrabProgram::with(['grab_organization', 'leads_platform'])
-        ->whereNotNull('user_id')
-        ->orderBy('created_at', 'DESC');
+            ->whereNotNull('user_id')
+            ->orderBy('created_at', 'DESC');
 
         if (isset($request->interest)) {
             if ($request->interest == 1) {
@@ -723,27 +723,116 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
         return $clear_string;
     }
 
-    protected function getLeadsDataFromApi($name, $data_count, $page, $search)
+    protected function getLeadsDataFromApi($name, $data_count, $page, $search, $category_id = null)
     {
         $raw_name = str_replace('_', ' ', $name);
         $raw_name = ucwords($raw_name);
-        $platform_id = \App\Models\LeadsPlatform::select(['id', 'name'])->where('name', 'like', '%' . $raw_name . '%')->first()->id;
+        $platform_id = \App\Models\LeadsPlatform::select(['id', 'name'])
+            ->where('name', 'like', '%' . $raw_name . '%')
+            ->first()->id;
 
         switch (strtolower($name)) {
             case 'raih_mimpi':
+                $count_inp_org = 0;
+                $count_inp_program = 0;
+
+                $curl = curl_init();
+                curl_setopt($curl, CURLOPT_URL, 'https://api.raihmimpi.id/campaign?page='.$page);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+                $response = curl_exec($curl);
+                $err = curl_error($curl);
+                curl_close($curl);
+
+                if ($err) {
+                    return response()->json([
+                        'status' => 'failed',
+                        'message' => 'Pesan gagal terkirim, error: ' . $err,
+                    ]);
+                }
+
+                $res = json_decode($response);
+
+                foreach ($res as $index => $item) {
+                    $organization_id = null;
+
+                    $org = \App\Models\GrabOrganization::where('name', $item->NAMA_LENGKAP)->first();
+
+                    if (!$org) {
+                        $new_org = new \App\Models\GrabOrganization();
+                        $new_org->user_id = null;
+                        $new_org->platform_id = $platform_id;
+                        $new_org->name = $item->NAMA_LENGKAP;
+                        $new_org->avatar = null;
+                        $new_org->description = null;
+
+                        $new_org->save();
+                        $count_inp_org++;
+                        $organization_id = $new_org->id;
+                    } else {
+                        $organization_id = $org->id;
+                    }
+
+                    // store the program
+                    if ($organization_id) {
+                        $program = \App\Models\GrabProgram::where('grab_organization_id', $organization_id)->where('slug', $item->SLUG)->first();
+
+                        if ($program === null) {
+                            $prog_url = 'https://raihmimpi.id/_next/data/gf2TnbYAL_Va85990GwEu/campaign/'.$item->SLUG.'.json?SLUG='.$item->SLUG;
+
+                            $program_curl = curl_init();
+                            curl_setopt($program_curl, CURLOPT_URL, $prog_url);
+                            curl_setopt($program_curl, CURLOPT_RETURNTRANSFER, 1);
+                            $program_response = curl_exec($program_curl);
+                            $program_err = curl_error($program_curl);
+                            curl_close($program_curl);
+
+                            $program_res = json_decode($program_response);
+
+                            $prog_data = $program_res->pageProps->campaign;
+
+                            try {
+                                $new_program = new \App\Models\GrabProgram();
+                                $new_program->user_id = $organization_id;
+                                $new_program->platform_id = $platform_id;
+                                $new_program->grab_organization_id = $organization_id;
+                                $new_program->id_grab = $prog_data->ID ?? null;
+                                $new_program->name = $prog_data->CAMPAIGN_NAME ?? null;
+                                $new_program->slug = $prog_data->SLUG ?? null;
+                                $new_program->permalink = 'https://raihmimpi.id/campaign/' . $prog_data->SLUG;
+                                $new_program->target_status = null;
+                                $new_program->target_amount = $prog_data->TARGET_DONASI_UANG;
+                                $new_program->collect_amount = $prog_data->TOTAL_DONASI;
+                                $new_program->over_at = \Carbon\Carbon::createFromFormat('Y-m-d', $prog_data->END_DIBUAT)->format('Y-m-d H:i:s');
+                                $new_program->status_percent = null;
+                                $new_program->image_url = $prog_data->images[0];
+                                $new_program->program_created_at = null;
+
+                                $simpan = $new_program->save();
+                                $count_inp_program++;
+                            } catch (Exception $e) {
+                                return response()->json([
+                                    'status' => 'failed',
+                                    'message' => 'Pesan gagal terkirim, error: ' . $e->getMessage(),
+                                ]);
+                            }
+                        }
+                    }
+                }
+
                 return response()->json([
                     'status' => 'success',
-                    'nama' => $name,
-                    'data_count' => $data_count,
-                    'page' => $page,
-                    'search' => $search,
+                    'message' => 'Proses selesai',
+                    'data' => [
+                        'organisasi_baru' => $count_inp_org,
+                        'program_baru' => $count_inp_program,
+                    ],
                 ]);
             case 'amal_sholeh':
                 $count_inp_org = 0;
                 $count_inp_program = 0;
 
                 $curl = curl_init();
-                curl_setopt($curl, CURLOPT_URL, 'https://core.sholeh.app/api/v1/programs?s='.$search.'&per_page='.$data_count.'&page=' . $page);
+                curl_setopt($curl, CURLOPT_URL, 'https://core.sholeh.app/api/v1/programs?s=' . $search . '&per_page=' . $data_count . '&page=' . $page);
                 curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
                 $response = curl_exec($curl);
                 $err = curl_error($curl);
@@ -806,8 +895,8 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                                 $new_program->slug = $item->slug;
                                 $new_program->permalink = $item->permalink;
                                 $new_program->target_status = $item->status;
-                                $new_program->target_amount = (int)str_replace(['Rp', ' ', '.'], '', $item->target_amount);
-                                $new_program->collect_amount = (int)str_replace(['Rp', ' ', '.'], '', $item->target_at);
+                                $new_program->target_amount = (int) str_replace(['Rp', ' ', '.'], '', $item->target_amount);
+                                $new_program->collect_amount = (int) str_replace(['Rp', ' ', '.'], '', $item->target_at);
                                 $new_program->over_at = \Carbon\Carbon::parse($item->target_at)->format('Y-m-d H:i:s');
                                 $new_program->status_percent = $item->status_percent;
                                 $new_program->image_url = $item->image_url ?? '-';
@@ -1039,6 +1128,154 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                         'program_baru' => $count_inp_program,
                     ],
                 ]);
+            case 'kita_bisa':
+
+                $count_inp_org = 0;
+                $count_inp_program = 0;
+
+                $curl = curl_init();
+                curl_setopt($curl, CURLOPT_URL, 'https://geni.kitabisa.com/kampanye/campaign-list?category_id=22&limit=11&userpage=kategori&offset=0&limit=11');
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($curl, CURLOPT_HTTPHEADER, [
+                    'Accept: application/json',
+                    'Referer: https://kitabisa.com/',
+                    'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'X-ktbs-api-version: 1.0.0',
+                    'X-ktbs-client-version: 1.0.0',
+                    'X-ktbs-platform-name: pwa',
+                    'X-ktbs-request-id: 7a11dd69-aef5-406b-b2a3-a5c0d2586316',
+                    'X-ktbs-signature: 2055b5e8e958647f207a70a2276053330c0454841e02ed650c5539514b3c7b58',
+                    'X-ktbs-time: 1752802325'
+                ]);
+                $response = curl_exec($curl);
+                $err = curl_error($curl);
+                curl_close($curl);
+
+                if ($err) {
+                    return response()->json([
+                        'status' => 'failed',
+                        'message' => 'Pesan gagal terkirim, error: ' . $err,
+                    ]);
+                }
+
+                $res = json_decode($response);
+
+                    return response()->json([
+                        'status' => 'astaga',
+                        'message' => $res,
+                    ]);
+                    //adasd
+
+                $count_inp_org = 0;
+                $count_inp_program = 0;
+
+                $headers = ['accept: application/json', 'referer: https://kitabisa.com/', 'x-ktbs-api-version: 1.0.0', 'x-ktbs-client-name: kanvas', 'x-ktbs-client-version: 1.0.0', 'x-ktbs-platform-name: pwa', 'x-ktbs-request-id: 7a11dd69-aef5-406b-b2a3-a5c0d2586316', 'x-ktbs-signature: 2055b5e8e958647f207a70a2276053330c0454841e02ed650c5539514b3c7b58', 'x-ktbs-time: 1752802325', 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36'];
+
+                $curl = curl_init();
+                curl_setopt($curl, CURLOPT_URL, 'https://geni.kitabisa.com/kampanye/campaign-list?' . (isset($category_id) ? 'category_id=' . $category_id : '') . '&limit=' . $data_count . '&userpage=kategori&offset=0');
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt_array($curl, [
+                    CURLOPT_HTTPHEADER => $headers,
+                ]);
+                $response = curl_exec($curl);
+                $err = curl_error($curl);
+                curl_close($curl);
+
+                if ($err) {
+                    return response()->json([
+                        'status' => 'failed',
+                        'message' => 'Pesan gagal terkirim, error: ' . $err,
+                    ]);
+                }
+
+                $res = json_decode($response);
+
+                return response()->json([
+                    'status' => 'failed',
+                    'message' => $res,
+                ]);
+
+                foreach ($data as $index => $item) {
+                    $organization_id = null;
+
+                    if (isset($item->slug)) {
+                        $org = \App\Models\GrabOrganization::where('name', $item->campaigner->name)->first();
+
+                        if (!$org) {
+                            $org_curl = curl_init();
+                            curl_setopt($org_curl, CURLOPT_URL, 'https://core.bantutetangga.com/public/campaigner/' . $item->campaigner->slug);
+                            curl_setopt($org_curl, CURLOPT_RETURNTRANSFER, 1);
+                            $org_response = curl_exec($org_curl);
+                            $org_err = curl_error($org_curl);
+                            curl_close($org_curl);
+
+                            if (!$org_err) {
+                                $org_data = json_decode($org_response);
+
+                                if (isset($org_data->data)) {
+                                    $org_info = $org_data->data;
+                                    $desc = isset($org_info->bio) ? $this->removeEmoji($org_info->bio) : null;
+
+                                    $new_org = new \App\Models\GrabOrganization();
+                                    $new_org->user_id = $org_info->id;
+                                    $new_org->platform_id = $platform_id;
+                                    $new_org->name = $org_info->name;
+                                    $new_org->avatar = $org_info->logo;
+                                    $new_org->description = $desc;
+                                    // Set other fields as needed
+
+                                    $new_org->save();
+                                    $count_inp_org++;
+                                    $organization_id = $new_org->id;
+                                }
+                            }
+                        } else {
+                            $organization_id = $org->id;
+                        }
+                    }
+
+                    if ($organization_id) {
+                        $program = \App\Models\GrabProgram::where('grab_organization_id', $organization_id)->where('slug', $item->slug)->first();
+
+                        if ($program === null) {
+                            try {
+                                $new_program = new \App\Models\GrabProgram();
+                                $new_program->user_id = $organization_id;
+                                $new_program->platform_id = $platform_id;
+                                $new_program->grab_organization_id = $organization_id;
+                                $new_program->id_grab = $index ?? null;
+                                $new_program->name = $item->title;
+                                $new_program->slug = $item->slug;
+                                $new_program->permalink = 'https://bantutetangga.com/campaign/' . $item->slug;
+                                $new_program->target_status = $item->status;
+                                $new_program->target_amount = $item->target;
+                                $new_program->collect_amount = $item->funds;
+                                $new_program->over_at = $item->expired_at;
+                                $new_program->status_percent = $item->percentage;
+                                $new_program->image_url = $item->cover;
+                                $new_program->program_created_at = \Carbon\Carbon::parse($item->created_at)->format('Y-m-d H:i:s');
+                                // Set other fields as needed
+
+                                $simpan = $new_program->save();
+                                $count_inp_program++;
+                            } catch (Exception $e) {
+                                return response()->json([
+                                    'status' => 'failed',
+                                    'message' => 'Pesan gagal terkirim, error: ' . $e->getMessage(),
+                                ]);
+                            }
+                        }
+                    }
+                }
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Proses selesai',
+                    'data' => [
+                        'organisasi_baru' => $count_inp_org,
+                        'program_baru' => $count_inp_program,
+                    ],
+                ]);
         }
     }
 
@@ -1086,4 +1323,5 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
 
         return $this->getLeadsDataFromApi($name, $data_count, $page, $search);
     }
+
 }
