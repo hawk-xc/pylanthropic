@@ -29,7 +29,7 @@
                 </div>
             </div>
             <div class="divider"></div>
-            <table id="table-donatur" class="table table-hover table-striped table-bordered">
+            <table id="table-grabdo_platform" class="table table-hover table-striped table-bordered">
                 <thead>
                     <tr>
                         <th>Name Platform/Yayasan</th>
@@ -68,12 +68,12 @@
                         </div>
                         <div class="mb-3">
                             <label for="data_count" class="form-label">Banyak data</label>
-                            <input type="number" class="form-control" id="data_count" name="data_count"
+                            <input type="number" class="form-control" id="data_count" value="1000" name="data_count"
                                 placeholder="Masukkan banyak data yang akan digrab" required>
                         </div>
                         <div class="mb-3">
                             <label for="title_search" class="form-label">Pencarian title data</label>
-                            <input type="search" class="form-control" id="title_search" name="title_search"
+                            <input type="search" class="form-control" id="title_search" value="a" name="title_search"
                                 placeholder="Cari data berdasarkan title, eg. bantu">
                         </div>
                     </div>
@@ -177,7 +177,7 @@
 
 @section('js_inline')
     <script type="text/javascript">
-        var table = $('#table-donatur').DataTable({
+        var table = $('#table-grabdo_platform').DataTable({
             orderCellsTop: true,
             fixedHeader: true,
             processing: true,
@@ -207,8 +207,8 @@
                 },
             ]
         });
-        $('#table-donatur thead tr').clone(true).appendTo('#table-donatur thead');
-        $('#table-donatur tr:eq(1) th').each(function(i) {
+        $('#table-grabdo_platform thead tr').clone(true).appendTo('#table-grabdo_platform thead');
+        $('#table-grabdo_platform tr:eq(1) th').each(function(i) {
             var title = $(this).text();
 
             if (i === 2 || i === 3) {
