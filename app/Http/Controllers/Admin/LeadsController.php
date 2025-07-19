@@ -9,6 +9,7 @@ use Yajra\DataTables\Facades\DataTables;
 use App\Http\Controllers\WaBlastController;
 use Exception;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Cache;
 
 class LeadsController extends Controller
 {
@@ -766,6 +767,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                         $new_org->description = null;
 
                         $new_org->save();
+
                         $count_inp_org++;
                         $organization_id = $new_org->id;
                     } else {
@@ -818,6 +820,11 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                         }
                     }
                 }
+
+                // refresh cache
+                Cache::forget('leads_organizations:all');
+                Cache::forget('leads_programs:all');
+                Cache::forget('leads_platforms:all');
 
                 return response()->json([
                     'status' => 'success',
@@ -915,6 +922,11 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                     }
                 }
 
+                // refresh cache
+                Cache::forget('leads_organizations:all');
+                Cache::forget('leads_programs:all');
+                Cache::forget('leads_platforms:all');
+
                 return response()->json([
                     'status' => 'success',
                     'message' => 'Proses selesai',
@@ -1009,6 +1021,11 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                         }
                     }
                 }
+
+                // refresh cache
+                Cache::forget('leads_organizations:all');
+                Cache::forget('leads_programs:all');
+                Cache::forget('leads_platforms:all');
 
                 return response()->json([
                     'status' => 'success',
@@ -1128,8 +1145,21 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                         'program_baru' => $count_inp_program,
                     ],
                 ]);
-            case 'kita_bisa':
 
+                // refresh cache
+                Cache::forget('leads_organizations:all');
+                Cache::forget('leads_programs:all');
+                Cache::forget('leads_platforms:all');
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Proses selesai',
+                    'data' => [
+                        'organisasi_baru' => $count_inp_org,
+                        'program_baru' => $count_inp_program,
+                    ],
+                ]);
+            case 'kita_bisa':
                 $count_inp_org = 0;
                 $count_inp_program = 0;
 
@@ -1286,7 +1316,9 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
 
     public function getLeadsPlatformDatatable(Request $request)
     {
-        $data = \App\Models\LeadsPlatform::query();
+        $data = Cache::remember('leads_platforms:all', now()->addDays(3), function () {
+            return \App\Models\LeadsPlatform::all();
+        });
 
         return Datatables::of($data)
             ->editColumn('status', function ($row) {
