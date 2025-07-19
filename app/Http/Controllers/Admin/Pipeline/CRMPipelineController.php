@@ -118,6 +118,8 @@ class CRMPipelineController extends Controller
     {
         $query = CRMPipeline::query();
 
+        $query->where('is_active', 1);
+
         return Datatables::of($query)
             ->addColumn('type', function ($row) {
                 return $row->type;
@@ -136,7 +138,7 @@ class CRMPipelineController extends Controller
                     'description' => 'string|required',
                     'percentage_deals' => 'string|required',
                     'type' => 'string|required',
-                    'is_active' => 'in:1,0|required'
+                    'is_active' => 'in:1,0'
                 ], [
                     'name.required' => 'Nama pipeline wajib diisi.',
                     'name.string' => 'Nama pipeline harus berupa teks.',
@@ -146,7 +148,6 @@ class CRMPipelineController extends Controller
                     'percentage_deals.string' => 'Persentase deal harus berupa teks.',
                     'type.required' => 'Tipe wajib diisi.',
                     'type.string' => 'Tipe harus berupa teks.',
-                    'is_active.required' => 'Status wajib diisi.',
                     'is_active.in' => 'Status tidak valid.',
                 ]);
 
@@ -155,7 +156,7 @@ class CRMPipelineController extends Controller
                     'description' => $request->description,
                     'percentage_deals' => $request->percentage_deals,
                     'type' => $request->type,
-                    'is_active' => $request->is_active,
+                    'is_active' => $request->is_active ?? 0,
                 ]);
 
                 response()->json(
