@@ -312,12 +312,12 @@
                             <button class="btn btn-outline-primary dropdown-toggle" type="button" id="leadsDropdown"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                                 style="width: 100%; text-align: left;">
-                                Pilih Leads
+                                Pilih Journey
                             </button>
                             <div class="dropdown-menu" aria-labelledby="leadsDropdown" style="width: 100%;">
                                 <button class="dropdown-item text-success" type="button" data-toggle="modal"
                                     data-target="#addLeadModal">
-                                    <i class="fa fa-plus mr-2"></i> Tambah Leads Baru
+                                    <i class="fa fa-plus mr-2"></i> Tambah Journey Baru
                                 </button>
                                 <div class="dropdown-divider"></div>
                                 <select class="form-control select2-dropdown" id="leadsSelect"
@@ -356,7 +356,7 @@
                     <div class="kanban-row">
                         <div class="kanban-board">
                             <!-- Kolom kanban akan di-generate secara dinamis oleh JavaScript -->
-                            <a class="kanban-column" id="add-pipeline"
+                            <a class="kanban-column" target="_blank" id="add-pipeline"
                                 href="/adm/crm-pipeline/create?leads={{ request()->query('leads') }}"
                                 style="text-decoration: none;">
                                 <div class="prospect-card-adder">
@@ -369,7 +369,7 @@
                                         <line x1="8" y1="12" x2="16" y2="12"
                                             stroke="currentColor" stroke-width="2" />
                                     </svg>
-                                    <h5>Tambah Pipeline</h5>
+                                    <h5>Tambah Journey</h5>
                                 </div>
                             </a>
                         </div>
@@ -535,7 +535,7 @@
         $(document).ready(function() {
             // Inisialisasi Select2
             $('#leadsSelect').select2({
-                placeholder: "Cari atau pilih leads...",
+                placeholder: "Cari atau pilih Journey...",
                 dropdownParent: $('#leadsDropdown').next('.dropdown-menu'),
                 width: 'resolve',
                 allowClear: true,

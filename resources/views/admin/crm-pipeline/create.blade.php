@@ -64,11 +64,21 @@
                     <input type="number" class="form-control" id="percentage_deals" name="percentage_deals" min="1"
                         max="100" placeholder="Masukkan persentase deals disini" value="{{ old('percentage_deals') }}"
                         required>
+                    @error('percentage_deals')
+                        <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i>
+                            {{ $message }}
+                        </div>
+                    @enderror
                 </div>
 
                 <div class="col-12">
                     <label for="description" class="form-label">Deskripsi</label>
                     <textarea class="form-control" id="description" name="description" rows="3" placeholder="Masukkan deskripsi">{{ old('description') }}</textarea>
+                    @error('description')
+                        <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i>
+                            {{ $message }}
+                        </div>
+                    @enderror
                 </div>
 
                 <div class="col-12">
