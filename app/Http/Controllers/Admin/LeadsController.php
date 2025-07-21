@@ -747,7 +747,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                 if ($err) {
                     return response()->json([
                         'status' => 'failed',
-                        'message' => 'Pesan gagal terkirim, error: ' . $err,
+                        'message' => 'terjadi kesalahan saat mengembalikan data!',
                     ]);
                 }
 
@@ -814,7 +814,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                             } catch (Exception $e) {
                                 return response()->json([
                                     'status' => 'failed',
-                                    'message' => 'Pesan gagal terkirim, error: ' . $e->getMessage(),
+                                    'message' => 'terjadi kesalahan saat mengembalikan data!',
                                 ]);
                             }
                         }
@@ -848,7 +848,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                 if ($err) {
                     return response()->json([
                         'status' => 'failed',
-                        'message' => 'Pesan gagal terkirim, error: ' . $err,
+                        'message' => 'terjadi kesalahan saat mengembalikan data!',
                     ]);
                 }
 
@@ -870,7 +870,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                         $org = \App\Models\GrabOrganization::where('name', $item->user->name)->first();
 
                         if (!$org) {
-                            $desc = isset($item->user) ? $this->removeEmoji($item->user->description) : null;
+                            $desc = isset($item->user->description) ? $this->removeEmoji($item->user->description) : '-';
                             $new_org = new \App\Models\GrabOrganization();
                             $new_org->user_id = $item->user->id;
                             $new_org->platform_id = $platform_id;
@@ -915,7 +915,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                             } catch (Exception $e) {
                                 return response()->json([
                                     'status' => 'failed',
-                                    'message' => 'Pesan gagal terkirim, error: ' . $e->getMessage(),
+                                    'message' => 'terjadi kesalahan saat mengembalikan data!',
                                 ]);
                             }
                         }
@@ -949,7 +949,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                 if ($err) {
                     return response()->json([
                         'status' => 'failed',
-                        'message' => 'Pesan gagal terkirim, error: ' . $err,
+                        'message' => 'terjadi kesalahan saat mengembalikan data!',
                     ]);
                 }
 
@@ -971,7 +971,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                         $org = \App\Models\GrabOrganization::where('name', $item->user->name)->first();
 
                         if (!$org) {
-                            $desc = isset($item->user->profile) ? $this->removeEmoji($item->user->profile->about) : null;
+                            $desc = isset($item->user->about) ? $this->removeEmoji($item->user->profile->about) : '-';
                             $new_org = new \App\Models\GrabOrganization();
                             $new_org->user_id = $item->user_id;
                             $new_org->platform_id = $platform_id;
@@ -1015,7 +1015,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                             } catch (Exception $e) {
                                 return response()->json([
                                     'status' => 'failed',
-                                    'message' => 'Pesan gagal terkirim, error: ' . $e->getMessage(),
+                                    'message' => 'terjadi kesalahan saat mengembalikan data!',
                                 ]);
                             }
                         }
@@ -1049,7 +1049,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                 if ($err) {
                     return response()->json([
                         'status' => 'failed',
-                        'message' => 'Pesan gagal terkirim, error: ' . $err,
+                        'message' => 'terjadi kesalahan saat mengembalikan data!'
                     ]);
                 }
 
@@ -1083,7 +1083,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
 
                                 if (isset($org_data->data)) {
                                     $org_info = $org_data->data;
-                                    $desc = isset($org_info->bio) ? $this->removeEmoji($org_info->bio) : null;
+                                    $desc = isset($org_info->bio) ? $this->removeEmoji($org_info->bio) : '-';
 
                                     $new_org = new \App\Models\GrabOrganization();
                                     $new_org->user_id = $org_info->id;
@@ -1130,7 +1130,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                             } catch (Exception $e) {
                                 return response()->json([
                                     'status' => 'failed',
-                                    'message' => 'Pesan gagal terkirim, error: ' . $e->getMessage(),
+                                    'message' => 'terjadi kesalahan saat mengembalikan data!'
                                 ]);
                             }
                         }
