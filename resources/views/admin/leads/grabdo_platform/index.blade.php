@@ -8,9 +8,7 @@
 
 @section('css_plugins')
     <link href="{{ asset('admin/dataTables.bootstrap5.min.css') }}" rel="stylesheet">
-    <!-- <link href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css" rel="stylesheet">
-        <link href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css" rel="stylesheet">
-     -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
 @endsection
 
 
