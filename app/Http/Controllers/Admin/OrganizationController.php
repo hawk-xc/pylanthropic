@@ -165,14 +165,6 @@ class OrganizationController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
-
-    /**
      * Datatables Donatur
      */
     public function orgDatatables(Request $request)
@@ -309,38 +301,12 @@ class OrganizationController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Data Fetched',
+                'message' => 'Nama alias berhasil disimpan',
             ]);
         } catch (Exception $err) {
             return response()->json([
-                'status' => 'success',
-                'message' => 'Data Fetched',
-            ]);
-        }
-    }
-
-    public function addNewAlias(Request $request)
-    {
-        $validated = $request->validate([
-            'id_organization' => 'required|exists:organization,id',
-            'aliases_array' => 'required|json',
-            'platform_name' => 'sometimes|string'
-        ]);
-
-        try {
-            $organization = Organization::find($request->id_organization);
-            $organization->alias_names = json_decode($request->aliases_array, true);
-
-            $organization->save();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'berhasil menyimpan nama alias baru pada data',
-            ]);
-        } catch (Exception $err) {
-            return response()->json([
-                'status' => 'failed',
-                'message' => 'terjadi kesalahan saat menyimpan data',
+                'status' => 'error',
+                'message' => 'Nama alias gagal ditambahkan',
             ]);
         }
     }
