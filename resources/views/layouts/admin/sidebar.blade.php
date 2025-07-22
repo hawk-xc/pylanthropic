@@ -334,6 +334,12 @@
                     <a href="{{ route('adm.chat.index') }}"> <i
                             class="metismenu-icon pe-7s-rocket icon-gradient bg-arielle-smile"></i> History </a>
                 </li>
+
+                <li class="app-sidebar__heading">Lainnya</li>
+                <li class="{{ $sidebar_menu == 'logs' ? 'mm-active' : '' }}">
+                    <a href="{{ route('adm.logs.index') }}"> <i
+                            class="metismenu-icon pe-7s-news-paper icon-gradient bg-arielle-smile"></i> Logs </a>
+                </li>
             </ul>
         </div>
     </div>

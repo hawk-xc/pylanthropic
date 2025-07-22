@@ -260,6 +260,10 @@ Route::group([
             Route::delete('/delete-donatur-short-link/{id}', [Admin\DonaturController::class, 'deleteDonaturShortLink'])->name('donatur.shorten-link.delete');
         });
 
+        // Log Route
+        Route::get('/logs', [Admin\LogsController::class, 'index'])->name('logs.index');
+        Route::get('/logs/{filename}', [Admin\LogsController::class, 'show'])->name('admin.logs.show');
+
         Route::resources([
             'program'          => Admin\ProgramController::class,
             'organization'     => Admin\OrganizationController::class,
