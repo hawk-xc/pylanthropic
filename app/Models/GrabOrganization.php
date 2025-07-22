@@ -30,6 +30,7 @@ class GrabOrganization extends Model
         'is_partner',
         'platform',
         'is_interest',
+        'is_affiliated',
     ];
 
     public function grab_programs()
