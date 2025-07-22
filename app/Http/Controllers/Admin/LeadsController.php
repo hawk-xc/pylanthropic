@@ -766,7 +766,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                         $new_org->avatar = null;
                         $new_org->description = null;
 
-                        $new_org->is_affiliated = \App\Models\Organization::whereJsonContains('alias_names', $item->NAMA_LENGKAP)->exists() ? 1 : 0;
+                        $new_org->is_affiliated = \App\Models\Organization::whereJsonContains('alias_names', $item->NAMA_LENGKAP)->where('name', $item->NAMA_LENGKAP)->exists() ? 1 : 0;
 
                         $new_org->save();
 
@@ -880,7 +880,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                             $new_org->avatar = $item->user->avatar;
                             $new_org->description = $desc;
 
-                            $new_org->is_affiliated = \App\Models\Organization::whereJsonContains('alias_names', $item->user->name)->exists() ? 1 : 0;
+                            $new_org->is_affiliated = \App\Models\Organization::whereJsonContains('alias_names', $item->user->name)->where('name', $item->NAMA_LENGKAP)->exists() ? 1 : 0;
 
                             $new_org->save();
 
@@ -983,7 +983,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                             $new_org->avatar = $item->user->picture;
                             $new_org->description = $desc;
 
-                            $new_org->is_affiliated = \App\Models\Organization::whereJsonContains('alias_names', $item->user->name)->exists() ? 1 : 0;
+                            $new_org->is_affiliated = \App\Models\Organization::whereJsonContains('alias_names', $item->user->name)->where('name', $item->user->name)->exists() ? 1 : 0;
 
                             $new_org->save();
 
@@ -1098,7 +1098,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                                     $new_org->avatar = $org_info->logo;
                                     $new_org->description = $desc;
 
-                                    $new_org->is_affiliated = \App\Models\Organization::whereJsonContains('alias_names', $org_info->name)->exists() ? 1 : 0;
+                                    $new_org->is_affiliated = \App\Models\Organization::whereJsonContains('alias_names', $org_info->name)->where('name', $org_info->name)->exists() ? 1 : 0;
 
                                     $new_org->save();
                                     $count_inp_org++;
@@ -1316,6 +1316,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                 ]);
         }
     }
+
 
     public function grabdoPlatformLeads()
     {
