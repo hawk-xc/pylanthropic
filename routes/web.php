@@ -71,8 +71,8 @@ Route::get('/fb-ads-auto-get-spend', [FbAdsController::class, 'getSpend']);
 Route::get('/campaigner/{id}', [Guest\ProgramController::class, 'campaigner'])->name('campaigner');
 
 Route::group([
-    'as'     => 'adm.',   // for route(adm.xx)
-    'prefix' => 'adm'       // for uri
+    'as'     => 'adm.',
+    'prefix' => 'adm'
 ], function() {
     // Login
     Route::group([
@@ -216,6 +216,7 @@ Route::group([
 
         // Organization
         Route::get('/datatables-org', [Admin\OrganizationController::class, 'orgDatatables'])->name('org.datatables');
+        Route::post('/new-org-alias', [Admin\OrganizationController::class, 'newOrgAlias'])->name('org.new.alias');
 
         // Shorten Link
         Route::get('/short-link', [Admin\ShortenLinkController::class, 'shortenLinkDatatableAll'])->name('short-link.datatables');
