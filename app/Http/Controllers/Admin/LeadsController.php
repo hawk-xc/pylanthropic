@@ -13,6 +13,28 @@ use Illuminate\Support\Facades\Cache;
 
 class LeadsController extends Controller
 {
+    protected $GrabOrganizationColumn = [
+        'id',
+        'user_id',
+        'platform_id',
+        'name',
+        'domicile',
+        'address',
+        'gtm',
+        'twitter',
+        'instagram',
+        'facebook',
+        'youtube',
+        'description',
+        'email',
+        'phone',
+        'is_partner',
+        'platform',
+        'is_interest',
+        'is_affiliated',
+        'created_at',
+    ];
+
     /**
      * Display a listing of the resource.
      */
@@ -298,7 +320,9 @@ class LeadsController extends Controller
      */
     public function orgDatatables(Request $request)
     {
-        $data = DB::table('grab_organization')->orderBy('created_at', 'DESC');
+        $data = Cache::remember('grab_organization_data', 60, function () {
+            return \App\Models\GrabOrganization::select($this->GrabOrganizationColumn)->orderBy('created_at', 'DESC')->get();
+        });
 
         if (isset($request->ada_wa)) {
             if ($request->ada_wa == 1) {
@@ -338,9 +362,7 @@ class LeadsController extends Controller
         $pageSize = $request->length ? $request->length : 10;
         $start = $request->start ? $request->start : 0;
 
-        $data->skip($start)->take($pageSize);
-
-        $data = $data->get();
+        $data = $data->skip($start)->take($pageSize);
 
         return Datatables::of($data)
             ->with([
@@ -353,17 +375,25 @@ class LeadsController extends Controller
                 return $row->is_affiliated ? '<a href="#" target="_blank"><i class="fas fa-handshake"></i> ' . $row->name . '</a>' : '<a href="#" target="_blank">' . $row->name . '</a>';
             })
             ->addColumn('contact', function ($row) {
-                $sc = 'style="cursor:pointer"';
-                $i_telp = '<i class="fa fa-phone"></i>';
-                $i_mail = '<i class="fa fa-envelope"></i>';
-                $wa_param = "'" . $row->user_id . "','" . str_replace("'", '', $row->name) . "'";
-                $wa = 'onclick="firstChat(' . $wa_param . ')"';
+                $cursorStyle = 'style="cursor:pointer"';
+                $faPhone = '<i class="fa fa-phone"></i>';
+                $faMail = '<i class="fa fa-envelope"></i>';
 
-                $telp = is_null($row->phone) || $row->phone == '' ? '<span class="badge badge-sm badge-secondary">' . $i_telp . '</span>' : '<span class="badge badge-sm badge-success" ' . $wa . ' ' . $sc . '>' . $row->phone . '</span>';
-                $last_wa = '<span class="badge badge-sm badge-warning">-</span>';
-                $mail = is_null($row->email) || $row->email == '' ? '<span class="badge badge-sm badge-secondary">' . $i_mail . '</span>' : '<span class="badge badge-sm badge-success">' . $row->email . '</span>';
+                $waParams = "'" . $row->user_id . "','" . str_replace("'", '', $row->name) . "'";
 
-                return $telp . ' ' . $last_wa . '<br>' . $mail;
+                $waAttr = 'onclick="firstChat(' . $waParams . ')"';
+
+                $telp = is_null($row->phone) || $row->phone == ''
+                    ? '<a style="cursor: pointer;" onClick="openUpdateOrganizationPhoneModal(`' . $row->id . '`, `' . $row->name . '`)" class="badge badge-sm badge-primary">' . $faPhone . '</a>'
+                    : '<a style="cursor: pointer;" onClick="openUpdateOrganizationPhoneModal(`' . $row->id . '`, `' . $row->name . '`)" class="badge badge-sm badge-success" ' . $waAttr . ' ' . $cursorStyle . '>' . $faPhone . ' ' . $row->phone . '</a>';
+
+                $mail = is_null($row->email) || $row->email == ''
+                    ? '<span class="badge badge-sm badge-secondary">' . $faMail . '</span>'
+                    : '<span class="badge badge-sm badge-success">' . $row->email . '</span>';
+
+                $whatsapp =  '<a style="cursor: pointer;" onClick="openDonaturLoyalModal(`' . $row->name . '`)" class="badge badge-sm badge-success"><i class="fa fa-database"></i></button>';
+
+                return $telp . ' ' . $mail;
             })
             ->addColumn('socmed', function ($row) {
                 $sc = 'style="cursor:pointer"';
@@ -1363,6 +1393,34 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
         $search = $request->title_search;
 
         return $this->getLeadsDataFromApi($name, $data_count, $page, $search);
+    }
+
+    public function updateOrgPhone(Request $request)
+    {
+        $request->validate([
+            'id' => 'required',
+            'phone_number' => 'required|string'
+        ], [
+            'phone_number.required' => 'Nomor telephone harus diisi',
+        ]);
+
+        try {
+            $organization = \App\Models\GrabOrganization::findOrFail($request->id);
+            $organization->phone = $request->phone_number;
+
+            Cache::delete('grab_organization_data');
+            $organization->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'No telp berhasil diupdate'
+            ], 200);
+        } catch (Exception $err) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengupdate data no telp' . $err->getMessage()
+            ], 500);
+        }
     }
 
 }
