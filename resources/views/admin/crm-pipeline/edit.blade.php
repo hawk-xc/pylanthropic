@@ -22,18 +22,28 @@
                             <li class="breadcrumb-item"><a href="{{ route('adm.index') }}">Home</a></li>
                             <li class="breadcrumb-item active" aria-current="page"><a
                                     href="{{ route('adm.crm-leads.index') }}">CRM Leads</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Tambah Pipeline</li>
+                            <li class="breadcrumb-item active" aria-current="page">Edit Pipeline</li>
                         </ol>
                     </nav>
                 </div>
-                <div class="col-7 fc-rtl">
+                <div class="col-7 fc-rtl d-flex flex-row justify-content-end gap-2">
+                    <form id="deleteForm" action="/adm/crm-pipeline/{{ $pipeline->id }}?leads={{ request()->query('leads') }}" method="POST">
+                        @csrf
+                        @method('DELETE')
+                        <button type="button" class="btn btn-outline-danger" id="deleteButton">
+                            <i class="fa fa-trash"></i> Hapus Data Ini
+                        </button>
+                    </form>
+
                     <a class="btn btn-outline-primary"
                         href='/adm/crm-leads?leads={{ request()->query('leads') }}'>Kembali</a>
                 </div>
             </div>
             <div class="divider"></div>
-            <form action="{{ route('adm.crm-pipeline.store') }}" method="post" accept-charset="utf-8" class="row gy-3">
+            <form action="{{ route('adm.crm-pipeline.update', $pipeline->id) }}" method="post" accept-charset="utf-8"
+                class="row gy-3">
                 @csrf
+                @method('put')
                 @php
                     $leadsQuery = strtolower(request()->query('leads'));
                 @endphp
@@ -44,7 +54,7 @@
                 <div class="col-12">
                     <label class="form-label">Nama Pipeline</label>
                     <input type="text" class="form-control" name="name" id="name"
-                        placeholder="Masukkan Nama Pipeline" value="{{ old('name') }}" required>
+                        placeholder="Masukkan Nama Pipeline" value="{{ old('name', $pipeline->name) }}" required>
                     @error('name')
                         <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i> {{ $message }}
                         </div>
@@ -62,8 +72,8 @@
                 <div class="col-12">
                     <label for="percentage_deals" class="form-label">Percentage Deals</label>
                     <input type="number" class="form-control" id="percentage_deals" name="percentage_deals" min="1"
-                        max="100" placeholder="Masukkan persentase deals disini" value="{{ old('percentage_deals') }}"
-                        required>
+                        max="100" placeholder="Masukkan persentase deals disini"
+                        value="{{ old('percentage_deals', $pipeline->percentage_deals) }}" required>
                     @error('percentage_deals')
                         <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i>
                             {{ $message }}
@@ -73,7 +83,7 @@
 
                 <div class="col-12">
                     <label for="description" class="form-label">Deskripsi</label>
-                    <textarea class="form-control" id="description" name="description" rows="3" placeholder="Masukkan deskripsi">{{ old('description') }}</textarea>
+                    <textarea class="form-control" id="description" name="description" rows="3" placeholder="Masukkan deskripsi">{{ old('description', $pipeline->description) }}</textarea>
                     @error('description')
                         <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i>
                             {{ $message }}
@@ -84,9 +94,9 @@
                 <div class="col-12">
                     <div class="form-check form-switch mt-2 ml-3">
                         <input class="form-check-input" type="checkbox" name="is_active" id="status_is_active"
-                            value="1" checked>
+                            value="1" {{ old('is_active', $pipeline->is_active) ? 'checked' : '' }}>
                         <label class="form-check-label" for="status_is_active">Status Pipeline (<span
-                                id="_status">Aktif</span>)</label>
+                                id="_status">{{ $pipeline->is_active ? 'Aktif' : 'Tidak Aktif'}}</span>)</label>
                         <input type="hidden" name="is_active_hidden" id="status_is_active_hidden" value="1">
                     </div>
                 </div>
@@ -96,7 +106,7 @@
                 </div>
                 <div class="col-12 text-end">
                     <input type="reset" class="btn btn-danger" value="Reset">
-                    <input type="submit" class="btn btn-info" value="Submit">
+                    <input type="submit" class="btn btn-info" value="Update">
                 </div>
             </form>
         </div>
@@ -108,13 +118,14 @@
     <script src="https://cdn.tiny.cloud/1/wphaz17bf6i1tsqq7cjt8t5w6r275bw3b8acq6u2gi4hnan4/tinymce/7/tinymce.min.js"
         referrerpolicy="origin"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @endsection
 
 
 @section('js_inline')
     <script type="text/javascript">
         $(document).ready(function() {
-            let leadsQuery = $('#leads-query').val(); // dari input hidden
+            let leadsQuery = $('#leads-query').val();
             let leadsSelect = $("#leads-select2");
 
             leadsSelect.select2({
@@ -191,6 +202,23 @@
                     $('#_status').text('Tidak Aktif');
                     $('#status_is_active_hidden').val('0');
                 }
+            });
+
+            $('#deleteButton').on('click', function(e) {
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: "Data yang dihapus tidak dapat dikembalikan!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        $('#deleteForm').submit();
+                    }
+                });
             });
         });
     </script>

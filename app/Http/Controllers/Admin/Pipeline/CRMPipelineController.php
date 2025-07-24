@@ -57,7 +57,7 @@ class CRMPipelineController extends Controller
            $data->crm_leads_id = $request->leads_id;
            $data->description = $request->description;
            $data->percentage_deals = $request->percentage_deals;
-           $data->is_active = $request->is_active;
+           $data->is_active = $request->is_active ? 1 : 0;
 
            $lastSortNumber = CRMPipeline::max('sort_number');
            $data->sort_number = $lastSortNumber !== null ? $lastSortNumber + 1 : 1;
@@ -67,7 +67,10 @@ class CRMPipelineController extends Controller
 
            if ($data->save()) {
             $leads_name = strtolower(CRMLeads::find($request->leads_id)->name);
-            return redirect()->to('adm/crm-pipeline?leads=' . $leads_name)->with('success', 'Data berhasil ditambahkan');
+            return redirect()->to('adm/crm-pipeline?leads=' . $leads_name)->with('message', [
+                'type' => 'success',
+                'text' => 'Berhasil menambah Data prospek!',
+            ]);
            }
 
            return back()->with('message', [
@@ -83,19 +86,15 @@ class CRMPipelineController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)
     {
-        //
+        $pipeline = CRMPipeline::findOrFail($id);
+
+        return view('admin.crm-pipeline.edit', [
+            'pipeline' => $pipeline
+        ]);
     }
 
     /**
@@ -103,7 +102,43 @@ class CRMPipelineController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'name' => 'required|string',
+            'leads_id' => 'required|numeric',
+            'percentage_deals' => 'required|string',
+            'description' => 'required|string',
+        ], [
+            'name.required' => 'Nama pipeline wajib diisi',
+            'name.string' => 'Nama pipeline harus berupa teks',
+            'leads_id.numeric' => 'id leads tidak valid',
+            'percentage_deals.string' => 'Persentase deal harus berupa teks',
+            'description.required' => 'Deskripsi wajib diisi',
+            'description.string' => 'Deskripsi harus berupa teks',
+        ]);
+
+        try {
+           $data = CRMPipeline::findOrFail($id);
+           $data->name = $request->name;
+           $data->crm_leads_id = $request->leads_id;
+           $data->description = $request->description;
+           $data->percentage_deals = $request->percentage_deals;
+           $data->is_active = $request->is_active ? 1 : 0;
+
+           // user id
+           $data->created_by = auth()->user()->id;
+
+           $data->save();
+
+           return back()->with('message', [
+                'status' => 'success',
+                'message' => 'Berhasil update Data Pipeline!',
+            ]);
+        } catch (Exception $err) {
+            return back()->with('message', [
+                'status' => 'error',
+                'message' => $err->getMessage()
+            ]);
+        }
     }
 
     /**
@@ -111,7 +146,22 @@ class CRMPipelineController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $pipeline = CRMPipeline::findOrFail($id);
+
+        try {
+            $pipeline->delete();
+            $leads_name = strtolower(CRMLeads::find($id)->name);
+
+            return redirect()->to('/adm/crm-leads?leads=' . $leads_name)->with('message', [
+                'type' => 'success',
+                'text' => 'Berhasil menghapus data Pipeline!'
+            ]);
+        } catch (Exception $err) {
+            return back()->with('message', [
+                'type' => 'error',
+                'text' => 'Terjadi kesalahan: ' . $err->getMessage()
+            ]);
+        }
     }
 
     public function listAllPipelines()
