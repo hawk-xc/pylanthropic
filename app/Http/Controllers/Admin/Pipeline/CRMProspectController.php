@@ -80,8 +80,7 @@ class CRMProspectController extends Controller
                 ->with('message', [
                     'type' => 'success',
                     'text' => 'Berhasil menambah data Prospek!',
-                ])
-                ;
+                ]);
         } catch (Exception $err) {
             return back()->with('message', [
                 'type' => 'error',
@@ -161,7 +160,7 @@ class CRMProspectController extends Controller
             $prospect->save();
 
             return redirect()
-                ->to('adm/crm-prospect/'. $id .'?leads=' . $leads_name)
+                ->to('adm/crm-prospect/' . $id . '?leads=' . $leads_name)
                 ->with('message', [
                     'type' => 'success',
                     'text' => 'Berhasil mengubah data Prospek!',
@@ -186,17 +185,17 @@ class CRMProspectController extends Controller
             $prospect->delete();
 
             return redirect()
-                ->to('adm/crm-pipeline?leads=' . $leadsId)
+                ->route('adm.crm-leads.index', ['leads' => $leadsId])
                 ->with('message', [
-                    'type' => 'success',
-                    'text' => 'Data Short Link berhasil dihapus!',
+                    'status' => 'success',
+                    'message' => 'Data Pipeline berhasil dihapus!',
                 ]);
         } catch (Exception $err) {
             return redirect()
                 ->back()
                 ->with('message', [
-                    'type' => 'error',
-                    'text' => 'Gagal menghapus data: ' . $err->getMessage(),
+                    'status' => 'error',
+                    'message' => 'Gagal menghapus data',
                 ]);
         }
     }

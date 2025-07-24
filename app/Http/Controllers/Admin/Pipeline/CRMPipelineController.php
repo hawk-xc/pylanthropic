@@ -147,10 +147,10 @@ class CRMPipelineController extends Controller
     public function destroy(string $id)
     {
         $pipeline = CRMPipeline::findOrFail($id);
+        $leads_name = strtolower($pipeline->crm_lead->name);
 
         try {
             $pipeline->delete();
-            $leads_name = strtolower(CRMLeads::find($id)->name);
 
             return redirect()->to('/adm/crm-leads?leads=' . $leads_name)->with('message', [
                 'type' => 'success',
@@ -159,7 +159,7 @@ class CRMPipelineController extends Controller
         } catch (Exception $err) {
             return back()->with('message', [
                 'type' => 'error',
-                'text' => 'Terjadi kesalahan: ' . $err->getMessage()
+                'text' => 'Terjadi kesalahan' . $leads_name . ': ' . $err->getMessage()
             ]);
         }
     }

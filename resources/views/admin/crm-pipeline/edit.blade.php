@@ -27,9 +27,10 @@
                     </nav>
                 </div>
                 <div class="col-7 fc-rtl d-flex flex-row justify-content-end gap-2">
-                    <form id="deleteForm" action="/adm/crm-pipeline/{{ $pipeline->id }}?leads={{ request()->query('leads') }}" method="POST">
+                    <form id="deleteForm" action="{{ route('adm.crm-pipeline.destroy', $pipeline->id) }}" method="POST">
                         @csrf
                         @method('DELETE')
+                        <input type="hidden" name="leads" value="{{ request()->query('leads') }}">
                         <button type="button" class="btn btn-outline-danger" id="deleteButton">
                             <i class="fa fa-trash"></i> Hapus Data Ini
                         </button>
@@ -96,7 +97,7 @@
                         <input class="form-check-input" type="checkbox" name="is_active" id="status_is_active"
                             value="1" {{ old('is_active', $pipeline->is_active) ? 'checked' : '' }}>
                         <label class="form-check-label" for="status_is_active">Status Pipeline (<span
-                                id="_status">{{ $pipeline->is_active ? 'Aktif' : 'Tidak Aktif'}}</span>)</label>
+                                id="_status">{{ $pipeline->is_active ? 'Aktif' : 'Tidak Aktif' }}</span>)</label>
                         <input type="hidden" name="is_active_hidden" id="status_is_active_hidden" value="1">
                     </div>
                 </div>
@@ -205,6 +206,8 @@
             });
 
             $('#deleteButton').on('click', function(e) {
+                e.preventDefault();
+
                 Swal.fire({
                     title: 'Apakah Anda yakin?',
                     text: "Data yang dihapus tidak dapat dikembalikan!",
@@ -228,16 +231,16 @@
             Swal.fire({
                 toast: true,
                 position: 'bottom-end',
-                icon: '{{ session('message')['status'] }}',
-                title: '{{ session('message')['message'] }}',
+                icon: '{{ session('message')['type'] }}',
+                title: '{{ session('message')['text'] }}',
                 showConfirmButton: false,
                 timer: 15000,
                 timerProgressBar: true,
                 customClass: {
                     popup: 'rounded shadow-sm px-3 py-2 border-0 d-flex flex-row align-middle-start justify-content-start align-item-start justify-item-start'
                 },
-                background: '{{ session('message')['status'] === 'success' ? '#d1fae5' : '#fee2e2' }}',
-                color: '{{ session('message')['status'] === 'success' ? '#065f46' : '#b91c1c' }}',
+                background: '{{ session('message')['type'] === 'success' ? '#d1fae5' : '#fee2e2' }}',
+                color: '{{ session('message')['type'] === 'success' ? '#065f46' : '#b91c1c' }}',
                 didOpen: (toast) => {
                     toast.addEventListener('mouseenter', Swal.stopTimer)
                     toast.addEventListener('mouseleave', Swal.resumeTimer)
