@@ -369,7 +369,7 @@
                                         <line x1="8" y1="12" x2="16" y2="12"
                                             stroke="currentColor" stroke-width="2" />
                                     </svg>
-                                    <h5>Tambah Journey</h5>
+                                    <h5>Tambah Pipeline</h5>
                                 </div>
                             </a>
                         </div>
@@ -778,7 +778,9 @@
                     const $column = $(`
                         <div class="kanban-column">
                             <div class="kanban-column-header">
-                                <h6 class="fw-bold">${pipeline.name}</h6>
+                                <a href="/adm/crm-pipeline/${pipeline.id}/edit/?leads=${currentLeadsId}">
+                                    <h6 class="fw-bold">${pipeline.name}</h6>
+                                </a>
                                 <small>${truncateTextWithTooltip(pipeline.description, 5)}</small>
                                 <div class="mt-1">
                                     <small class="text-muted">Deals: ${pipeline.percentage_deals}%</small>

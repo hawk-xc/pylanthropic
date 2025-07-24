@@ -10,12 +10,19 @@ use Exception;
 
 class CRMLeadsController extends Controller
 {
+    protected $LeadsColumn = [
+        'name',
+        'created_by',
+        'created_by',
+        'sort_number',
+    ];
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $leads = CRMLeads::all();
+        $leads = CRMLeads::select($this->LeadsColumn)->get();
 
         return view('admin.crm-leads.index', [
             'leads' => $leads
