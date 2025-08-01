@@ -13,6 +13,15 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
 @endsection
 
+@if ($errors->any())
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li><i class="ri-error-warning-line"></i> {{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
 @section('content')
     <div class="main-card mb-3 card">
@@ -106,7 +115,7 @@
                     <label class="form-label fw-semibold">Status Tampil</label><br>
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" name="show" type="radio" id="tampil_biasa" value="1"
-                            {{ old('show') == '1' ? 'checked' : '' }}>
+                            {{ old('show', '1') == '1' ? 'checked' : '' }}>
                         <label class="form-check-label" for="tampil_biasa">Tampil Biasa</label>
                     </div>
                     <div class="form-check form-check-inline">

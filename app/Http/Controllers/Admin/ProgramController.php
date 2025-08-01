@@ -6,17 +6,17 @@ use App\Http\Controllers\Controller;
 use App\Models\Program;
 use App\Models\TrackingVisitor;
 use App\Models\Transaction;
-use DataTables;
-
-use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Intervention\Image\Facades\Image;
+use Illuminate\Support\Facades\File;
+use DataTables;
+use Exception;
 
 class ProgramController extends Controller
 {
@@ -36,57 +36,6 @@ class ProgramController extends Controller
         return view('admin.program.create');
     }
 
-    /**
-     * Store image content
-     */
-    // public function storeImagecontent(Request $request)
-    // {
-    //     $number   = $request->number;
-    //     $number   = str_replace('img', '', $number);
-
-    //     $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->name));
-    //     $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
-
-    //     // upload image content
-    //     $file     = $request->file('file');
-    //     $filename = $filename.'_'.$number.'.'.$file->guessExtension();
-    //     // $file->move(public_path('public/images/program/content'), $filename);
-    //     $file->storeAs('public/images/program/content', $filename, 'public_uploads');
-    //     $file->storeAs('public/images/program/content', $filename, 'public_uploads');
-
-    //     $link_img = url('/public/images/program/content').'/'.$filename;
-
-    //     return array(
-    //         'link'   => $link_img,
-    //         'full'   => '<img data-original="'.$link_img.'" class="lazyload" alt="'.ucwords($request->name).' - Bantubersama.com" />'
-    //     );
-    // }
-
-    // public function storeImagecontent(Request $request)
-    // {
-    //     $number = $request->number;
-    //     $number = str_replace('img', '', $number);
-
-    //     $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->name));
-    //     $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
-
-    //     $file = $request->file('file');
-    //     $filename = $filename.'_'.$number.'.'.$file->getClientOriginalExtension();
-
-    //     // Simpan file ke public/images/program/content
-    //     // $file->move(public_path('images/program/content'), $filename);
-    //     $file->storeAs('public/images/program/content', $filename, 'public_uploads');
-
-    //     // Generate URL yang benar
-    //     // $link_img = url('images/program/content/'.$filename);
-    //     $link_img = url('public/images/program/content/'.$filename);
-
-    //     return [
-    //         'link' => $link_img,
-    //         'full' => '<img data-original="'.$link_img.'" class="lazyload" alt="'.ucwords($request->name).' - Bantubersama.com" />'
-    //     ];
-    // }
-
     public function storeImagecontent(Request $request)
     {
         $number = $request->number;
@@ -96,13 +45,19 @@ class ProgramController extends Controller
         $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
 
         $file = $request->file('file');
-        $filename = $filename . '_' . $number . '.' . $file->getClientOriginalExtension();
+        $filename = $filename . '_' . $number . '.jpg';
 
-        // Simpan file menggunakan disk 'public_uploads' yang konsisten
-        $file->storeAs('images/program/content', $filename, 'public_uploads');
+        $image = Image::make($file->getRealPath())
+            ->fit(580, 780)
+            ->encode('jpg', 80);
 
-        // Generate URL yang konsisten dengan method lainnya
-        $link_img = url('public/images/program/content/' . $filename);
+        Storage::disk('public_uploads')->put(
+            'images/program/content/' . $filename,
+            $image->stream()
+        );
+
+        // Generate URL
+        $link_img = url('images/program/content/' . $filename);
 
         return [
             'link' => $link_img,
@@ -117,77 +72,66 @@ class ProgramController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(
-                [
-                    'error' => [
-                        'message' => $validator->errors()->first(),
-                    ],
+            return response()->json([
+                'error' => [
+                    'message' => $validator->errors()->first(),
                 ],
-                400,
-            );
+            ], 400);
         }
 
         try {
             $file = $request->file('file');
             $programTitle = $request->input('program_title');
 
-            $baseName = Str::slug($programTitle, '_');
-            $extension = $file->getClientOriginalExtension();
+            $baseName = str_replace([' ', '-', '&', ':'], '_', trim($programTitle));
+            $baseName = preg_replace('/[^A-Za-z0-9\_]/', '', $baseName);
 
-            // Path lengkap ke direktori penyimpanan sesuai config filesystems.php
-            $storagePath = config('filesystems.disks.public_uploads.root');
-            $targetDirectory = $storagePath . '/images/program/content/';
+            // Path lengkap ke direktori penyimpanan (sesuai dengan store)
+            $contentDir = base_path('../public_html/images/program/content');
 
             // Pastikan direktori ada
-            if (!file_exists($targetDirectory)) {
-                mkdir($targetDirectory, 0755, true);
+            if (!File::exists($contentDir)) {
+                File::makeDirectory($contentDir, 0755, true);
             }
 
             // Cari file yang sudah ada dengan pola nama yang sama
-            $pattern = $targetDirectory . $baseName . '_*.' . $extension;
+            $pattern = $contentDir . '/' . $baseName . '_*.jpg';
             $existingFiles = glob($pattern);
 
             // Hitung counter berikutnya
             $counter = 1;
             if (!empty($existingFiles)) {
-                // Urutkan file secara numerik
                 natsort($existingFiles);
                 $lastFile = end($existingFiles);
-
-                // Ekstrak angka terakhir
-                preg_match('/_(\d+)\.' . $extension . '$/', $lastFile, $matches);
+                preg_match('/_(\d+)\.jpg$/', $lastFile, $matches);
                 if (isset($matches[1])) {
                     $counter = (int) $matches[1] + 1;
                 }
             }
 
             // Generate nama file baru
-            $filename = $baseName . '_' . $counter . '.' . $extension;
+            $filename = $baseName . '_' . $counter . '.jpg';
 
-            // Pastikan nama file unik (penanganan race condition)
-            while (file_exists($targetDirectory . $filename)) {
-                $counter++;
-                $filename = $baseName . '_' . $counter . '.' . $extension;
-            }
+            // Proses gambar dengan Intervention Image (sesuai dengan store)
+            $image = Image::make($file->getRealPath())
+                ->fit(580, 780) // Ukuran untuk content image
+                ->encode('jpg', 80); // Format dan kualitas sesuai store
 
-            // Simpan file menggunakan disk yang sudah dikonfigurasi
-            $file->storeAs('images/program/content', $filename, 'public_uploads');
+            // Simpan gambar (sesuai dengan store)
+            $image->save($contentDir . '/' . $filename);
 
-            // Generate URL yang konsisten dengan struktur Anda
-            $url = url('public/images/program/content/' . $filename);
+            // Generate URL yang konsisten
+            $url = url('images/program/content/' . $filename);
 
             return response()->json([
                 'location' => $url,
             ]);
         } catch (\Exception $e) {
-            return response()->json(
-                [
-                    'error' => [
-                        'message' => $e->getMessage(),
-                    ],
+            return response()->json([
+                'error' => [
+                    'message' => $e->getMessage(),
                 ],
-                500,
-            );
+            ], 500);
         }
     }
 
@@ -226,14 +170,14 @@ class ProgramController extends Controller
             'nominal' => 'required',
             'date_end' => 'required|date',
             'show' => 'required',
-            'img_primary' => 'required|file',
+            'img_primary' => 'required|file|max:1024',
             'caption' => 'required',
             'story' => 'required',
         ]);
 
         if (!$request->has('same_as_thumbnail')) {
             $request->validate([
-                'thumbnail' => 'required|file',
+                'thumbnail' => 'required|file|max:600',
             ]);
         }
 
@@ -275,36 +219,58 @@ class ProgramController extends Controller
             $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->title));
             $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
 
-            // upload image primary
-            $filei = $request->file('img_primary');
-            // $filei->move(public_path('public/images/program'), $filename.'.'.$filei->getClientOriginalExtension());
-            $filei->storeAs('images/program', $filename . '.' . $filei->getClientOriginalExtension(), 'public_uploads');
-            $data->image = $filename . '.' . $filei->getClientOriginalExtension();
+            $programDir = base_path('../public_html/images/program');
+            $thumbnailDir = $programDir . '/thumbnail';
 
-            if ($request->has('same_as_thumbnail')) {
-                $data->thumbnail = $filename . '.' . $filei->getClientOriginalExtension();
-                $data->same_as_thumbnail = true;
-            } else {
-                // upload thumbnail
-                $filet = $request->file('thumbnail');
-                $filename = 'thumbnail_' . $filename . '.' . $filet->getClientOriginalExtension();
-                // $filet->move(public_path('public/images/program'), $filename);
-                $filet->storeAs('images/program', $filename, 'public_uploads');
-                $data->thumbnail = $filename;
-                $data->same_as_thumbnail = false;
+            if (!File::exists($programDir)) {
+                File::makeDirectory($programDir, 0755, true);
+            }
+            if (!File::exists($thumbnailDir)) {
+                File::makeDirectory($thumbnailDir, 0755, true);
             }
 
-            // // upload image primary
-            // $filei = $request->file('img_primary');
-            // $imageName = $filename.'.'.$filei->getClientOriginalExtension();
-            // $filei->move('public/images/program', $imageName);
-            // $data->image = $imageName;
+            // upload image primary (Landing Page size)
+            $filei = $request->file('img_primary');
+            $image = Image::make($filei->getRealPath());
 
-            // // upload thumbnail
-            // $filet = $request->file('thumbnail');
-            // $thumbnailName = 'thumbnail_'.$filename.'.'.$filet->getClientOriginalExtension();
-            // $filet->move('public/images/program', $thumbnailName);
-            // $data->thumbnail = $thumbnailName;
+            // Resize SOP Landing Page (600x320)
+            $image->resize(600, 320, function ($constraint) {
+                $constraint->aspectRatio();
+                $constraint->upsize();
+            });
+            $image->encode('jpg', 80);
+            $imageName = $filename . '.jpg';
+            $image->save($programDir . '/' . $imageName);
+            $data->image = $imageName;
+
+            if ($request->has('same_as_thumbnail')) {
+                $thumbnail = Image::make($filei->getRealPath());
+
+                // Resize SOP untuk Thumbnail (292x156)
+                $thumbnail->resize(292, 156, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+                $thumbnail->encode('jpg', 60);
+                $thumbnailName = 'thumbnail_' . $filename . '.jpg';
+                $thumbnail->save($thumbnailDir . '/' . $thumbnailName);
+                $data->thumbnail = $thumbnailName;
+                $data->same_as_thumbnail = true;
+            } else {
+                $filet = $request->file('thumbnail');
+                $thumbnail = Image::make($filet->getRealPath());
+
+                // Resize SOP Thumbnail (292x156)
+                $thumbnail->resize(292, 156, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+                $thumbnail->encode('jpg', 60);
+                $thumbnailName = 'thumbnail_' . $filename . '.jpg';
+                $thumbnail->save($thumbnailDir . '/' . $thumbnailName);
+                $data->thumbnail = $thumbnailName;
+                $data->same_as_thumbnail = false;
+            }
 
             $data->approved_at = date('Y-m-d H:i:s');
             $data->approved_by = 1;
@@ -314,14 +280,12 @@ class ProgramController extends Controller
 
             // insert program categories
             if (count($request->category) > 1) {
-                for ($i = 0; $i < count($request->category); $i++) {
+                foreach ($request->category as $category) {
                     $data_categories = new \App\Models\ProgramCategories();
                     $data_categories->program_id = $program_id;
-                    $data_categories->program_category_id = $request->category[$i];
+                    $data_categories->program_category_id = $category;
                     $data_categories->is_active = 1;
                     $data_categories->save();
-
-                    $data_categories = ''; // reset data tersimpan
                 }
             } else {
                 $data_categories = new \App\Models\ProgramCategories();
@@ -331,8 +295,6 @@ class ProgramController extends Controller
                 $data_categories->save();
             }
 
-            // echo "FINISHED";
-            // return redirect()->back();
             return redirect(route('adm.program.index'))->with('success', 'Berhasil menambahkan program baru');
         } catch (Exception $e) {
             return redirect()
@@ -373,6 +335,8 @@ class ProgramController extends Controller
                 'date_end' => 'required|date',
                 'show' => 'required',
                 'caption' => 'required',
+                'img_primary' => 'file|max:800',
+                'thumbnail' => 'file|max:400',
             ],
             [
                 'required' => 'Kolom :attribute wajib diisi.',
@@ -399,31 +363,31 @@ class ProgramController extends Controller
 
             // Handle show options
             switch ($request->show) {
-                case 1: // Pencarian saja
+                case 1:  // Pencarian saja
                     $data->is_publish = 1;
                     $data->is_recommended = 0;
                     $data->is_show_home = 0;
                     $data->is_urgent = 0;
                     break;
-                case 2: // Tampil di Pilihan
+                case 2:  // Tampil di Pilihan
                     $data->is_publish = 1;
                     $data->is_recommended = 1;
                     $data->is_show_home = 0;
                     $data->is_urgent = 0;
                     break;
-                case 3: // Tampil di Terbaru
+                case 3:  // Tampil di Terbaru
                     $data->is_publish = 1;
                     $data->is_recommended = 0;
                     $data->is_show_home = 1;
                     $data->is_urgent = 0;
                     break;
-                case 4: // Sembunyikan
+                case 4:  // Sembunyikan
                     $data->is_publish = 0;
                     $data->is_recommended = 0;
                     $data->is_show_home = 0;
                     $data->is_urgent = 0;
                     break;
-                case 5: // Mendesak
+                case 5:  // Mendesak
                     $data->is_publish = 1;
                     $data->is_recommended = 0;
                     $data->is_show_home = 0;
@@ -434,30 +398,79 @@ class ProgramController extends Controller
             $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->title));
             $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
 
-            // Handle primary image upload
-            if ($request->file('img_primary')) {
+            $programDir = base_path('../public_html/images/program');
+            $thumbnailDir = $programDir . '/thumbnail';
+
+            // Handle primary image if it exists
+            if ($request->hasFile('img_primary')) {
                 $filei = $request->file('img_primary');
-                $filei->storeAs('images/program', $filename . '.' . $filei->getClientOriginalExtension(), 'public_uploads');
-                $data->image = $filename . '.' . $filei->getClientOriginalExtension();
+                $image = Image::make($filei->getRealPath());
 
-                // Jika same_as_thumbnail true, update thumbnail juga
-                if ($data->same_as_thumbnail) {
-                    $data->thumbnail = $data->image;
+                // Resize SOP Landing Page (600x320)
+                $image->resize(600, 320, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+
+                $image->encode('jpg', 80);
+                $imageName = $filename . '.jpg';
+                $image->save($programDir . '/' . $imageName);
+                $data->image = $imageName;
+            }
+
+            if ($request->has('same_as_thumbnail')) {
+                // If a new primary image was uploaded, use it.
+                if ($request->hasFile('img_primary')) {
+                    $filei = $request->file('img_primary');
+                    $thumbnail = Image::make($filei->getRealPath());
+
+                    // Resize SOP untuk Thumbnail (292x156)
+                    $thumbnail->resize(292, 156, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    });
+
+                    $thumbnail->encode('jpg', 60);
+                    $thumbnailName = 'thumbnail_' . $filename . '.jpg';
+                    $thumbnail->save($thumbnailDir . '/' . $thumbnailName);
+                    $data->thumbnail = $thumbnailName;
+                } else if ($data->image) {
+                    $existingImagePath = public_path('images/program/' . $data->image);
+                    if (file_exists($existingImagePath)) {
+                        $thumbnail = Image::make($existingImagePath);
+
+                        // Resize SOP untuk Thumbnail (292x156)
+                        $thumbnail->resize(292, 156, function ($constraint) {
+                            $constraint->aspectRatio();
+                            $constraint->upsize();
+                        });
+
+                        $thumbnail->encode('jpg', 60);
+                        // Use the new filename for the thumbnail to keep it consistent with the title
+                        $thumbnailName = 'thumbnail_' . $filename . '.jpg';
+                        $thumbnail->save(public_path('images/program/' . $thumbnailName));
+                        $data->thumbnail = $thumbnailName;
+                    }
                 }
-            }
+                $data->same_as_thumbnail = true;
+            } else {
+                // upload thumbnail if it exists
+                if ($request->hasFile('thumbnail')) {
+                    $filet = $request->file('thumbnail');
+                    $thumbnail = Image::make($filet->getRealPath());
 
-            // Handle thumbnail upload (hanya jika same_as_thumbnail false)
-            if (!$data->same_as_thumbnail && $request->file('thumbnail')) {
-                $filet = $request->file('thumbnail');
-                $thumbnailFilename = 'thumbnail_' . $filename . '.' . $filet->getClientOriginalExtension();
-                $filet->storeAs('images/program', $thumbnailFilename, 'public_uploads');
-                $data->thumbnail = $thumbnailFilename;
-            }
+                    // Resize SOP untuk Thumbnail (292x156)
+                    $thumbnail->resize(292, 156, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    });
 
-            // Jika same_as_thumbnail true dan tidak ada upload gambar utama baru,
-            // tetapi sebelumnya thumbnail berbeda, update thumbnail dari gambar utama yang ada
-            if ($data->same_as_thumbnail && !$request->file('img_primary') && $data->image && $data->thumbnail != $data->image) {
-                $data->thumbnail = $data->image;
+                    $thumbnail->encode('jpg', 60);
+                    $thumbnailName = 'thumbnail_' . $filename . '.jpg';
+                    $thumbnail->save(public_path('images/program/' . $thumbnailName));
+                    $data->thumbnail = $thumbnailName;
+                }
+                $data->same_as_thumbnail = false;
             }
 
             $data->updated_by = Auth::user()->id;
@@ -554,7 +567,8 @@ class ProgramController extends Controller
         $count_filter = $count_total;
         if ($search != '') {
             $data = $data->where(function ($q) use ($search) {
-                $q->where('program.title', 'like', '%' . $search . '%')
+                $q
+                    ->where('program.title', 'like', '%' . $search . '%')
                     ->orWhere('program.slug', 'like', '%' . $search . '%')
                     ->orWhere('program.short_desc', 'like', '%' . $search . '%')
                     ->orWhere('organization.name', 'like', '%' . $search . '%');
@@ -593,30 +607,30 @@ class ProgramController extends Controller
 
                 $param = $row->id . ", '" . ucwords(str_replace("'", '', $row->title)) . "'";
 
-                return '<span class="badge badge-light" style="cursor:pointer" onclick="showSummary(' .
-                    $param .
-                    ')">
-                        <i class="fa fa-check-double icon-gradient bg-happy-green"></i> Rp.' .
-                    str_replace(',', '.', number_format($row->nominal_approved)) .
-                    '</span>
+                return '<span class="badge badge-light" style="cursor:pointer" onclick="showSummary('
+                    . $param
+                    . ')">
+                        <i class="fa fa-check-double icon-gradient bg-happy-green"></i> Rp.'
+                    . str_replace(',', '.', number_format($row->nominal_approved))
+                    . '</span>
                         <br>
-                        <span class="badge badge-light modal_status" style="cursor:pointer" onclick="showDonate(' .
-                    $param .
-                    ')">
-                        <i class="fa fa-money-bill icon-gradient bg-happy-green"></i> Rp.' .
-                    number_format($sum) .
-                    ' (' .
-                    $sum_percent .
-                    '%)</span>
+                        <span class="badge badge-light modal_status" style="cursor:pointer" onclick="showDonate('
+                    . $param
+                    . ')">
+                        <i class="fa fa-money-bill icon-gradient bg-happy-green"></i> Rp.'
+                    . number_format($sum)
+                    . ' ('
+                    . $sum_percent
+                    . '%)</span>
                         <br>
-                        <span class="badge badge-light" style="cursor:pointer" onclick="inpSpend(' .
-                    $param .
-                    ')">
-                        <i class="fa fa-credit-card icon-gradient bg-strong-bliss"></i> Rp.' .
-                    number_format($spend) .
-                    ' (' .
-                    $spend_percent .
-                    '%)</span>';
+                        <span class="badge badge-light" style="cursor:pointer" onclick="inpSpend('
+                    . $param
+                    . ')">
+                        <i class="fa fa-credit-card icon-gradient bg-strong-bliss"></i> Rp.'
+                    . number_format($spend)
+                    . ' ('
+                    . $spend_percent
+                    . '%)</span>';
             })
             ->addColumn('status', function ($row) {
                 if ($row->approved_at !== null) {
@@ -655,47 +669,7 @@ class ProgramController extends Controller
                 return $status;
             })
             ->addColumn('stats', function ($row) {
-                // $count_view         = TrackingVisitor::where('program_id', $row->id)->where('page_view', 'landing_page')->count();
-                // $count_amount_page  = TrackingVisitor::where('program_id', $row->id)->where('page_view', 'amount')->count();
-                // $count_payment_page = TrackingVisitor::where('program_id', $row->id)->where('page_view', 'payment_type')->count();
-
-                // $view         = "<i class='fa fa-eye icon-gradient bg-malibu-beach'></i> ".number_format($count_view);
-                // $amount_page  = "<i class='fa fa-money-bill icon-gradient bg-malibu-beach'></i> ".number_format($count_amount_page);
-                // $payment_page = "<i class='fa fa-credit-card icon-gradient bg-malibu-beach'></i> ".number_format($count_payment_page);
-
-                // if($count_view>0 && $count_amount_page>0) {
-                //     $amount_per  = round($count_amount_page/$count_view*100, 2);
-                // } else {
-                //     $amount_per  = 0;
-                // }
-
-                // if($count_view>0 && $count_payment_page>0) {
-                //     $count_payment_page_per  = round($count_payment_page/$count_view*100, 2);
-                // } else {
-                //     $count_payment_page_per  = 0;
-                // }
-
-                // return $view.'<br>'.$amount_page.' ('.$amount_per.'%) <br>'.$payment_page.' ('.$count_payment_page_per.'%)';
-
                 return '-';
-
-                // $view        = "<i class='fa fa-eye icon-gradient bg-malibu-beach'></i> ".number_format($row->count_view);
-                // $read_more   = "<i class='fa fa-angle-double-down icon-gradient bg-malibu-beach'></i> ".number_format($row->count_read_more);
-                // $amount_page = "<i class='fa fa-download icon-gradient bg-malibu-beach'></i> ".number_format($row->count_amount_page);
-
-                // if($row->count_view>0 && $row->count_amount_page>0) {
-                //     $amount_per  = round($row->count_amount_page/$row->count_view*100, 2);
-                // } else {
-                //     $amount_per  = 0;
-                // }
-
-                // if($row->count_view>0 && $row->count_read_more>0) {
-                //     $read_more_per  = round($row->count_read_more/$row->count_view*100, 2);
-                // } else {
-                //     $read_more_per  = 0;
-                // }
-
-                // return $view.'<br>'.$read_more.' ('.$read_more_per.'%) <br>'.$amount_page.' ('.$amount_per.'%)';
             })
             ->addColumn('donate', function ($row) {
                 // $count_view      = TrackingVisitor::where('program_id', $row->id)->where('page_view', 'landing_page')->count();
@@ -761,30 +735,30 @@ class ProgramController extends Controller
                 $url_edit = route('adm.program.edit', $row->id);
                 // $url_edit  = route('adm.report.settlement');
                 $actionBtn =
-                    '<a href="' .
-                    $url_edit .
-                    '" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
-                                <a href="' .
-                    route('adm.program.detail.stats', $row->id) .
-                    '" class="edit btn btn-info btn-xs mb-1" title="Statistik"><i class="fa fa-chart-line"></i></a>
-                                <a href="' .
-                    route('adm.program.detail.fundraiser', $row->id) .
-                    '" class="edit btn btn-info btn-xs mb-1" title="Donasi"><i class="fa fa-donate"></i></a>
-                                <a href="' .
-                    route('adm.program.detail.donatur', $row->id) .
-                    '" class="edit btn btn-info btn-xs mb-1" title="Donatur"><i class="fa fa-users"></i></a>
-                                <a href="' .
-                    route('adm.program.detail.fundraiser', $row->id) .
-                    '" class="edit btn btn-info btn-xs mb-1" title="Fundraiser"><i class="fa fa-people-carry"></i></a>
-                                <a href="' .
-                    route('adm.program.detail.fundraiser', $row->id) .
-                    '" class="edit btn btn-info btn-xs mb-1" title="Penyaluran"><i class="fa fa-hand-holding-heart"></i></a>
-                                <a href="' .
-                    route('adm.program.detail.fundraiser', $row->id) .
-                    '" class="edit btn btn-info btn-xs mb-1" title="Operasional"><i class="fa fa-file-invoice-dollar"></i></a>
-                                <a href="' .
-                    route('program.index', $row->slug) .
-                    '" class="edit btn btn-info btn-xs mb-1" title="Link" target="_blank"><i class="fa fa-external-link-alt"></i></a>
+                    '<a href="'
+                    . $url_edit
+                    . '" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
+                                <a href="'
+                    . route('adm.program.detail.stats', $row->id)
+                    . '" class="edit btn btn-info btn-xs mb-1" title="Statistik"><i class="fa fa-chart-line"></i></a>
+                                <a href="'
+                    . route('adm.program.detail.fundraiser', $row->id)
+                    . '" class="edit btn btn-info btn-xs mb-1" title="Donasi"><i class="fa fa-donate"></i></a>
+                                <a href="'
+                    . route('adm.program.detail.donatur', $row->id)
+                    . '" class="edit btn btn-info btn-xs mb-1" title="Donatur"><i class="fa fa-users"></i></a>
+                                <a href="'
+                    . route('adm.program.detail.fundraiser', $row->id)
+                    . '" class="edit btn btn-info btn-xs mb-1" title="Fundraiser"><i class="fa fa-people-carry"></i></a>
+                                <a href="'
+                    . route('adm.program.detail.fundraiser', $row->id)
+                    . '" class="edit btn btn-info btn-xs mb-1" title="Penyaluran"><i class="fa fa-hand-holding-heart"></i></a>
+                                <a href="'
+                    . route('adm.program.detail.fundraiser', $row->id)
+                    . '" class="edit btn btn-info btn-xs mb-1" title="Operasional"><i class="fa fa-file-invoice-dollar"></i></a>
+                                <a href="'
+                    . route('program.index', $row->slug)
+                    . '" class="edit btn btn-info btn-xs mb-1" title="Link" target="_blank"><i class="fa fa-external-link-alt"></i></a>
                                 ';
                 return $actionBtn;
             })
@@ -819,7 +793,8 @@ class ProgramController extends Controller
         $count_filter = $count_total;
         if ($search != '') {
             $data = $data->where(function ($q) use ($search) {
-                $q->where('program.title', 'like', '%' . $search . '%')
+                $q
+                    ->where('program.title', 'like', '%' . $search . '%')
                     ->orWhere('program.slug', 'like', '%' . $search . '%')
                     ->orWhere('program.short_desc', 'like', '%' . $search . '%');
             });
@@ -857,30 +832,30 @@ class ProgramController extends Controller
 
                 $param = $row->id . ", '" . ucwords(str_replace("'", '', $row->title)) . "'";
 
-                return '<span class="badge badge-light" style="cursor:pointer" onclick="showSummary(' .
-                    $param .
-                    ')">
-                        <i class="fa fa-check-double icon-gradient bg-happy-green"></i> Rp.' .
-                    str_replace(',', '.', number_format($row->nominal_approved)) .
-                    '</span>
+                return '<span class="badge badge-light" style="cursor:pointer" onclick="showSummary('
+                    . $param
+                    . ')">
+                        <i class="fa fa-check-double icon-gradient bg-happy-green"></i> Rp.'
+                    . str_replace(',', '.', number_format($row->nominal_approved))
+                    . '</span>
                         <br>
-                        <span class="badge badge-light modal_status" style="cursor:pointer" onclick="showDonate(' .
-                    $param .
-                    ')">
-                        <i class="fa fa-money-bill icon-gradient bg-happy-green"></i> Rp.' .
-                    number_format($sum) .
-                    ' (' .
-                    $sum_percent .
-                    '%)</span>
+                        <span class="badge badge-light modal_status" style="cursor:pointer" onclick="showDonate('
+                    . $param
+                    . ')">
+                        <i class="fa fa-money-bill icon-gradient bg-happy-green"></i> Rp.'
+                    . number_format($sum)
+                    . ' ('
+                    . $sum_percent
+                    . '%)</span>
                         <br>
-                        <span class="badge badge-light" style="cursor:pointer" onclick="inpSpend(' .
-                    $param .
-                    ')">
-                        <i class="fa fa-credit-card icon-gradient bg-strong-bliss"></i> Rp.' .
-                    number_format($spend) .
-                    ' (' .
-                    $spend_percent .
-                    '%)</span>';
+                        <span class="badge badge-light" style="cursor:pointer" onclick="inpSpend('
+                    . $param
+                    . ')">
+                        <i class="fa fa-credit-card icon-gradient bg-strong-bliss"></i> Rp.'
+                    . number_format($spend)
+                    . ' ('
+                    . $spend_percent
+                    . '%)</span>';
             })
             ->addColumn('ads', function ($row) {
                 $trans_prime1 = \App\Models\Transaction::where('program_id', $row->id)
@@ -1002,20 +977,20 @@ class ProgramController extends Controller
                     $count_per = 0;
                 }
 
-                return $interest .
-                    ' (' .
-                    $interest_per .
-                    '%)
-                        <br> <i class="fa fa-shopping-cart icon-gradient bg-malibu-beach"></i> ' .
-                    number_format($checkout) .
-                    ' (' .
-                    $checkout_per .
-                    '%)
-                        <br> <i class="fa fa-heart icon-gradient bg-happy-green"></i> ' .
-                    number_format($count) .
-                    ' (' .
-                    $count_per .
-                    '%)';
+                return $interest
+                    . ' ('
+                    . $interest_per
+                    . '%)
+                        <br> <i class="fa fa-shopping-cart icon-gradient bg-malibu-beach"></i> '
+                    . number_format($checkout)
+                    . ' ('
+                    . $checkout_per
+                    . '%)
+                        <br> <i class="fa fa-heart icon-gradient bg-happy-green"></i> '
+                    . number_format($count)
+                    . ' ('
+                    . $count_per
+                    . '%)';
             })
             ->addColumn('action', function ($row) {
                 $actionBtn = '<a href="javascript:void(0)" class="edit btn btn-warning btn-xs">Edit</a>';
@@ -1177,390 +1152,6 @@ class ProgramController extends Controller
     public function showDonate(Request $request)
     {
         // $program = Program::where('id', $id)->first();
-        $id = $request->id;
-        $dn = date('Y-m-d');
-        $donate_success = [
-            0 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', $dn . '%')
-                ->count(),
-            1 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-1 day')) . '%')
-                ->count(),
-            2 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-2 day')) . '%')
-                ->count(),
-            3 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-3 day')) . '%')
-                ->count(),
-            4 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-4 day')) . '%')
-                ->count(),
-            5 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-5 day')) . '%')
-                ->count(),
-            6 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-6 day')) . '%')
-                ->count(),
-            7 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-7 day')) . '%')
-                ->count(),
-            8 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-8 day')) . '%')
-                ->count(),
-            9 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-9 day')) . '%')
-                ->count(),
-        ];
-        $donate_success_rp = [
-            0 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', $dn . '%')
-                ->sum('nominal_final'),
-            1 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-1 day')) . '%')
-                ->sum('nominal_final'),
-            2 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-2 day')) . '%')
-                ->sum('nominal_final'),
-            3 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-3 day')) . '%')
-                ->sum('nominal_final'),
-            4 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-4 day')) . '%')
-                ->sum('nominal_final'),
-            5 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-5 day')) . '%')
-                ->sum('nominal_final'),
-            6 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-6 day')) . '%')
-                ->sum('nominal_final'),
-            7 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-7 day')) . '%')
-                ->sum('nominal_final'),
-            8 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-8 day')) . '%')
-                ->sum('nominal_final'),
-            9 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'success')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-9 day')) . '%')
-                ->sum('nominal_final'),
-        ];
-        $donate_draft = [
-            0 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', $dn . '%')
-                ->count(),
-            1 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-1 day')) . '%')
-                ->count(),
-            2 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-2 day')) . '%')
-                ->count(),
-            3 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-3 day')) . '%')
-                ->count(),
-            4 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-4 day')) . '%')
-                ->count(),
-            5 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-5 day')) . '%')
-                ->count(),
-            6 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-6 day')) . '%')
-                ->count(),
-            7 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-7 day')) . '%')
-                ->count(),
-            8 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-8 day')) . '%')
-                ->count(),
-            9 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-9 day')) . '%')
-                ->count(),
-        ];
-        $donate_draft_rp = [
-            0 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', $dn . '%')
-                ->sum('nominal_final'),
-            1 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-1 day')) . '%')
-                ->sum('nominal_final'),
-            2 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-2 day')) . '%')
-                ->sum('nominal_final'),
-            3 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-3 day')) . '%')
-                ->sum('nominal_final'),
-            4 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-4 day')) . '%')
-                ->sum('nominal_final'),
-            5 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-5 day')) . '%')
-                ->sum('nominal_final'),
-            6 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-6 day')) . '%')
-                ->sum('nominal_final'),
-            7 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-7 day')) . '%')
-                ->sum('nominal_final'),
-            8 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-8 day')) . '%')
-                ->sum('nominal_final'),
-            9 => Transaction::select('id')
-                ->where('program_id', $id)
-                ->where('status', 'draft')
-                ->where('created_at', 'like', date('Y-m-d', strtotime($dn . '-9 day')) . '%')
-                ->sum('nominal_final'),
-        ];
-
-        $data1 =
-            '<table class="table table-hover table-responsive mb-1">
-                        <thead>
-                            <tr>
-                                <th>Nama</th>
-                                <th>' .
-            date('d-m-Y') .
-            '</th>
-                                <th>' .
-            date('d-m-Y', strtotime(date('Y-m-d') . '-1 day')) .
-            '</th>
-                                <th>' .
-            date('d-m-Y', strtotime(date('Y-m-d') . '-2 day')) .
-            '</th>
-                                <th>' .
-            date('d-m-Y', strtotime(date('Y-m-d') . '-3 day')) .
-            '</th>
-                                <th>' .
-            date('d-m-Y', strtotime(date('Y-m-d') . '-4 day')) .
-            '</th>
-                                <th>' .
-            date('d-m-Y', strtotime(date('Y-m-d') . '-5 day')) .
-            '</th>
-                                <th>' .
-            date('d-m-Y', strtotime(date('Y-m-d') . '-6 day')) .
-            '</th>
-                                <th>' .
-            date('d-m-Y', strtotime(date('Y-m-d') . '-7 day')) .
-            '</th>
-                                <th>' .
-            date('d-m-Y', strtotime(date('Y-m-d') . '-8 day')) .
-            '</th>
-                                <th>' .
-            date('d-m-Y', strtotime(date('Y-m-d') . '-9 day')) .
-            '</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>JML Donasi Dibayar</td>
-                                <td>' .
-            number_format($donate_success[0]) .
-            '</td>
-                                <td>' .
-            number_format($donate_success[1]) .
-            '</td>
-                                <td>' .
-            number_format($donate_success[2]) .
-            '</td>
-                                <td>' .
-            number_format($donate_success[3]) .
-            '</td>
-                                <td>' .
-            number_format($donate_success[4]) .
-            '</td>
-                                <td>' .
-            number_format($donate_success[5]) .
-            '</td>
-                                <td>' .
-            number_format($donate_success[6]) .
-            '</td>
-                                <td>' .
-            number_format($donate_success[7]) .
-            '</td>
-                                <td>' .
-            number_format($donate_success[8]) .
-            '</td>
-                                <td>' .
-            number_format($donate_success[9]) .
-            '</td>
-                            </tr>
-                            <tr>
-                                <td>Rp Donasi Dibayar</td>
-                                <td>' .
-            number_format($donate_success_rp[0]) .
-            '</td>
-                                <td>' .
-            number_format($donate_success_rp[1]) .
-            '</td>
-                                <td>' .
-            number_format($donate_success_rp[2]) .
-            '</td>
-                                <td>' .
-            number_format($donate_success_rp[3]) .
-            '</td>
-                                <td>' .
-            number_format($donate_success_rp[4]) .
-            '</td>
-                                <td>' .
-            number_format($donate_success_rp[5]) .
-            '</td>
-                                <td>' .
-            number_format($donate_success_rp[6]) .
-            '</td>
-                                <td>' .
-            number_format($donate_success_rp[7]) .
-            '</td>
-                                <td>' .
-            number_format($donate_success_rp[8]) .
-            '</td>
-                                <td>' .
-            number_format($donate_success_rp[9]) .
-            '</td>
-                            </tr>
-                            <tr>
-                                <td>Donasi Blm Dibayar</td>
-                                <td>' .
-            number_format($donate_draft[0]) .
-            '</td>
-                                <td>' .
-            number_format($donate_draft[1]) .
-            '</td>
-                                <td>' .
-            number_format($donate_draft[2]) .
-            '</td>
-                                <td>' .
-            number_format($donate_draft[3]) .
-            '</td>
-                                <td>' .
-            number_format($donate_draft[4]) .
-            '</td>
-                                <td>' .
-            number_format($donate_draft[5]) .
-            '</td>
-                                <td>' .
-            number_format($donate_draft[6]) .
-            '</td>
-                                <td>' .
-            number_format($donate_draft[7]) .
-            '</td>
-                                <td>' .
-            number_format($donate_draft[8]) .
-            '</td>
-                                <td>' .
-            number_format($donate_draft[9]) .
-            '</td>
-                            </tr>
-                            <tr>
-                                <td>Donasi Blm Dibayar Rp</td>
-                                <td>' .
-            number_format($donate_draft_rp[0]) .
-            '</td>
-                                <td>' .
-            number_format($donate_draft_rp[1]) .
-            '</td>
-                                <td>' .
-            number_format($donate_draft_rp[2]) .
-            '</td>
-                                <td>' .
-            number_format($donate_draft_rp[3]) .
-            '</td>
-                                <td>' .
-            number_format($donate_draft_rp[4]) .
-            '</td>
-                                <td>' .
-            number_format($donate_draft_rp[5]) .
-            '</td>
-                                <td>' .
-            number_format($donate_draft_rp[6]) .
-            '</td>
-                                <td>' .
-            number_format($donate_draft_rp[7]) .
-            '</td>
-                                <td>' .
-            number_format($donate_draft_rp[8]) .
-            '</td>
-                                <td>' .
-            number_format($donate_draft_rp[9]) .
-            '</td>
-                            </tr>
-                        </tbody>
-                    </table>';
-        return $data1;
     }
 
     /**
@@ -1760,49 +1351,49 @@ class ProgramController extends Controller
                     <table class="table table-hover table-responsive mb-1">
                         <tr>
                             <td class="text-start">Total Donasi</td>
-                            <td>Rp. ' .
-            number_format($donate_sum) .
-            '</td>
+                            <td>Rp. '
+            . number_format($donate_sum)
+            . '</td>
                         </tr>
                         <tr>
                             <td class="text-start">Platform Fee 5%</td>
-                            <td>Rp. ' .
-            number_format($platform_fee) .
-            '</td>
+                            <td>Rp. '
+            . number_format($platform_fee)
+            . '</td>
                         </tr>
                         <tr>
                             <td class="text-start">ADS Fee 20%</td>
-                            <td>Rp. ' .
-            number_format($ads_fee) .
-            ' | Rp. ' .
-            number_format($ads_spent) .
-            '</td>
+                            <td>Rp. '
+            . number_format($ads_fee)
+            . ' | Rp. '
+            . number_format($ads_spent)
+            . '</td>
                         </tr>
                         <tr>
                             <td class="text-start">Admin Bank 2%</td>
-                            <td>Rp. ' .
-            number_format($opex_fee) .
-            '</td>
+                            <td>Rp. '
+            . number_format($opex_fee)
+            . '</td>
                         </tr>
                         <tr>
-                            <td class="text-start">Optimasi Fee ' .
-            $optimation_fee .
-            '%</td>
-                            <td>Rp. ' .
-            number_format($optimation_fee_final) .
-            '</td>
+                            <td class="text-start">Optimasi Fee '
+            . $optimation_fee
+            . '%</td>
+                            <td>Rp. '
+            . number_format($optimation_fee_final)
+            . '</td>
                         </tr>
                         <tr>
                             <td class="text-start">Penyaluran Terbayar</td>
-                            <td>Rp. ' .
-            number_format($payout_paid) .
-            '</td>
+                            <td>Rp. '
+            . number_format($payout_paid)
+            . '</td>
                         </tr>
                         <tr>
                             <td class="text-start">Sisa Penghimpunan</td>
-                            <td>Rp. ' .
-            number_format($final) .
-            '</td>
+                            <td>Rp. '
+            . number_format($final)
+            . '</td>
                         </tr>
                     </table>
                 </div>
@@ -1814,33 +1405,33 @@ class ProgramController extends Controller
                         </tr>
                         <tr>
                             <td class="text-start">Penyaluran Diajukan</td>
-                            <td>Rp. ' .
-            number_format($payout_req) .
-            '</td>
+                            <td>Rp. '
+            . number_format($payout_req)
+            . '</td>
                         </tr>
                         <tr>
                             <td class="text-start">Penyaluran Sedang Diproses</td>
-                            <td>Rp. ' .
-            number_format($payout_process) .
-            '</td>
+                            <td>Rp. '
+            . number_format($payout_process)
+            . '</td>
                         </tr>
                         <tr>
                             <td class="text-start">Penyaluran Terbayar</td>
-                            <td>Rp. ' .
-            number_format($payout_paid) .
-            '</td>
+                            <td>Rp. '
+            . number_format($payout_paid)
+            . '</td>
                         </tr>
                         <tr>
                             <td class="text-start">Penyaluran Ditolak</td>
-                            <td>Rp. ' .
-            number_format($payout_reject) .
-            '</td>
+                            <td>Rp. '
+            . number_format($payout_reject)
+            . '</td>
                         </tr>
                         <tr>
                             <td class="text-start">Penyaluran Dibatalkan</td>
-                            <td>Rp. ' .
-            number_format($payout_cancel) .
-            '</td>
+                            <td>Rp. '
+            . number_format($payout_cancel)
+            . '</td>
                         </tr>
                     </table>
                 </div>
@@ -1865,7 +1456,8 @@ class ProgramController extends Controller
         $count_filter = $count_total;
         if ($search != '') {
             $data = $data->where(function ($q) use ($search) {
-                $q->where('title', 'like', '%' . $search . '%')
+                $q
+                    ->where('title', 'like', '%' . $search . '%')
                     ->orWhere('desc_request', 'like', '%' . $search . '%')
                     ->orWhere('nominal_approved', 'like', '%' . str_replace([',', '.'], '', $search) . '%')
                     ->orWhere('type', 'like', '%' . $search . '%')
@@ -1961,9 +1553,6 @@ class ProgramController extends Controller
         // return redirect()->back();
     }
 
-    /**
-     *
-     */
     public function donatePerformance(Request $request)
     {
         $data = [];
@@ -2004,7 +1593,7 @@ class ProgramController extends Controller
                 'donate' => $donate,
             ];
         }
-        //dd($data);
+        // dd($data);
         return view('admin.program.performance', compact('data'));
     }
 
