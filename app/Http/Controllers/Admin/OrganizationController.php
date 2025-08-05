@@ -6,7 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Intervention\Image\Facades\Image;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\ImageManagerStatic as Image;
 
 use Yajra\DataTables\DataTables;
 
@@ -60,7 +61,6 @@ class OrganizationController extends Controller
             $data->status = $request->status;
             $data->pic_fullname = $request->pic_name;
             $data->pic_nik = $request->pic_nik;
-
             $data->created_by = Auth::user()->id;
 
             $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->name));
@@ -68,20 +68,36 @@ class OrganizationController extends Controller
 
             if ($request->hasFile('logo')) {
                 $file = $request->file('logo');
-                $filename_logo = 'logo_' . $filename . '.' . $file->getClientOriginalExtension();
-
-                $dist = base_path('../public_html/images/fundraiser/');
-                $image = Image::make($file);
-                $image->resize(50, 50);
-                $image->save(public_path($dist . $filename_logo));
-
+                $filename_logo = 'logo_' . $filename . '.jpg';
+                
+                // Process image with Intervention Image
+                $image = Image::make($file->getRealPath())
+                    ->fit(50, 50) // Resize to 50x50
+                    ->encode('jpg', 80);
+                
+                // Path for storage
+                $path = 'images/fundraiser/' . $filename_logo;
+                
+                // Save using Storage
+                Storage::disk('public_uploads')->put($path, $image->stream());
+                
                 $data->logo = $filename_logo;
             }
 
-            if ($request->filled('pic_image')) {
+            if ($request->hasFile('pic_image')) {
                 $filet = $request->file('pic_image');
-                $filename_vr = 'verified_' . $filename . '.' . $filet->getClientOriginalExtension();
-                $filet->storeAs('public/images/fundraiser', $filename_vr, 'public_uploads');
+                $filename_vr = 'verified_' . $filename . '.jpg';
+                
+                // Process image with Intervention Image
+                $image = Image::make($filet->getRealPath())
+                    ->encode('jpg', 80);
+                
+                // Path for storage
+                $path = 'images/fundraiser/' . $filename_vr;
+                
+                // Save using Storage
+                Storage::disk('public_uploads')->put($path, $image->stream());
+                
                 $data->pic_image = $filename_vr;
             }
 
@@ -89,7 +105,7 @@ class OrganizationController extends Controller
 
             return redirect()->route('adm.organization.index')->with('success', 'Berhasil tambah data lembaga');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal tambah, ada kesalahan teknis');
+            return redirect()->back()->with('error', 'Gagal tambah, ada kesalahan teknis: ' . $e->getMessage());
         }
     }
 
@@ -141,28 +157,59 @@ class OrganizationController extends Controller
             $data->status = $request->status;
             $data->pic_fullname = $request->pic_name;
             $data->pic_nik = $request->pic_nik;
-
             $data->updated_by = Auth::user()->id;
 
             $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->name));
             $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
 
             if ($request->hasFile('logo')) {
+                // Delete old logo if exists
+                if ($data->logo) {
+                    $oldPath = 'images/fundraiser/' . $data->logo;
+                    if (Storage::disk('public_uploads')->exists($oldPath)) {
+                        Storage::disk('public_uploads')->delete($oldPath);
+                    }
+                }
+
                 $file = $request->file('logo');
-                $filename_logo = 'logo_' . $filename . '.' . $file->getClientOriginalExtension();
-
-                $dist = base_path('../public_html/images/fundraiser/');
-                $image = Image::make($file);
-                $image->resize(50, 50);
-                $image->save(public_path($dist . $filename_logo));
-
+                $filename_logo = 'logo_' . $filename . '.jpg';
+                
+                // Process image with Intervention Image
+                $image = Image::make($file->getRealPath())
+                    ->fit(50, 50) // Resize to 50x50
+                    ->encode('jpg', 80);
+                
+                // Path for storage
+                $path = 'images/fundraiser/' . $filename_logo;
+                
+                // Save using Storage
+                Storage::disk('public_uploads')->put($path, $image->stream());
+                
                 $data->logo = $filename_logo;
             }
 
             if ($request->hasFile('pic_image')) {
+                // Delete old pic_image if exists
+                if ($data->pic_image) {
+                    $oldPath = 'images/fundraiser/' . $data->pic_image;
+                    if (Storage::disk('public_uploads')->exists($oldPath)) {
+                        Storage::disk('public_uploads')->delete($oldPath);
+                    }
+                }
+
                 $filet = $request->file('pic_image');
-                $filename_vr = 'verified_' . $filename . '.' . $filet->getClientOriginalExtension();
-                $filet->storeAs('public/images/fundraiser', $filename_vr, 'public_uploads');
+                $filename_vr = 'verified_' . $filename . '.jpg';
+                
+                // Process image with Intervention Image
+                $image = Image::make($filet->getRealPath())
+                    ->encode('jpg', 80);
+                
+                // Path for storage
+                $path = 'images/fundraiser/' . $filename_vr;
+                
+                // Save using Storage
+                Storage::disk('public_uploads')->put($path, $image->stream());
+                
                 $data->pic_image = $filename_vr;
             }
 
