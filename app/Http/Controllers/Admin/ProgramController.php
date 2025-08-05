@@ -13,9 +13,11 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Intervention\Image\Facades\Image;
+// use Intervention\Image\Facades\Image;
+use Intervention\Image\ImageManagerStatic as Image;
+
 use Illuminate\Support\Facades\File;
-use DataTables;
+use DataTables; 
 use Exception;
 
 class ProgramController extends Controller
@@ -36,6 +38,7 @@ class ProgramController extends Controller
         return view('admin.program.create');
     }
 
+
     public function storeImagecontent(Request $request)
     {
         $number = $request->number;
@@ -43,21 +46,22 @@ class ProgramController extends Controller
 
         $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->name));
         $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
-
         $file = $request->file('file');
         $filename = $filename . '_' . $number . '.jpg';
 
+        // Format gambar dengan Intervention Image
         $image = Image::make($file->getRealPath())
             ->fit(580, 780)
             ->encode('jpg', 80);
 
-        Storage::disk('public_uploads')->put(
-            'images/program/content/' . $filename,
-            $image->stream()        
-        );
+        // Path penyimpanan relatif terhadap root disk 'public_uploads'
+        $path = 'images/program/content/' . $filename;
 
-        // Generate URL
-        $link_img = url('images/program/content/' . $filename);
+        // Simpan menggunakan Storage
+        Storage::disk('public_uploads')->put($path, $image->stream());
+
+        // Generate URL - tambahkan 'public/' di awal path
+        $link_img = url('public/' . $path);
 
         return [
             'link' => $link_img,
@@ -86,17 +90,12 @@ class ProgramController extends Controller
             $baseName = str_replace([' ', '-', '&', ':'], '_', trim($programTitle));
             $baseName = preg_replace('/[^A-Za-z0-9\_]/', '', $baseName);
 
-            // Path lengkap ke direktori penyimpanan (sesuai dengan store)
-            $contentDir = base_path('../public_html/images/program/content');
+            // Path relatif untuk penyimpanan
+            $contentDir = 'images/program/content';
 
-            // Pastikan direktori ada
-            if (!File::exists($contentDir)) {
-                File::makeDirectory($contentDir, 0755, true);
-            }
-
-            // Cari file yang sudah ada dengan pola nama yang sama
-            $pattern = $contentDir . '/' . $baseName . '_*.jpg';
-            $existingFiles = glob($pattern);
+            // Cari file yang sudah ada
+            $existingFiles = Storage::disk('public_uploads')->files($contentDir);
+            $existingFiles = preg_grep('/' . preg_quote($baseName, '/') . '_(\d+)\.jpg$/', $existingFiles);
 
             // Hitung counter berikutnya
             $counter = 1;
@@ -111,17 +110,17 @@ class ProgramController extends Controller
 
             // Generate nama file baru
             $filename = $baseName . '_' . $counter . '.jpg';
+            $path = $contentDir . '/' . $filename;
 
-            // Proses gambar dengan Intervention Image (sesuai dengan store)
+            // Proses dan simpan gambar
             $image = Image::make($file->getRealPath())
-                ->fit(580, 780) // Ukuran untuk content image
-                ->encode('jpg', 80); // Format dan kualitas sesuai store
+                ->fit(580, 780)
+                ->encode('jpg', 80);
 
-            // Simpan gambar (sesuai dengan store)
-            $image->save($contentDir . '/' . $filename);
+            Storage::disk('public_uploads')->put($path, $image->stream());
 
-            // Generate URL yang konsisten
-            $url = url('images/program/content/' . $filename);
+            // Generate URL
+            $url = url('public/' . $path);
 
             return response()->json([
                 'location' => $url,
@@ -209,6 +208,7 @@ class ProgramController extends Controller
             $story = str_replace('<p><img', '<img', $story);
             $data->about = $story . '<img class="lazyload" data-original="https://bantubersama.com/public/images/program/cara_donasi.webp" alt="Cara Berdonasi di Bantubersama.com" />';
 
+            // Handle show options
             if ($request->show == 1) {
                 $data->is_publish = 1;
                 $data->is_recommended = 0;
@@ -230,55 +230,46 @@ class ProgramController extends Controller
             $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->title));
             $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
 
-            $programDir = base_path('../public_html/images/program');
-            $thumbnailDir = $programDir . '/thumbnail';
-
-            if (!File::exists($programDir)) {
-                File::makeDirectory($programDir, 0755, true);
-            }
-            if (!File::exists($thumbnailDir)) {
-                File::makeDirectory($thumbnailDir, 0755, true);
-            }
-
-            // upload image primary (Landing Page size)
+            // Upload image primary (Landing Page size)
             $filei = $request->file('img_primary');
-            $image = Image::make($filei->getRealPath());
-
-            // Resize SOP Landing Page (600x320)
-            $image->resize(600, 320, function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            });
-            $image->encode('jpg', 80);
-            $imageName = $filename . '.jpg';
-            $image->save($programDir . '/' . $imageName);
-            $data->image = $imageName;
-
-            if ($request->has('same_as_thumbnail')) {
-                $thumbnail = Image::make($filei->getRealPath());
-
-                // Resize SOP untuk Thumbnail (292x156)
-                $thumbnail->resize(292, 156, function ($constraint) {
+            $image = Image::make($filei->getRealPath())
+                ->resize(600, 320, function ($constraint) {
                     $constraint->aspectRatio();
                     $constraint->upsize();
-                });
-                $thumbnail->encode('jpg', 60);
+                })
+                ->encode('jpg', 80);
+
+            $imageName = $filename . '.jpg';
+            $imagePath = 'images/program/' . $imageName;
+            Storage::disk('public_uploads')->put($imagePath, $image->stream());
+            $data->image = $imageName;
+
+            // Handle thumbnail
+            if ($request->has('same_as_thumbnail')) {
+                $thumbnail = Image::make($filei->getRealPath())
+                    ->resize(292, 156, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    })
+                    ->encode('jpg', 60);
+
                 $thumbnailName = 'thumbnail_' . $filename . '.jpg';
-                $thumbnail->save($thumbnailDir . '/' . $thumbnailName);
+                $thumbnailPath = 'images/program/' . $thumbnailName;
+                Storage::disk('public_uploads')->put($thumbnailPath, $thumbnail->stream());
                 $data->thumbnail = $thumbnailName;
                 $data->same_as_thumbnail = true;
             } else {
                 $filet = $request->file('thumbnail');
-                $thumbnail = Image::make($filet->getRealPath());
+                $thumbnail = Image::make($filet->getRealPath())
+                    ->resize(292, 156, function ($constraint) {
+                        $constraint->aspectRatio();
+                        $constraint->upsize();
+                    })
+                    ->encode('jpg', 60);
 
-                // Resize SOP Thumbnail (292x156)
-                $thumbnail->resize(292, 156, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                });
-                $thumbnail->encode('jpg', 60);
                 $thumbnailName = 'thumbnail_' . $filename . '.jpg';
-                $thumbnail->save($thumbnailDir . '/' . $thumbnailName);
+                $thumbnailPath = 'images/program/' . $thumbnailName;
+                Storage::disk('public_uploads')->put($thumbnailPath, $thumbnail->stream());
                 $data->thumbnail = $thumbnailName;
                 $data->same_as_thumbnail = false;
             }
@@ -289,7 +280,7 @@ class ProgramController extends Controller
             $data->save();
             $program_id = $data->id;
 
-            // insert program categories
+            // Insert program categories
             if (count($request->category) > 1) {
                 foreach ($request->category as $category) {
                     $data_categories = new \App\Models\ProgramCategories();
@@ -312,14 +303,6 @@ class ProgramController extends Controller
                 ->back()
                 ->with('error', 'Gagal update, ada kesalahan teknis: ' . $e->getMessage());
         }
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
     }
 
     /**
@@ -409,79 +392,89 @@ class ProgramController extends Controller
             $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->title));
             $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
 
-            $programDir = base_path('../public_html/images/program');
-            $thumbnailDir = $programDir . '/thumbnail';
-
             // Handle primary image if it exists
             if ($request->hasFile('img_primary')) {
                 $filei = $request->file('img_primary');
-                $image = Image::make($filei->getRealPath());
-
-                // Resize SOP Landing Page (600x320)
-                $image->resize(600, 320, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                });
-
-                $image->encode('jpg', 80);
-                $imageName = $filename . '.jpg';
-                $image->save($programDir . '/' . $imageName);
-                $data->image = $imageName;
-            }
-
-            if ($request->has('same_as_thumbnail')) {
-                // If a new primary image was uploaded, use it.
-                if ($request->hasFile('img_primary')) {
-                    $filei = $request->file('img_primary');
-                    $thumbnail = Image::make($filei->getRealPath());
-
-                    // Resize SOP untuk Thumbnail (292x156)
-                    $thumbnail->resize(292, 156, function ($constraint) {
+                $image = Image::make($filei->getRealPath())
+                    ->resize(600, 320, function ($constraint) {
                         $constraint->aspectRatio();
                         $constraint->upsize();
-                    });
+                    })
+                    ->encode('jpg', 80);
 
-                    $thumbnail->encode('jpg', 60);
-                    $thumbnailName = 'thumbnail_' . $filename . '.jpg';
-                    $thumbnail->save($thumbnailDir . '/' . $thumbnailName);
-                    $data->thumbnail = $thumbnailName;
-                } else if ($data->image) {
-                    $existingImagePath = public_path('images/program/' . $data->image);
-                    if (file_exists($existingImagePath)) {
-                        $thumbnail = Image::make($existingImagePath);
+                $imageName = $filename . '.jpg';
+                $imagePath = 'images/program/' . $imageName;
+                
+                // Hapus gambar lama jika ada
+                if ($data->image) {
+                    Storage::disk('public_uploads')->delete($data->image);
+                }
+                
+                Storage::disk('public_uploads')->put($imagePath, $image->stream());
+                $data->image = $imageName;
 
-                        // Resize SOP untuk Thumbnail (292x156)
-                        $thumbnail->resize(292, 156, function ($constraint) {
-                            $constraint->aspectRatio();
-                            $constraint->upsize();
-                        });
+                // Handle thumbnail
+                if ($request->has('same_as_thumbnail')) {
+                    // Jika ada gambar utama baru, gunakan itu
+                    if ($request->hasFile('img_primary')) {
+                        $filei = $request->file('img_primary');
+                        $thumbnail = Image::make($filei->getRealPath())
+                            ->resize(292, 156, function ($constraint) {
+                                $constraint->aspectRatio();
+                                $constraint->upsize();
+                            })
+                            ->encode('jpg', 60);
+                    } 
+                    // Jika tidak ada gambar baru, gunakan gambar utama yang sudah ada
+                    elseif ($data->image) {
+                        $imagePath = Storage::disk('public_uploads')->path($data->image);
+                        $thumbnail = Image::make($imagePath)
+                            ->resize(292, 156, function ($constraint) {
+                                $constraint->aspectRatio();
+                                $constraint->upsize();
+                            })
+                            ->encode('jpg', 60);
+                    }
 
-                        $thumbnail->encode('jpg', 60);
-                        // Use the new filename for the thumbnail to keep it consistent with the title
+                    if (isset($thumbnail)) {
                         $thumbnailName = 'thumbnail_' . $filename . '.jpg';
-                        $thumbnail->save(public_path('images/program/' . $thumbnailName));
+                        $thumbnailPath = 'images/program/' . $thumbnailName;
+                        
+                        // Hapus thumbnail lama jika ada
+                        if ($data->thumbnail) {
+                            Storage::disk('public_uploads')->delete($data->thumbnail);
+                        }
+                        
+                        Storage::disk('public_uploads')->put($thumbnailPath, $thumbnail->stream());
                         $data->thumbnail = $thumbnailName;
                     }
-                }
-                $data->same_as_thumbnail = true;
-            } else {
-                // upload thumbnail if it exists
-                if ($request->hasFile('thumbnail')) {
-                    $filet = $request->file('thumbnail');
-                    $thumbnail = Image::make($filet->getRealPath());
+                    
+                    $data->same_as_thumbnail = true;
+                } else {
+                    // Upload thumbnail jika ada
+                    if ($request->hasFile('thumbnail')) {
+                        $filet = $request->file('thumbnail');
+                        $thumbnail = Image::make($filet->getRealPath())
+                            ->resize(292, 156, function ($constraint) {
+                                $constraint->aspectRatio();
+                                $constraint->upsize();
+                            })
+                            ->encode('jpg', 60);
 
-                    // Resize SOP untuk Thumbnail (292x156)
-                    $thumbnail->resize(292, 156, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    });
-
-                    $thumbnail->encode('jpg', 60);
-                    $thumbnailName = 'thumbnail_' . $filename . '.jpg';
-                    $thumbnail->save(public_path('images/program/' . $thumbnailName));
-                    $data->thumbnail = $thumbnailName;
+                        $thumbnailName = 'thumbnail_' . $filename . '.jpg';
+                        $thumbnailPath = 'images/program/' . $thumbnailName;
+                        
+                        // Hapus thumbnail lama jika ada
+                        if ($data->thumbnail) {
+                            Storage::disk('public_uploads')->delete($data->thumbnail);
+                        }
+                        
+                        Storage::disk('public_uploads')->put($thumbnailPath, $thumbnail->stream());
+                        $data->thumbnail = $thumbnailName;
+                    }
+                    
+                    $data->same_as_thumbnail = false;
                 }
-                $data->same_as_thumbnail = false;
             }
 
             $data->updated_by = Auth::user()->id;
