@@ -53,7 +53,7 @@ class ProgramController extends Controller
 
         Storage::disk('public_uploads')->put(
             'images/program/content/' . $filename,
-            $image->stream()
+            $image->stream()        
         );
 
         // Generate URL
@@ -162,18 +162,29 @@ class ProgramController extends Controller
      */
     public function store(Request $request)
     {
+        $forever_checked = $request->has('forever_checked') == 'on';
+
         $request->validate([
             'title' => 'required|string',
             'url' => 'required|string',
             'category' => 'required',
             'organization' => 'required|numeric',
             'nominal' => 'required',
-            'date_end' => 'required|date',
             'show' => 'required',
             'img_primary' => 'required|file|max:1024',
             'caption' => 'required',
             'story' => 'required',
         ]);
+
+        if ($forever_checked) {
+            $request->validate([
+                'date_end' => 'nullable',
+            ]);
+        } else {
+            $request->validate([
+                'date_end' => 'required|date',
+            ]);
+        }
 
         if (!$request->has('same_as_thumbnail')) {
             $request->validate([
@@ -188,7 +199,7 @@ class ProgramController extends Controller
             $data->organization_id = $request->organization;
             $data->nominal_request = str_replace('.', '', $request->nominal);
             $data->nominal_approved = str_replace('.', '', $request->nominal);
-            $data->end_date = $request->date_end;
+            $data->end_date = $request->date_end ?? null;
             $data->short_desc = $request->caption;
             $data->is_islami = $request->is_islami ? 1 : 0;
 
@@ -633,6 +644,7 @@ class ProgramController extends Controller
                     . '%)</span>';
             })
             ->addColumn('status', function ($row) {
+
                 if ($row->approved_at !== null) {
                     // disetujui
                     if ($row->end_date > date('Y-m-d') && $row->is_publish == '1') {
@@ -640,26 +652,26 @@ class ProgramController extends Controller
                         if ($row->is_recommended == 1) {
                             $status = '<span class="badge badge-success">Tampil Dipilihan</span>';
                             $status .= '<br>Start: ' . date('d-M-Y', strtotime($row->approved_at));
-                            $status .= '<br>End: ' . date('d-M-Y', strtotime($row->end_date));
+                            $status .= '<br>End: ' . ($row->end_date ? date('d-M-Y', strtotime($row->end_date)) : 'selamanya');
                         } elseif ($row->is_show_home == 1) {
                             $status = '<span class="badge badge-success">Tampil Diterbaru</span>';
                             $status .= '<br>Start: ' . date('d-M-Y', strtotime($row->approved_at));
-                            $status .= '<br>End: ' . date('d-M-Y', strtotime($row->end_date));
+                            $status .= '<br>End: ' . ($row->end_date ? date('d-M-Y', strtotime($row->end_date)) : 'selamanya');
                         } else {
                             $status = '<span class="badge badge-success">Tampil Dipencarian</span>';
                             $status .= '<br>Start: ' . date('d-M-Y', strtotime($row->approved_at));
-                            $status .= '<br>End: ' . date('d-M-Y', strtotime($row->end_date));
+                            $status .= '<br>End: ' . ($row->end_date ? date('d-M-Y', strtotime($row->end_date)) : 'selamanya');
                         }
                     } elseif ($row->is_publish == '0') {
                         // tidak dipublikasi
                         $status = '<span class="badge badge-danger">Tidak Tampil</span>';
                         $status .= '<br>Start: ' . date('d-M-Y', strtotime($row->approved_at));
-                        $status .= '<br>End: ' . date('d-M-Y', strtotime($row->end_date));
+                        $status .= '<br>End: ' . $formatEndDate($row->end_date);
                     } else {
                         // sudah berakhir
                         $status = '<span class="badge badge-danger">Sudah Berakhir</span>';
                         $status .= '<br>Start: ' . date('d-M-Y', strtotime($row->approved_at));
-                        $status .= '<br>End: ' . date('d-M-Y', strtotime($row->end_date));
+                        $status .= '<br>End: ' . $formatEndDate($row->end_date);
                     }
                 } else {
                     // belum disetujui
