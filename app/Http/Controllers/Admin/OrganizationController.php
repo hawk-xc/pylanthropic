@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Intervention\Image\Facades\Image;
 
 use Yajra\DataTables\DataTables;
 
@@ -38,12 +39,13 @@ class OrganizationController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name' => 'required',
-            'status' => 'required',
-            'phone' => 'required',
-            'mail' => 'required',
-            'logo' => 'required',
-            'about' => 'required',
+            'name' => 'required|unique:organization,name',
+            'status' => 'required|in:verified,verif_org,banned',
+            'phone' => 'required|max:20',
+            'mail' => 'required|email',
+            'logo' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'about' => 'required|string',
+            'address' => 'required|string',
         ]);
 
         try {
@@ -53,99 +55,26 @@ class OrganizationController extends Controller
             $data->phone = $request->phone;
             $data->email = $request->mail;
             $data->password = '-';
-            $data->address = isset($request->address) && $request->address != '' ? $request->addres : 'Indonesia';
+            $data->address = $request->address ?? 'Indonesia';
             $data->about = $request->about;
             $data->status = $request->status;
             $data->pic_fullname = $request->pic_name;
             $data->pic_nik = $request->pic_nik;
+
             $data->created_by = Auth::user()->id;
 
             $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->name));
             $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
 
-            $filet = $request->file('logo');
-            $filename_logo = 'logo_' . $filename . '.' . $filet->getClientOriginalExtension();
-            $filet->storeAs('public/images/fundraiser', $filename_logo, 'public_uploads');
-            $data->logo = $filename_logo;
+            if ($request->hasFile('logo')) {
+                $file = $request->file('logo');
+                $filename_logo = 'logo_' . $filename . '.' . $file->getClientOriginalExtension();
 
-            if ($request->filled('pic_image')) {
-                $filet = $request->file('pic_image');
-                $filename_vr = 'verified_' . $filename . '.' . $filet->getClientOriginalExtension();
-                $filet->storeAs('public/images/fundraiser', $filename_vr, 'public_uploads');
-                $data->pic_image = $filename_vr;
-            }
+                $dist = base_path('../public_html/images/fundraiser/');
+                $image = Image::make($file);
+                $image->resize(50, 50);
+                $image->save(public_path($dist . $filename_logo));
 
-            $data->save();
-
-            return redirect()->back()->with('success', 'Berhasil tambah data lembaga');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal tambah, ada kesalahan teknis');
-        }
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        $data = Organization::findOrFail($id);
-        return view('admin.org.edit', compact('data'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'name' => 'required',
-            'status' => 'required',
-            'phone' => 'required',
-            'mail' => 'required',
-            'about' => 'required',
-        ]);
-
-        try {
-            // check uuid apakah sudah ada, jika ada maka kembalikan gagal
-            $check_uuid = Organization::select('uuid')
-                ->where('uuid', trim($request->link))
-                ->first();
-            if (isset($check_uuid->uuid)) {
-                return redirect()->back()->with('error', 'Gagal update, duplikat LINK');
-            }
-
-            $data = Organization::findOrFail($id);
-            $data->name = $request->name;
-            $data->phone = $request->phone;
-            $data->email = $request->mail;
-            $data->uuid = trim($request->link);
-            // $data->password     = '-';
-            $data->about = $request->about;
-            $data->status = $request->status;
-            $data->pic_fullname = $request->pic_name;
-            $data->pic_nik = $request->pic_nik;
-            $data->updated_by = Auth::user()->id;
-            $data->updated_at = date('Y-m-d H:i:s');
-
-            if (isset($request->address) && $request->address != '') {
-                $data->address = $request->address;
-            }
-
-            $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->name));
-            $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
-
-            if ($request->filled('pic_image')) {
-                $filet = $request->file('logo');
-                $filename_logo = 'logo_' . $filename . '.' . $filet->getClientOriginalExtension();
-                $filet->storeAs('public/images/fundraiser', $filename_logo, 'public_uploads');
                 $data->logo = $filename_logo;
             }
 
@@ -158,9 +87,90 @@ class OrganizationController extends Controller
 
             $data->save();
 
-            return redirect()->back()->with('success', 'Berhasil update data program');
+            return redirect()->route('adm.organization.index')->with('success', 'Berhasil tambah data lembaga');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal update, ada kesalahan teknis');
+            return redirect()->back()->with('error', 'Gagal tambah, ada kesalahan teknis');
+        }
+    }
+
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        $data = Organization::findOrFail($id);
+
+        return view('admin.org.edit', compact('data'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'status' => 'required|in:verified,verif_org,banned',
+            'phone' => 'required|max:20',
+            'mail' => 'required|email',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'about' => 'required|string',
+            'address' => 'required|string',
+        ]);
+
+        try {
+            $data = Organization::findOrFail($id);
+
+            if ($request->filled('link') && $request->link != $data->uuid) {
+                $check_uuid = Organization::select('uuid')
+                    ->where('uuid', trim($request->link))
+                    ->where('id', '!=', $id)
+                    ->first();
+                if (isset($check_uuid->uuid)) {
+                    return redirect()->back()->with('error', 'Gagal update, duplikat LINK');
+                }
+                $data->uuid = trim($request->link);
+            }
+
+            $data->name = $request->name;
+            $data->phone = $request->phone;
+            $data->email = $request->mail;
+            $data->address = $request->address ?? 'Indonesia';
+            $data->about = $request->about;
+            $data->status = $request->status;
+            $data->pic_fullname = $request->pic_name;
+            $data->pic_nik = $request->pic_nik;
+
+            $data->updated_by = Auth::user()->id;
+
+            $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->name));
+            $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
+
+            if ($request->hasFile('logo')) {
+                $file = $request->file('logo');
+                $filename_logo = 'logo_' . $filename . '.' . $file->getClientOriginalExtension();
+
+                $dist = base_path('../public_html/images/fundraiser/');
+                $image = Image::make($file);
+                $image->resize(50, 50);
+                $image->save(public_path($dist . $filename_logo));
+
+                $data->logo = $filename_logo;
+            }
+
+            if ($request->hasFile('pic_image')) {
+                $filet = $request->file('pic_image');
+                $filename_vr = 'verified_' . $filename . '.' . $filet->getClientOriginalExtension();
+                $filet->storeAs('public/images/fundraiser', $filename_vr, 'public_uploads');
+                $data->pic_image = $filename_vr;
+            }
+
+            $data->save();
+
+            return redirect()->back()->with('success', 'Berhasil update data lembaga');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal update, ada kesalahan teknis: ' . $e->getMessage());
         }
     }
 
@@ -260,13 +270,6 @@ class OrganizationController extends Controller
         if ($request->has('search') && $request->search != '') {
             // Apply search param
             $data = $data->where('name', 'like', '%' . $request->search . '%');
-        }
-
-        if ($request->has('page')) {
-            // If request has page parameter, add paginate to eloquent
-            $data->paginate(10);
-            // Get last page
-            $last_page = $data->paginate(10)->lastPage();
         }
 
         return response()->json([
