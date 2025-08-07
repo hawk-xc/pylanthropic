@@ -24,9 +24,13 @@ class CRMPipelineController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
-        return view('admin.crm-pipeline.create');
+        $pipeline = CRMLeads::where('name', 'like', '%' . $request->leads . '%')->first();
+
+        return view('admin.crm-pipeline.create', [
+            'pipeline' => $pipeline
+        ]);
     }
 
     /**

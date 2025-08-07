@@ -161,7 +161,7 @@
             });
 
             // Auto-select based on existing data or query
-            let initialLeadsId = "{{ old('leads_id', $pipeline->leads_id) }}";
+            let initialLeadsId = "{{ old('leads', $pipeline->leads) }}";
             let initialLeadsName = "{{ old('leads_name', $pipeline->leads->name ?? '') }}";
 
             if (initialLeadsId && initialLeadsName) {
