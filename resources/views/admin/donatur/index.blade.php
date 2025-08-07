@@ -9,8 +9,8 @@
 @section('css_plugins')
     <link href="{{ asset('admin/dataTables.bootstrap5.min.css') }}" rel="stylesheet">
     <!-- <link href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css" rel="stylesheet">
-                                                        <link href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css" rel="stylesheet">
-                                                     -->
+                                                            <link href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css" rel="stylesheet">
+                                                         -->
 @endsection
 
 @section('content')
@@ -27,27 +27,27 @@
                 </div>
                 <div class="col-7 fc-rtl">
                     <button class="btn btn-outline-primary filter_donatur" id="filter-wa-aktif" data-id="wa-aktif"
-                        data-val="0">WA Aktif</button>
+                        data-val="0" title="Donatur yang memiliki no WhatsApp Aktif">WA Aktif</button>
                     <button class="btn btn-outline-primary filter_donatur" id="filter-wa-mau" data-id="wa-mau"
-                        data-val="0">Mau</button>
+                        data-val="0" title="Donatur yang ingin dihubungi WA">Mau</button>
                     <button class="btn btn-outline-primary filter_donatur" id="filter-sultan500" data-id="sultan500"
-                        data-val="0">>500</button>
+                        data-val="0" title="Donatur dengan total donasi > 500 ribu">>500</button>
                     <button class="btn btn-outline-primary filter_donatur" id="filter-sultan1000" data-id="sultan1000"
-                        data-val="0">>1jt</button>
+                        data-val="0" title="Donatur dengan total donasi > 1 juta">>1jt</button>
                     <button class="btn btn-outline-primary filter_donatur" id="filter-sultan2000" data-id="sultan2000"
-                        data-val="0">>2jt</button>
+                        data-val="0" title="Donatur dengan total donasi > 2 juta">>2jt</button>
                     <button class="btn btn-outline-primary filter_donatur" id="filter-sultan5000" data-id="sultan5000"
-                        data-val="0">>5jt</button>
+                        data-val="0" title="Donatur dengan total donasi > 5 juta">>5jt</button>
                     <button class="btn btn-outline-primary filter_donatur" id="filter-setia" data-id="setia"
-                        data-val="0">Setia</button>
+                        data-val="0" title="Donatur yang memiliki donasi terbayar lebih dari 2 kali">Setia</button>
                     <button class="btn btn-outline-primary filter_donatur" id="filter-rutin" data-id="rutin"
-                        data-val="0">Rutin</button>
+                        data-val="0" title="Donatur Loyal atau memiliki jadwal donasi tetap">Rutin</button>
                     <button class="btn btn-outline-primary filter_donatur" id="filter-muslim" data-id="muslim"
-                        data-val="0">Muslim</button>
+                        data-val="0" title="Donatur Muslim">Muslim</button>
                     <button class="btn btn-outline-primary filter_donatur" id="filter-dorman" data-id="dorman"
-                        data-val="0">Dorman</button>
-                    <a href="{{ route('refresh.donatur.donate') }}" target="_blank"
-                        class="btn btn-outline-primary">Refresh</a>
+                        data-val="0" title="Donatur tidak aktif/dorman">Dorman</button>
+                    {{-- <a href="{{ route('refresh.donatur.donate') }}" target="_blank"
+                        class="btn btn-outline-primary">Refresh</a> --}}
                     <a href="{{ route('adm.donatur.create') }}" class="btn btn-outline-primary"><i
                             class="fa fa-plus mr-1"></i> Tambah</a>
                 </div>
