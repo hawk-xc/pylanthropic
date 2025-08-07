@@ -18,7 +18,7 @@ class CRMProspectController extends Controller
      */
     public function create(Request $request)
     {
-        $leads_name = $request->leads;
+        $leads_name = $request->leads_id;
 
         $pipelines = CRMLeads::where('name', 'like', '%' . $leads_name . '%')->first()->crm_pipelines;
 
