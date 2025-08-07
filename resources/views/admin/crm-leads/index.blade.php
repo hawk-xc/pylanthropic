@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.5.0/fonts/remixicon.css" rel="stylesheet" />
     <style type="text/css">
         .big-checkbox .form-check-input {
             width: 16px;
@@ -284,10 +285,38 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
+
+        .scroll-hint-label {
+            position: fixed;
+            bottom: 5%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            z-index: 10000;
+            display: none;
+            /* Hidden by default */
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .scroll-hint-label.show {
+            display: flex;
+            opacity: 1;
+        }
     </style>
 @endsection
 
 @section('content')
+    <div id="scroll-hint" class="scroll-hint-label">
+        <i class="ri-drag-move-line"></i>
+        <span>Tahan <strong>Shift</strong> + <strong>Scroll</strong> Atas/Bawah untuk menggeser pipeline</span>
+    </div>
     <div class="main-card mb-3 card">
         <div class="card-body">
             <div class="row">
@@ -533,6 +562,24 @@
         }
 
         $(document).ready(function() {
+            const scrollHint = $('#scroll-hint');
+            if ($('.kanban-board').length > 0) {
+                scrollHint.addClass('show');
+                setTimeout(function() {
+                    scrollHint.removeClass('show');
+                }, 5000);
+            }
+
+            const kanbanContainer = document.querySelector('.kanban-container');
+            if (kanbanContainer) {
+                kanbanContainer.addEventListener('wheel', (e) => {
+                    if (e.shiftKey) {
+                        e.preventDefault();
+                        kanbanContainer.scrollLeft += e.deltaY;
+                    }
+                });
+            }
+
             // Inisialisasi Select2
             $('#leadsSelect').select2({
                 placeholder: "Cari atau pilih Journey...",
