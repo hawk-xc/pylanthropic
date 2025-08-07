@@ -356,7 +356,7 @@
                     <div class="kanban-row">
                         <div class="kanban-board">
                             <!-- Kolom kanban akan di-generate secara dinamis oleh JavaScript -->
-                            <a class="kanban-column" target="_blank" id="add-pipeline"
+                            <a class="kanban-column" id="add-pipeline"
                                 href="/adm/crm-pipeline/create?leads={{ request()->query('leads') }}"
                                 style="text-decoration: none;">
                                 <div class="prospect-card-adder">
@@ -853,15 +853,15 @@
                     <div class="kanban-card"
                          data-prospect-id="${prospect.id}"
                          data-pipeline-id="${pipeline.id}">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h6 class="mb-1"><a href="/adm/crm-prospect/${prospect.id}?leads=${currentLeadsId}">${prospect.name}</a></h6>
-                                <p class="mb-1">${truncateTextWithTooltip(prospect.description, 20)}</p>
-                                <small class="text-muted">Nominal: ${formatCurrency(prospect.nominal)}</small>
-                            </div>
-                            <span class="badge bg-light text-dark">
+                        <div class="d-flex justify-content-between align-items-start flex-column">
+                            <span class="badge bg-light text-dark mb-2">
                                 ${formatDate(prospect.created_at)}
                             </span>
+                            <div>
+                                <h6 class="mb-1"><a href="/adm/crm-prospect/${prospect.id}?leads=${currentLeadsId}">${prospect.name}</a></h6>
+                                <p class="mb-1">${truncateTextWithTooltip(prospect.description, 10)}</p>
+                                <small class="text-muted">Nominal: ${formatCurrency(prospect.nominal)}</small>
+                            </div>
                         </div>
                     </div>
                 `);

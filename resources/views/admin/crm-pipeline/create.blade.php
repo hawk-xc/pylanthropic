@@ -13,26 +13,22 @@
 @endsection
 
 @section('content')
-    <div class="main-card mb-3 card">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-5">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb mb-0 pb-0 pl-0">
-                            <li class="breadcrumb-item"><a href="{{ route('adm.index') }}">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page"><a
-                                    href="{{ route('adm.crm-leads.index') }}">CRM Leads</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Tambah Pipeline</li>
-                        </ol>
-                    </nav>
-                </div>
-                <div class="col-7 fc-rtl">
-                    <a class="btn btn-outline-primary"
-                        href='/adm/crm-leads?leads={{ request()->query('leads') }}'>Kembali</a>
-                </div>
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0">
+                        <li class="breadcrumb-item"><a href="{{ route('adm.index') }}">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{{ route('adm.crm-leads.index') }}">CRM Leads</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Tambah Pipeline</li>
+                    </ol>
+                </nav>
+                <a href='/adm/crm-leads?leads={{ request()->query('leads') }}' class="btn btn-outline-secondary">
+                    <i class="ri-arrow-left-line"></i> Kembali
+                </a>
             </div>
-            <div class="divider"></div>
-            <form action="{{ route('adm.crm-pipeline.store') }}" method="post" accept-charset="utf-8" class="row gy-3">
+
+            <form id="pipeline-form" action="{{ route('adm.crm-pipeline.store') }}" method="post" accept-charset="utf-8">
                 @csrf
                 @php
                     $leadsQuery = strtolower(request()->query('leads'));
@@ -41,62 +37,79 @@
                 <input type="hidden" id="leads-query" value="{{ $leadsQuery }}">
                 <input type="hidden" name="leads_id" id="hidden-leads-id">
 
-                <div class="col-12">
-                    <label class="form-label">Nama Pipeline</label>
-                    <input type="text" class="form-control" name="name" id="name"
-                        placeholder="Masukkan Nama Pipeline" value="{{ old('name') }}" required>
-                    @error('name')
-                        <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i> {{ $message }}
-                        </div>
-                    @enderror
-                </div>
-                <div class="col-12">
-                    <label class="form-label required">Pilih Leads</label>
-                    <select class="form-control form-control-sm" name="leads_id" id="leads-select2" required></select>
-                    @error('leads_id')
-                        <div class="invalid-feedback d-block">
-                            {{ $message }}
-                        </div>
-                    @enderror
-                </div>
-                <div class="col-12">
-                    <label for="percentage_deals" class="form-label">Percentage Deals</label>
-                    <input type="number" class="form-control" id="percentage_deals" name="percentage_deals" min="1"
-                        max="100" placeholder="Masukkan persentase deals disini" value="{{ old('percentage_deals') }}"
-                        required>
-                    @error('percentage_deals')
-                        <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i>
-                            {{ $message }}
-                        </div>
-                    @enderror
-                </div>
-
-                <div class="col-12">
-                    <label for="description" class="form-label">Deskripsi</label>
-                    <textarea class="form-control" id="description" name="description" rows="3" placeholder="Masukkan deskripsi">{{ old('description') }}</textarea>
-                    @error('description')
-                        <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i>
-                            {{ $message }}
-                        </div>
-                    @enderror
-                </div>
-
-                <div class="col-12">
-                    <div class="form-check form-switch mt-2 ml-3">
-                        <input class="form-check-input" type="checkbox" name="is_active" id="status_is_active"
-                            value="1" checked>
-                        <label class="form-check-label" for="status_is_active">Status Pipeline (<span
-                                id="_status">Aktif</span>)</label>
-                        <input type="hidden" name="is_active_hidden" id="status_is_active_hidden" value="1">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">Formulir Tambah Pipeline</h5>
                     </div>
-                </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Nama Pipeline</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="ri-suitcase-line"></i></span>
+                                    <input type="text" class="form-control @error('name') is-invalid @enderror"
+                                        name="name" id="name" placeholder="Contoh: Prospek Baru"
+                                        value="{{ old('name') }}" required>
+                                </div>
+                                @error('name')
+                                    <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i>
+                                        {{ $message }}</div>
+                                @enderror
+                            </div>
 
-                <div class="col-12">
-                    <div class="divider mb-2 mt-2"></div>
-                </div>
-                <div class="col-12 text-end">
-                    <input type="reset" class="btn btn-danger" value="Reset">
-                    <input type="submit" class="btn btn-info" value="Submit">
+                            <div class="col-md-6 mb-3">
+                                <label for="percentage_deals" class="form-label">Opportunity (%)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="ri-percent-line"></i></span>
+                                    <input type="number"
+                                        class="form-control @error('percentage_deals') is-invalid @enderror"
+                                        id="percentage_deals" name="percentage_deals" min="1" max="100"
+                                        placeholder="e.g., 50" value="{{ old('percentage_deals') }}" required>
+                                </div>
+                                @error('percentage_deals')
+                                    <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i>
+                                        {{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label required">Pilih Leads</label>
+                            <select class="form-control @error('leads_id') is-invalid @enderror" name="leads_id"
+                                id="leads-select2" required></select>
+                            @error('leads_id')
+                                <div class="invalid-feedback d-block">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="description" name="description" rows="4"
+                                placeholder="Jelaskan tentang pipeline ini...">{{ old('description') }}</textarea>
+                            @error('description')
+                                <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i>
+                                    {{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3 ml-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_active" id="status_is_active"
+                                    value="1" checked>
+                                <label class="form-check-label" for="status_is_active">Status: <span
+                                        id="_status"></span></label>
+                                <input type="hidden" name="is_active_hidden" id="status_is_active_hidden" value="1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-end bg-light flex flex-row gap-3">
+                        <button type="reset" class="btn btn-outline-danger">
+                            <i class="ri-refresh-line"></i> Reset
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ri-save-line"></i> Simpan Pipeline
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -118,7 +131,7 @@
             let leadsSelect = $("#leads-select2");
 
             leadsSelect.select2({
-                placeholder: 'Cari Leads',
+                placeholder: 'Cari dan pilih leads...',
                 theme: 'bootstrap-5',
                 allowClear: true,
                 ajax: {
@@ -131,32 +144,33 @@
                         };
                     },
                     processResults: function(data, params) {
-                        var items = $.map(data.data, function(obj) {
-                            obj.id = obj.id;
-                            obj.text = obj.name;
-                            return obj;
-                        });
                         params.page = params.page || 1;
-
                         return {
-                            results: items,
+                            results: $.map(data.data, function(item) {
+                                return {
+                                    id: item.id,
+                                    text: item.name
+                                };
+                            }),
                             pagination: {
                                 more: params.page < data.last_page
                             }
                         };
                     }
-                },
-                templateResult: function(item) {
-                    if (item.loading) return item.text;
-                    return item.text;
-                },
-                language: {
-                    searching: function(params) {
-                        select2_query = params;
-                        return 'Searching...';
-                    }
                 }
             });
+
+            // Auto-select based on existing data or query
+            let initialLeadsId = "{{ old('leads_id', $pipeline->leads_id) }}";
+            let initialLeadsName = "{{ old('leads_name', $pipeline->leads->name ?? '') }}";
+
+            if (initialLeadsId && initialLeadsName) {
+                let option = new Option(initialLeadsName, initialLeadsId, true, true);
+                leadsSelect.append(option).trigger('change');
+                if (leadsQuery) {
+                    leadsSelect.prop('disabled', true);
+                }
+            }
 
             // Auto-select berdasarkan query jika tersedia
             if (leadsQuery) {
@@ -169,14 +183,9 @@
                         const matched = response.data.find(item => item.name.toLowerCase() ===
                             leadsQuery);
                         if (matched) {
-                            // Tambahkan option dan pilih secara otomatis
                             let option = new Option(matched.name, matched.id, true, true);
                             leadsSelect.append(option).trigger('change');
-
-                            // Salin id ke input hidden agar tetap terkirim
                             $('#hidden-leads-id').val(matched.id);
-
-                            // Disable input agar tidak bisa diubah
                             leadsSelect.prop('disabled', true);
                         }
                     }
@@ -184,13 +193,26 @@
             }
 
             $('#status_is_active').on('change', function() {
+                const statusSpan = $('#_status');
                 if ($(this).is(':checked')) {
-                    $('#_status').text('Aktif');
+                    statusSpan.text('Aktif').removeClass('text-danger fw-normal').addClass(
+                        'text-success fw-bold');
                     $('#status_is_active_hidden').val('1');
                 } else {
-                    $('#_status').text('Tidak Aktif');
+                    statusSpan.text('Tidak Aktif').removeClass('text-success fw-bold').addClass(
+                        'text-danger fw-normal');
                     $('#status_is_active_hidden').val('0');
                 }
+            }).trigger('change'); // Trigger on load to set initial state
+
+            $('#pipeline-form').on('reset', function() {
+                // Reset select2, but respect disabled state
+                if (!leadsSelect.prop('disabled')) {
+                    leadsSelect.val(null).trigger('change');
+                }
+
+                // Reset status switch
+                $('#status_is_active').prop('checked', true).trigger('change');
             });
         });
     </script>
@@ -218,3 +240,4 @@
         @endif
     </script>
 @endsection
+
