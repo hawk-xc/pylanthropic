@@ -324,7 +324,9 @@
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 pb-0">
                             <li class="breadcrumb-item"><a href="{{ route('adm.index') }}">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">Leads CRM</li>
+                            <li class="breadcrumb-item active" aria-current="page">
+                                <a href="/adm/crm-leads">Leads CRM</a>
+                            </li>
                             @if (request()->query('leads'))
                                 <li class="breadcrumb-item active" aria-current="page">{{ request()->query('leads') }}</li>
                             @endif
