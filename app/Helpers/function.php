@@ -19,35 +19,6 @@ if(!(function_exists('printRequired'))){
 
 if (!function_exists('importProspectDonatur')) {
     /**
-     * Import prospect donatur data from a given file.
-     *
-     * @param string $filePath
-     * @return array
-     */
-    function importProspectDonatur($filePath)
-    {
-        $results = [];
-        if (!file_exists($filePath) || !is_readable($filePath)) {
-            return $results;
-        }
-
-        if (($handle = fopen($filePath, 'r')) !== false) {
-            $header = null;
-            while (($row = fgetcsv($handle, 1000, ',')) !== false) {
-                if (!$header) {
-                    $header = $row;
-                } else {
-                    $results[] = array_combine($header, $row);
-                }
-            }
-            fclose($handle);
-        }
-        return $results;
-    }
-}
-
-if (!function_exists('importProspectDonatur')) {
-    /**
      * Filter donatur lalu simpan ke Prospect dan Prospect Logs
      *
      * @return void

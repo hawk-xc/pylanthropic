@@ -1043,16 +1043,16 @@
             Swal.fire({
                 toast: true,
                 position: 'bottom-end',
-                icon: '{{ session('message')['type'] }}',
-                title: '{{ session('message')['text'] }}',
+                icon: '{{ session('message')['status'] }}',
+                title: '{{ session('message')['message'] }}',
                 showConfirmButton: false,
                 timer: 15000,
                 timerProgressBar: true,
                 customClass: {
                     popup: 'rounded shadow-sm px-3 py-2 border-0 d-flex flex-row align-middle-center justify-content-center'
                 },
-                background: '{{ session('message')['type'] === 'success' ? '#d1fae5' : '#fee2e2' }}',
-                color: '{{ session('message')['type'] === 'success' ? '#065f46' : '#b91c1c' }}',
+                background: '{{ session('message')['status'] === 'success' ? '#d1fae5' : '#fee2e2' }}',
+                color: '{{ session('message')['status'] === 'success' ? '#065f46' : '#b91c1c' }}',
                 didOpen: (toast) => {
                     toast.addEventListener('mouseenter', Swal.stopTimer)
                     toast.addEventListener('mouseleave', Swal.resumeTimer)
