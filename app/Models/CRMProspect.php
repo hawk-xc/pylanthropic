@@ -24,6 +24,7 @@ class CRMProspect extends Model
         'updated_by',
         'crm_pipeline_id',
         'donatur_id',
+        'created_by',
     ];
 
     public function crm_pipeline()
