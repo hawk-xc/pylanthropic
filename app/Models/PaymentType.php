@@ -30,4 +30,9 @@ class PaymentType extends Model
         'created_at',
         'updated_at'
     ];
+
+    public function donatur_loyal()
+    {
+        return $this->hasMany(DonaturLoyal::class, 'payment_type_id', 'id');
+    }
 }

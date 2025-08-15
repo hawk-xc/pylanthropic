@@ -14,10 +14,10 @@ class DonaturLoyal extends Model
     protected $table = 'donatur_loyal';
 
     protected $fillable = [
-        'donatur_id',
-        'program_id',
+        'donatur_id', // donatur
+        'program_id', // program
         'nominal',
-        'payment_type_id',
+        'payment_type_id', // payment_type
         'desc',
         'every_period',
         'every_time',
@@ -38,5 +38,10 @@ class DonaturLoyal extends Model
     public function program()
     {
         return $this->belongsTo(Program::class, 'program_id', 'id');
+    }
+
+    public function payment_type()
+    {
+        return $this->belongsTo(PaymentType::class, 'payment_type_id', 'id');
     }
 }
