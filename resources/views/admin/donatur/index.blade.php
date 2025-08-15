@@ -50,6 +50,8 @@
                         class="btn btn-outline-primary">Refresh</a> --}}
                     <a href="{{ route('adm.donatur.create') }}" class="btn btn-outline-primary"><i
                             class="fa fa-plus mr-1"></i> Tambah</a>
+                    <a href="{{ route('adm.donatur.reset-cache') }}" class="btn btn-outline-info"><i
+                            class="fa fa-sync mr-1"></i> Refresh Data</a>
                 </div>
             </div>
             <div class="divider"></div>

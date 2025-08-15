@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use Exception;
 use Illuminate\Support\Str;
 use App\Models\Donatur;
+use Illuminate\Support\Facades\Cache;
 use App\Models\Program;
 use App\Models\DonaturShortLink;
 use Illuminate\Http\Request;
@@ -74,6 +75,7 @@ class DonaturController extends Controller
             $data->is_muslim = $request->agama === 'islam';
             $data->want_to_contact = $request->want_to_contact ? 1 : 0;
 
+            Cache::forget('donatur-cache-data');
             $data->save();
 
             return redirect()->route('adm.donatur.index')->with('success', 'Donatur berhasil ditambahkan.');
@@ -138,6 +140,7 @@ class DonaturController extends Controller
             $data->is_muslim = $request->agama === 'islam';
             $data->want_to_contact = $request->want_to_contact ? 1 : 0;
 
+            Cache::forget('donatur-cache-data');
             $data->save();
 
             return redirect()->route('adm.donatur.index')->with('success', 'Data Donatur berhasil diupdate.');
@@ -1541,6 +1544,8 @@ https://bantubersama.com/bantupalestina';
 
             $donaturShortLink->amount = $amount;
 
+            Cache::forget('donatur-cache-data');
+
             $donaturShortLink->direct_link = 'https://bantubersama.com/' . $program->slug . '/checkout/' . $amount . '/' . $request->payment_type . '?name=' . urlencode($donatur->name) . '&telp=' . urlencode($donatur->telp);
 
             $donaturShortLink->save();
@@ -1569,6 +1574,8 @@ https://bantubersama.com/bantupalestina';
 
         try {
             $shortLinkId->delete();
+
+            Cache::forget('donatur-cache-data');
 
             return back()->with('message', [
                 'type' => 'success',
@@ -1637,6 +1644,8 @@ https://bantubersama.com/bantupalestina';
             $donaturShortLink->direct_link = 'https://bantubersama.com/' . $program->slug . '/checkout/' . $amount . '/' . $request->payment_type . '?name=' . urlencode($donatur->name) . '&telp=' . urlencode($donatur->telp);
 
             $donaturShortLink->save();
+
+            Cache::forget('donatur-cache-data');
 
             return response()->json([
                 'success' => true,
@@ -1721,4 +1730,11 @@ https://bantubersama.com/bantupalestina';
 
         return $code;
     }
+
+    public function refreshCache()
+    {
+        Cache::forget('donatur-cache-data');
+    
+        return redirect()->route('adm.donatur.index')->with('message', ['status' => 'success', 'message' => 'Cache data donatur berhasil di-refresh.']);
+   }
 }

@@ -174,6 +174,7 @@ Route::group([
         Route::get('/donatur/sultan', [Admin\DonaturController::class, 'sultan'])->name('donatur.sultan');
         Route::get('/donatur/hampir', [Admin\DonaturController::class, 'hampir'])->name('donatur.hampir');
         Route::get('/donatur/update-donate', [Admin\DonaturController::class, 'donateUpdate'])->name('donatur.donate.update');
+        Route::get('/donatur-refresh-cache', [Admin\DonaturController::class, 'refreshCache'])->name('donatur.reset-cache');
 
         // REPORT
         Route::get('/report/collection', [Admin\ReportController::class, 'collection'])->name('report.collection');
