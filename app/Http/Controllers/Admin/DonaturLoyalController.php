@@ -24,7 +24,8 @@ class DonaturLoyalController extends Controller
         ]);
 
         $request->validate([
-            'program' => 'required|numeric',
+            'program' => 'required|numeric|exists:program,id',
+            'payment_type' => 'required|numeric|exists:payment_type,id',
             'donasi_periode' => ['required', Rule::in(['daily', 'weekly', 'monthly', 'yearly'])],
             // daily
             'daily_time' => Rule::requiredIf($request->donasi_periode === 'daily'),
@@ -41,6 +42,8 @@ class DonaturLoyalController extends Controller
         ], [
             'program.required' => 'Program wajib diisi.',
             'program.numeric' => 'Program harus berupa angka.',
+            'payment_type.required' => 'Tipe pembayaran wajib diisi.',
+            'payment_type.numeric' => 'Tipe pembayaran harus berupa angka.',
             'donasi_periode.required' => 'Periode donasi wajib diisi.',
             'donasi_periode.in' => 'Periode donasi tidak valid.',
             'daily_time.required' => 'Waktu donasi harian wajib diisi.',
@@ -51,28 +54,6 @@ class DonaturLoyalController extends Controller
             'amount.numeric' => 'Jumlah donasi harus berupa angka.',
             'donasi_description.string' => 'Deskripsi donasi harus berupa teks.',
         ]);
-
-        // +--------------------+---------------------------------------------------+------+-----+-------------------+-------------------+
-        // | Field              | Type                                              | Null | Key | Default           | Extra             |
-        // +--------------------+---------------------------------------------------+------+-----+-------------------+-------------------+
-        // | id                 | int                                               | NO   | PRI | NULL              | auto_increment    |
-        // | donatur_id         | bigint                                            | NO   | MUL | NULL              |                   |
-        // | program_id         | bigint                                            | NO   | MUL | NULL              |                   |
-        // | nominal            | int                                               | NO   |     | NULL              |                   |
-        // | payment_type_id    | int                                               | YES  |     | NULL              |                   |
-        // | desc               | text                                              | YES  |     | NULL              |                   |
-        // | every_period       | enum('daily','weekly','monthly','yearly','other') | NO   |     | NULL              |                   |
-        // | every_time         | time                                              | YES  |     | NULL              |                   |
-        // | every_date_period  | int                                               | YES  |     | NULL              |                   |
-        // | every_month_period | int                                               | YES  |     | NULL              |                   |
-        // | every_date         | date                                              | YES  |     | NULL              |                   |
-        // | every_day          | varchar(150)                                      | YES  |     | NULL              |                   |
-        // | is_active          | tinyint(1)                                        | YES  |     | 1                 |                   |
-        // | created_at         | timestamp                                         | YES  |     | CURRENT_TIMESTAMP | DEFAULT_GENERATED |
-        // | created_by         | bigint                                            | NO   |     | NULL              |                   |
-        // | updated_at         | datetime                                          | YES  |     | NULL              |                   |
-        // | updated_by         | bigint                                            | YES  |     | NULL              |                   |
-        // +--------------------+---------------------------------------------------+------+-----+-------------------+-------------------+
 
         try {
             $data = new DonaturLoyal;
@@ -97,6 +78,7 @@ class DonaturLoyalController extends Controller
             }
 
             $data->nominal = $request->amount;
+            $data->payment_type_id = $request->payment_type;
             $data->desc = $request->donasi_description ?? null;
             $data->is_active = $request->status_donasi_tetap ?? null;
             $data->created_by = auth()->user()->id; // loged in user;
@@ -121,7 +103,7 @@ class DonaturLoyalController extends Controller
     public function edit(string $id)
     {
         try {
-            $donaturLoyal = DonaturLoyal::with('program')->findOrFail($id);
+            $donaturLoyal = DonaturLoyal::with(['program', 'payment_type'])->findOrFail($id);
 
             return response()->json([
                 'success' => true,
@@ -140,15 +122,15 @@ class DonaturLoyalController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $donatur_id = $request->donatur_id;
         $donatur_loyal_id = $request->donatur_loyal_id;
 
         $request->merge([
             'amount' => (int) str_replace('.', '', $request->amount)
         ]);
-        // dd($request->all());
 
         $request->validate([
+            'program' => 'required|numeric|exists:program,id',
+            'payment_type' => 'required|numeric|exists:payment_type,id',
             'donasi_periode' => ['required', Rule::in(['daily', 'weekly', 'monthly', 'yearly'])],
             // daily
             'daily_time' => Rule::requiredIf($request->donasi_periode === 'daily'),
@@ -165,6 +147,8 @@ class DonaturLoyalController extends Controller
         ], [
             'program.required' => 'Program wajib diisi.',
             'program.numeric' => 'Program harus berupa angka.',
+            'payment_type.required' => 'Tipe pembayaran wajib diisi.',
+            'payment_type.numeric' => 'Tipe pembayaran harus berupa angka.',
             'donasi_periode.required' => 'Periode donasi wajib diisi.',
             'donasi_periode.in' => 'Periode donasi tidak valid.',
             'daily_time.required' => 'Waktu donasi harian wajib diisi.',
@@ -197,8 +181,10 @@ class DonaturLoyalController extends Controller
                     break;
             }
 
+            $data->program_id = $request->program;
             $data->nominal = $request->amount;
             $data->desc = $request->donasi_description ?? null;
+            $data->payment_type_id = $request->payment_type;
             $data->is_active = $request->edit_status_donasi_tetap ?? null;
             $data->created_by = auth()->user()->id;
             $data->save();
@@ -345,8 +331,7 @@ class DonaturLoyalController extends Controller
                     return '<span class="badge badge-danger">Nonaktif</span>';
                 })
                 ->addColumn('payment', function($row) {
-                    // Since paymentType relationship doesn't exist, we'll use direct field
-                    return $row->payment_type_id ?: 'Belum dipilih';
+                    return $row->payment_type_id ? $row->payment_type->name : 'Belum dipilih';
                 })
                 ->addColumn('action', function($row) {
                     $actionBtn = '

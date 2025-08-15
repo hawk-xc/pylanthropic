@@ -123,6 +123,7 @@
                             <th>Nominal</th>
                             <th>Program</th>
                             <th>Deskripsi/Keterangan</th>
+                            <th>Metode Pembayaran</th>
                             <th>Status</th>
                             <th>Aksi</th>
                         </tr>
@@ -371,6 +372,16 @@
                                 @enderror
                             </div>
                             <div class="mb-3">
+                                <label class="form-label fw-semibold required">Pilih Metode Pembayaran</label>
+                                <select class="form-control form-control-sm" name="payment_type" id="payment_type-select2"
+                                    required></select>
+                                @error('payment_type')
+                                    <div class="invalid-feedback d-block">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+                            <div class="mb-3">
                                 <label for="donasi_description" class="form-label">Deskripsi</label>
                                 <textarea class="form-control" id="donasi_description" name="donasi_description" rows="3"
                                     placeholder="Masukkan deskripsi donasi tetap"></textarea>
@@ -413,9 +424,9 @@
                         <div class="modal-body text-start pt-4">
                             <div class="mb-3">
                                 <label class="form-label fw-semibold required">Pilih Program</label>
-                                <input type="text" class="form-control form-control-sm" name="program"
-                                    id="edit_program" disabled>
-                                @error('edit_program')
+                                <select class="form-control form-control-sm" name="program" id="edit_program-select2"
+                                    required></select>
+                                @error('program')
                                     <div class="invalid-feedback d-block">
                                         {{ $message }}
                                     </div>
@@ -460,6 +471,17 @@
                                 <label for="donasi_description" class="form-label">Deskripsi</label>
                                 <textarea class="form-control" id="edit_donasi_description" name="donasi_description" rows="3"
                                     placeholder="Masukkan deskripsi donasi tetap"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold required">Pilih Metode Pembayaran</label>
+                                <select class="form-control form-control-sm" name="payment_type" id="edit_payment_type-select2"
+                                    required>
+                                </select>
+                                @error('payment_type')
+                                    <div class="invalid-feedback d-block">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
                             </div>
                             <div class="form-check form-switch mt-2 ml-3">
                                 <input class="form-check-input" type="checkbox" name="edit_status_donasi_tetap"
@@ -653,7 +675,7 @@
                         return response.json();
                     })
                     .then(data => {
-                        // console.log(data);
+                        console.log(data);
                         // Tampilkan modal terlebih dahulu
                         let myEditModal = new bootstrap.Modal(document.getElementById('edit_modal_donatur_loyal'));
                         myEditModal.show();
@@ -662,9 +684,12 @@
                         const form = document.getElementById('editDonaturLoyalForm');
                         form.action = `/adm/donatur-loyal/${id}`;
 
-                        // Isi field program
-                        document.getElementById('edit_program').value = data.data.program.title;
-                        $('#program-select2').val(data.data.program_id).trigger('change');
+                        // Set default value for program select2
+                        const programSelect = $('#edit_program-select2');
+                        if (data.data.program) {
+                            var option = new Option(data.data.program.title, data.data.program.id, true, true);
+                            programSelect.append(option).trigger('change');
+                        }
 
                         // Set nilai periode donasi
                         const donasiPeriodeSelect = document.getElementById('edit_donasi_periode');
@@ -707,6 +732,18 @@
                         document.getElementById('donaturLoyalId').value = data.data.id;
                         document.getElementById('edit_rupiah').value = formatRupiah(data.data.nominal.toString());
                         document.getElementById('edit_donasi_description').value = data.data.desc || '';
+
+                        // Set default value for payment type select2
+                        const paymentTypeSelect = $('#edit_payment_type-select2');
+                        if (data.data.payment_type) {
+                            const paymentType = data.data.payment_type;
+                            const paymentText = paymentType.payment_code ?
+                                `#${paymentType.id} ${paymentType.name} (${paymentType.payment_code})` :
+                                `#${paymentType.id} ${paymentType.name}`;
+
+                            var option = new Option(paymentText, paymentType.id, true, true);
+                            paymentTypeSelect.append(option).trigger('change');
+                        }
 
                         if (data.data.is_active) {
                             document.getElementById('_edit_status').textContent = 'Aktif';
@@ -1405,6 +1442,176 @@
                         }
                     }
                 });
+
+                $("#payment_type-select2").select2({
+                    dropdownParent: $('#modal_donatur_loyal'),
+                    placeholder: 'Cari Metode Pembayaran',
+                    theme: 'bootstrap-5',
+                    allowClear: true,
+                    ajax: {
+                        url: "{{ route('adm.payment-type.select2.all') }}",
+                        delay: 250,
+                        data: function(params) {
+                            var query = {
+                                search: params.term,
+                                page: params.page || 1
+                            }
+
+                            return query;
+                        },
+                        processResults: function(data, params) {
+                            var items = $.map(data.data, function(obj) {
+                                let payment_type_name = obj.payment_code ? '#' + obj.id + ' ' + obj.name + ' (' + obj.payment_code + ')' : '#' + obj.id + ' ' + obj.name;
+                                obj.id = obj.id;
+                                obj.text = payment_type_name;
+
+                                return obj;
+                            });
+                            params.page = params.page || 1;
+
+                            // console.log(items);
+                            // Transforms the top-level key of the response object from 'items' to 'results'
+                            return {
+                                results: items,
+                                pagination: {
+                                    more: params.page < data.last_page
+                                }
+                            };
+                        },
+                    },
+                    templateResult: function(item) {
+                        if (item.loading) {
+                            return item.text;
+                        }
+
+                        var term = select2_query.term || '';
+                        var $result = item.text,
+                            term;
+
+                        return $result;
+                    },
+                    language: {
+                        searching: function(params) {
+                            select2_query = params;
+                            return 'Searching...';
+                        }
+                    }
+                });
+
+                $("#edit_payment_type-select2").select2({
+                    dropdownParent: $('#edit_modal_donatur_loyal'),
+                    placeholder: 'Cari Metode Pembayaran',
+                    theme: 'bootstrap-5',
+                    allowClear: true,
+                    ajax: {
+                        url: "{{ route('adm.payment-type.select2.all') }}",
+                        delay: 250,
+                        data: function(params) {
+                            var query = {
+                                search: params.term,
+                                page: params.page || 1
+                            }
+
+                            return query;
+                        },
+                        processResults: function(data, params) {
+                            var items = $.map(data.data, function(obj) {
+                                let payment_type_name = obj.payment_code ? '#' + obj.id + ' ' + obj.name + ' (' + obj.payment_code + ')' : '#' + obj.id + ' ' + obj.name;
+                                obj.id = obj.id;
+                                obj.text = payment_type_name;
+
+                                return obj;
+                            });
+                            params.page = params.page || 1;
+
+                            return {
+                                results: items,
+                                pagination: {
+                                    more: params.page < data.last_page
+                                }
+                            };
+                        },
+                    },
+                    templateResult: function(item) {
+                        if (item.loading) {
+                            return item.text;
+                        }
+
+                        var term = select2_query.term || '';
+                        var $result = item.text,
+                            term;
+
+                        return $result;
+                    },
+                    language: {
+                        searching: function(params) {
+                            select2_query = params;
+                            return 'Searching...';
+                        }
+                    }
+                });
+
+                $("#edit_program-select2").select2({
+                    dropdownParent: $('#edit_modal_donatur_loyal'),
+                    placeholder: 'Cari Program',
+                    theme: 'bootstrap-5',
+                    allowClear: true,
+                    ajax: {
+                        url: "{{ route('adm.program.select2.all') }}",
+                        delay: 250,
+                        data: function(params) {
+                            var query = {
+                                search: params.term,
+                                page: params.page || 1
+                            }
+
+                            // Query parameters will be ?search=[term]&type=public
+                            return query;
+                        },
+                        processResults: function(data, params) {
+                            var items = $.map(data.data, function(obj) {
+                                let program_name = obj.title;
+                                obj.id = obj.id;
+                                obj.text = `${program_name}`;
+
+                                return obj;
+                            });
+                            params.page = params.page || 1;
+
+                            // console.log(items);
+                            // Transforms the top-level key of the response object from 'items' to 'results'
+                            return {
+                                results: items,
+                                pagination: {
+                                    more: params.page < data.last_page
+                                }
+                            };
+                        },
+                    },
+                    templateResult: function(item) {
+                        // console.log(item);
+                        // No need to template the searching text
+                        if (item.loading) {
+                            return item.text;
+                        }
+
+                        var term = select2_query.term || '';
+                        // var $result = markMatch(item.text, term);
+                        var $result = item.text,
+                            term;
+
+                        return $result;
+                    },
+                    language: {
+                        searching: function(params) {
+                            // Intercept the query as it is happening
+                            select2_query = params;
+
+                            // Change this to be appropriate for your application
+                            return 'Searching...';
+                        }
+                    }
+                });
             });
 
             $(document).ready(function() {
@@ -1568,30 +1775,25 @@
                     ],
                     ajax: "{{ route('adm.donatur-loyal.datatables') }}/?donatur_id={{ $donatur->id }}",
                     "columnDefs": [{
-                            "width": "21%",
-                            "targets": 0
+                            "width": "20%", "targets": 0
                         },
                         {
-                            "width": "14%",
-                            "targets": 1
+                            "width": "15%", "targets": 1
                         },
                         {
-                            "width": "14%",
-                            "targets": 2
+                            "width": "15%", "targets": 2
                         },
                         {
-                            "width": "30%",
-                            "targets": 3
+                            "width": "20%", "targets": 3
                         },
                         {
-                            "width": "10%",
-                            "targets": 4,
-                            "orderable": false
+                            "width": "10%", "targets": 4, "orderable": false
                         },
                         {
-                            "width": "10%",
-                            "targets": 5,
-                            "orderable": false
+                            "width": "10%", "targets": 5, "orderable": false
+                        },
+                        {
+                            "width": "10%", "targets": 6, "orderable": false
                         }
                     ],
                     columns: [{
@@ -1609,6 +1811,10 @@
                         {
                             data: 'desc',
                             name: 'desc'
+                        },
+                        {
+                            data: 'payment',
+                            name: 'payment'
                         },
                         {
                             data: 'status',
