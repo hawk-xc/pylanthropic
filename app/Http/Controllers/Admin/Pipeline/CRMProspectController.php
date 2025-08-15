@@ -78,13 +78,13 @@ class CRMProspectController extends Controller
             return redirect()
                 ->to('adm/crm-pipeline?leads=' . $pipeline_name)
                 ->with('message', [
-                    'type' => 'success',
-                    'text' => 'Berhasil menambah data Prospek!',
+                    'status' => 'success',
+                    'message' => 'Berhasil menambah data Prospek!',
                 ]);
         } catch (Exception $err) {
             return back()->with('message', [
-                'type' => 'error',
-                'text' => $err->getMessage(),
+                'status' => 'error',
+                'message' => $err->getMessage(),
             ]);
         }
     }
@@ -162,13 +162,13 @@ class CRMProspectController extends Controller
             return redirect()
                 ->to('adm/crm-prospect/' . $id . '?leads=' . $leads_name)
                 ->with('message', [
-                    'type' => 'success',
-                    'text' => 'Berhasil mengubah data Prospek!',
+                    'status' => 'success',
+                    'message' => 'Berhasil mengubah data Prospek!',
                 ]);
         } catch (Exception $err) {
             return back()->with('message', [
-                'type' => 'error',
-                'text' => $err->getMessage(),
+                'status' => 'error',
+                'message' => $err->getMessage(),
             ]);
         }
     }
@@ -188,24 +188,24 @@ class CRMProspectController extends Controller
                 ->route('adm.crm-leads.index', ['leads' => $leadsId])
                 ->with('message', [
                     'status' => 'success',
-                    'message' => 'Data Pipeline berhasil dihapus!',
+                    'message' => 'Data Prospect berhasil dihapus!',
                 ]);
         } catch (Exception $err) {
             return redirect()
                 ->back()
                 ->with('message', [
                     'status' => 'error',
-                    'message' => 'Gagal menghapus data',
+                    'message' => 'Gagal menghapus data' + $err->getMessage(),
                 ]);
         }
     }
 
     public function listProspects(Request $request)
     {
-        $prospect_type = $request->pipeline;
+        $prospect_status = $request->pipeline;
 
         try {
-            $prospects = CRMPipeline::where('type', $prospect_type)->first();
+            $prospects = CRMPipeline::where('status', $prospect_status)->first();
 
             if ($prospects) {
                 return response()->json(

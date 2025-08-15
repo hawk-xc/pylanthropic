@@ -54,12 +54,12 @@ class CRMLeadsController extends Controller
             $crm_leads->save();
 
             return back()->with('message', [
-                'type' => 'success',
-                'text' => 'Berhasil menambah data Pipeline!',
+                'status' => 'success',
+                'message' => 'Berhasil menambah data Pipeline!',
             ]);
         } catch(Exception $err) {
             return response()->json([
-                'success' => false,
+                'status' => 'error',
                 'message' => 'Terjadi kesalahan: ' . $err->getMessage()
             ]);
         }
