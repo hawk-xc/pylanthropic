@@ -174,6 +174,13 @@
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
 
+        .kanban-card-ghost {
+            opacity: 0.5;
+            background: #fff;
+            border: 2px dashed #4285f4;
+            border-radius: 5px;
+        }
+
         .kanban-card h6 {
             margin-bottom: 5px;
             font-size: 14px;
@@ -336,8 +343,13 @@
                     </nav>
                     <div class="d-flex flex-col gap-2">
                         @if (request()->query('leads'))
+                            <div id="delete-area" class="btn btn-danger" style="display: none;">
+                                <i class="fa fa-trash mr-2"></i>
+                                Seret kesini untuk hapus
+                            </div>
                             <a id="crm_prospect-id" href="/adm/crm-prospect/create?leads_id={{ request()->query('leads') }}"
                                 class="btn btn-primary">
+                                <i class="fa fa-plus mr-2"></i>
                                 Tambah Prospect
                             </a>
                         @endif
@@ -511,6 +523,26 @@
         </div>
     </div>
 
+    <div class="modal fade" id="confirmDeleteModalProspect" tabindex="-1" aria-labelledby="confirmDeleteModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="confirmDeleteModalLabel">Konfirmasi Hapus</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Apakah Anda yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteButtonProspect">Hapus</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="addLeadModal" tabindex="-1" role="dialog" aria-labelledby="addLeadModalLabel"
         aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -608,32 +640,11 @@
                     cache: true
                 }
             });
-
-            // Handle ketika leads dipilih
-            $('#leadsSelect').on('select2:select', function(e) {
-                var data = e.params.data;
-                $('#add-pipeline').attr('href', '/adm/crm-pipeline/create?leads=' + encodeURIComponent(data
-                    .text));
-                $('#crm_prospect-id').attr('href', '/adm/crm-prospect/create?leads=' + encodeURIComponent(
-                    data.text))
-                // console.log('Selected lead:', data.text);
-                // Lakukan sesuatu dengan data leads yang dipilih
-                // Contoh: window.location.href = '/leads/' + data.text;
-                // history.pushState(null, null, `?leads=${data.text.toLowerCase()}`);
-            });
-
             // Buka dropdown ketika tombol dropdown diklik
             $('#leadsDropdown').on('click', function() {
                 $(this).next('.dropdown-menu').find('.select2-container').addClass(
                     'select2-container--open');
             });
-        });
-
-        $('#leadsSelect').on('select2:select', function(e) {
-            var data = e.params.data;
-            if (data.type) {
-                window.location.href = '/adm/crm-pipeline?name=' + encodeURIComponent(data.name);
-            }
         });
 
         document.getElementById('status_is_active').addEventListener('change', function() {
@@ -733,7 +744,6 @@
                         });
                         params.page = params.page || 1
                         // console.log(items);
-                        // Transforms the top-level key of the response object from 'items' to 'results'
                         return {
                             results: items,
                             pagination: {
@@ -744,22 +754,18 @@
                 },
                 templateResult: function(item) {
                     // console.log(item);
-                    // No need to template the searching text
                     if (item.loading) {
                         return item.text;
                     }
 
                     var term = select2_query.term || '';
-                    // var $result = markMatch(item.text, term);
                     var $result = item.text,
                         term
                     return $result;
                 },
                 language: {
                     searching: function(params) {
-                        // Intercept the query as it is happening
                         select2_query = params
-                        // Change this to be appropriate for your application
                         return 'Searching...';
                     }
                 }
@@ -827,19 +833,19 @@
                     const columnId = `pipeline-${pipeline.id}-column`;
 
                     const $column = $(`
-                        <div class="kanban-column">
-                            <div class="kanban-column-header">
-                                <a href="/adm/crm-pipeline/${pipeline.id}/edit/?leads=${currentLeadsId}">
-                                    <h6 class="fw-bold">${pipeline.name}</h6>
-                                </a>
-                                <small>${truncateTextWithTooltip(pipeline.description, 5)}</small>
-                                <div class="mt-1">
-                                    <small class="text-muted">Deals: ${pipeline.percentage_deals}%</small>
-                                </div>
+                    <div class="kanban-column">
+                        <div class="kanban-column-header">
+                            <a href="/adm/crm-pipeline/${pipeline.id}/edit/?leads=${currentLeadsId}">
+                                <h6 class="fw-bold">${pipeline.name}</h6>
+                            </a>
+                            <small>${truncateTextWithTooltip(pipeline.description, 5)}</small>
+                            <div class="mt-1">
+                                <small class="text-muted">Deals: ${pipeline.percentage_deals}%</small>
                             </div>
-                            <div class="kanban-column-body" id="${columnId}"></div>
                         </div>
-                    `);
+                        <div class="kanban-column-body" id="${columnId}"></div>
+                    </div>
+                `);
 
                     // Sisipkan sebelum tombol tambah
                     $column.insertBefore($kanbanBoard.find('.kanban-column[href]'));
@@ -901,21 +907,21 @@
                 };
 
                 return $(`
-                    <div class="kanban-card"
-                         data-prospect-id="${prospect.id}"
-                         data-pipeline-id="${pipeline.id}">
-                        <div class="d-flex justify-content-between align-items-start flex-column">
-                            <span class="badge bg-light text-dark mb-2">
-                                ${formatDate(prospect.created_at)}
-                            </span>
-                            <div>
-                                <h6 class="mb-1"><a href="/adm/crm-prospect/${prospect.id}?leads=${currentLeadsId}">${prospect.name}</a></h6>
-                                <p class="mb-1">${truncateTextWithTooltip(prospect.description, 10)}</p>
-                                <small class="text-muted">Nominal: ${formatCurrency(prospect.nominal)}</small>
-                            </div>
+                <div class="kanban-card"
+                     data-prospect-id="${prospect.id}"
+                     data-pipeline-id="${pipeline.id}">
+                    <div class="d-flex justify-content-between align-items-start flex-column">
+                        <span class="badge bg-light text-dark mb-2">
+                            ${formatDate(prospect.created_at)}
+                        </span>
+                        <div>
+                            <h6 class="mb-1"><a href="/adm/crm-prospect/${prospect.id}?leads=${currentLeadsId}">${prospect.name}</a></h6>
+                            <p class="mb-1">${truncateTextWithTooltip(prospect.description, 10)}</p>
+                            <small class="text-muted">Nominal: ${formatCurrency(prospect.nominal)}</small>
                         </div>
                     </div>
-                `);
+                </div>
+            `);
             }
 
             // Format tanggal
@@ -945,19 +951,91 @@
                         new Sortable(el, {
                             group: 'prospects',
                             animation: 150,
-                            ghostClass: 'sortable-ghost',
+                            ghostClass: 'kanban-card-ghost',
                             chosenClass: 'sortable-chosen',
                             onEnd: function(evt) {
-                                // Jika prospect dipindahkan ke pipeline yang berbeda
+                                // Jika prospect dipindahkan ke kolom yang berbeda
                                 if (evt.from !== evt.to) {
                                     const prospectId = evt.item.dataset.prospectId;
                                     const newPipelineId = evt.to.id.replace('pipeline-', '')
                                         .replace('-column', '');
+
+                                    console.log('Prospect move detected:');
+                                    console.log('  - Prospect ID:', prospectId);
+                                    console.log('  - New Pipeline ID:', newPipelineId);
+
+                                    if (!prospectId) {
+                                        console.error(
+                                            'Prospect ID not found on the dragged item.',
+                                            evt.item);
+                                        fetchLeadsData();
+                                        return;
+                                    }
+
                                     updateProspectPipeline(prospectId, newPipelineId);
                                 }
                             }
                         });
                     }
+                });
+
+                const deleteArea = document.getElementById('delete-area');
+
+                // Gunakan event delegation untuk menangani card yang dibuat dinamis
+                document.addEventListener('dragstart', function(e) {
+                    if (e.target.closest('.kanban-card')) {
+                        const card = e.target.closest('.kanban-card');
+                        deleteArea.style.display = 'block';
+                        // Set data transfer dengan ID prospect
+                        e.dataTransfer.setData('text/plain', card.dataset.prospectId);
+                        console.log('Drag started with prospect ID:', card.dataset.prospectId);
+                    }
+                });
+
+                document.addEventListener('dragend', function() {
+                    deleteArea.style.display = 'none';
+                });
+
+                deleteArea.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    deleteArea.classList.add('bg-danger');
+                });
+
+                deleteArea.addEventListener('dragleave', () => {
+                    deleteArea.classList.remove('bg-danger');
+                });
+
+                deleteArea.addEventListener('drop', e => {
+                    e.preventDefault();
+                    const prospectId = e.dataTransfer.getData('text/plain');
+                    console.log('Dropped prospect ID:', prospectId);
+
+                    if (!prospectId) {
+                        console.error('No prospect ID found in drop event');
+                        return;
+                    }
+
+                    const modal = new bootstrap.Modal(document.getElementById(
+                    'confirmDeleteModalProspect'));
+                    document.getElementById('confirmDeleteButtonProspect').dataset.prospectId = prospectId;
+                    modal.show();
+                    deleteArea.style.display = 'none';
+                    deleteArea.classList.remove('bg-danger');
+                });
+
+                document.getElementById('confirmDeleteButtonProspect').addEventListener('click', function() {
+                    const prospectId = this.dataset.prospectId;
+                    console.log('Confirm delete for prospect ID:', prospectId);
+
+                    if (!prospectId) {
+                        console.error('No prospect ID found for deletion');
+                        return;
+                    }
+
+                    deleteProspect(prospectId);
+                    const modal = bootstrap.Modal.getInstance(document.getElementById(
+                        'confirmDeleteModalProspect'));
+                    modal.hide();
                 });
             }
 
@@ -973,52 +1051,70 @@
                     success: function(response) {
                         console.log('Response update:', response);
                         if (response.success) {
-                            toastr.success('Prospect berhasil dipindahkan');
-                            // Refresh data setelah update berhasil
+                            showToast('success', 'Prospect berhasil dipindahkan');
                             fetchLeadsData();
                         } else {
-                            toastr.error('Gagal memindahkan prospect');
-                            // Kembalikan ke posisi semula jika gagal
+                            showToast('error', 'Gagal memindahkan prospect: ' + (response.message ||
+                                ''));
                             fetchLeadsData();
                         }
                     },
                     error: function(xhr, status, error) {
                         console.error('Error update:', error);
-                        toastr.error('Terjadi kesalahan saat memindahkan prospect');
-                        // Kembalikan ke posisi semula jika error
+                        showToast('error', 'Terjadi kesalahan saat memindahkan prospect');
                         fetchLeadsData();
                     }
                 });
             }
 
-            // Handler untuk tombol hapus prospect
-            $(document).on('click', '.delete-prospect', function() {
-                const prospectId = $(this).data('id');
-                if (confirm('Apakah Anda yakin ingin menghapus prospect ini?')) {
-                    deleteProspect(prospectId);
-                }
-            });
-
             // Fungsi untuk menghapus prospect
             function deleteProspect(prospectId) {
+                console.log('Deleting prospect with ID:', prospectId);
+
+                // Validasi ID
+                if (!prospectId || isNaN(prospectId)) {
+                    console.error('Invalid prospect ID:', prospectId);
+                    showToast('error', 'ID Prospect tidak valid');
+                    return;
+                }
+
+                // Gunakan route yang benar
+                let url = "{{ route('adm.crm-prospect.destroy', ':id') }}";
+                url = url.replace(':id', prospectId);
+
                 $.ajax({
-                    url: `/adm/crm-prospect/${prospectId}`,
+                    url: url,
                     method: 'DELETE',
                     data: {
-                        _token: '{{ csrf_token() }}'
+                        _token: '{{ csrf_token() }}',
+                        leads: currentLeadsId
                     },
                     success: function(response) {
-                        if (response.success) {
-                            toastr.success('Prospect berhasil dihapus');
-                            fetchLeadsData();
-                        } else {
-                            toastr.error('Gagal menghapus prospect');
-                            fetchLeadsData();
-                        }
+                        console.log(response);
                     },
                     error: function(xhr, status, error) {
-                        toastr.error('Terjadi kesalahan saat menghapus prospect');
+                        window.location.reload();
                     }
+                });
+            }
+
+            // Fungsi untuk menampilkan toast notification
+            function showToast(type, message) {
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'bottom-end',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true,
+                    didOpen: (toast) => {
+                        toast.addEventListener('mouseenter', Swal.stopTimer);
+                        toast.addEventListener('mouseleave', Swal.resumeTimer);
+                    }
+                });
+
+                Toast.fire({
+                    icon: type,
+                    title: message
                 });
             }
 
