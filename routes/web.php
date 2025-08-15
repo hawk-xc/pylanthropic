@@ -7,6 +7,8 @@ use App\Http\Controllers\Guest;
 use App\Http\Controllers\MutasiController;
 use App\Http\Controllers\FbAdsController;
 use App\Http\Controllers\DonationController;
+use App\Http\Controllers\PaymentController;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -191,8 +193,7 @@ Route::group([
         Route::get('/category-select2-all', [Admin\ProgramCategoryController::class, 'select2'])->name('category.select2.all');
         Route::get('/donatur-select2-all', [Admin\DonaturController::class,'select2'])->name('donatur.select2.all');
         Route::get('/users-select2-all', [Admin\UserController::class,'select2'])->name('users.select2.all');
-
-        // Route::get('/leads-select2-all', [Admin\LeadsController::class, 'select2'])->name('leads.select2.all');
+        Route::get('/payment-type-select2-all', [PaymentController::class,'select2'])->name('payment-type.select2.all');
 
         // LEADS
         Route::get('/leads-grabdo-platform', [Admin\LeadsController::class, 'grabdoPlatformLeads'])->name('leads.grabdo.platform');
