@@ -8,12 +8,24 @@ use App\Models;
 use App\Models\Transaction;
 use App\Models\Program;
 use App\Models\Donatur;
+use App\Models\PaymentType;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\WaBlastController;
+use Faker\Provider\ar_EG\Payment;
 
 class PaymentController extends Controller
 {
+    protected $paymentTypeColumn = [
+        'id', 
+        'key', 
+        'name', 
+        'is_active', 
+        'sort_number', 
+        'type', 
+        'payment_code'
+    ];
+
     /**
      * Display a listing of the resource.
      */
@@ -79,50 +91,7 @@ class PaymentController extends Controller
         return $res;
     }
 
-    // public function generate($requestBody="")
-    // {
-    //     $requestId     = Str::random(20); // Change to UUID or anything that can generate unique value
-    //     $dateTime      = gmdate("Y-m-d H:i:s");
-    //     $isoDateTime   = date(DATE_ISO8601, strtotime($dateTime));
-    //     $dateTimeFinal = substr($isoDateTime, 0, 19) . "Z";
-
-    //     // Generate digest
-    //     $digestValue = base64_encode(hash('sha256', json_encode($requestBody), true));
-
-    //     // Prepare signature component
-    //     $componentSignature = "Client-Id:" . env('DOKU_PROD_CLIENT_ID') . "\n" .
-    //         "Request-Id:" . $requestId . "\n" .
-    //         "Request-Timestamp:" . $dateTimeFinal . "\n" .
-    //         "Request-Target:" . env('DOKU_PROD_TARGET') . "\n" .
-    //         "Digest:" . $digestValue;
-
-    //     // Generate signature
-    //     $signature = base64_encode(hash_hmac('sha256', $componentSignature, env('DOKU_PROD_SECRET_KEY'), true));
-
-    //     // Execute request
-    //     $ch = curl_init(env('DOKU_PROD_URL').env('DOKU_PROD_TARGET'));
-    //     curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
-    //     curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
-    //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-    //     curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-    //         'Content-Type: application/json',
-    //         'Client-Id:' . env('DOKU_PROD_CLIENT_ID'),
-    //         'Request-Id:' . $requestId,
-    //         'Request-Timestamp:' . $dateTimeFinal,
-    //         'Signature:' . "HMACSHA256=" . $signature,
-    //     ));
-
-    //     // Set response json
-    //     $responseJson = curl_exec($ch);
-    //     $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    //     curl_close($ch);
-    //     $res          = json_decode($responseJson, true);
-    //     // yg akan digunakan jika VA 
-    //     $link         = $res['response']['payment']['url'];
-    //     return $link;
-    // }
-
+    // public function generate($request
     /**
      * Callback fron DOKU
      */
@@ -199,24 +168,31 @@ Sebesar : *Rp '.str_replace(',', '.', number_format($transaction->nominal_final)
         } else {
             echo 'signature wrong';
         }
-        // Log::debug($request);
-        // $request = json_decode($request, true);
-
-        // $status       = $request['transaction_status'];
-        // $order_number = $request['order_id'];
-        // $pay_amount   = explode('.', $request['gross_amount']);
-        
-        // // $status       = $request->transaction_status;
-        // // $order_number = $request->order_id;
-        // // $pay_amount   = explode('.', $request->gross_amount);
-        
-        // $pay_amount   = $pay_amount[0];
-
-        // if($status == 'berhasil'){
-        //     $transaction = Transaction::where('invoice_number', $order_number)->where('nominal_final', $pay_amount)->first();
-
-            
-        // }
     }
 
+    public function select2(Request $request)
+    {
+        $data = PaymentType::query()->select($this->paymentTypeColumn);
+        $data->where('is_active', true);
+
+        $last_page = null;
+
+        if ($request->has('search') && $request->search != '') {
+            $data = $data->where('name', 'like', '%' . $request->search . '%')->orWhere('key', 'like', '%' . $request->search . '%')->orWhere('type', 'like', '%' . $request->search . '%')->orWhere('payment_code', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->has('page')) {
+            $data->paginate(10);
+            $last_page = $data->paginate(10)->lastPage();
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Data Fetched',
+            'data' => $data->get(),
+            'extra_data' => [
+                'last_page' => $last_page,
+            ],
+        ]);
+    }
 }
