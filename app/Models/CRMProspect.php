@@ -19,6 +19,7 @@ class CRMProspect extends Model
         'name',
         'description',
         'nominal',
+        'prospect_type',
         'assign_to',
         'is_potential',
         'updated_by',
