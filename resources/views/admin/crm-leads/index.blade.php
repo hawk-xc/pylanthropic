@@ -142,7 +142,7 @@
             padding: 3px;
             /* Mengurangi padding dari 5px ke 3px */
             background: #fff;
-            max-height: 70vh;
+            min-height: 70vh;
             overflow-y: scroll;
             border-radius: 5px;
             overflow-y: auto;

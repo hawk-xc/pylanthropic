@@ -311,18 +311,21 @@ class OrganizationController extends Controller
      */
     public function select2(Request $request)
     {
-        $data = Organization::query();
+        $query = Organization::query();
         $last_page = null;
 
         if ($request->has('search') && $request->search != '') {
-            // Apply search param
-            $data = $data->where('name', 'like', '%' . $request->search . '%');
+            $query = $query->where('name', 'like', '%' . $request->search . '%');
         }
+
+        $perPage = $request->get('per_page', 10);
+        $paginator = $query->paginate($perPage);
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Data Fetched',
-            'data' => $data->get(),
+            'data' => $paginator->items(),
+            'last_page' => $paginator->lastPage(),
+            'total' => $paginator->total(),
             'extra_data' => [
                 'last_page' => $last_page,
             ],
