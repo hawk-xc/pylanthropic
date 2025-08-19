@@ -41,4 +41,9 @@ class Organization extends Model
     {
         return $this->hasMany(Program::class, 'organization_id', 'id');
     }
+
+    public function crm_prospect()
+    {
+        return $this->hasMany(CRMProspect::class, 'organization_id', 'id');
+    }
 }

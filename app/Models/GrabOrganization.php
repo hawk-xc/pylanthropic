@@ -37,4 +37,9 @@ class GrabOrganization extends Model
     {
         return $this->hasMany(GrabProgram::class, 'grab_organization_id', 'id');
     }
+
+    public function crm_prospect()
+    {
+        return $this->hasMany(CRMProspect::class, 'grab_organization_id', 'id');
+    }
 }

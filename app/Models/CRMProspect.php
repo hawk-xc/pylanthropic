@@ -25,6 +25,8 @@ class CRMProspect extends Model
         'updated_by',
         'crm_pipeline_id',
         'donatur_id',
+        'organization_id',
+        'grab_organization_id',
         'created_by',
     ];
 
@@ -41,6 +43,16 @@ class CRMProspect extends Model
     public function crm_prospect_donatur()
     {
         return $this->belongsTo(Donatur::class, 'donatur_id', 'id');
+    }
+
+    public function crm_prospect_organization()
+    {
+        return $this->belongsTo(Organization::class, 'organization_id', 'id');
+    }
+
+    public function crm_prospect_grab_organization()
+    {
+        return $this->belongsTo(GrabOrganization::class, 'grab_organization_id', 'id');
     }
 
     public function crm_prospect_logs()
