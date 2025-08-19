@@ -14,6 +14,11 @@ return new class extends Migration
         Schema::create('crm_prospect', function (Blueprint $table) {
             $table->id()->autoIncrement()->unique();
             $table->string('name')->nullable(false);
+            
+            // relation foreign key column
+            $table->unsignedBigInteger('crm_pipeline_id');
+            $table->unsignedBigInteger('donatur_id')->nullable(true);
+            
             $table->text('description');
             $table->integer('nominal')->nullable(true)->default(0);
             $table->bigInteger('assign_to')->default(0);
@@ -22,9 +27,6 @@ return new class extends Migration
             $table->bigInteger('updated_by')->nullable()->comment('id_users');
             $table->timestamps();
 
-            // relation foreign key column
-            $table->unsignedBigInteger('crm_pipeline_id');
-            $table->unsignedBigInteger('donatur_id');
 
             $table->foreign('donatur_id')
                   ->references('id')
