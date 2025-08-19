@@ -23,7 +23,7 @@
                         <li class="breadcrumb-item active" aria-current="page">Edit Prospect</li>
                     </ol>
                 </nav>
-                <a href="{{ route('adm.crm-pipeline.index', ['type' => request()->query('type')]) }}"
+                <a href="{{ url()->previous() }}"
                     class="btn btn-outline-secondary">
                     <i class="ri-arrow-left-line"></i> Kembali
                 </a>
@@ -78,11 +78,26 @@
                         </div>
 
                         <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="prospect_type" class="form-label">Jenis Prospek</label>
+                                <select class="form-select" id="prospect_type" name="prospect_type">
+                                    <option value="donatur" {{ old('prospect_type', $crm_prospect->prospect_type) == 'donatur' ? 'selected' : '' }}>Donatur (Menjadikan donatur menjadi donatur setia)</option>
+                                    <option value="organization" {{ old('prospect_type', $crm_prospect->prospect_type) == 'organization' ? 'selected' : '' }}>Lembaga (melakukan Follow Up Lembaga yang sudah berkerja sama)</option>
+                                    <option value="grab_organization" {{ old('prospect_type', $crm_prospect->prospect_type) == 'grab_organization' ? 'selected' : '' }}>Lembaga hasil Grab (melakukan Follow Up lembaga hasil grab agar mau berkerja sama)</option>
+                                </select>
+                                @error('prospect_type')
+                                    <div class="invalid-feedback d-block"><i class="ri-error-warning-line"></i>
+                                        {{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label for="donatur-select2" class="form-label required">Pilih Donatur</label>
-                                <select class="form-control @error('donatur') is-invalid @enderror" name="donatur"
-                                    id="donatur-select2" required></select>
-                                @error('donatur')
+                                <label for="prospect-select2" class="form-label required" id="prospect-label">Pilih Data</label>
+                                <select class="form-control @error('prospect_id') is-invalid @enderror" name="prospect_id"
+                                    id="prospect-select2" required></select>
+                                @error('prospect_id')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
@@ -97,7 +112,7 @@
                             </div>
                         </div>
 
-                        <div class="mb-3">
+                        <div class="mb-3 nominal-group">
                             <label for="nominal" class="form-label">Nominal Prospek</label>
                             <div class="input-group">
                                 <span class="input-group-text">Rp</span>
@@ -118,14 +133,13 @@
                                 placeholder="Jelaskan detail prospek ini...">{{ old('description', $crm_prospect->description) }}</textarea>
                         </div>
 
-                        <div class="mb-3">
+                        <div class="mb-3 ml-3">
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" name="is_potential" id="is_potential"
                                     value="1" {{ old('is_potential', $crm_prospect->is_potential) ? 'checked' : '' }}>
                                 <label class="form-check-label" for="is_potential">Status Potensial: <span
                                         id="_status"></span></label>
-                                <input type="hidden" name="is_potential_hidden"
-                                    value="{{ $crm_prospect->is_potential ? 1 : 0 }}" id="is_potential_hidden">
+                                <input type="hidden" name="is_potential_hidden" value="{{ $crm_prospect->is_potential ? 1 : 0 }}" id="is_potential_hidden">
                             </div>
                         </div>
                     </div>
@@ -144,7 +158,11 @@
 @endsection
 
 @section('js_plugins')
-    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"
+        integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous">
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 @endsection
 
@@ -152,83 +170,162 @@
 @section('js_inline')
     <script type="text/javascript">
         $(document).ready(function() {
-            function initializeSelect2(elementId, placeholder, ajaxUrl, textMapping, initialId, initialText) {
-                const selectElement = $(elementId);
+            // Store initial values for reset
+            const initialValues = {
+                pipeline: "{{ old('pipeline', $crm_prospect->crm_pipeline_id) }}",
+                prospect_type: "{{ old('prospect_type', $crm_prospect->prospect_type) }}",
+                is_potential: {{ old('is_potential', $crm_prospect->is_potential) ? 'true' : 'false' }},
+                picId: "{{ old('assign_to', $crm_prospect->assign_to) }}",
+                picText: `{{ old('assign_to_text', optional($crm_prospect->crm_prospect_pic)->name) }}`,
+                prospectId: "{{ old('prospect_id', $prospectId) }}",
+                prospectText: `{!! old('prospect_id_text', $prospectText) !!}`
+            };
 
-                selectElement.select2({
+            const initialLoad = 10;
+            const nextLoad = 15;
+
+            function initializeSelect2(elementId, placeholder, ajaxUrl, textMapping) {
+                return $(elementId).select2({
                     placeholder: placeholder,
                     theme: 'bootstrap-5',
+                    width: '100%',
+                    dropdownAutoWidth: true,
                     allowClear: true,
                     ajax: {
                         url: ajaxUrl,
-                        delay: 250,
+                        delay: 300,
+                        dataType: 'json',
                         data: function(params) {
                             return {
-                                search: params.term,
-                                page: params.page || 1
+                                search: params.term || '',
+                                page: params.page || 1,
+                                per_page: params.page ? nextLoad : initialLoad
                             };
                         },
                         processResults: function(data, params) {
-                            params.page = params.page || 1;
+                            const items = data.results || data.data || [];
+                            const more = (params.page || 1) < (data.last_page || Math.ceil(data.total /
+                                nextLoad));
+
                             return {
-                                results: $.map(data.data, function(item) {
-                                    return {
-                                        id: item.id,
-                                        text: textMapping(item)
-                                    };
-                                }),
+                                results: items.map(item => ({
+                                    id: item.id,
+                                    text: textMapping(item)
+                                })),
                                 pagination: {
-                                    more: params.page < data.last_page
+                                    more: more
                                 }
                             };
-                        }
-                    }
+                        },
+                        cache: true
+                    },
+                    minimumInputLength: 0,
+                    minimumResultsForSearch: 0
                 });
+            }
 
-                if (initialId && initialText) {
-                    let option = new Option(initialText, initialId, true, true);
-                    selectElement.append(option).trigger('change');
+            const prospectConfigs = {
+                donatur: {
+                    label: 'Pilih Donatur',
+                    placeholder: 'Cari Donatur...',
+                    url: "{{ route('adm.donatur.select2.all') }}",
+                    textMapping: item => `${item.name} (${item.telp})`
+                },
+                organization: {
+                    label: 'Pilih Organization',
+                    placeholder: 'Cari Organization...',
+                    url: "{{ route('adm.organization.select2.all') }}",
+                    textMapping: item => item.name
+                },
+                grab_organization: {
+                    label: 'Pilih Grab Organization',
+                    placeholder: 'Cari Grab Organization...',
+                    url: "{{ route('adm.grab-organization.select2.all') }}",
+                    textMapping: item => item.name
+                }
+            };
+
+            function updateProspectSelect(type) {
+                const config = prospectConfigs[type];
+                const $select = $('#prospect-select2');
+                const $label = $('#prospect-label');
+                const $nominalGroup = $('.nominal-group');
+
+                $label.text(config.label);
+
+                if ($select.hasClass('select2-hidden-accessible')) {
+                    $select.select2('destroy');
+                }
+                $select.empty();
+
+                initializeSelect2('#prospect-select2', config.placeholder, config.url, config.textMapping);
+
+                if (type === 'donatur') {
+                    $nominalGroup.show();
+                    $('#rupiah').prop('required', true);
+                } else {
+                    $nominalGroup.hide();
+                    $('#rupiah').prop('required', false);
                 }
             }
 
-            const donaturId = "{{ old('donatur', $crm_prospect->donatur_id) }}";
-            const donaturText = "{{ old('donatur_text', $crm_prospect->crm_prospect_donatur->name ?? '') }}";
-            const picId = "{{ old('assign_to', $crm_prospect->assign_to) }}";
-            const picText = "{{ old('assign_to_text', $crm_prospect->crm_prospect_pic->name ?? '') }}";
+            $('#prospect_type').on('change', function() {
+                updateProspectSelect($(this).val());
+            }).trigger('change');
 
-            initializeSelect2('#donatur-select2', 'Cari Donatur...', "{{ route('adm.donatur.select2.all') }}",
-                item => `${item.name} (${item.telp})`, donaturId, donaturText);
+            if (initialValues.prospectId && initialValues.prospectText) {
+                let option = new Option(initialValues.prospectText, initialValues.prospectId, true, true);
+                $('#prospect-select2').append(option).trigger('change');
+            }
 
-            initializeSelect2('#users-select2', 'Cari PIC...', "{{ route('adm.users.select2.all') }}", item => item
-                .name, picId, picText);
+            const picSelect = initializeSelect2(
+                '#users-select2',
+                'Cari PIC...',
+                "{{ route('adm.users.select2.all') }}",
+                item => item.name
+            );
+
+            if (initialValues.picId && initialValues.picText) {
+                let option = new Option(initialValues.picText, initialValues.picId, true, true);
+                picSelect.append(option).trigger('change');
+            }
 
             $('#is_potential').on('change', function() {
                 const statusSpan = $('#_status');
                 if (this.checked) {
-                    statusSpan.text('Ya').removeClass('text-danger fw-normal').addClass(
-                        'text-success fw-bold');
+                    statusSpan.text('Ya')
+                        .removeClass('text-danger fw-normal')
+                        .addClass('text-success fw-bold');
                     $('#is_potential_hidden').val('1');
                 } else {
-                    statusSpan.text('Tidak').removeClass('text-success fw-bold').addClass(
-                        'text-danger fw-normal');
+                    statusSpan.text('Tidak')
+                        .removeClass('text-success fw-bold')
+                        .addClass('text-danger fw-normal');
                     $('#is_potential_hidden').val('0');
                 }
             }).trigger('change');
 
-            $('#prospect-form').on('reset', function() {
-                initializeSelect2('#donatur-select2', 'Cari Donatur...',
-                    "{{ route('adm.donatur.select2.all') }}", item => `${item.name} (${item.telp})`,
-                    donaturId, donaturText);
-                initializeSelect2('#users-select2', 'Cari PIC...', "{{ route('adm.users.select2.all') }}",
-                    item => item.name, picId, picText);
+            $('button[type="reset"]').on('click', function(e) {
+                e.preventDefault();
+                
+                // Reset simple form elements
+                $('#name').val("{{ $crm_prospect->name }}");
+                $('#pipeline').val(initialValues.pipeline);
+                $('#description').val(`{{ $crm_prospect->description }}`);
+                $('#rupiah').val("{{ number_format($crm_prospect->nominal, 0, ',', '.') }}");
+                $('#is_potential').prop('checked', initialValues.is_potential).trigger('change');
 
-                $('#pipeline').val("{{ old('pipeline', $crm_prospect->crm_pipeline_id) }}");
-                $('#is_potential').prop('checked', {{ old('is_potential', $crm_prospect->is_potential) ? 'true' : 'false' }})
-                    .trigger('change');
+                // Reset PIC
+                $('#users-select2').empty().append(new Option(initialValues.picText, initialValues.picId, true, true)).trigger('change');
+
+                // Reset Prospect Type and Data
+                $('#prospect_type').val(initialValues.prospect_type).trigger('change');
+                setTimeout(function() {
+                    $('#prospect-select2').empty().append(new Option(initialValues.prospectText, initialValues.prospectId, true, true)).trigger('change');
+                }, 150);
             });
 
-            var rupiah = document.getElementById("rupiah");
-            rupiah.addEventListener("keyup", function(e) {
+            $('#rupiah').on('keyup', function(e) {
                 this.value = formatRupiah(this.value, "");
             });
 
@@ -248,5 +345,28 @@
                 return prefix == undefined ? rupiah : rupiah ? "" + rupiah : "";
             }
         });
+    </script>
+
+    <script>
+        @if (session('message'))
+            Swal.fire({
+                toast: true,
+                position: 'bottom-end',
+                icon: '{{ session('message')['status'] }}',
+                title: '{{ session('message')['message'] }}',
+                showConfirmButton: false,
+                timer: 15000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'rounded shadow-sm px-3 py-2 border-0 d-flex flex-row align-middle-center justify-content-center'
+                },
+                background: '{{ session('message')['status'] === 'success' ? '#d1fae5' : '#fee2e2' }}',
+                color: '{{ session('message')['status'] === 'success' ? '#065f46' : '#b91c1c' }}',
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+        @endif
     </script>
 @endsection
