@@ -14,6 +14,9 @@
 @endsection
 
 @section('content')
+@if (session('message'))
+    @dd(session('message'))
+@endif
     <div class="row">
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -164,7 +167,11 @@
 @endsection
 
 @section('js_plugins')
-    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"
+        integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous">
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 @endsection
 
@@ -329,5 +336,28 @@
                 return prefix == undefined ? rupiah : rupiah ? "" + rupiah : "";
             }
         });
+    </script>
+
+    <script>
+        @if (session('message'))
+            Swal.fire({
+                toast: true,
+                position: 'bottom-end',
+                icon: '{{ session('message')['status'] }}',
+                title: '{{ session('message')['message'] }}',
+                showConfirmButton: false,
+                timer: 15000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'rounded shadow-sm px-3 py-2 border-0 d-flex flex-row align-middle-center justify-content-center'
+                },
+                background: '{{ session('message')['status'] === 'success' ? '#d1fae5' : '#fee2e2' }}',
+                color: '{{ session('message')['status'] === 'success' ? '#065f46' : '#b91c1c' }}',
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+        @endif
     </script>
 @endsection

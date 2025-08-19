@@ -911,9 +911,14 @@
                      data-prospect-id="${prospect.id}"
                      data-pipeline-id="${pipeline.id}">
                     <div class="d-flex justify-content-between align-items-start flex-column">
-                        <span class="badge bg-light text-dark mb-2">
-                            ${formatDate(prospect.created_at)}
-                        </span>
+                        <div>
+                            <span class="badge bg-light text-dark mb-2">
+                                ${formatDate(prospect.created_at)}
+                            </span>
+                            <span class="badge bg-light text-dark mb-2">
+                                ${prospect.prospect_type}
+                            </span>
+                        </div>
                         <div>
                             <h6 class="mb-1"><a href="/adm/crm-prospect/${prospect.id}?leads=${currentLeadsId}">${prospect.name}</a></h6>
                             <p class="mb-1">${truncateTextWithTooltip(prospect.description, 10)}</p>

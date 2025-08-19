@@ -34,32 +34,53 @@ class CRMProspectController extends Controller
             [
                 'name' => 'required|string',
                 'pipeline' => 'required|numeric',
-                'donatur' => 'required|numeric',
+                'prospect_type' => 'required|in:donatur,organization,grab_organization',
+                'prospect_id' => 'required|numeric',
                 'assign_to' => 'required|numeric',
                 'description' => 'required|string',
-                'nominal' => 'required|string',
+                'nominal' => 'required_if:prospect_type,donatur|nullable|string',
                 'is_potential' => 'required|in:1,0',
             ],
             [
                 'name.required' => 'Nama prospect harus diisi.',
                 'pipeline.required' => 'Pipeline harus dipilih.',
-                'donatur.required' => 'Donatur harus dipilih.',
+                'prospect_type.required' => 'Tipe prospect harus dipilih.',
+                'prospect_type.in' => 'Tipe prospect tidak valid.',
+                'prospect_id.required' => 'Id Data harus dipilih.',
                 'assign_to.required' => 'Assign to harus dipilih.',
                 'description.required' => 'Deskripsi harus diisi.',
-                'nominal.required' => 'Nominal harus diisi.',
+                'nominal.required_if' => 'Nominal harus diisi jika prospect type adalah donatur.',
                 'is_potential.required' => 'Status potential harus dipilih.',
                 'is_potential.in' => 'Nilai status potential tidak valid.',
             ],
         );
-
+        
         try {
             $prospect = new CRMProspect();
             $prospect->name = $request->name;
             $prospect->crm_pipeline_id = $request->pipeline;
-            $prospect->donatur_id = $request->donatur;
+            
+            switch ($request->prospect_type) {
+                case 'donatur':
+                    $prospect->donatur_id = $request->prospect_id;
+                    break;
+                case 'organization':
+                    $prospect->organization_id = $request->prospect_id;
+                    break;
+                case 'grab_organization':
+                    $prospect->grab_organization_id = $request->prospect_id;
+                    break;
+                default:
+                    $prospect->donatur_id = $request->prospect_id;
+                    break;
+            }
+
+            // get prospect type
+            $prospect->prospect_type = $request->prospect_type;
+
             $prospect->assign_to = $request->assign_to;
             $prospect->description = $request->description;
-            $prospect->nominal = str_replace('.', '', $request->nominal);
+            $prospect->nominal = $request->nominal ? str_replace('.', '', $request->nominal) : 0;
             $prospect->is_potential = $request->is_potential;
 
             $prospect->created_by = auth()->user()->id;

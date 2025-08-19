@@ -122,12 +122,35 @@
                                 <div class="d-flex flex-column align-items-start gap-3">
                                     <div>
                                         <h5 class="mb-0 fw-bold">
-                                            <a
-                                                href="{{ route('adm.donatur.show', $crm_prospect->crm_prospect_donatur->id) }}">
-                                                {{ $crm_prospect->crm_prospect_donatur->name }}
-                                            </a>
+                                            @switch ($crm_prospect->prospect_type)
+                                                @case('organization')
+                                                    <a
+                                                        href="{{ route('campaigner', $crm_prospect->crm_prospect_organization->uuid) }}">
+                                                        {{ $crm_prospect->crm_prospect_organization->name }}
+                                                    </a>
+                                                    @break
+                                                @case('grab_organization')
+                                                    <a
+                                                        href="{{ route('adm.leads.org.edit', $crm_prospect->crm_prospect_grab_organization->user_id) }}">
+                                                        {{ $crm_prospect->crm_prospect_grab_organization->name }}
+                                                    </a>
+                                                    @break
+                                                @default
+                                                    <a
+                                                        href="{{ route('adm.donatur.show', $crm_prospect->crm_prospect_donatur->id) }}">
+                                                        {{ $crm_prospect->crm_prospect_donatur->name }}
+                                                    </a>
+                                                    @break
+                                            @endswitch 
                                         </h5>
-                                        <small class="text-muted">{{ $crm_prospect->crm_prospect_donatur->telp }}</small>
+                                        <small class="text-muted">
+                                            {{ match ($crm_prospect->prospect_type) {
+                                                'donatur'          => $crm_prospect->crm_prospect_donatur?->telp ?? '-',
+                                                'organization'     => $crm_prospect->crm_prospect_organization?->phone ?? '-',
+                                                'grab_organization'=> $crm_prospect->crm_prospect_grab_organization?->phone ?? '-',
+                                                default            => '-',
+                                            } }}
+                                        </small>
                                     </div>
                                     <div>
                                         <span class="d-block">Nominal :</span>
