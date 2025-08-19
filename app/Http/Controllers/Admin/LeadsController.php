@@ -10,6 +10,7 @@ use App\Http\Controllers\WaBlastController;
 use Exception;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
+use App\Models\GrabOrganization;
 
 class LeadsController extends Controller
 {
@@ -264,7 +265,7 @@ class LeadsController extends Controller
                 $sc = 'style="cursor:pointer"';
                 $btn_edit = '<a href="' . route('adm.leads.org.edit', $row->user_id) . '" target="_blank" class="badge badge-sm badge-warning"><i class="fa fa-edit"></i></a>';
 
-                $lembaga = \App\Models\GrabOrganization::where('user_id', $row->user_id)->orWhere('id', $row->user_id)->first();
+                $lembaga = GrabOrganization::where('user_id', $row->user_id)->orWhere('id', $row->user_id)->first();
 
                 // use ORM method instead of query builder;
                 // $lembaga = DB::table('grab_organization')->where('user_id', $row->user_id)->orWhere('id', $row->user_id)->first();
@@ -321,7 +322,7 @@ class LeadsController extends Controller
     public function orgDatatables(Request $request)
     {
         $data = Cache::remember('grab_organization_data', 60, function () {
-            return \App\Models\GrabOrganization::select($this->GrabOrganizationColumn)->orderBy('created_at', 'DESC')->get();
+            return GrabOrganization::select($this->GrabOrganizationColumn)->orderBy('created_at', 'DESC')->get();
         });
 
         if (isset($request->ada_wa)) {
@@ -786,10 +787,10 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                 foreach ($res as $index => $item) {
                     $organization_id = null;
 
-                    $org = \App\Models\GrabOrganization::where('name', $item->NAMA_LENGKAP)->first();
+                    $org = GrabOrganization::where('name', $item->NAMA_LENGKAP)->first();
 
                     if (!$org) {
-                        $new_org = new \App\Models\GrabOrganization();
+                        $new_org = new GrabOrganization();
                         $new_org->user_id = null;
                         $new_org->platform_id = $platform_id;
                         $new_org->name = $item->NAMA_LENGKAP;
@@ -899,11 +900,11 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                     $organization_id = null;
 
                     if (isset($item->user)) {
-                        $org = \App\Models\GrabOrganization::where('name', $item->user->name)->first();
+                        $org = GrabOrganization::where('name', $item->user->name)->first();
 
                         if (!$org) {
                             $desc = isset($item->user->description) ? $this->removeEmoji($item->user->description) : '-';
-                            $new_org = new \App\Models\GrabOrganization();
+                            $new_org = new GrabOrganization();
                             $new_org->user_id = $item->user->id;
                             $new_org->platform_id = $platform_id;
                             $new_org->name = $item->user->name;
@@ -1002,11 +1003,11 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                     $organization_id = null;
 
                     if (isset($item->user)) {
-                        $org = \App\Models\GrabOrganization::where('name', $item->user->name)->first();
+                        $org = GrabOrganization::where('name', $item->user->name)->first();
 
                         if (!$org) {
                             $desc = isset($item->user->about) ? $this->removeEmoji($item->user->profile->about) : '-';
-                            $new_org = new \App\Models\GrabOrganization();
+                            $new_org = new GrabOrganization();
                             $new_org->user_id = $item->user_id;
                             $new_org->platform_id = $platform_id;
                             $new_org->name = $item->user->name;
@@ -1104,7 +1105,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                     $organization_id = null;
 
                     if (isset($item->slug)) {
-                        $org = \App\Models\GrabOrganization::where('name', $item->campaigner->name)->first();
+                        $org = GrabOrganization::where('name', $item->campaigner->name)->first();
 
                         if (!$org) {
                             $org_curl = curl_init();
@@ -1121,7 +1122,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                                     $org_info = $org_data->data;
                                     $desc = isset($org_info->bio) ? $this->removeEmoji($org_info->bio) : '-';
 
-                                    $new_org = new \App\Models\GrabOrganization();
+                                    $new_org = new GrabOrganization();
                                     $new_org->user_id = $org_info->id;
                                     $new_org->platform_id = $platform_id;
                                     $new_org->name = $org_info->name;
@@ -1266,7 +1267,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                     $organization_id = null;
 
                     if (isset($item->slug)) {
-                        $org = \App\Models\GrabOrganization::where('name', $item->campaigner->name)->first();
+                        $org = GrabOrganization::where('name', $item->campaigner->name)->first();
 
                         if (!$org) {
                             $org_curl = curl_init();
@@ -1283,7 +1284,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                                     $org_info = $org_data->data;
                                     $desc = isset($org_info->bio) ? $this->removeEmoji($org_info->bio) : null;
 
-                                    $new_org = new \App\Models\GrabOrganization();
+                                    $new_org = new GrabOrganization();
                                     $new_org->user_id = $org_info->id;
                                     $new_org->platform_id = $platform_id;
                                     $new_org->name = $org_info->name;
@@ -1405,7 +1406,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
         ]);
 
         try {
-            $organization = \App\Models\GrabOrganization::findOrFail($request->id);
+            $organization = GrabOrganization::findOrFail($request->id);
             $organization->phone = $request->phone_number;
 
             Cache::delete('grab_organization_data');
@@ -1423,4 +1424,26 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
         }
     }
 
+    public function select2(Request $request)
+    {
+        $query = GrabOrganization::query();
+        $last_page = null;
+
+        if ($request->has('search') && $request->search != '') {
+            $query = $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        $perPage = $request->get('per_page', 10);
+        $paginator = $query->paginate($perPage);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $paginator->items(),
+            'last_page' => $paginator->lastPage(),
+            'total' => $paginator->total(),
+            'extra_data' => [
+                'last_page' => $last_page,
+            ],
+        ]);
+    }
 }

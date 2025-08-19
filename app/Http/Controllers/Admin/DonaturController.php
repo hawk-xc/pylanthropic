@@ -1458,28 +1458,23 @@ https://bantubersama.com/bantupalestina';
      */
     public function select2(Request $request)
     {
-        $data = Donatur::query()->select('id', 'name', 'email', 'telp');
-        $last_page = null;
+        $query = Donatur::query()->select('id', 'name', 'email', 'telp');
 
         if ($request->has('search') && $request->search != '') {
-            // Apply search param
-            $data = $data->where('name', 'like', '%' . $request->search . '%')->orWhere('telp', 'like', '%' . $request->search . '%');
+            $query->where(function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('telp', 'like', '%' . $request->search . '%');
+            });
         }
 
-        if ($request->has('page')) {
-            // If request has page parameter, add paginate to eloquent
-            $data->paginate(10);
-            // Get last page
-            $last_page = $data->paginate(10)->lastPage();
-        }
+        $perPage = $request->get('per_page', 10);
+        $paginator = $query->paginate($perPage);
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Data Fetched',
-            'data' => $data->get(),
-            'extra_data' => [
-                'last_page' => $last_page,
-            ],
+            'data' => $paginator->items(),
+            'last_page' => $paginator->lastPage(),
+            'total' => $paginator->total()
         ]);
     }
 

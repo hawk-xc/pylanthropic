@@ -191,6 +191,7 @@ Route::group([
 
         // SELECT2
         Route::get('/organization-select2-all', [Admin\OrganizationController::class, 'select2'])->name('organization.select2.all');
+        Route::get('/grab-organization-select2-all', [Admin\LeadsController::class, 'select2'])->name('grab-organization.select2.all');
         Route::get('/category-select2-all', [Admin\ProgramCategoryController::class, 'select2'])->name('category.select2.all');
         Route::get('/donatur-select2-all', [Admin\DonaturController::class,'select2'])->name('donatur.select2.all');
         Route::get('/users-select2-all', [Admin\UserController::class,'select2'])->name('users.select2.all');
