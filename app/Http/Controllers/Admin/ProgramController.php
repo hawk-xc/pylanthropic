@@ -17,7 +17,7 @@ use Illuminate\Validation\ValidationException;
 use Intervention\Image\ImageManagerStatic as Image;
 
 use Illuminate\Support\Facades\File;
-use DataTables; 
+use Yajra\DataTables\Facades\DataTables;
 use Exception;
 
 class ProgramController extends Controller
@@ -502,111 +502,52 @@ class ProgramController extends Controller
      */
     public function datatablesProgram(Request $request)
     {
-        // if ($request->ajax()) {
-        $data = Program::select('program.*', 'organization.name as organization')->join('organization', 'organization.id', 'program.organization_id')->orderBy('program.donate_sum', 'DESC');
+        $data = Program::select('program.*', 'organization.name as organization')->join('organization', 'organization.id', 'program.organization_id');
 
-        if (isset($request->active)) {
-            if ($request->active == 1) {
-                $data = $data->where('is_publish', 1)->where('end_date', '>=', date('Y-m-d'));
-            }
+        if ($request->query('active') == '1') {
+            $data->where('is_publish', 1)->where('end_date', '>=', date('Y-m-d'));
         }
-
-        if (isset($request->inactive)) {
-            if ($request->inactive == 1) {
-                $data = $data->where('is_publish', 0);
-            }
+        if ($request->query('inactive') == '1') {
+            $data->where('is_publish', 0);
         }
-
-        if (isset($request->winning)) {
-            if ($request->winning == 1) {
-                $data = $data->where('donate_sum', '>=', 8000000);
-            }
+        if ($request->query('winning') == '1') {
+            $data->where('donate_sum', '>=', 8000000);
         }
-
-        if (isset($request->recom)) {
-            if ($request->recom == 1) {
-                $data = $data->where('is_recommended', 1);
-            }
+        if ($request->query('recom') == '1') {
+            $data->where('is_recommended', 1);
         }
-
-        if (isset($request->urgent)) {
-            if ($request->urgent == 1) {
-                $data = $data->where('is_urgent', 1);
-            }
+        if ($request->query('urgent') == '1') {
+            $data->where('is_urgent', 1);
         }
-
-        if (isset($request->newest)) {
-            if ($request->newest == 1) {
-                $data = $data->where('is_show_home', 1);
-            }
+        if ($request->query('newest') == '1') {
+            $data->where('is_show_home', 1);
         }
-
-        if (isset($request->publish15day)) {
-            if ($request->publish15day == 1) {
-                $data = $data->where('program.approved_at', '>=', date('Y-m-d', strtotime(date('Y-m-d') . '-15 days')));
-            }
+        if ($request->query('publish15day') == '1') {
+            $data->where('program.approved_at', '>=', date('Y-m-d', strtotime(date('Y-m-d') . '-15 days')));
         }
-
-        if (isset($request->end15day)) {
-            if ($request->end15day == 1) {
-                $data = $data->where('end_date', '<=', date('Y-m-d', strtotime(date('Y-m-d') . '+15 days')));
-            }
+        if ($request->query('end15day') == '1') {
+            $data->where('end_date', '<=', date('Y-m-d', strtotime(date('Y-m-d') . '+15 days')));
         }
-
-        if (isset($request->program_title)) {
-            $data = $data->where('program.title', 'like', '%' . $request->program_title . '%');
+        if ($request->filled('program_title')) {
+            $data->where('program.title', 'like', '%' . $request->program_title . '%');
         }
-
-        if (isset($request->organization_name)) {
-            $data = $data->where('organization.name', 'like', '%' . $request->organization_name . '%');
+        if ($request->filled('organization_name')) {
+            $data->where('organization.name', 'like', '%' . $request->organization_name . '%');
         }
-
-        $order_column = $request->input('order.0.column');
-        $order_dir = $request->input('order.0.dir') ? $request->input('order.0.dir') : 'asc';
-
-        $count_total = $data->count();
-
-        $search = $request->input('search.value');
-
-        $count_filter = $count_total;
-        if ($search != '') {
-            $data = $data->where(function ($q) use ($search) {
-                $q
-                    ->where('program.title', 'like', '%' . $search . '%')
-                    ->orWhere('program.slug', 'like', '%' . $search . '%')
-                    ->orWhere('program.short_desc', 'like', '%' . $search . '%')
-                    ->orWhere('organization.name', 'like', '%' . $search . '%');
-            });
-            $count_filter = $data->count();
-        }
-
-        $pageSize = $request->length ? $request->length : 10;
-        $start = $request->start ? $request->start : 0;
-
-        $data->skip($start)->take($pageSize);
-
-        $data = $data->get();
 
         return Datatables::of($data)
-            ->with([
-                'recordsTotal' => $count_total,
-                'recordsFiltered' => $count_filter,
-            ])
-            ->setOffset($start)
             ->addIndexColumn()
             ->addColumn('nominal', function ($row) {
                 $sum = \App\Models\Transaction::where('program_id', $row->id)->where('status', 'success')->sum('nominal_final');
-                if ($sum > 0) {
+                $sum_percent = 0;
+                if ($sum > 0 && $row->nominal_approved > 0) {
                     $sum_percent = round(($sum / $row->nominal_approved) * 100, 2);
-                } else {
-                    $sum_percent = 0;
                 }
 
                 $spend = \App\Models\ProgramSpend::where('program_id', $row->id)->where('status', 'done')->sum('nominal_approved');
+                $spend_percent = 0;
                 if ($spend > 0 && $sum > 0) {
                     $spend_percent = round(($spend / $sum) * 100, 2);
-                } else {
-                    $spend_percent = 0;
                 }
 
                 $param = $row->id . ", '" . ucwords(str_replace("'", '', $row->title)) . "'";
@@ -637,7 +578,6 @@ class ProgramController extends Controller
                     . '%)</span>';
             })
             ->addColumn('status', function ($row) {
-
                 if ($row->approved_at !== null) {
                     // disetujui
                     if ($row->end_date > date('Y-m-d') && $row->is_publish == '1') {
@@ -659,12 +599,12 @@ class ProgramController extends Controller
                         // tidak dipublikasi
                         $status = '<span class="badge badge-danger">Tidak Tampil</span>';
                         $status .= '<br>Start: ' . date('d-M-Y', strtotime($row->approved_at));
-                        $status .= '<br>End: ' . $formatEndDate($row->end_date);
+                        $status .= '<br>End: ' . $row->end_date;
                     } else {
                         // sudah berakhir
                         $status = '<span class="badge badge-danger">Sudah Berakhir</span>';
                         $status .= '<br>Start: ' . date('d-M-Y', strtotime($row->approved_at));
-                        $status .= '<br>End: ' . $formatEndDate($row->end_date);
+                        $status .= '<br>End: ' . $row->end_date;
                     }
                 } else {
                     // belum disetujui
@@ -677,99 +617,34 @@ class ProgramController extends Controller
                 return '-';
             })
             ->addColumn('donate', function ($row) {
-                // $count_view      = TrackingVisitor::where('program_id', $row->id)->where('page_view', 'landing_page')->count();
-                // $count_form_page = TrackingVisitor::where('program_id', $row->id)->where('page_view', 'form')->count();
-
-                // $interest = "<i class='fa fa-file icon-gradient bg-malibu-beach'></i> ".number_format($count_form_page);
-                // $checkout = \App\Models\Transaction::where('program_id', $row->id)->count('id');
-                // $count    = \App\Models\Transaction::where('program_id', $row->id)->where('status', 'success')->count('id');
-
-                // if($count_view>0 && $count_form_page>0) {
-                //     $interest_per  = round($count_form_page/$count_view*100, 2);
-                // } else {
-                //     $interest_per  = 0;
-                // }
-
-                // if($checkout>0 && $count_view>0) {
-                //     $checkout_per = round($checkout/$count_view*100, 2);
-                // } else {
-                //     $checkout_per = 0;
-                // }
-
-                // if($count>0 && $checkout>0) {
-                //     $count_per = round($count/$checkout*100, 2);
-                // } else {
-                //     $count_per = 0;
-                // }
-
-                // return $interest.' ('.$interest_per.'%)
-                //     <br> <i class="fa fa-shopping-cart icon-gradient bg-malibu-beach"></i> '.number_format($checkout).' ('.$checkout_per.'%)
-                //     <br> <i class="fa fa-heart icon-gradient bg-happy-green"></i> '.number_format($count).' ('.$count_per.'%)';
-
-                // return '-';
-
-                // $interest = "<i class='fa fa-file icon-gradient bg-malibu-beach'></i> ".number_format($row->count_pra_checkout);
-                // $checkout = \App\Models\Transaction::where('program_id', $row->id)->count('id');
-                // $count    = \App\Models\Transaction::where('program_id', $row->id)->where('status', 'success')->count('id');
-
-                // if($row->count_view>0 && $row->count_pra_checkout>0) {
-                //     $interest_per  = round($row->count_pra_checkout/$row->count_view*100, 2);
-                // } else {
-                //     $interest_per  = 0;
-                // }
-
-                // if($checkout>0 && $row->count_view>0) {
-                //     $checkout_per = round($checkout/$row->count_view*100, 2);
-                // } else {
-                //     $checkout_per = 0;
-                // }
-
-                // if($count>0 && $checkout>0) {
-                //     $count_per = round($count/$checkout*100, 2);
-                // } else {
-                //     $count_per = 0;
-                // }
-
-                // return $interest.' ('.$interest_per.'%)
-                //     <br> <i class="fa fa-shopping-cart icon-gradient bg-malibu-beach"></i> '.number_format($checkout).' ('.$checkout_per.'%)
-                //     <br> <i class="fa fa-heart icon-gradient bg-happy-green"></i> '.number_format($count).' ('.$count_per.'%)';
-
                 return number_format($row->donate_sum);
             })
             ->addColumn('action', function ($row) {
                 $url_edit = route('adm.program.edit', $row->id);
-                // $url_edit  = route('adm.report.settlement');
                 $actionBtn =
-                    '<a href="'
-                    . $url_edit
-                    . '" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
-                                <a href="'
-                    . route('adm.program.detail.stats', $row->id)
-                    . '" class="edit btn btn-info btn-xs mb-1" title="Statistik"><i class="fa fa-chart-line"></i></a>
-                                <a href="'
-                    . route('adm.program.detail.fundraiser', $row->id)
-                    . '" class="edit btn btn-info btn-xs mb-1" title="Donasi"><i class="fa fa-donate"></i></a>
-                                <a href="'
-                    . route('adm.program.detail.donatur', $row->id)
-                    . '" class="edit btn btn-info btn-xs mb-1" title="Donatur"><i class="fa fa-users"></i></a>
-                                <a href="'
-                    . route('adm.program.detail.fundraiser', $row->id)
-                    . '" class="edit btn btn-info btn-xs mb-1" title="Fundraiser"><i class="fa fa-people-carry"></i></a>
-                                <a href="'
-                    . route('adm.program.detail.fundraiser', $row->id)
-                    . '" class="edit btn btn-info btn-xs mb-1" title="Penyaluran"><i class="fa fa-hand-holding-heart"></i></a>
-                                <a href="'
-                    . route('adm.program.detail.fundraiser', $row->id)
-                    . '" class="edit btn btn-info btn-xs mb-1" title="Operasional"><i class="fa fa-file-invoice-dollar"></i></a>
-                                <a href="'
-                    . route('program.index', $row->slug)
-                    . '" class="edit btn btn-info btn-xs mb-1" title="Link" target="_blank"><i class="fa fa-external-link-alt"></i></a>
-                                ';
+                    '<a href="' . $url_edit . '" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
+                    <a href="' . route('adm.program.detail.stats', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Statistik"><i class="fa fa-chart-line"></i></a>
+                    <a href="' . route('adm.program.detail.fundraiser', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Donasi"><i class="fa fa-donate"></i></a>
+                    <a href="' . route('adm.program.detail.donatur', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Donatur"><i class="fa fa-users"></i></a>
+                    <a href="' . route('adm.program.detail.fundraiser', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Fundraiser"><i class="fa fa-people-carry"></i></a>
+                    <a href="' . route('adm.program.detail.fundraiser', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Penyaluran"><i class="fa fa-hand-holding-heart"></i></a>
+                    <a href="' . route('adm.program.detail.fundraiser', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Operasional"><i class="fa fa-file-invoice-dollar"></i></a>
+                    <a href="' . route('program.index', $row->slug) . '" class="edit btn btn-info btn-xs mb-1" title="Link" target="_blank"><i class="fa fa-external-link-alt"></i></a>';
                 return $actionBtn;
             })
+            ->filter(function ($query) use ($request) {
+                if ($request->has('search') && !empty($request->input('search.value'))) {
+                    $search = $request->input('search.value');
+                    $query->where(function ($q) use ($search) {
+                        $q->where('program.title', 'like', '%' . $search . '%')
+                            ->orWhere('program.slug', 'like', '%' . $search . '%')
+                            ->orWhere('program.short_desc', 'like', '%' . $search . '%')
+                            ->orWhere('organization.name', 'like', '%' . $search . '%');
+                    });
+                }
+            }, true)
             ->rawColumns(['action', 'nominal', 'status', 'stats', 'donate'])
             ->make(true);
-        // }
     }
 
     /**

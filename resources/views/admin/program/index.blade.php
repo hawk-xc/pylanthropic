@@ -340,32 +340,37 @@
                 "width": "22%",
                 "targets": 0
             }],
-            // order: [[4, 'desc']],
-            order: [],
+            order: [[4, 'desc']],
             ajax: "{{ route('adm.program.datatables') }}/?active=1",
             columns: [{
                     data: 'title',
-                    name: 'title'
+                    name: 'program.title'
                 },
                 {
                     data: 'nominal',
-                    name: 'nominal'
+                    name: 'nominal',
+                    orderable: false,
+                    searchable: false
                 },
                 {
                     data: 'status',
-                    name: 'status'
+                    name: 'status',
+                    orderable: false,
+                    searchable: false
                 },
                 {
                     data: 'organization',
-                    name: 'organization'
+                    name: 'organization.name'
                 },
                 {
                     data: 'donate',
-                    name: 'donate'
+                    name: 'donate_sum'
                 },
                 {
                     data: 'stats',
-                    name: 'stats'
+                    name: 'stats',
+                    orderable: false,
+                    searchable: false
                 },
                 {
                     data: 'action',
