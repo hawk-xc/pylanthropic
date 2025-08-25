@@ -297,6 +297,8 @@ Route::group([
 
 
 Route::get('/programs', [Guest\ProgramController::class, 'list'])->name('program.list');
+Route::post('/programs/load-more', [Guest\ProgramController::class, 'loadMore'])->name('programs.loadMore');
+
 Route::get('/donasi/status/{inv}', [Guest\DonateController::class, 'paymentStatus'])->name('donate.status');
 Route::post('/donasi/status-check/{inv}', [Guest\DonateController::class, 'paymentStatusCheck'])->name('donate.status.check');
 Route::get('/{slug}', [Guest\ProgramController::class, 'index'])->name('program.index');

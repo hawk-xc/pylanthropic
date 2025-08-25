@@ -110,17 +110,44 @@ class ProgramController extends Controller
             $program = $program->orderBy('program.approved_at', 'DESC');
         }
 
-        $program = $program->limit(8)->get();
+        $program = $program->paginate(8);
+
         $program->map(function($program, $key) {
-                        $sum_amount = Models\Transaction::where('program_id', $program->id)->where('status', 'success')
-                                    ->sum('nominal_final');
-                        if($program->show_minus>0 && !is_null($program->show_minus) && $sum_amount>0) {
-                            return $program->sum_amount = $sum_amount-($sum_amount*$program->show_minus/100);
-                        } else {
-                            return $program->sum_amount = $sum_amount;
-                        }
-                    });
+            $sum_amount = Models\Transaction::where('program_id', $program->id)->where('status', 'success')
+                ->sum('nominal_final');
+            if($program->show_minus>0 && !is_null($program->show_minus) && $sum_amount>0) {
+                return $program->sum_amount = $sum_amount-($sum_amount*$program->show_minus/100);
+            } else {
+                return $program->sum_amount = $sum_amount;
+            }
+        });
         return view('public.program_list', compact('program'));
+    }
+
+    public function loadMore(Request $request)
+    {
+        $page = $request->get('page', 1);
+
+        $program = Program::where('is_publish', 1)
+            ->select('program.*', 'organization.name', 'organization.status')
+            ->join('organization', 'program.organization_id', 'organization.id')
+            ->whereNotNull('program.approved_at')
+            ->where('end_date', '>', date('Y-m-d'))
+            ->orderBy('program.approved_at', 'DESC')
+            ->paginate(8, ['*'], 'page', $page);
+
+        // hitung sum_amount
+        $program->getCollection()->transform(function ($program) {
+            $sum_amount = Models\Transaction::where('program_id', $program->id)
+                ->where('status', 'success')
+                ->sum('nominal_final');
+            $program->sum_amount = ($program->show_minus > 0 && $sum_amount > 0)
+                ? $sum_amount - ($sum_amount * $program->show_minus / 100)
+                : $sum_amount;
+            return $program;
+        });
+
+        return response()->json($program);
     }
 
     /**

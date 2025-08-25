@@ -53,7 +53,7 @@
         <span class="badge-search">Semua Kategori</span>
         <span class="badge-search">Terbaru</span>
       </div> -->
-      <div class="row gy-2 pt-1">
+      <div id="program-container" class="row gy-2 pt-1">
         @foreach($program as $vn)
           <div class="col-12">
             <div class="vertical-product-box">
@@ -104,6 +104,13 @@
           </div>
         @endif
       </div>
+
+      @if($program->hasMorePages())
+          <button id="load-more" data-page="1" class="btn btn-light w-100 mt-3 d-flex align-items-center justify-content-center" style="background-color: #f8f9fa; border-color: #f8f9fa;">
+              <span class="btn-text">Tampilkan Lebih Banyak</span>
+              <i class="ri-arrow-down-s-line ms-2"></i>
+          </button>
+      @endif
     </div>
   </section>
   <!-- List section end -->
@@ -359,4 +366,112 @@
       return false;
     });
   </script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let btn = document.getElementById("load-more");
+        if (!btn) return;
+
+        const originalBtnContent = btn.innerHTML;
+
+        btn.addEventListener("click", function () {
+            let page = parseInt(btn.getAttribute("data-page")) + 1;
+
+            // Show loading animation
+            btn.disabled = true;
+            btn.innerHTML = `
+                <div class="spinner-border spinner-border-sm" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>`;
+
+            fetch("{{ route('programs.loadMore') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "{{ csrf_token() }}"
+                },
+                body: JSON.stringify({ page: page })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.data.length > 0) {
+                    data.data.forEach(item => {
+                        let progress = Math.ceil(item.sum_amount / item.nominal_approved * 100);
+                        if (progress > 100) {
+                            progress = 100;
+                        }
+
+                        const endDate = new Date(item.end_date.substring(0, 10));
+                        const now = new Date();
+                        endDate.setHours(0,0,0,0);
+                        now.setHours(0,0,0,0);
+                        const diffTime = Math.max(0, endDate.getTime() - now.getTime());
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                        let html = `
+                            <div class="col-12">
+                              <div class="vertical-product-box">
+                                <div class="vertical-box-img">
+                                  <a href="/${item.slug}">
+                                    <img class="img-fluid img" src="/public/images/program/${item.thumbnail}" alt="${item.title}" />
+                                  </a>
+                                </div>
+                                <div class="vertical-box-details">
+                                  <a href="/${item.slug}">
+                                    <div class="vertical-box-head">
+                                      <div class="restaurant">
+                                        <h5 class="two-line fs-13">${item.title}</h5>
+                                      </div>
+
+                                      <h6 class="rating-star mt-2 mb-3">
+                                        ${item.name} ${ (item.status=='verified' || item.status=='verif_org') ? '<span class="star"><i class="ri-star-s-fill"></i></span>' : '' }
+                                      </h6>
+
+                                      <div class="progress mt-1 mb-2" role="progressbar" aria-label="Basic example" aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100" style="height: 5px">
+                                        <div class="progress-bar" style="width: ${progress}%"></div>
+                                      </div>
+
+                                      <div class="d-flex justify-content-between mt-2">
+                                        <div class="fw-semibold fs-11 pe-0 lh-20">Rp ${new Intl.NumberFormat('de-DE').format(item.sum_amount)}</div>
+                                        <div class="fw-semibold fs-11 text-end ps-1 lh-20">
+                                          ${diffDays}
+                                        </div>
+                                      </div>
+                                      <div class="d-flex justify-content-between">
+                                        <div class="fw-light fs-10 pe-0">Donasi Terkumpul</div>
+                                        <div class="fw-light fs-10 text-end ps-1">Hari Lagi</div>
+                                      </div>
+                                    </div>
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+                        `;
+                        document.getElementById("program-container").insertAdjacentHTML("beforeend", html);
+                    });
+                    btn.setAttribute("data-page", page);
+
+                    // Restore button
+                    btn.disabled = false;
+                    btn.innerHTML = originalBtnContent;
+
+                    if (!data.next_page_url) {
+                        btn.disabled = true;
+                        btn.innerHTML = "<span>Semua program telah ditampilkan</span>";
+                    }
+                } else {
+                    btn.disabled = true;
+                    btn.innerHTML = "<span>Semua program telah ditampilkan</span>";
+                }
+            })
+            .catch(error => {
+                console.error('Error loading more programs:', error);
+                // Restore button on error
+                btn.disabled = false;
+                btn.innerHTML = originalBtnContent;
+            });
+        });
+    });
+</script>
+
 @endsection
