@@ -25,4 +25,9 @@ class ProgramInfo extends Model
         'created_at',
         'updated_at'
     ];
+
+    public function program()
+    {
+        return $this->belongsTo(Program::class);
+    }
 }
