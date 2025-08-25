@@ -269,8 +269,10 @@ Route::group([
         Route::get('/logs', [Admin\LogsController::class, 'index'])->name('logs.index');
         Route::get('/logs/{filename}', [Admin\LogsController::class, 'show'])->name('admin.logs.show');
 
+        Route::get('/program-info-datatables', [Admin\ProgramInfoController::class, 'index'])->name('program-info.datatables');
         Route::resources([
             'program'          => Admin\ProgramController::class,
+            'program-info'     => Admin\ProgramInfoController::class,
             'organization'     => Admin\OrganizationController::class,
             'program-category' => Admin\ProgramCategoryController::class,
             'donatur'          => Admin\DonaturController::class,
@@ -297,6 +299,7 @@ Route::group([
 
 
 Route::get('/programs', [Guest\ProgramController::class, 'list'])->name('program.list');
+
 Route::post('/programs/load-more', [Guest\ProgramController::class, 'loadMore'])->name('programs.loadMore');
 
 Route::get('/donasi/status/{inv}', [Guest\DonateController::class, 'paymentStatus'])->name('donate.status');
