@@ -104,7 +104,7 @@
                     <div class="input-group input-group-sm">
                         <span class="input-group-text">Rp. </span>
                         <input type="text" class="form-control" name="nominal" id="rupiah" placeholder="100.000.000"
-                            value="{{ str_replace(',', '.', number_format(old('nominal', $program->nominal_approved))) }}"
+                            value="{{ str_replace(',', '.', number_format((float) old('nominal', $program->nominal_approved))) }}"
                             required>
                         @error('nominal')
                             <div class="mt-2 text-danger">{{ $message }}</div>

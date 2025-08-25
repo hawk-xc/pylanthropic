@@ -62,7 +62,7 @@
                   <img class="img-fluid img" 
                     src="{{ asset('public/images/program').'/'.$vn->thumbnail }}" 
                     alt="{{ ucwords($vn->title) }}" 
-                    onerror="this.onerror=null;this.src='{{ asset('not-found.png') }}';" />
+                    onerror="this.src='{{ asset('not-found.png') }}';" />
                 </a>
               </div>
               <div class="vertical-box-details">
