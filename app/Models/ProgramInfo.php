@@ -23,7 +23,8 @@ class ProgramInfo extends Model
         'content ',
         'is_publish',
         'created_at',
-        'updated_at'
+        'updated_at',
+        'date'
     ];
 
     public function program()

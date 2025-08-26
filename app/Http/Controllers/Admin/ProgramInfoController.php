@@ -6,8 +6,12 @@ use Exception;
 use App\Models\Program;
 use App\Models\ProgramInfo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
+use Illuminate\Support\Facades\Validator;
+use Intervention\Image\ImageManagerStatic as Image;
 
 class ProgramInfoController extends Controller
 {
@@ -54,6 +58,7 @@ class ProgramInfoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'date' => 'required|date',
             'program_id' => 'required|exists:program,id',
             'title' => 'required|string|max:255',
             'content' => 'required|string',
@@ -62,6 +67,7 @@ class ProgramInfoController extends Controller
 
         try {
             $data = new ProgramInfo();
+            $data->date = $request->date;
             $data->program_id = $request->program_id;
             $data->title = $request->title;
             $data->content = $request->content;
@@ -72,14 +78,6 @@ class ProgramInfoController extends Controller
         } catch (Exception $err) {
             return redirect()->route('adm.program-info.index')->with('error', $err->getMessage());
         }
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
     }
 
     /**
@@ -97,6 +95,7 @@ class ProgramInfoController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
+            'date' => 'required|date',
             'program_id' => 'required|exists:program,id',
             'title' => 'required|string|max:255',
             'content' => 'required|string',
@@ -106,6 +105,7 @@ class ProgramInfoController extends Controller
         
         try {
             $data = ProgramInfo::findOrFail($id);
+            $data->date = $request->date;
             $data->program_id = $request->program_id;
             $data->title = $request->title;
             $data->content = $request->content;
@@ -127,5 +127,96 @@ class ProgramInfoController extends Controller
         $programInfo->delete();
 
         return redirect()->route('adm.program-info.index')->with('success', 'Kabar terbaru berhasil dihapus.');
+    }
+
+    public function storeImagecontent(Request $request)
+    {
+        $number = $request->number;
+        $number = str_replace('img', '', $number);
+
+        $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->name));
+        $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
+        $file = $request->file('file');
+        $filename = $filename . '_' . $number . '.jpg';
+
+        $image = Image::make($file->getRealPath())
+            ->fit(580, 780)
+            ->encode('jpg', 80);
+
+        $path = 'images/program/program_update/' . $filename;
+
+        Storage::disk('public_uploads')->put($path, $image->stream());
+
+        $link_img = url('public/' . $path);
+
+        return [
+            'link' => $link_img,
+            'full' => '<img data-original="' . $link_img . '" class="lazyload" alt="' . ucwords($request->name) . ' - Bantubersama.com" />',
+        ];
+    }
+
+    public function uploadImageContent(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => [
+                    'message' => $validator->errors()->first(),
+                ],
+            ], 400);
+        }
+
+        try {
+            $file = $request->file('file');
+            $programTitle = $request->input('program_title');
+
+            $baseName = str_replace([' ', '-', '&', ':'], '_', trim($programTitle));
+            $baseName = preg_replace('/[^A-Za-z0-9\_]/', '', $baseName);
+
+            // Path relatif untuk penyimpanan
+            $contentDir = 'images/program/program_update';
+
+            // Cari file yang sudah ada
+            $existingFiles = Storage::disk('public_uploads')->files($contentDir);
+            $existingFiles = preg_grep('/' . preg_quote($baseName, '/') . '_(\d+)\.jpg$/', $existingFiles);
+
+            // Hitung counter berikutnya
+            $counter = 1;
+            if (!empty($existingFiles)) {
+                natsort($existingFiles);
+                $lastFile = end($existingFiles);
+                preg_match('/_(\d+)\.jpg$/', $lastFile, $matches);
+                if (isset($matches[1])) {
+                    $counter = (int) $matches[1] + 1;
+                }
+            }
+
+            // Generate nama file baru
+            $filename = $baseName . '_' . $counter . '.jpg';
+            $path = $contentDir . '/' . $filename;
+
+            // Proses dan simpan gambar
+            $image = Image::make($file->getRealPath())
+                ->fit(580, 780)
+                ->encode('jpg', 80);
+
+            Storage::disk('public_uploads')->put($path, $image->stream());
+
+            // Generate URL
+            $url = url('public/' . $path);
+
+            return response()->json([
+                'location' => $url,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => [
+                    'message' => $e->getMessage(),
+                ],
+            ], 500);
+        }
     }
 }

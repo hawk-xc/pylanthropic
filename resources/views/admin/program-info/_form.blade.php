@@ -1,4 +1,21 @@
-    @csrf
+@section('css_plugins')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+    <style type="text/css">
+        .required:after {
+            content:"*";
+            color:red;
+        }
+    </style>
+@endsection
+
+@csrf
+<div class="form-group">
+    <label for="date" class="form-label fw-semibold required">Tanggal</label>
+    <input type="date" name="date" id="date" class="form-control"
+        value="{{ old('date', $programInfo->date ?? date('Y-m-d')) }}"  required>
+</div>
 <div class="form-group">
     <label for="program_id" class="form-label fw-semibold required">Program</label>
     <select name="program_id" id="program-select2" class="form-control" required>
@@ -14,8 +31,8 @@
 </div>
 <div class="form-group">
     <label class="form-label fw-semibold">Konten</label>
-    <textarea class="form-control form-control-sm w-100" name="story" id="editor" rows="5"
-        style="min-width: 0;">{{ old('story') }}</textarea>
+    <textarea class="form-control form-control-sm w-100" name="content" id="editor" rows="5"
+        style="min-width: 0;">{{ old('content', $programInfo->content ?? '') }}</textarea>
 </div>
 <div class="form-group">
     <label for="is_publish" class="form-label fw-semibold required">Status</label>
@@ -33,6 +50,7 @@
 
 @section('js_plugins')
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="https://cdn.tiny.cloud/1/wphaz17bf6i1tsqq7cjt8t5w6r275bw3b8acq6u2gi4hnan4/tinymce/7/tinymce.min.js"
         referrerpolicy="origin"></script>
 @endsection
@@ -85,7 +103,7 @@
             image_dimensions: false,
             image_advtab: true,
             image_caption: true,
-            images_upload_url: "{{ route('adm.program.image.content.submit') }}",
+            images_upload_url: "{{ route('adm.program-info.image.content.submit') }}",
 
             file_picker_types: 'image',
             images_file_types: 'jpg,jpeg,png,gif,webp',
@@ -100,10 +118,10 @@
                 return new Promise((resolve, reject) => {
                     const formData = new FormData();
                     formData.append('file', blobInfo.blob(), blobInfo.filename());
-                    formData.append('program_title', document.getElementById('program_title').value);
+                    formData.append('program_title', $('#program-select2 option:selected').text());
 
                     const xhr = new XMLHttpRequest();
-                    xhr.open('POST', "{{ route('adm.program.image.content.submit') }}", true);
+                    xhr.open('POST', "{{ route('adm.program-info.image.content.submit') }}", true);
                     xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
 
                     xhr.upload.onprogress = function(e) {
@@ -328,6 +346,56 @@
                     }
                 });
             }
+        });
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            var select2_query;
+            $("#program-select2").select2({
+                placeholder: 'Cari Program',
+                theme: 'bootstrap-5',
+                allowClear: true,
+                ajax: {
+                    url: "{{ route('adm.program.select2.all') }}",
+                    delay: 250,
+                    data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1
+                        }
+                        return query;
+                    },
+                    processResults: function (data, params) {
+                        var items = $.map(data.data, function(obj){
+                            obj.id = obj.id;
+                            obj.text = obj.title;
+                            return obj;
+                        });
+                        params.page = params.page || 1;
+                        return {
+                            results: items,
+                            pagination: {
+                                more: params.page < data.extra_data.last_page
+                            }
+                        };
+                    },
+                },
+                templateResult: function (item) {
+                    if (item.loading) {
+                        return item.text;
+                    }
+                    var term = select2_query.term || '';
+                    var $result = item.text;
+                    return $result;
+                },
+                language: {
+                    searching: function (params) {
+                        select2_query = params;
+                        return 'Searching...';
+                    }
+                }
+            });
         });
     </script>
 @endsection

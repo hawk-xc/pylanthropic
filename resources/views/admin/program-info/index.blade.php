@@ -35,6 +35,7 @@
                         <th>No</th>
                         <th>Program</th>
                         <th>Judul</th>
+                        <th>Tanggal</th>
                         <th>Status</th>
                         <th>Aksi</th>
                     </tr>
@@ -62,6 +63,21 @@
                     { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false },
                     { data: 'program_title', name: 'program.title' },
                     { data: 'title', name: 'title' },
+                    {
+                        data: 'date',
+                        name: 'date',
+                        render: function(data) {
+                            if (!data) return '-';
+                            const date = new Date(data);
+                            const options = {
+                                day: 'numeric',
+                                month: 'long',
+                                year: 'numeric',
+                                timeZone: 'UTC'
+                            };
+                            return date.toLocaleDateString('id-ID', options);
+                        }
+                    },
                     { data: 'is_publish', name: 'is_publish', render: function(data) {
                         return data == 1 ? '<span class="badge badge-success">Publish</span>' : '<span class="badge badge-secondary">Draft</span>';
                     }},

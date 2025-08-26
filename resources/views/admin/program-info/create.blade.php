@@ -5,18 +5,6 @@
     'sidebar_submenu' => 'program_info',
 ])
 
-@section('css_plugins')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
-    <link rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
-    <style type="text/css">
-        .required:after {
-            content:"*";
-            color:red;
-        }
-    </style>
-@endsection
-
 @section('content')
     <div class="main-card mb-3 card">
         <div class="card-body">
@@ -50,11 +38,6 @@
             </form>
         </div>
     </div>
-@endsection
-
-@section('js_plugins')
-    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 @endsection
 
 @section('js_inline')
