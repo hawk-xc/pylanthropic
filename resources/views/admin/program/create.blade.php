@@ -138,6 +138,7 @@
                         </div>
                     @enderror
                 </div>
+                
                 <div class="col-12">
                     <label class="form-label fw-semibold">Cerita Singkat (caption)</label>
                     <input type="text" class="form-control form-control-sm" name="caption"
