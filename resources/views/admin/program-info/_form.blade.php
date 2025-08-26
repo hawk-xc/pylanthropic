@@ -33,6 +33,7 @@
     <label class="form-label fw-semibold">Konten</label>
     <textarea class="form-control form-control-sm w-100" name="content" id="editor" rows="5"
         style="min-width: 0;">{{ old('content', $programInfo->content ?? '') }}</textarea>
+    <small class="form-text text-muted">Ukuran gambar yang disarankan untuk diunggah adalah di bawah 800kb.</small>
 </div>
 <div class="form-group">
     <label for="is_publish" class="form-label fw-semibold required">Status</label>
