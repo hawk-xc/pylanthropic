@@ -45,7 +45,7 @@
                     </ul>
                 </div>
             @endif
-            <form action="{{ route('adm.program-info.update', $programInfo->id) }}" method="POST" class="row gy-4">
+            <form action="{{ route('adm.program-info.update', $programInfo->id) }}" method="POST" class="row">
                 @method('PUT')
                 @include('admin.program-info._form')
             </form>
