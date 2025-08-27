@@ -7,6 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Arr;
+use Carbon\Carbon;
+
 
 use App\Models\AdsCampaign;
 use App\Models\AdsCampaignHistory;
@@ -106,166 +111,9 @@ class AdsController extends Controller
         return view('admin.ads.balance', compact('data1', 'data4'));
     }
 
-    /**
-     * Display a listing of the resource.
-     */
-    // public function adsNeedAction(Request $request)
-    // {
-    //     $token           = '&access_token='.$this->token;
+    
 
-    //     $id              = $request->id;
-    //     if($id==1) {
-    //         $account_id  = 'act_931003154576114';       // List Campaign di BM 1
-    //     } else {
-    //         $account_id  = 'act_597272662321196';       // List Campaign di BM 4
-    //     }
-
-    //     $dn              = date('Y-m-d H:i:s', strtotime(date('Y-m-d').' 23:59:59 -3 day'));
-
-    //     // List campaign untuk mendapatkan status masing2 campaign
-    //     $host =  $this->host.$account_id."/campaigns?date_preset=today&period=day&time_increment=1&limit=5000";
-    //     $host .= "&fields=id,name,status&filtering=";
-    //     $host .= urlencode("[{'field':'updated_time','operator':'GREATER_THAN','value':'".$dn."'}]").$token;
-
-    //     $curl             = curl_init();
-    //     curl_setopt($curl, CURLOPT_URL, $host);
-    //     curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-
-    //     $response         = curl_exec($curl);
-    //     $err              = curl_error($curl);
-    //     curl_close($curl);
-
-    //     $campaign         = [];
-    //     $campaign_id      = [];
-    //     $campaign_name    = [];
-
-    //     if ($err) {
-    //         echo 'Pesan gagal terkirim, error :' . $err;
-    //     } else {
-    //         $res = json_decode($response);
-
-    //         if(isset($res->data)) {
-    //             $list_campaign = $res->data;
-    //             // Mengurutkan kampanye berdasarkan nama
-    //             usort($list_campaign, function ($a, $b) {
-    //                 return $a->status <=> $b->status;
-    //             });
-
-    //             for($i=0; $i<count($list_campaign); $i++) {
-    //                 $campaign[$list_campaign[$i]->id] = $list_campaign[$i]->status;
-    //                 $campaign_id[]                    = $list_campaign[$i]->id;
-    //                 $campaign_name[]                  = $list_campaign[$i]->name;
-    //             }
-    //         }
-    //     }
-
-
-    //     // Get Data FB ADS PER ID CAMPAIGN
-    //     $param_time      = 'date_preset=today';
-    //     $param_period    = '&period=day';
-    //     $param_increment = '&time_increment=1';
-    //     $param_limit     = '&limit=5000';
-    //     $param_level     = '&level=campaign';
-    //     $param_field     = '&fields=campaign_id,campaign_name,objective,cost_per_conversion,spend,actions';
-
-    //     $need_action     = [];
-    //     $others          = [];
-    //     // $list_campaign   = AdsCampaign::where('adaccount_id', $account_id)->where('updated_time', '>=', $dn)->select('id')->get();
-
-    //     for($i=0; $i<count($campaign_id);  $i++) {
-    //     // foreach($list_campaign as $key => $v) {
-    //         $url         = $this->host.$campaign_id[$i].'/insights?'.$param_time.$param_period.$param_increment.$param_level.$param_limit.$param_field.$token;
-
-    //         $curl        = curl_init();
-    //         curl_setopt($curl, CURLOPT_URL, $url);
-    //         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-
-    //         $response    = curl_exec($curl);
-    //         $err         = curl_error($curl);
-    //         curl_close($curl);
-
-    //         if ($err) {
-    //             echo 'Pesan gagal terkirim, error :' . $err;
-    //         } else {
-    //             if(isset(json_decode($response)->data[0])) {
-    //                 $data_api = json_decode($response)->data[0];
-
-    //                 if(isset($data_api->spend)) {
-    //                     $spend        = round($data_api->spend);
-    //                 } else {
-    //                     $spend        = 0;
-    //                 }
-
-    //                 if(isset($data_api->cost_per_conversion)) {
-    //                     $cpr                = array_filter($data_api->cost_per_conversion, function($cpr_val) {
-    //                                                 return $cpr_val->action_type == 'donate_website';
-    //                                             });
-    //                     if(isset($cpr[0]->value)) {
-    //                         $cpr      = round($cpr[0]->value);
-    //                     } else {
-    //                         $cpr      = 0;
-    //                     }
-    //                 } else {
-    //                     $cpr          = 0;
-    //                 }
-
-    //                 if(isset($data_api->actions)) {
-    //                     if($data_api->objective=='LINK_CLICKS') {
-    //                         $result     = array_filter($data_api->actions, function($result_val) {
-    //                                             return $result_val->action_type == 'link_click';
-    //                                         });
-    //                     } else {
-    //                         $result     = array_filter($data_api->actions, function($result_val) {
-    //                                             return $result_val->action_type == 'offsite_conversion.fb_pixel_custom';
-    //                                         });
-    //                     }
-
-    //                     if(isset($result)) {
-    //                         if(!empty(array_keys($result))) {
-    //                             $result = round($result[max(array_keys($result))]->value);
-    //                         } else {
-    //                             $result = 0;
-    //                         }
-    //                     } else {
-    //                         $result   = 0;
-    //                     }
-    //                 } else {
-    //                     $result       = 0;
-    //                 }
-
-    //                 // NOTIF ADS TEAM
-    //                 if($spend>12000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('09:00:00')) {
-    //                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-
-    //                 } elseif($spend>14000 && $result<1 && strtotime(date('H:i:s'))<=strtotime('18:30:00')) {
-    //                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-
-    //                 }  elseif($spend>20000 && $result<1 && strtotime(date('H:i:s'))>strtotime('18:30:00')) {
-    //                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-
-    //                 } elseif($cpr>14000 && strtotime(date('H:i:s'))<=strtotime('09:00:00')) {
-    //                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-
-    //                 } elseif($cpr>16000 && strtotime(date('H:i:s'))<=strtotime('18:30:00')) {
-    //                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-
-    //                 } elseif($cpr>34000 && strtotime(date('H:i:s'))>strtotime('18:30:00')) {
-    //                     $need_action[] = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-
-    //                 } else {
-    //                     $others[]      = ['id'=>$data_api->campaign_id, 'name' => $data_api->campaign_name, 'spend' => $spend, 'result' => $result, 'cpr' => $cpr];
-    //                 }
-
-    //             } else {
-    //                 $others[]      = ['id'=>$campaign_id[$i], 'name' => $campaign_name[$i], 'spend' => 0, 'result' => 0, 'cpr' => 0];
-    //             }
-    //         }  // END IF
-    //     }   // END FOREACH
-
-    //     return view('admin.ads.needaction', compact('id', 'account_id', 'need_action', 'others', 'campaign'));
-    // }
-
-public function adsNeedAction(Request $request)
+    public function adsNeedAction(Request $request)
     {
         $token           = '&access_token='.$this->token;
 
@@ -475,47 +323,86 @@ public function adsNeedAction(Request $request)
     public function datatablesCampaign(Request $request)
     {
         // if ($request->ajax()) {
-            $data = \App\Models\AdsCampaign::
-                    // leftJoin('program', 'program.id', 'program_id')
-                    // ->select('ads_campaign.*', 'title')->
-                    orderBy('result', 'DESC');
+            $q = \App\Models\AdsCampaign::query()
+                ->leftJoin('program', function ($join) {
+                    // join hanya jika program_id > 0
+                    $join->on('program.id', '=', 'ads_campaign.program_id')
+                         ->where('ads_campaign.program_id', '>', 0);
+                })
+                ->select('ads_campaign.*', 'program.title')
+                ->orderBy('result', 'DESC');
 
-            if(isset($request->name)) {
-                $data = $data->where('name', 'like', '%'.trim($request->name).'%');
+            // === FILTERS ===
+            $q->when($request->filled('name'), fn($qq) =>
+                $qq->where('name', 'like', '%'.trim($request->name).'%')
+            );
+
+            // BUGFIX: sebelumnya $request->naprogramme -> salah ketik
+            $q->when($request->filled('program'), fn($qq) =>
+                $qq->where('program.title', 'like', '%'.$request->program.'%')
+            );
+
+            // is_active: 0/1
+            if ($request->has('is_active')) {
+                $q->where('ads_campaign.is_active', (int) $request->is_active);
             }
 
-            if(isset($request->program)) {
-                $data = $data->where('program_id', $request->naprogramme);
+            // any_program & no_program: mutually exclusive
+            if ($request->boolean('any_program')) {
+                $q->where('ads_campaign.program_id', '>', 0);
+            }
+            if ($request->boolean('no_program')) {
+                $q->where('ads_campaign.program_id', 0);
             }
 
-            if(isset($request->is_active)) {
-                $data = $data->where('ads_campaign.is_active', $request->is_active);
+            // winning: threshold minimal result (default 50 kalau dikirim 1 tombol)
+            $q->when($request->filled('winning'), fn($qq) =>
+                $qq->where('ads_campaign.result', '>=', (int) $request->winning)
+            );
+
+            // splittest: 7 hari terakhir saat aktif
+            if ($request->boolean('splittest')) {
+                $q->where('ads_campaign.start_time', '>=', now()->subDays(7)->startOfDay());
             }
 
-            $order_column = $request->input('order.0.column');
-            $order_dir    = ($request->input('order.0.dir')) ? $request->input('order.0.dir') : 'asc';
+            // OPTIONAL tambahkan filter spesifik (biar match input di UI lama)
+            $q->when($request->filled('ref_code'), fn($qq) =>
+                $qq->where('ref_code', 'like', '%'.$request->ref_code.'%')
+            );
+            $q->when($request->filled('min_spent'), fn($qq) =>
+                $qq->where('spend', '>=', (int) str_replace([',','.'], '', $request->min_spent))
+            );
 
-            $count_total  = $data->count();
+            // === ORDERING ===
+            $columns = ['name', 'program.title', 'ads_campaign.start_time', 'spend', 'id']; // map kolom DT
+            $orderIdx = (int) $request->input('order.0.column', 0);
+            $orderCol = $columns[$orderIdx] ?? 'result';
+            $orderDir = $request->input('order.0.dir', 'desc');
+            $q->orderBy($orderCol, $orderDir);
 
-            $search       = $request->input('search.value');
+            // === COUNT ===
+            $count_total = (clone $q)->count();
 
-            $count_filter = $count_total;
-            if($search != ''){
-                $data     = $data->where(function ($q) use ($search){
-                            $q->where('ads_campaign.created_at', 'like', '%'.$search.'%')
-                                ->orWhere('name', 'like', '%'.$search.'%')
-                                ->orWhere('budget', 'like', '%'.str_replace([',', '.'], '', $search).'%')
-                                ->orWhere('adaccount_id', 'like', '%'.$search.'%');
-                            });
-                $count_filter = $data->count();
+            // === GLOBAL SEARCH ===
+            if ($search = $request->input('search.value')) {
+                $san = str_replace([',','.'], '', $search);
+                $q->where(function ($s) use ($search, $san) {
+                    $s->where('ads_campaign.created_at', 'like', '%'.$search.'%')
+                      ->orWhere('name', 'like', '%'.$search.'%')
+                      ->orWhere('budget', 'like', '%'.$san.'%')
+                      ->orWhere('spend', 'like', '%'.$san.'%')
+                      ->orWhere('ref_code', 'like', '%'.$san.'%')
+                      ->orWhere('adaccount_id', 'like', '%'.$search.'%');
+                });
             }
+            $count_filter = (clone $q)->count();
 
-            $pageSize     = ($request->length) ? $request->length : 10;
-            $start        = ($request->start) ? $request->start : 0;
+            // === PAGINATION ===
+            $pageSize = (int) $request->input('length', 10);
+            $start    = (int) $request->input('start', 0);
+            $data     = $q->skip($start)->take($pageSize)->get();
 
-            $data->skip($start)->take($pageSize);
 
-            $data         = $data->get();
             return Datatables::of($data)
                 ->with([
                     "recordsTotal"    => $count_total,
@@ -524,15 +411,20 @@ public function adsNeedAction(Request $request)
                 ->setOffset($start)
                 ->addIndexColumn()
                 ->addColumn('program', function($row){
-                    if($row->program_id>0) {
-                        $program_name = \App\Models\Program::select('title')->where('id', $row->program_id)->first();
-                        if(isset($program_name->title)) {
-                            return $program_name->title;
-                        } else {
-                            return '<span class="badge badge-pill badge-warning" style="cursor:pointer;">salah set program</span>';
-                        }
-                    } else {
+                    // if($row->program_id>0) {
+                    //     $program_name = \App\Models\Program::select('title')->where('id', $row->program_id)->first();
+                    //     if(isset($program_name->title)) {
+                    //         return $program_name->title;
+                    //     } else {
+                    //         return '<span class="badge badge-pill badge-warning" style="cursor:pointer;">salah set program</span>';
+                    //     }
+                    // } else {
+                    //     return '<span class="badge badge-pill badge-danger" style="cursor:pointer;">belum set program</span>';
+                    // }
+                    if(is_null($row->title)) {
                         return '<span class="badge badge-pill badge-danger" style="cursor:pointer;">belum set program</span>';
+                    } else {
+                        return $row->title;
                     }
                 })
                 ->addColumn('start_time', function($row){
@@ -562,7 +454,6 @@ public function adsNeedAction(Request $request)
                 ->make(true);
         // }
     }
-
 
 
     /**
@@ -952,75 +843,269 @@ public function adsNeedAction(Request $request)
      */
     public function getNewCampaign(Request $request)
     {
-        $token           = '&access_token='.$this->token;
+        $account_id = $request->id == 1
+            ? 'act_931003154576114'
+            : 'act_597272662321196';
 
-        $id              = $request->id;
-        if($id==1) {
-            $account_id  = 'act_931003154576114';       // List Campaign di BM 1
-        } else {
-            $account_id  = 'act_597272662321196';       // List Campaign di BM 4
+        $host  = rtrim($this->host ?? '', '/');
+        $token = $this->token;
+
+        if (!$host || !$token) {
+            throw new \RuntimeException('Config FB host/token belum diset di controller.');
         }
 
-        if(isset($request->date)) {
-            $dn          = date('Y-m-d H:i:s', strtotime($request->date.' 23:59:59'));
-            $param_time  = 'period=day&time_range='.json_encode(array('since' => $request->date, 'until' => $request->date));
-        } else {
-            $dn          = date('Y-m-d H:i:s', strtotime(date('Y-m-d').' 23:59:59 -1 day'));
-            $param_time  = 'date_preset=yesterday&period=day';
-        }
+        $now = Carbon::now();
 
-        // List campaign untuk mendapatkan status masing2 campaign
-        $host =  $this->host.$account_id."/campaigns?date_preset=yesterday&period=day&time_increment=1&limit=5000";
-        $host .= "&fields=id,name,status,daily_budget,budget_remaining,start_time,updated_time&filtering=";
-        $host .= urlencode("[{'field':'updated_time','operator':'GREATER_THAN','value':'".$dn."'}]").$token;
+        // Sanitizer khusus latin1
+        $sanitize = static function ($v) {
+            if ($v === null) return null;
+            $out = @preg_replace('/[^\x00-\xFF]/u', '', (string) $v);
+            return is_string($out) ? $out : (string) $v;
+        };
 
-        $curl             = curl_init();
-        curl_setopt($curl, CURLOPT_URL, $host);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+        // =========================
+        // 1) FETCH CAMPAIGNS (atribut)
+        // NOTE: tambahkan created_time utk fallback start_time
+        // =========================
+        $endpointCampaigns = "{$host}/{$account_id}/campaigns";
+        $campaigns = []; // [campaign_id => data]
+        $nextUrl = null;
 
-        $response         = curl_exec($curl);
-        $err              = curl_error($curl);
-        curl_close($curl);
+        $campaignQuery = [
+            'limit'        => 5000,
+            'fields'       => 'id,name,status,daily_budget,budget_remaining,start_time,updated_time,created_time',
+            'access_token' => $token,
+        ];
 
-        $campaign         = [];
+        do {
+            $resp = $nextUrl
+                ? Http::timeout(60)->retry(3, 500)->get($nextUrl)
+                : Http::timeout(60)->retry(3, 500)->get($endpointCampaigns, $campaignQuery);
 
-        if ($err) {
-            echo 'Pesan gagal terkirim, error :' . $err;
-        } else {
-            $res           = json_decode($response);
-            $list_campaign = $res->data;
+            if ($resp->failed()) {
+                $msg = data_get($resp->json(), 'error.message', 'HTTP '.$resp->status());
+                throw new \RuntimeException("Facebook API error (campaigns): {$msg}");
+            }
 
-            // Get Data FB ADS PER ID CAMPAIGN
-            $param_limit     = '&limit=5000&time_increment=1';
-            $param_level     = '&level=campaign';
-            $param_field     = '&fields=campaign_id,spend,campaign_name';
+            $json = $resp->json();
+            foreach ((array) data_get($json, 'data', []) as $row) {
+                $cid = (string) data_get($row, 'id', '');
+                if ($cid === '') continue;
 
-            foreach ($list_campaign as $key => $v) {
-                if ($err) {
-                    echo 'Pesan gagal terkirim, error :' . $err;
-                } else {
-                    $adscampaign = AdsCampaign::select('id')->where('id', $v->id)->first();
-                    if(isset($adscampaign->id)) {    // campaign sudah ada di tabel
-                        // jadi tidak perlu di insert
-                    } else {                        // campaign belum ada di table, maka insert baru
-                        $data                   = new AdsCampaign;
-                        $data->id               = $v->id;
-                        $data->program_id       = 0;
-                        $data->adaccount_id     = $account_id;
-                        $data->name             = $v->name;
-                        $data->is_active        = 1;
-                        $data->budget           = (isset($v->daily_budget)) ? round($v->daily_budget) : 0;
-                        $data->spend            = 0;
-                        $data->cpr              = 0;
-                        $data->result           = 0;
-                        $data->start_time       = date('Y-m-d H:i:s', strtotime($v->start_time));
-                        $data->updated_time     = date('Y-m-d H:i:s', strtotime($v->updated_time));
-                        $data->budget_remaining = (isset($v->budget_remaining)) ? round($v->budget_remaining) : null;
-                        $data->save();
+                $startTime  = data_get($row, 'start_time');
+                $created    = data_get($row, 'created_time');
+                $updated    = data_get($row, 'updated_time');
+
+                $campaigns[$cid] = [
+                    'id'               => $cid,
+                    'program_id'       => 0,
+                    'adaccount_id'     => $account_id,
+                    'name'             => $sanitize(data_get($row, 'name') ?: null), // <-- SANITIZE
+                    'is_active'        => (data_get($row, 'status') === 'ACTIVE') ? 1 : 0,
+                    'budget'           => (int) round((int) data_get($row, 'daily_budget', 0)),
+                    'start_time'       => $startTime ? Carbon::parse($startTime)->toDateTimeString() : null,
+                    'created_time'     => $created ? Carbon::parse($created)->toDateTimeString() : null, // utk fallback
+                    'updated_time'     => $updated ? Carbon::parse($updated)->toDateTimeString() : null,
+                    'budget_remaining' => data_get($row, 'budget_remaining') !== null
+                        ? (int) round((int) $row['budget_remaining'])
+                        : 0,
+                ];
+            }
+
+            $nextUrl = data_get($json, 'paging.next');
+        } while (!empty($nextUrl));
+
+        // =========================
+        // 2) FETCH INSIGHTS LIFETIME
+        // =========================
+        $endpointInsights = "{$host}/{$account_id}/insights";
+        $lifetimeMap = []; // [campaign_id => ['name','spend','result','cpr']]
+        $nextUrl = null;
+
+        $insightsLifetimeQuery = [
+            'level'                           => 'campaign',
+            'date_preset'                     => 'maximum',
+            'time_increment'                  => 'all_days',
+            'use_unified_attribution_setting' => true,
+            'action_report_time'              => 'impression',
+            'fields'                          => 'campaign_id,campaign_name,spend,results,cost_per_result,actions',
+            'limit'                           => 5000,
+            'access_token'                    => $token,
+        ];
+
+        do {
+            $resp = $nextUrl
+                ? Http::timeout(60)->retry(3, 500)->get($nextUrl)
+                : Http::timeout(60)->retry(3, 500)->get($endpointInsights, $insightsLifetimeQuery);
+
+            if ($resp->failed()) {
+                $msg = data_get($resp->json(), 'error.message', 'HTTP '.$resp->status());
+                throw new \RuntimeException("Facebook API error (insights lifetime): {$msg}");
+            }
+
+            $json = $resp->json();
+            foreach ((array) data_get($json, 'data', []) as $row) {
+                $cid = (string) data_get($row, 'campaign_id', '');
+                if ($cid === '') continue;
+
+                $spend   = (float) (is_numeric(data_get($row, 'spend')) ? data_get($row, 'spend') : 0);
+                $results = (float) (is_numeric(data_get($row, 'results')) ? data_get($row, 'results') : 0);
+                $cpr     = (float) (is_numeric(data_get($row, 'cost_per_result')) ? data_get($row, 'cost_per_result') : 0);
+
+                if ($results == 0 && is_array(data_get($row, 'actions'))) {
+                    foreach ($row['actions'] as $a) {
+                        if (($a['action_type'] ?? null) === 'link_click' && is_numeric($a['value'] ?? null)) {
+                            $results = (float) $a['value'];
+                            break;
+                        }
                     }
-                } // END IF ISSET RESPONSE
-            } // END FOR
+                }
+                if ($cpr == 0 && $results > 0) {
+                    $cpr = $spend / $results;
+                }
+
+                $lifetimeMap[$cid] = [
+                    'name'   => $sanitize(trim((string) data_get($row, 'campaign_name', ''))), // <-- SANITIZE
+                    'spend'  => $spend,
+                    'result' => (int) round($results),
+                    'cpr'    => $cpr,
+                ];
+            }
+
+            $nextUrl = data_get($json, 'paging.next');
+        } while (!empty($nextUrl));
+
+        if (empty($campaigns) && empty($lifetimeMap)) {
+            echo "Tidak ada data untuk diproses. FINISH";
+            return;
         }
-        echo "<br>FINISH";
+
+        // =========================
+        // 3) MERGE & UPSERT (pastikan start_time/updated_time TIDAK NULL)
+        // =========================
+        $ids = array_values(array_unique(array_merge(array_keys($campaigns), array_keys($lifetimeMap))));
+        $existingAll = AdsCampaign::whereIn('id', $ids)->get()->keyBy('id');
+
+        $rows = [];
+        $insertCount = 0;
+        $updateCount = 0;
+
+        foreach ($ids as $cid) {
+            $c = $campaigns[$cid] ?? null;
+            $m = $lifetimeMap[$cid] ?? ['name' => '', 'spend' => 0, 'result' => 0, 'cpr' => 0];
+            $existing = $existingAll->get($cid);
+
+            // HITUNG INSERT/UPDATE berdasar eksistensi sebelum upsert
+            if ($existing) {
+                $updateCount++;
+            } else {
+                $insertCount++;
+            }
+
+            // Jika campaign metadata tidak kebaca, fallback dari DB
+            if (!$c) {
+                $c = [
+                    'id'               => $cid,
+                    'program_id'       => $existing->program_id ?? 0,
+                    'adaccount_id'     => $existing->adaccount_id ?? $account_id,
+                    'name'             => $sanitize($existing->name ?? null), // <-- SANITIZE
+                    'is_active'        => isset($existing->is_active) ? (int) $existing->is_active : 0,
+                    'budget'           => (int) ($existing->budget ?? 0),
+                    'start_time'       => $existing?->start_time ? Carbon::parse($existing->start_time)->toDateTimeString() : null,
+                    'created_time'     => null,
+                    'updated_time'     => $existing?->updated_time ? Carbon::parse($existing->updated_time)->toDateTimeString() : null,
+                    'budget_remaining' => (int) ($existing->budget_remaining ?? 0),
+                ];
+            }
+
+            // Nama wajib ada
+            $name = $c['name'] ?: ($m['name'] ?? null);
+            if (!$name || $name === '') {
+                $name = "untitled-{$cid}";
+            }
+            $c['name'] = $sanitize($name); // <-- SANITIZE
+
+            // Tentukan start_time (NO NULL)
+            $startTime = $c['start_time'] ?? null;
+            if (empty($startTime) && !empty($c['created_time'])) {
+                $startTime = $c['created_time'];
+            }
+            if (empty($startTime) && $existing && !empty($existing->start_time)) {
+                $startTime = $existing->start_time instanceof \Carbon\Carbon
+                    ? $existing->start_time->toDateTimeString()
+                    : (string) $existing->start_time;
+            }
+            if (empty($startTime)) {
+                $startTime = $now->toDateTimeString(); // fallback terakhir agar tidak NULL
+            }
+
+            // Tentukan updated_time (NO NULL)
+            $updatedTime = $c['updated_time'] ?? null;
+            if (empty($updatedTime) && $existing && !empty($existing->updated_time)) {
+                $updatedTime = $existing->updated_time instanceof \Carbon\Carbon
+                    ? $existing->updated_time->toDateTimeString()
+                    : (string) $existing->updated_time;
+            }
+            if (empty($updatedTime)) {
+                $updatedTime = $now->toDateTimeString();
+            }
+
+            // Gunakan LIFETIME spend/result/cpr, jangan pernah turunkan spend
+            $spendLifetime  = (float) ($m['spend'] ?? 0);
+            $resultLifetime = (int)   ($m['result'] ?? 0);
+            $cprLifetime    = (float) ($m['cpr'] ?? 0);
+
+            if ($existing) {
+                $prevSpend = (float) ($existing->spend ?? 0);
+                if ($spendLifetime < $prevSpend) {
+                    $spendLifetime = $prevSpend;
+                }
+            }
+
+            // Pertahankan program_id yang sudah terset (>0)
+            $programId = 0;
+            if ($existing && (int) $existing->program_id > 0) {
+                $programId = (int) $existing->program_id;
+            } else {
+                $programId = (int) ($c['program_id'] ?? 0);
+            }
+
+            $rows[] = [
+                'id'               => $cid,
+                'program_id'       => $programId,
+                'adaccount_id'     => (string) ($c['adaccount_id'] ?? $account_id),
+                'name'             => (string) $sanitize($c['name']), // <-- SANITIZE (final)
+                'is_active'        => (int) ($c['is_active'] ?? 0),
+                'budget'           => (int) ($c['budget'] ?? 0),
+                'spend'            => (int) round($spendLifetime),
+                'cpr'              => (float) $cprLifetime,
+                'result'           => (int) $resultLifetime,
+                'start_time'       => $startTime,
+                'updated_time'     => $updatedTime,
+                'budget_remaining' => (int) ($c['budget_remaining'] ?? 0),
+                'created_at'       => $now,
+                'updated_at'       => $now,
+            ];
+        }
+
+        if (empty($rows)) {
+            echo "Tidak ada data untuk di-upsert. FINISH";
+            return;
+        }
+
+        $updateCols = [
+            // 'program_id', // JANGAN update program_id
+            'adaccount_id','name','is_active','budget',
+            'spend','cpr','result',
+            'start_time','updated_time','budget_remaining','updated_at'
+        ];
+
+        foreach (array_chunk($rows, 1000) as $chunk) {
+            AdsCampaign::upsert($chunk, ['id'], $updateCols);
+        }
+
+        echo "FINISH.<br>".count($rows)." campaign diproses <br> Inserted: {$insertCount}, updated: {$updateCount}";
     }
+
+
 }

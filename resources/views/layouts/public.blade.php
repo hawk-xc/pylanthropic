@@ -16,11 +16,12 @@
     <meta name="og:site_name" content="{{ (isset($second_title) && !empty($second_title) ? $second_title : ' Platform Penggalang Dana - Bantubersama.com') }}"/>
     <meta property="og:title" content="{{ (isset($second_title) && !empty($second_title) ? $second_title : ' Platform Penggalang Dana - Bantubersama.com') }}"/>
     @if(isset($image) && isset($image_type))
-      <meta name="og:image" content="{{ asset('public/images/fundraiser/'.$image) }}"/>
+    <meta property="og:image" content="{{ asset('public/images/fundraiser/'.$image) }}"/>
     @else
-      <meta name="og:image" content="{{ isset($image) ? asset('public/images/program/'.$image) : asset('public/images/logo/Bantubersama.png') }}"/>
+    <meta property="og:image" content="{{ isset($image) ? asset('public/images/program/'.$image) : asset('public/images/logo/Bantubersama-preview.png') }}"/>
     @endif
     <meta property="og:url" content="https://www.bantubersama.com"/>
+  	<meta property="og:type" content="website" />
     <meta property="og:description" content="{{ isset($meta_desc) && !empty($meta_desc) ? $meta_desc.' - ' : 'Bantubersama adalah platform penggalangan dana untuk membantu bersama secara online' }}"/>
 
     <!-- Style -->

@@ -16,9 +16,12 @@ class AdsCampaign extends Model
      *
      * @var array<int, string>
      */
-    protected $table    = 'ads_campaign';
-    protected $fillable = [
+    protected $table     = 'ads_campaign';
+    protected $keyType   = 'string';
+    public $incrementing = false;
+    protected $fillable  = [
         'program_id',
+        // 'lp_url',
         'adaccount_id',
         'ref_code',
         'name', 

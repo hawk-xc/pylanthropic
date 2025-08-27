@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 use App\Http\Controllers\WaBlastController;
 
@@ -231,75 +234,6 @@ class FbAdsController extends Controller
         }
     }
 
-
-
-    // public function index(Request $request)
-    // {
-    //     if($request->id==1) {
-    //         $account_id = 'act_931003154576114';   // AdAccount BM 1
-    //     } else {
-    //         $account_id = 'act_597272662321196';   // AdAccount BM 4
-    //     }
-
-    //     $token       = 'EAAFlv11kLJkBOxRmParUayffTuwRMlK0SDjmZArkFtO8UpREzsr0ceKvh0MdTOAZBeLDpSNrlO0xkkwqcz1FS71PhJiSSl1yTS5YLUZAirIZAw4L2f1SXiYTYKumR4DzHZCsO5VSB9iSjGmIcb9D7DVDXPHZBJcqKmZAlAqYLZBT5rVZBhQvPqXnaTTXQwzPkElbXTP6vvhLS';
-    //     $token       = '&access_token='.$token;
-
-    //     $param_time  = 'date_preset=today';
-    //     $param_field = '&fields=id,name,status,budget_remaining,campaign_group_active_time,daily_budget,source_campaign_id,spend_cap,start_time,stop_time,updated_time';
-
-    //     $host        = 'https://graph.facebook.com/v19.0/';
-    //     $url         = $host.$account_id.'/campaigns?'.$param_time.$param_field.$token;
-
-    //     $curl        = curl_init();
-    //     curl_setopt($curl, CURLOPT_URL, $url);
-    //     curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-
-    //     $response    = curl_exec($curl);
-    //     $err         = curl_error($curl);
-    //     curl_close($curl);
-
-    //     if ($err) {
-    //         echo 'Pesan gagal terkirim, error :' . $err;
-    //     }else{
-    //         $res = json_decode($response);
-    //         if(isset($res->data)) {
-    //             $data_api = $res->data;
-    //             for($i=0; $i<count($data_api); $i++) {
-    //                 $check_campaign = AdsCampaign::where('id', $data_api[$i]->id)->select('program_id');
-
-    //                 if($check_campaign->count()>0) {
-    //                     AdsCampaign::where('id', $data_api[$i]->id)->first()->update([
-    //                         'adaccount_id'     => $account_id,
-    //                         'name'             => $data_api[$i]->name,
-    //                         'is_active'        => ($data_api[$i]->status=='ACTIVE') ? 1 : 0,
-    //                         'budget'           => round($data_api[$i]->daily_budget),
-    //                         'updated_time'     => date('Y-m-d H:i:s', strtotime($data_api[$i]->updated_time)),
-    //                         'budget_remaining' => (isset($data_api[$i]->budget_remaining)) ? round($data_api[$i]->budget_remaining) : null,
-    //                         'update_at'        => date('Y-m-d H:i:s')
-    //                     ]);
-    //                 } else {
-    //                     $data                   = new AdsCampaign;
-    //                     $data->id               = $data_api[$i]->id;
-    //                     $data->program_id       = 0;
-    //                     $data->adaccount_id     = $account_id;
-    //                     $data->name             = $data_api[$i]->name;
-    //                     $data->is_active        = ($data_api[$i]->status=='ACTIVE') ? 1 : 0;
-    //                     $data->budget           = round($data_api[$i]->daily_budget);
-    //                     $data->start_time       = date('Y-m-d H:i:s', strtotime($data_api[$i]->start_time));
-    //                     $data->updated_time     = date('Y-m-d H:i:s', strtotime($data_api[$i]->updated_time));
-    //                     $data->budget_remaining = (isset($data_api[$i]->budget_remaining)) ? round($data_api[$i]->budget_remaining) : null;
-    //                     $data->save();
-    //                 }
-    //             }
-    //             echo 'success';
-    //         } else {
-    //             echo 'no data';
-    //         }
-    //     }
-    // }
-
-
-
     /**
      * Insert to Ads Campaign History
      */
@@ -434,6 +368,136 @@ class FbAdsController extends Controller
         echo '<br>FINISH';
     }
 
+
+    // buatkan 1 function induk yaitu autoOnOffRule() yg isinya ambil data semua per campaign dan cek apakah perlu di off autoRulesOff() / on autoRulesOn(), sehingga cronjob cukup panggil function autoOnOffRule() saja
+    public function autoOnOffRule(Request $request)
+    {
+        $token           = '&access_token='.$this->token;
+
+        $id              = $request->id;
+        if($id==1) {
+            $account_id  = 'act_931003154576114';       // List Campaign di BM 1
+        } else {
+            $account_id  = 'act_597272662321196';       // List Campaign di BM 4
+        }
+
+        $dn              = date('Y-m-d H:i:s', strtotime(date('Y-m-d').' 23:59:59 -3 day'));
+
+        // List campaign untuk mendapatkan status masing2 campaign
+        $host =  $this->host.$account_id."/campaigns?date_preset=today&period=day&time_increment=1&limit=5000";
+        $host .= "&fields=id,name,status&filtering=";
+        $host .= urlencode("[{'field':'updated_time','operator':'GREATER_THAN','value':'".$dn."'}]").$token;
+
+        $curl             = curl_init();
+        curl_setopt($curl, CURLOPT_URL, $host);
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+
+        $response         = curl_exec($curl);
+        $err              = curl_error($curl);
+        curl_close($curl);
+
+        $campaign         = [];
+
+        if ($err) {
+            echo 'Pesan gagal terkirim, error :' . $err;
+        } else {
+            $res = json_decode($response);
+
+            if(isset($res->data)) {
+                $list_campaign = $res->data;
+
+                // Filter kamapnye yang aktif saja
+                $active_campaigns = array_filter($list_campaign, function ($campaign) {
+                    return $campaign->status === 'ACTIVE';
+                });
+
+                // Mengurutkan kampanye berdasarkan nama
+                usort($active_campaigns, function ($a, $b) {
+                    return $a->status <=> $b->status;
+                });
+
+                for($i=0; $i<count($active_campaigns); $i++) {
+                    $campaign[] = ['id'=>$active_campaigns[$i]->id, 'name'=>$active_campaigns[$i]->name, 'status'=>$active_campaigns[$i]->status];
+                }
+            }
+
+
+            // Get Data FB ADS PER ID CAMPAIGN
+            $param_time      = 'date_preset=today&period=day';
+            $param_limit     = '&limit=5000&time_increment=1';
+            $param_level     = '&level=campaign';
+            $param_field     = '&fields=campaign_id,campaign_name,objective,cost_per_conversion,spend,actions';
+            $need_action     = [];
+
+            for($i=0; $i<count($campaign);  $i++) {
+                $url         = $this->host.$campaign[$i]['id'].'/insights?'.$param_time.$param_level.$param_limit.$param_field.$token;
+
+                $curl        = curl_init();
+                curl_setopt($curl, CURLOPT_URL, $url);
+                curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+
+                $response    = curl_exec($curl);
+                $err         = curl_error($curl);
+                curl_close($curl);
+
+                if ($err) {
+                    echo 'Pesan gagal terkirim, error :' . $err;
+                } else {
+                    if(isset(json_decode($response)->data[0])) {
+                        $data_api = json_decode($response)->data[0];
+
+                        if(isset($data_api->spend)) {
+                            $spend        = round($data_api->spend);
+                        } else {
+                            $spend        = 0;
+                        }
+
+                        if(isset($data_api->cost_per_conversion)) {
+                            $cpr                = array_filter($data_api->cost_per_conversion, function($cpr_val) {
+                                                        return $cpr_val->action_type == 'donate_website';
+                                                    });
+                            if(isset($cpr[0]->value)) {
+                                $cpr      = round($cpr[0]->value);
+                            } else {
+                                $cpr      = 0;
+                            }
+                        } else {
+                            $cpr          = 0;
+                        }
+
+                        if(isset($data_api->actions)) {
+                            if($data_api->objective=='LINK_CLICKS') {
+                                $result     = array_filter($data_api->actions, function($result_val) {
+                                                    return $result_val->action_type == 'link_click';
+                                                });
+                            } else {
+                                $result     = array_filter($data_api->actions, function($result_val) {
+                                                    return $result_val->action_type == 'offsite_conversion.fb_pixel_custom';
+                                                });
+                            }
+
+                            if(isset($result)) {
+                                if(!empty(array_keys($result))) {
+                                    $result = round($result[max(array_keys($result))]->value);
+                                } else {
+                                    $result = 0;
+                                }
+                            } else {
+                                $result   = 0;
+                            }
+                        } else {
+                            $result       = 0;
+                        }
+                        
+                        $tn = strtotime(date('H:i:s'));
+
+                        // ON / OFF executiob
+                        
+                    }
+                }
+            }
+        }
+    }
 
 
     /**
@@ -1477,6 +1541,351 @@ Atas Donasi :
 Sebesar : *Rp '.str_replace(',', '.', number_format($nominal_final)).'*';
 
             (new WaBlastController)->sentWA($donatur->telp, $chat, 'thanks_trans', $trans_id, $donatur->id, $program->id);
+    }
+
+    /**
+     * GET /ads/campaigns/update-program
+     *
+     * Query (opsional):
+     * - limit   : default 10, max 10 (jumlah campaign diproses)
+     * - after   : cursor (id campaign terakhir dari respons sebelumnya)
+     * - pace_ms : jeda antar panggilan API (ms), default 300
+     *
+     * Hasil: JSON {checked, mapped, items, unmatched, next_after, error}
+     */
+    public function updateProgramAdsCampaign(Request $request)
+    {
+        $token   = $this->token;              // dari __construct()
+        $host    = rtrim($this->host, '/').'/';
+        $limit   = min((int) $request->get('limit', 80), 80);
+        $after   = $request->get('after');    // cursor: campaign id terakhir
+        $paceMs  = max(0, (int) $request->get('pace_ms', 300));
+        $onlyAcct = 'act_597272662321196';    // fokus ke account ini dulu
+
+        $checked  = 0;
+        $mapped   = 0;
+        $items    = [];
+        $unmatched = [];
+        $lastId   = null;
+
+        // Ambil campaign yang belum punya program_id untuk adaccount tertentu
+        $query = AdsCampaign::query()
+            ->select(['id','program_id','updated_time','adaccount_id'])
+            ->where(function ($q) {
+                $q->whereNull('program_id')->orWhere('program_id', 0);
+            })
+            ->where('adaccount_id', $onlyAcct)
+            ->orderByDesc('updated_time');
+
+        // Cursor sederhana pakai id (string numeric)
+        if (!empty($after)) {
+            $query->where('id', '<', $after);
+        }
+
+        $campaigns = $query->limit($limit)->get();
+
+        foreach ($campaigns as $c) {
+            $campId = (string) $c->id;
+            $lastId = $campId;
+            $checked++;
+
+            // --- Ambil 1 ad saja per campaign (cukup satu konten) ---
+            $adsRes = \Http::withToken($token)->get($host.$campId.'/ads', [
+                'limit'  => 1,
+                'fields' => 'id,account_id,creative{id,object_story_spec,effective_object_story_id},effective_object_story_id',
+            ]);
+
+            if (!$adsRes->ok()) {
+                $unmatched[] = [
+                    'campaign_id' => $campId,
+                    'reason'      => 'Facebook API error '.$adsRes->status().': '.$adsRes->body(),
+                    'endpoint'    => $host.$campId.'/ads',
+                ];
+                $this->sleepPaced($paceMs);
+                continue;
+            }
+
+            $ads = (array) $adsRes->json('data', []);
+            if (count($ads) === 0) {
+                $unmatched[] = [
+                    'campaign_id' => $campId,
+                    'reason'      => 'Tidak ada ad ditemukan'
+                ];
+                $this->sleepPaced($paceMs);
+                continue;
+            }
+
+            $ad         = $ads[0];
+            $adId       = (string) data_get($ad, 'id');
+            $ownerAccId = 'act_'.data_get($ad, 'account_id');
+            $creative   = (array) data_get($ad, 'creative', []);
+            $storyId    = (string) (data_get($ad, 'effective_object_story_id') ?: data_get($creative, 'effective_object_story_id'));
+
+            // Pastikan ads memang milik account yang diinginkan
+            if ($ownerAccId !== $onlyAcct) {
+                $unmatched[] = [
+                    'campaign_id'       => $campId,
+                    'ad_id'             => $adId,
+                    'reason'            => 'Ad milik account lain',
+                    'owner_account_id'  => $ownerAccId,
+                ];
+                $this->sleepPaced($paceMs);
+                continue;
+            }
+
+            // --- 1) Coba dari creative.object_story_spec (CTA/link) ---
+            $found = $this->extractUrlFromCreative($creative);
+
+            // --- 2) Kalau belum ada, coba dari story (page post) ---
+            if (!$found && $storyId) {
+                $found = $this->extractUrlFromStory($host, $token, $storyId);
+            }
+
+            // --- 3) Kalau masih belum ada, parse dari ad previews HTML ---
+            if (!$found && $adId) {
+                $found = $this->extractUrlFromPreview($host, $token, $adId, $ownerAccId);
+            }
+
+            if (!$found) {
+                $row = [
+                    'campaign_id'      => $campId,
+                    'ad_id'            => $adId,
+                    'creative_id'      => (string) data_get($creative, 'id'),
+                    'reason'           => 'URL tidak terdeteksi pada creative (object_story_spec kosong / ad preview & story tidak mengandung link LP).',
+                    'owner_account_id' => $ownerAccId,
+                ];
+                if ($storyId) $row['story_candidates'] = [$storyId];
+                $unmatched[] = $row;
+                $this->sleepPaced($paceMs);
+                continue;
+            }
+
+            $rawUrl   = $found['url'] ?? null;
+            $source   = $found['source'] ?? 'unknown';
+            $finalUrl = $this->cleanUrl($rawUrl); // buang query ?ref=...
+
+            // Ambil slug (path penuh tanpa leading slash)
+            $slug = $this->slugFromUrl($finalUrl);
+
+            // Cocokkan ke tabel program
+            $matchedProgramId = null;
+            if ($slug) {
+                $prog = \DB::table('program')
+                    ->select('id','slug')
+                    ->where('slug', $slug)
+                    ->orWhereRaw('LOWER(slug) = ?', [strtolower($slug)])
+                    ->first();
+
+                if ($prog) {
+                    $matchedProgramId = (int) $prog->id;
+
+                    // Update program_id campaign ini
+                    AdsCampaign::where('id', $campId)->update([
+                        'program_id' => $matchedProgramId,
+                        // 'lp_url'     => $finalUrl,
+                        'updated_at' => now(),
+                    ]);
+                    $mapped++;
+                }
+            }
+
+            $items[] = [
+                'campaign_id'        => $campId,
+                'ad_id'              => $adId,
+                'creative_id'        => (string) data_get($creative, 'id'),
+                'raw_url'            => $rawUrl,
+                'clean_url'          => $finalUrl,
+                'slug'               => $slug,
+                'matched_program_id' => $matchedProgramId,
+                'source'             => $source,
+                'owner_account_id'   => $ownerAccId,
+            ];
+
+            $this->sleepPaced($paceMs);
+        }
+
+        return response()->json([
+            'checked'    => $checked,
+            'mapped'     => $mapped,
+            'items'      => $items,
+            'unmatched'  => $unmatched,
+            'next_after' => $lastId ?: null,
+            'error'      => null,
+        ]);
+    }
+
+    /** Jeda antar request supaya nggak kebentur rate limit */
+    protected function sleepPaced(int $ms): void
+    {
+        if ($ms > 0) usleep($ms * 1000);
+    }
+
+    /** Parser URL dari creative.object_story_spec (video/link/carousel) */
+    protected function extractUrlFromCreative(array $creative): ?array
+    {
+        $oss = (array) data_get($creative, 'object_story_spec', []);
+        $cands = [];
+
+        // Video + CTA
+        if ($u = data_get($oss, 'video_data.call_to_action.value.link')) $cands[] = $u;
+
+        // Link ads
+        if ($u = data_get($oss, 'link_data.link')) $cands[] = $u;
+
+        // Child attachments (carousel style)
+        $children = (array) data_get($oss, 'link_data.child_attachments', []);
+        foreach ($children as $ca) {
+            if ($u = data_get($ca, 'link')) $cands[] = $u;
+        }
+
+        // Generic CTA at root
+        if ($u = data_get($oss, 'call_to_action.value.link')) $cands[] = $u;
+
+        foreach ($cands as $u) {
+            $u = $this->ensureLandingUrl($u);
+            if ($u && preg_match('~^https?://bantubersama\.com/[\w\-/]+~i', $u)) {
+                return ['url' => $u, 'source' => 'object_story_spec'];
+            }
+        }
+        return null;
+    }
+
+    /** Fallback dari story (FB page post): ambil CTA, attachments, link, hingga URL di caption */
+    protected function extractUrlFromStory(string $host, string $token, string $storyId): ?array
+    {
+        $res = \Http::withToken($token)->get($host.$storyId, [
+            'fields' => 'permalink_url,link,message,call_to_action{type,value},attachments{subattachments,media_type,type,url,unshimmed_url,target{url}}',
+        ]);
+        if (!$res->ok()) return null;
+
+        $j = $res->json();
+        $cands = [];
+
+        // 1) CTA di post (paling akurat untuk objective=PURCHASE video)
+        if ($u = data_get($j, 'call_to_action.value.link')) $cands[] = $u;
+
+        // 2) Field link langsung
+        if ($u = data_get($j, 'link')) $cands[] = $u;
+
+        // 3) Attachments dan sub-attachments
+        $atts = (array) data_get($j, 'attachments.data', []);
+        foreach ($atts as $att) {
+            foreach (['unshimmed_url', 'target.url', 'url'] as $k) {
+                if ($u = data_get($att, $k)) $cands[] = $u;
+            }
+            $subs = (array) data_get($att, 'subattachments.data', []);
+            foreach ($subs as $sa) {
+                foreach (['unshimmed_url', 'target.url', 'url'] as $k) {
+                    if ($u = data_get($sa, $k)) $cands[] = $u;
+                }
+            }
+        }
+
+        // 4) URL yang ditulis di caption/message
+        if ($msg = data_get($j, 'message')) {
+            foreach ($this->extractUrlsFromText($msg) as $u) {
+                $cands[] = $u;
+            }
+        }
+
+        foreach ($cands as $u) {
+            $u = $this->ensureLandingUrl($u);
+            if ($u && preg_match('~^https?://bantubersama\.com/[\w\-/]+~i', $u)) {
+                return ['url' => $u, 'source' => "story:$storyId"];
+            }
+        }
+        return null;
+    }
+
+    /** Fallback dari ad preview HTML: ambil semua href/data-lynx-uri dan decode l.php?u= */
+    protected function extractUrlFromPreview(string $host, string $token, string $adId, string $accountId): ?array
+    {
+        $formats = ['DESKTOP_FEED_STANDARD', 'MOBILE_FEED_STANDARD', 'INSTAGRAM_STANDARD'];
+        foreach ($formats as $fmt) {
+            $res = \Http::withToken($token)->get($host.$adId.'/previews', [
+                'ad_format'    => $fmt,
+                'render_type'  => 'FALLBACK',
+                'account_id'   => $accountId,
+            ]);
+            if (!$res->ok()) continue;
+
+            $html = (string) ($res->json('data.0.body') ?? '');
+            if ($html === '') continue;
+
+            $links = [];
+            if (preg_match_all('~(?:href|data-lynx-uri)="([^"]+)"~i', $html, $m)) {
+                $links = array_merge($links, $m[1]);
+            }
+            if (preg_match_all('~https?://[^\s"<>]+~i', $html, $m2)) {
+                $links = array_merge($links, $m2[0]);
+            }
+
+            foreach (array_unique($links) as $u) {
+                $u = $this->ensureLandingUrl($u);
+                if ($u && preg_match('~^https?://bantubersama\.com/[\w\-/]+~i', $u)) {
+                    return ['url' => $u, 'source' => "preview:$fmt"];
+                }
+            }
+
+            // jeda antar format supaya aman rate limit
+            usleep(120000);
+        }
+        return null;
+    }
+
+    /** Ekstrak semua URL dari teks/caption */
+    protected function extractUrlsFromText(string $text): array
+    {
+        $out = [];
+        if (preg_match_all('~https?://[^\s"<>]+~i', $text, $m)) {
+            foreach ($m[0] as $u) {
+                $u = $this->ensureLandingUrl($u);
+                if ($u) $out[] = $u;
+            }
+        }
+        return array_values(array_unique($out));
+    }
+
+    /** Decode link shim, entity, dan backslash */
+    protected function ensureLandingUrl(string $u): ?string
+    {
+        $u = html_entity_decode($u, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        // l.facebook.com redirect
+        if (preg_match('~^https?://l\.facebook\.com/l\.php\?~i', $u)) {
+            $parts = parse_url($u);
+            if (!empty($parts['query'])) {
+                parse_str($parts['query'], $q);
+                if (!empty($q['u'])) {
+                    $u = urldecode($q['u']);
+                }
+            }
+        }
+
+        // Strip escaping backslash pada preview JSON/HTML
+        $u = stripcslashes($u);
+
+        return $u ?: null;
+    }
+
+    /** Buang query string; sisakan scheme + host + path */
+    protected function cleanUrl(?string $url): ?string
+    {
+        if (!$url) return null;
+        $parts = parse_url($url);
+        if (!$parts || empty($parts['scheme']) || empty($parts['host'])) return null;
+
+        $path = $parts['path'] ?? '';
+        return $parts['scheme'].'://'.$parts['host'].$path;
+    }
+
+    /** Ambil slug (path tanpa leading slash) dari URL */
+    protected function slugFromUrl(?string $url): ?string
+    {
+        if (!$url) return null;
+        $parts = parse_url($url);
+        $path  = isset($parts['path']) ? ltrim($parts['path'], '/') : '';
+        return $path !== '' ? $path : null;
     }
 
 }

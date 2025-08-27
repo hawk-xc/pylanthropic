@@ -69,6 +69,7 @@ Route::get('/fb-ads-detail-per-campaign', [FbAdsController::class, 'detailPerCam
 Route::get('/fb-ads-auto-rules-off', [FbAdsController::class, 'autoRulesOff']);
 Route::get('/fb-ads-auto-rules-on', [FbAdsController::class, 'autoRulesOn']);
 Route::get('/fb-ads-auto-get-spend', [FbAdsController::class, 'getSpend']);
+Route::get('/fb-ads-auto-matching-program', [FbAdsController::class, 'updateProgramAdsCampaign']);
 
 // Page Campaigner
 Route::get('/campaigner/{id}', [Guest\ProgramController::class, 'campaigner'])->name('campaigner');

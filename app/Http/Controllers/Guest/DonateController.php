@@ -429,25 +429,25 @@ class DonateController extends Controller
                 ]);
 
                 // CAPI - Convertion API for META Ads
-                Http::post('https://graph.facebook.com/v18.0/1278491429470122/events', [
-                    'data' => [
-                        [
-                            'event_name' => 'Donate',
-                            'event_time' => time(),
-                            'event_id'   => $invoice,
-                            'user_data'  => [
-                                  'ph'   => $telp,
-                            ],
-                            'custom_data'   => [
-                                'currency'      => 'IDR',
-                                'value'         => $nominal,
-                            ],
-                            'action_source' => 'website',
-                        ],
-                    ],
-                    'access_token' => env('FACEBOOK_CAPI_TOKEN'),
-                ]);
-                \Log::info('Facebook CAPI response:', [$response->json()]);
+                // Http::post('https://graph.facebook.com/v18.0/1278491429470122/events', [
+                //     'data' => [
+                //         [
+                //             'event_name' => 'Donate',
+                //             'event_time' => time(),
+                //             'event_id'   => $invoice,
+                //             'user_data'  => [
+                //                   'ph'   => $telp,
+                //             ],
+                //             'custom_data'   => [
+                //                 'currency'      => 'IDR',
+                //                 'value'         => $nominal,
+                //             ],
+                //             'action_source' => 'website',
+                //         ],
+                //     ],
+                //     'access_token' => env('FACEBOOK_CAPI_TOKEN'),
+                // ]);
+                // \Log::info('Facebook CAPI response:', [$response->json()]);
             }
 
 
