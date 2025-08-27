@@ -345,8 +345,8 @@ class ProgramController extends Controller
             $data->title = $request->title;
             $data->slug = urlencode($request->url);
             $data->organization_id = $request->organization;
-            $data->nominal_request = str_replace('.', '', $request->nominal);
-            $data->nominal_approved = str_replace('.', '', $request->nominal);
+            $data->nominal_request = (int) str_replace('.', '', $request->nominal);
+            $data->nominal_approved = (int) str_replace('.', '', $request->nominal);
             $data->end_date = $request->date_end;
             $data->short_desc = $request->caption;
             $data->is_islami = $request->is_islami ? 1 : 0;

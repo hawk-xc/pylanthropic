@@ -99,6 +99,11 @@
                             </a>
                         </li>
                         <li>
+                            <a href="{{ route('adm.program-info.index') }}" class="{{ $sidebar_submenu == 'program_info' ? 'mm-active' : '' }}">
+                                <i class="metismenu-icon"></i> Kabar Terbaru
+                            </a>
+                        </li>
+                        <li>
                             <a href="{{ route('adm.program.donate.performance') }}"
                                 class="{{ $sidebar_submenu == 'donate_performance' ? 'mm-active' : '' }}">
                                 <i class="metismenu-icon"></i> Performa Donasi

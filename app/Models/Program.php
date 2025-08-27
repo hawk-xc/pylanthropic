@@ -79,6 +79,16 @@ class Program extends Model
         return $this->belongsTo(Organization::class, 'organization_id');
     }
 
+    public function programInfo()
+    {
+        return $this->hasMany(ProgramInfo::class, 'program_id', 'id');
+    }
+
+    public function payout()
+    {
+        return $this->hasMany(Payout::class, 'program_id', 'id');
+    }
+
     public function leadsCRM() {
         $this->hasMany(LeadsCRM::class, 'program_id', 'id');
     }

@@ -30,4 +30,9 @@ class Payout extends Model
         'created_at',
         'updated_at'
     ];
+
+    public function program()
+    {
+        return $this->belongsTo(Program::class, 'program_id', 'id');
+    }
 }

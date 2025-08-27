@@ -138,6 +138,9 @@ Route::group([
         Route::get('/program-donate-performance', [Admin\ProgramController::class, 'donatePerformance'])->name('program.donate.performance');
         Route::get('/program-select2-all', [Admin\ProgramController::class, 'select2'])->name('program.select2.all');
 
+        // PROGRAM INFO
+        Route::post('/program-info-submit-image-content', [Admin\ProgramInfoController::class, 'storeImagecontent'])->name('program-info.image.content.submit');
+
         // PROGRAM CATEGORY
         Route::post('/program-category-chek-url', [Admin\ProgramCategoryController::class, 'checkUrl'])->name('program-category.create.check_url');
 
@@ -270,8 +273,10 @@ Route::group([
         Route::get('/logs', [Admin\LogsController::class, 'index'])->name('logs.index');
         Route::get('/logs/{filename}', [Admin\LogsController::class, 'show'])->name('admin.logs.show');
 
+        Route::get('/program-info-datatables', [Admin\ProgramInfoController::class, 'index'])->name('program-info.datatables');
         Route::resources([
             'program'          => Admin\ProgramController::class,
+            'program-info'     => Admin\ProgramInfoController::class,
             'organization'     => Admin\OrganizationController::class,
             'program-category' => Admin\ProgramCategoryController::class,
             'donatur'          => Admin\DonaturController::class,
@@ -298,6 +303,9 @@ Route::group([
 
 
 Route::get('/programs', [Guest\ProgramController::class, 'list'])->name('program.list');
+
+Route::post('/programs/load-more', [Guest\ProgramController::class, 'loadMore'])->name('programs.loadMore');
+
 Route::get('/donasi/status/{inv}', [Guest\DonateController::class, 'paymentStatus'])->name('donate.status');
 Route::post('/donasi/status-check/{inv}', [Guest\DonateController::class, 'paymentStatusCheck'])->name('donate.status.check');
 Route::get('/{slug}', [Guest\ProgramController::class, 'index'])->name('program.index');
@@ -309,6 +317,12 @@ Route::post('/{slug}/checkout-do', [Guest\DonateController::class, 'checkoutDo']
 Route::post('/{slug}/payment-info', [Guest\DonateController::class, 'paymentInfo'])->name('donate.payment_info');
 Route::post('/{slug}/program-read-more-count', [Guest\ProgramController::class, 'countReadMore'])->name('program.count.read_more');
 
+// PROGRAM CONTENT IMAGE UPLOAD
 Route::post('/program-submit-image-content', [Admin\ProgramController::class, 'uploadImageContent'])
     ->middleware(['web', 'auth'])
     ->name('adm.program.image.content.submit');
+
+// PROGRAM INFO CONTENT IMAGE UPLOAD
+Route::post('/program-info-submit-image-content', [Admin\ProgramInfoController::class, 'uploadImageContent'])
+    ->middleware(['web', 'auth'])
+    ->name('adm.program-info.image.content.submit');
