@@ -242,7 +242,7 @@
                     </div>
                     <div class="fs-13">Kabar Terbaru</div>
                 </a>
-                <a href="#penggunaan-dana" class="col-4 btn-donate-detail3">
+                <a href={{ route('program.payout', $program->slug) }} class="col-4 btn-donate-detail3">
                     <div>
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
                             xmlns="http://www.w3.org/2000/svg" role="img" class="mt-0.5">

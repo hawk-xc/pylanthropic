@@ -222,4 +222,27 @@ class ProgramController extends Controller
             return view('public.not_found');
         }
     }
+
+    public function payout(Request $request) 
+    {
+        $program = Program::with('programOrganization')
+            ->where('slug', $request->slug)
+            ->select('id', 'title', 'slug', 'thumbnail', 'nominal_approved', 'organization_id')
+            ->where('is_publish', 1)
+            ->first();
+
+        if($program) {
+            $payouts = \App\Models\Payout::where('program_id', $program->id)
+                ->where('status', 'paid')
+                ->orderBy('paid_at', 'desc')
+                ->get();
+
+            $total_disbursed = $payouts->sum('nominal_approved');
+            $total_payouts = $payouts->count();
+
+            return view('public.payout', compact('program', 'payouts', 'total_disbursed', 'total_payouts'));
+        } else {
+            return view('public.not_found');
+        }
+    }
 }

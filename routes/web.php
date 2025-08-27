@@ -308,6 +308,8 @@ Route::post('/programs/load-more', [Guest\ProgramController::class, 'loadMore'])
 Route::get('/donasi/status/{inv}', [Guest\DonateController::class, 'paymentStatus'])->name('donate.status');
 Route::post('/donasi/status-check/{inv}', [Guest\DonateController::class, 'paymentStatusCheck'])->name('donate.status.check');
 Route::get('/{slug}', [Guest\ProgramController::class, 'index'])->name('program.index');
+// Penyaluran
+Route::get('/{slug}/penyaluran', [Guest\ProgramController::class, 'payout'])->name('program.payout');
 Route::get('/{slug}/info', [Guest\ProgramController::class, 'info'])->name('program.info');
 Route::get('/{slug}/donate', [Guest\DonateController::class, 'amount'])->name('donate.amount');
 Route::get('/{slug}/payment/{nominal}', [Guest\DonateController::class, 'payment'])->name('donate.payment');
