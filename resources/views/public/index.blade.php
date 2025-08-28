@@ -48,6 +48,54 @@
             -webkit-transform: translateY(-125%);
             opacity: 0.05
         }
+
+        .swiper-wrapper {
+            align-items: stretch;
+        }
+
+        .swiper-slide {
+            height: auto;
+        }
+
+        .product-box {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-box-detail {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-box-detail .progress {
+            margin-bottom: auto;
+        }
+
+        .vertical-product-box {
+            display: flex;
+        }
+
+        .vertical-box-details,
+        .vertical-box-details>a {
+            height: 100%;
+        }
+
+        .vertical-box-head {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vertical-box-head .progress {
+            margin-bottom: auto;
+        }
+
+        .program-image {
+            max-height: 90px;
+            background-color: #eee;
+        }
     </style>
 @endsection
 
@@ -133,7 +181,7 @@
                         <div class="swiper-slide">
                             <a href="{{ url('/') . '/' . $vsl->slug }}" class="">
                                 <div class="product-box">
-                                    <img class="img-fluid rounded-top lazyload"
+                                    <img class="img-fluid rounded-top lazyload program-image"
                                         data-original="{{ asset('public/images/program') . '/' . $vsl->thumbnail }}"
                                         alt="{{ ucwords($vsl->title) }}" />
                                     <div class="product-box-detail product-box-bg">
@@ -187,7 +235,7 @@
                         <div class="swiper-slide">
                             <a href="{{ url('/') . '/' . $vu->slug }}" class="">
                                 <div class="product-box">
-                                    <img class="img-fluid rounded-top lazyload"
+                                    <img id="program-image" class="img-fluid rounded-top lazyload"
                                         data-original="{{ asset('public/images/program') . '/' . $vu->thumbnail }}"
                                         alt="{{ ucwords($vu->title) }}" />
                                     <div class="product-box-detail product-box-bg">
