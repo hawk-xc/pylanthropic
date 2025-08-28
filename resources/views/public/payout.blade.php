@@ -22,7 +22,7 @@
 
     <section class="section-t-space pt-3 mt-1" style="padding-bottom: 80px;">
         <div class="custom-container">
-            <h4 class="title-detail-program">{{ ucwords($program->title) }}</h4>
+            <h3 class="title-detail-program">{{ ucwords($program->title) }}</h3>
             <div class="short-desc mt-2 pt-1">{{ $program->short_desc }}</div>
 
             <div class="row pt-3 gx-1">
@@ -56,8 +56,8 @@
                                 <img src="{{ asset('public/images/fundraiser/' . $program->programOrganization->logo) }}" alt="..." class="avatar-sm rounded-circle">
                             </div>
                             <div class="flex-grow-1 ms-3">
-                                <h6 class="mb-0">{{ $program->programOrganization->name }}</h6>
-                                <small>{{ \Carbon\Carbon::parse($payout->paid_at)->format('d F Y') }}</small>
+                                <h3 class="mb-0">{{ $program->programOrganization->name }}</h3>
+                                <small>{{ \Carbon\Carbon::parse($payout->paid_at)->locale('id')->translatedFormat('d F Y') }}</small>
                             </div>
                         </div>
                         <h2 class="mt-4" style="font-size: 1.2rem;">Pencairan Dana Rp {{ number_format($payout->nominal_approved, 0, ',', '.') }}
