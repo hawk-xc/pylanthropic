@@ -227,7 +227,7 @@ class ProgramController extends Controller
     {
         $program = Program::with('programOrganization')
             ->where('slug', $request->slug)
-            ->select('id', 'title', 'slug', 'short_desc', 'thumbnail', 'nominal_approved', 'organization_id')
+            ->select('id', 'title', 'slug', 'short_desc', 'image', 'thumbnail', 'nominal_approved', 'organization_id')
             ->where('is_publish', 1)
             ->first();
 

@@ -62,7 +62,11 @@ class PayoutController extends Controller
         ]);
 
         try {
-            $imagePath = 'images/program/payout';
+            $program = \App\Models\Program::find($request->program_id);
+            if (!$program) {
+                return back()->with('message', ['status' => 'error', 'message' => 'Program tidak ditemukan.']);
+            }
+            $payoutPath = 'images/program/payout/' . $program->slug;
 
             $data                   = new Payout;
             $data->program_id       = $request->program_id;
@@ -79,24 +83,25 @@ class PayoutController extends Controller
                 if ($request->hasFile($fileField)) {
                     $file = $request->file($fileField);
                     $extension = strtolower($file->getClientOriginalExtension());
-                    $original_name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
 
                     if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                        $filename = $fileField . '.png';
+                        $fullPath = $payoutPath . '/' . $filename;
+                        
                         $image = Image::make($file->getRealPath())
                             ->resize(800, null, function ($constraint) {
                                 $constraint->aspectRatio();
                                 $constraint->upsize();
                             })
-                            ->encode('jpg', 80);
+                            ->encode('png');
                         
-                        $filename = time() . '_' . $original_name . '.jpg';
-                        $fullPath = $imagePath . '/' . $filename;
-                        Storage::disk('public_uploads')->put($fullPath, $image->stream());
-                        $data->{$fileField} = $filename;
-                    } else {
-                        $filename = time() . '_' . $file->getClientOriginalName();
-                        Storage::disk('public_uploads')->putFileAs($imagePath, $file, $filename);
-                        $data->{$fileField} = $filename;
+                        Storage::disk('public_uploads')->put($fullPath, (string) $image);
+                        $data->{$fileField} = $fullPath;
+                    } else if ($extension === 'pdf') {
+                        $filename = $fileField . '.pdf';
+                        $fullPath = $payoutPath . '/' . $filename;
+                        Storage::disk('public_uploads')->putFileAs($payoutPath, $file, $filename);
+                        $data->{$fileField} = $fullPath;
                     }
                 }
             }
@@ -110,7 +115,7 @@ class PayoutController extends Controller
         } catch (\Exception $e) {
             return back()->with('message', [
                 'status' => 'error', 
-                'message' => 'Gagal tambah data Penyaluran Program'
+                'message' => 'Gagal tambah data Penyaluran Program: ' . $e->getMessage()
             ]);
         }
     }
@@ -139,7 +144,7 @@ class PayoutController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
-            'program'          => 'required|numeric',
+            'program_id'        => 'required|numeric',
             'desc_request'      => 'required|string',
             'nominal_request'  => 'required',
             'nominal_approved' => 'required',
@@ -150,10 +155,16 @@ class PayoutController extends Controller
         ]);
 
         try {
-            $imagePath = 'images/program/payout';
+            $data = Payout::findOrFail($id);
+            
+            $programId = $request->program_id ?? $data->program_id;
+            $program = \App\Models\Program::find($programId);
+            if (!$program) {
+                return back()->with('message', ['status' => 'error', 'message' => 'Program tidak ditemukan.']);
+            }
+            $payoutPath = 'images/program/payout/' . $program->slug;
 
-            $data                   = Payout::findOrFail($id);
-            $data->program_id       = $request->program;
+            $data->program_id       = $request->program_id;
             $data->nominal_request  = str_replace('.', '', $request->nominal_request);
             $data->nominal_approved = str_replace('.', '', $request->nominal_approved);
             $data->desc_request     = $request->desc_request;
@@ -167,31 +178,36 @@ class PayoutController extends Controller
 
             foreach (['file_submit', 'file_paid', 'file_accepted'] as $fileField) {
                 if ($request->hasFile($fileField)) {
-                    // Delete old file if it exists
-                    if ($data->{$fileField}) {
-                        Storage::disk('public_uploads')->delete($imagePath . '/' . $data->{$fileField});
-                    }
-
                     $file = $request->file($fileField);
                     $extension = strtolower($file->getClientOriginalExtension());
-                    $original_name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+                    $isImage = in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                    $isPdf = $extension === 'pdf';
 
-                    if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-                        $image = Image::make($file->getRealPath())
-                            ->resize(800, null, function ($constraint) {
-                                $constraint->aspectRatio();
-                                $constraint->upsize();
-                            })
-                            ->encode('jpg', 80);
+                    if ($isImage || $isPdf) {
+                        $newExtension = $isImage ? 'png' : 'pdf';
+                        $baseFilename = $fileField;
                         
-                        $filename = time() . '_' . $original_name . '.jpg';
-                        $fullPath = $imagePath . '/' . $filename;
-                        Storage::disk('public_uploads')->put($fullPath, $image->stream());
-                        $data->{$fileField} = $filename;
-                    } else {
-                        $filename = time() . '_' . $file->getClientOriginalName();
-                        Storage::disk('public_uploads')->putFileAs($imagePath, $file, $filename);
-                        $data->{$fileField} = $filename;
+                        $counter = 0;
+                        $filename = $baseFilename . '.' . $newExtension;
+                        $fullPath = $payoutPath . '/' . $filename;
+
+                        // Check if file exists and increment counter
+                        while (Storage::disk('public_uploads')->exists($fullPath)) {
+                            $counter++;
+                            $filename = $baseFilename . '_' . $counter . '.' . $newExtension;
+                            $fullPath = $payoutPath . '/' . $filename;
+                        }
+
+                        if ($isImage) {
+                            $image = Image::make($file->getRealPath())
+                                ->resize(800, null, function ($constraint) { $constraint->aspectRatio(); $constraint->upsize(); })
+                                ->encode('png');
+                            Storage::disk('public_uploads')->put($fullPath, (string) $image);
+                        } else { // PDF
+                            Storage::disk('public_uploads')->putFileAs($payoutPath, $file, $filename);
+                        }
+                        
+                        $data->{$fileField} = $fullPath;
                     }
                 }
             }
@@ -206,7 +222,7 @@ class PayoutController extends Controller
         } catch (\Exception $e) {
             return back()->with('message', [
                 'status' => 'error', 
-                'message' => 'Gagal update data Penyaluran Program'
+                'message' => 'Gagal update data Penyaluran Program: ' . $e->getMessage()
             ]);
         }
     }
@@ -326,64 +342,57 @@ class PayoutController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'file' => 'required|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'program_title' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'error' => [
-                    'message' => $validator->errors()->first(),
-                ],
-            ], 400);
+            return response()->json(['error' => ['message' => $validator->errors()->first()]], 400);
         }
 
         try {
             $file = $request->file('file');
             $programTitle = $request->input('program_title');
+            $programSlug = 'unnamed'; // Default value
 
-            $baseName = str_replace([' ', '-', '&', ':'], '_', trim($programTitle));
-            $baseName = preg_replace('/[^A-Za-z0-9\_]/', '', $baseName);
+            if ($programTitle) {
+                $program = \App\Models\Program::where('title', $programTitle)->first();
+                if ($program) {
+                    $programSlug = $program->slug;
+                }
+            }
 
-            // Path relatif untuk penyimpanan
-            $contentDir = 'images/program/payout/content';
+            // Path structure
+            $contentDir = 'images/program/payout/' . $programSlug;
+            $baseName = $programSlug;
 
-            // Cari file yang sudah ada
+            // Find existing files to determine the counter
             $existingFiles = Storage::disk('public_uploads')->files($contentDir);
-            $existingFiles = preg_grep('/' . preg_quote($baseName, '/') . '_(\d+)\.jpg$/', $existingFiles);
+            $existingPngFiles = preg_grep('/' . preg_quote($baseName, '/') . '_(\d+)\.png$/', $existingFiles);
 
-            // Hitung counter berikutnya
             $counter = 1;
-            if (!empty($existingFiles)) {
-                natsort($existingFiles);
-                $lastFile = end($existingFiles);
-                preg_match('/_(\d+)\.jpg$/', $lastFile, $matches);
+            if (!empty($existingPngFiles)) {
+                natsort($existingPngFiles);
+                $lastFile = end($existingPngFiles);
+                preg_match('/_(\d+)\.png$/', $lastFile, $matches);
                 if (isset($matches[1])) {
                     $counter = (int) $matches[1] + 1;
                 }
             }
 
-            // Generate nama file baru
-            $filename = $baseName . '_' . $counter . '.jpg';
+            $filename = $baseName . '_' . $counter . '.png';
             $path = $contentDir . '/' . $filename;
 
-            // Proses dan simpan gambar
             $image = Image::make($file->getRealPath())
                 ->fit(580, 780)
-                ->encode('jpg', 80);
+                ->encode('png');
 
             Storage::disk('public_uploads')->put($path, $image->stream());
 
-            // Generate URL
             $url = url('public/' . $path);
 
-            return response()->json([
-                'location' => $url,
-            ]);
+            return response()->json(['location' => $url]);
         } catch (\Exception $e) {
-            return response()->json([
-                'error' => [
-                    'message' => $e->getMessage(),
-                ],
-            ], 500);
+            return response()->json(['error' => ['message' => $e->getMessage()]], 500);
         }
     }
 }

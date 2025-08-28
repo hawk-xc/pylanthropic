@@ -14,6 +14,12 @@
             </a>
         </div>
     </header>
+
+    <div class="">
+        <img alt="{{ ucwords($program->title) }}" class="h-auto w-100 lazyload"
+            src="{{ asset('public/images/program/' . $program->image) }}">
+    </div>
+
     <section class="section-t-space pt-3 mt-1" style="padding-bottom: 80px;">
         <div class="custom-container">
             <h4 class="title-detail-program">{{ ucwords($program->title) }}</h4>
@@ -47,7 +53,7 @@
                     <div class="col-12">
                         <div class="d-flex align-items-center">
                             <div class="flex-shrink-0">
-                                <img src="{{ asset('public/images/organization/' . $program->programOrganization->logo) }}" alt="..." class="avatar-sm rounded-circle">
+                                <img src="{{ asset('public/images/fundraiser/' . $program->programOrganization->logo) }}" alt="..." class="avatar-sm rounded-circle">
                             </div>
                             <div class="flex-grow-1 ms-3">
                                 <h6 class="mb-0">{{ $program->programOrganization->name }}</h6>

@@ -608,6 +608,56 @@
     </script>
 
     <script>
+        $(document).ready(function() {
+            var select2_query;
+            $("#program-select2").select2({
+                placeholder: 'Cari Program',
+                theme: 'bootstrap-5',
+                allowClear: true,
+                ajax: {
+                    url: "{{ route('adm.program.select2.all') }}",
+                    delay: 250,
+                    data: function (params) {
+                        var query = {
+                            search: params.term,
+                            page: params.page || 1
+                        }
+                        return query;
+                    },
+                    processResults: function (data, params) {
+                        var items = $.map(data.data, function(obj){
+                            obj.id = obj.id;
+                            obj.text = obj.title;
+                            return obj;
+                        });
+                        params.page = params.page || 1;
+                        return {
+                            results: items,
+                            pagination: {
+                                more: params.page < data.extra_data.last_page
+                            }
+                        };
+                    },
+                },
+                templateResult: function (item) {
+                    if (item.loading) {
+                        return item.text;
+                    }
+                    var term = select2_query.term || '';
+                    var $result = item.text;
+                    return $result;
+                },
+                language: {
+                    searching: function (params) {
+                        select2_query = params;
+                        return 'Searching...';
+                    }
+                }
+            });
+        });
+    </script>
+
+    <script>
         @if (session('message'))
             Swal.fire({
                 toast: true,

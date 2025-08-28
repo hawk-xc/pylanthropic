@@ -24,7 +24,7 @@
             t.src = v;
             s = b.getElementsByTagName(e)[0];
             s.parentNode.insertBefore(t, s)
-        }(window, document, 'script',
+        } (window, document, 'script',
             'https://connect.facebook.net/en_US/fbevents.js');
         fbq.disablePushState = true;
 
@@ -49,7 +49,7 @@
         }
         ?>
         fbq('track', 'ViewContent');
-        window.loadedPixel = []
+        window.loadedPixel = [];
     </script>
     <noscript><img height="1" width="1" style="display:none"
             src="https://www.facebook.com/tr?id={{ $pixel_id }}&ev=ViewContent&noscript=1" /></noscript>
@@ -166,10 +166,6 @@
         </script>
         <!-- End Tiktok Analytic Code -->
     @endif
-@endsection
-
-
-@section('css_inline')
 @endsection
 
 @section('content')
@@ -630,36 +626,6 @@
             <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
     </div>
-
-    <style>
-        /* Gaya tabel utama */
-        table {
-            border-collapse: collapse !important;
-            width: 100% !important;
-            margin: 15px 0 !important;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
-        }
-
-        table th,
-        table td {
-            border: 1px solid #34495e !important;
-            padding: 10px 12px !important;
-        }
-
-        table th {
-            background-color: #34495e !important;
-            color: white !important;
-            font-weight: bold !important;
-        }
-
-        table tr:nth-child(even) {
-            background-color: #f8f9fa !important;
-        }
-
-        table tr:hover {
-            background-color: #e9f7fe !important;
-        }
-    </style>
 @endsection
 
 @section('js_plugins')
