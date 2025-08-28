@@ -1,20 +1,27 @@
 @extends('layouts.admin', [
-    'second_title'    => 'Penyaluran',
-    'header_title'    => isset($payout) ? 'Edit Penyaluran' : 'Tambah Penyaluran',
-    'sidebar_menu'    => 'program',
-    'sidebar_submenu' => 'program_payout'
+    'second_title' => 'Penyaluran',
+    'header_title' => isset($payout) ? 'Edit Penyaluran' : 'Tambah Penyaluran',
+    'sidebar_menu' => 'program',
+    'sidebar_submenu' => 'program_payout',
 ])
 
 
 @section('css_plugins')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
     <style type="text/css">
-        .ck-editor__editable {min-height: 120px;}
-        .fs-8 {font-size: 8px;}
+        .ck-editor__editable {
+            min-height: 120px;
+        }
+
+        .fs-8 {
+            font-size: 8px;
+        }
+
         .required:after {
-            content:"*";
-            color:red;
+            content: "*";
+            color: red;
         }
     </style>
 @endsection
@@ -22,11 +29,17 @@
 
 @section('css_inline')
     <style type="text/css">
-        .ck-editor__editable {min-height: 120px;}
-        .fs-8 {font-size: 8px;}
+        .ck-editor__editable {
+            min-height: 120px;
+        }
+
+        .fs-8 {
+            font-size: 8px;
+        }
+
         .required:after {
-            content:"*";
-            color:red;
+            content: "*";
+            color: red;
         }
     </style>
 @endsection
@@ -40,13 +53,15 @@
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 pb-0 pl-0">
                             <li class="breadcrumb-item"><a href="{{ route('adm.index') }}">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page"><a href="{{ route('adm.payout.index') }}">Penyaluran</a></li>
-                            <li class="breadcrumb-item active" aria-current="page">{{ isset($payout) ? 'Edit' : 'Tambah' }} Penyaluran</li>
+                            <li class="breadcrumb-item active" aria-current="page"><a
+                                    href="{{ route('adm.payout.index') }}">Penyaluran</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">{{ isset($payout) ? 'Edit' : 'Tambah' }}
+                                Penyaluran</li>
                         </ol>
                     </nav>
                 </div>
                 <div class="col-7 fc-rtl">
-                    
+
                 </div>
             </div>
             <div class="divider"></div>
@@ -60,86 +75,174 @@
                     {{ session('error') }}
                 </div>
             @endif
-            
-            <form action="{{ isset($payout) ? route('adm.payout.update', $payout->id) : route('adm.payout.store') }}" method="post" enctype="multipart/form-data" accept-charset="utf-8" class="row gy-4">
+
+            <form action="{{ isset($payout) ? route('adm.payout.update', $payout->id) : route('adm.payout.store') }}"
+                method="post" enctype="multipart/form-data" accept-charset="utf-8" class="row gy-4">
                 @csrf
-                @if(isset($payout))
+                @if (isset($payout))
                     @method('PUT')
                 @endif
                 <div class="col-12">
                     <label class="form-label fw-semibold required">Pilih Program</label>
-                    <select class="form-control form-control-sm" name="program_id" id="program-select2" required>
-                        @if(isset($payout))
-                            <option value="{{ $payout->program_id }}" selected>{{ $payout->program->title }}</option>
+                    <select class="form-control form-control-sm @error('program_id') is-invalid @enderror" name="program_id"
+                        id="program-select2" required>
+                        @if (isset($payout))
+                            <option value="{{ old('program_id', $payout->program_id) }}" selected>
+                                {{ $payout->program->title }}</option>
                         @endif
                     </select>
+                    @error('program_id')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                    @enderror
                 </div>
                 <div class="col-6">
                     <label class="form-label fw-semibold required">Nominal Request</label>
                     <div class="input-group input-group-sm">
                         <span class="input-group-text">Rp. </span>
-                        <input type="text" class="form-control rupiah" name="nominal_request" id="rupiah1" placeholder="100.000.000" value="{{ old('nominal_request', $payout->nominal_request ?? '') }}" required>
+                        <input type="text" class="form-control rupiah @error('nominal_request') is-invalid @enderror"
+                            name="nominal_request" id="rupiah1" placeholder="100.000.000"
+                            value="{{ old('nominal_request', $payout->nominal_request ?? '') }}" required>
                     </div>
+                    @error('nominal_request')
+                        <div class="invalid-feedback d-block">
+                            {{ $message }}
+                        </div>
+                    @enderror
                 </div>
                 <div class="col-6">
                     <label class="form-label fw-semibold required">Nominal Disetujui</label>
                     <div class="input-group input-group-sm">
                         <span class="input-group-text">Rp. </span>
-                        <input type="text" class="form-control rupiah" name="nominal_approved" id="rupiah2" placeholder="100.000.000" value="{{ old('nominal_approved', $payout->nominal_approved ?? '') }}" required>
+                        <input type="text" class="form-control rupiah @error('nominal_approved') is-invalid @enderror"
+                            name="nominal_approved" id="rupiah2" placeholder="100.000.000"
+                            value="{{ old('nominal_approved', $payout->nominal_approved ?? '') }}" required>
                     </div>
+                    @error('nominal_approved')
+                        <div class="invalid-feedback d-block">
+                            {{ $message }}
+                        </div>
+                    @enderror
                 </div>
+
+                {{-- Tanggal Dibayar --}}
                 <div class="col-6">
                     <label class="form-label fw-semibold required">Tanggal Dibayar</label>
                     <div class="input-group input-group-sm">
-                        <span class="input-group-text"><input type="checkbox" class="mr-2" id="unpaid" {{ isset($payout) && $payout->date_paid ? '' : 'checked' }}> Belum</span>
-                        <input type="date" class="form-control form-control-sm" id="date_paid" name="date_paid" value="{{ old('date_paid', isset($payout) ? \Carbon\Carbon::parse($payout->date_paid)->format('Y-m-d') : '') }}" {{ isset($payout) && $payout->date_paid ? '' : 'readonly' }}>
+                        <span class="input-group-text"><input type="checkbox" class="mr-2" id="unpaid"
+                                {{ isset($payout) && $payout->date_paid ? '' : 'checked' }}> Belum</span>
+                        <input type="date" class="form-control form-control-sm @error('date_paid') is-invalid @enderror"
+                            id="date_paid" name="date_paid"
+                            value="{{ old('date_paid', isset($payout) ? \Carbon\Carbon::parse($payout->date_paid)->format('Y-m-d') : '') }}"
+                            {{ isset($payout) && $payout->date_paid ? '' : 'readonly' }}>
                     </div>
+                    @error('date_paid')
+                        <div class="invalid-feedback d-block">
+                            {{ $message }}
+                        </div>
+                    @enderror
                 </div>
+
+                {{-- Status Penyaluran --}}
                 <div class="col-6">
                     <label class="form-label fw-semibold required">Status Penyaluran</label><br>
+
+                    @php
+                        $status = old('status', $payout->status ?? '');
+                    @endphp
+
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" name="status" type="radio" id="tampil_biasa" value="request" {{ isset($payout) && $payout->status == 'request' ? 'checked' : '' }}>
-                        <label class="form-check-label" for="tampil_biasa">Diajukan</label>
+                        <input class="form-check-input @error('status') is-invalid @enderror" type="radio" name="status"
+                            id="status_request" value="request" {{ $status == 'request' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="status_request">Diajukan</label>
                     </div>
+
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" name="status" type="radio" id="tampil_pilihan" value="process" {{ isset($payout) && $payout->status == 'process' ? 'checked' : '' }}>
-                        <label class="form-check-label" for="tampil_pilihan">Diproses</label>
+                        <input class="form-check-input @error('status') is-invalid @enderror" type="radio" name="status"
+                            id="status_process" value="process" {{ $status == 'process' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="status_process">Diproses</label>
                     </div>
+
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" name="status" type="radio" id="tampil_terbaru" value="paid" {{ isset($payout) && $payout->status == 'paid' ? 'checked' : '' }}>
-                        <label class="form-check-label" for="tampil_terbaru">Sudah Dibayar</label>
+                        <input class="form-check-input @error('status') is-invalid @enderror" type="radio" name="status"
+                            id="status_paid" value="paid" {{ $status == 'paid' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="status_paid">Sudah Dibayar</label>
                     </div>
+
                     <div class="form-check form-check-inline">
-                        <input class="form-check-input" name="status" type="radio" id="tampil_sembunyikan" value="reject" {{ isset($payout) && $payout->status == 'reject' ? 'checked' : '' }}>
-                        <label class="form-check-label" for="tampil_sembunyikan">Ditolak</label>
+                        <input class="form-check-input @error('status') is-invalid @enderror" type="radio"
+                            name="status" id="status_reject" value="reject" {{ $status == 'reject' ? 'checked' : '' }}>
+                        <label class="form-check-label" for="status_reject">Ditolak</label>
                     </div>
+
+                    @error('status')
+                        <div class="invalid-feedback d-block">
+                            {{ $message }}
+                        </div>
+                    @enderror
                 </div>
+
+
                 <!-- START IMAGE IN CONTENT -->
                 <div class="col-4">
                     <label class="form-label fw-semibold">Dokumen Pengajuan oleh Campaigner</label>
                     <div class="input-group">
-                        <input type="file" name="file_submit" class="form-control form-control-sm" id="file_submit" onchange="previewImage('file_submit', 'preview_submit')">
+                        <input type="file" name="file_submit"
+                            class="form-control form-control-sm @error('file_submit') is-invalid @enderror"
+                            id="file_submit" onchange="previewImage('file_submit', 'preview_submit')">
                     </div>
-                    <img id="preview_submit" src="{{ isset($payout) && $payout->file_submit ? asset('storage/'.$payout->file_submit) : '#' }}" alt="your image" class="mt-2" style="max-height: 200px;"/>
+                    @error('file_submit')
+                        <div class="invalid-feedback d-block">
+                            {{ $message }}
+                        </div>
+                    @enderror
+                    <img id="preview_submit"
+                        src="{{ isset($payout) && $payout->file_submit ? asset('storage/' . $payout->file_submit) : '#' }}"
+                        alt="your image" class="mt-2" style="width: 100%;" onerror="this.onerror=null;this.src='{{ asset('not-found.png') }}';" />
                 </div>
                 <div class="col-4">
                     <label class="form-label fw-semibold">Bukti Dibayar oleh BaBe</label>
                     <div class="input-group">
-                        <input type="file" name="file_paid" class="form-control form-control-sm" id="file_paid" onchange="previewImage('file_paid', 'preview_paid')">
+                        <input type="file" name="file_paid"
+                            class="form-control form-control-sm @error('file_paid') is-invalid @enderror" id="file_paid"
+                            onchange="previewImage('file_paid', 'preview_paid')">
                     </div>
-                    <img id="preview_paid" src="{{ isset($payout) && $payout->file_paid ? asset('storage/'.$payout->file_paid) : '#' }}" alt="your image" class="mt-2" style="max-height: 200px;"/>
+                    @error('file_paid')
+                        <div class="invalid-feedback d-block">
+                            {{ $message }}
+                        </div>
+                    @enderror
+                    <img id="preview_paid"
+                        src="{{ isset($payout) && $payout->file_paid ? asset('storage/' . $payout->file_paid) : '#' }}"
+                        alt="your image" class="mt-2" style="width: 100%;" onerror="this.onerror=null;this.src='{{ asset('not-found.png') }}';" />
                 </div>
                 <div class="col-4">
                     <label class="form-label fw-semibold">Bukti Terima Bantuan oleh Campaigner</label>
                     <div class="input-group">
-                        <input type="file" name="file_accepted" class="form-control form-control-sm" id="file_accepted" onchange="previewImage('file_accepted', 'preview_accepted')">
+                        <input type="file" name="file_accepted"
+                            class="form-control form-control-sm @error('file_accepted') is-invalid @enderror"
+                            id="file_accepted" onchange="previewImage('file_accepted', 'preview_accepted')">
                     </div>
-                    <img id="preview_accepted" src="{{ isset($payout) && $payout->file_accepted ? asset('storage/'.$payout->file_accepted) : '#' }}" alt="your image" class="mt-2" style="max-height: 200px;"/>
+                    @error('file_accepted')
+                        <div class="invalid-feedback d-block">
+                            {{ $message }}
+                        </div>
+                    @enderror
+                    <img id="preview_accepted"
+                        src="{{ isset($payout) && $payout->file_accepted ? asset('storage/' . $payout->file_accepted) : '#' }}"
+                        alt="your image" class="mt-2" style="width: 100%;" onerror="this.onerror=null;this.src='{{ asset('not-found.png') }}';" />
                 </div>
                 <!-- END IMAGE IN CONTENT -->
                 <div class="col-12">
                     <label class="form-label fw-semibold required">Keterangan</label>
-                    <textarea class="form-control form-control-sm" name="desc_request" id="editor" rows="10">{{ old('desc_request', $payout->desc_request ?? '') }}</textarea>
+                    <textarea class="form-control form-control-sm @error('desc_request') is-invalid @enderror" name="desc_request"
+                        id="editor" rows="10">{{ old('desc_request', $payout->desc_request ?? '') }}</textarea>
+                    @error('desc_request')
+                        <div class="invalid-feedback">
+                            {{ $message }}
+                        </div>
+                    @enderror
                 </div>
                 <div class="col-12">
                     <div class="divider mb-0 mt-0"></div>
@@ -156,81 +259,62 @@
 
 @section('js_plugins')
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-    <script src="https://cdn.tiny.cloud/1/wphaz17bf6i1tsqq7cjt8t5w6r275bw3b8acq6u2gi4hnan4/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.tiny.cloud/1/wphaz17bf6i1tsqq7cjt8t5w6r275bw3b8acq6u2gi4hnan4/tinymce/7/tinymce.min.js"
+        referrerpolicy="origin"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 @endsection
 
 
 @section('js_inline')
-<script type="text/javascript">
-    function previewImage(inputId, previewId) {
-        const [file] = document.getElementById(inputId).files
-        if (file) {
-            document.getElementById(previewId).src = URL.createObjectURL(file)
+    <script type="text/javascript">
+        function previewImage(inputId, previewId) {
+            const [file] = document.getElementById(inputId).files
+            if (file) {
+                document.getElementById(previewId).src = URL.createObjectURL(file)
+            }
         }
-    }
 
-    $(document).ready(function() {
-        $("#program-select2").select2({
-            placeholder: 'Cari Program',
-            theme: 'bootstrap-5',
-            allowClear: true,
-            ajax: {
-                url: "{{ route('adm.program.select2.all') }}",
-                delay: 250,
-                data: function (params) {
-                    var query = {
-                        search: params.term,
-                        page: params.page || 1
-                    }
-
-                    // Query parameters will be ?search=[term]&type=public
-                    return query;
-                },
-                processResults: function (data, params) {
-                    var items = $.map(data.data, function(obj){
-                        let program_name = obj.title;
-                        obj.id = obj.id;
-                        obj.text = `${program_name}`;
-
-                        return obj;
-                    });
-                    params.page = params.page || 1;
-
-                    // console.log(items);
-                    // Transforms the top-level key of the response object from 'items' to 'results'
-                    return {
-                        results: items,
-                        pagination: {
-                            more: params.page < data.last_page
-                        }
-                    };
-                },
-            },
-            templateResult: function (item) {
-                // console.log(item);
-                // No need to template the searching text
-                if (item.loading) {
-                    return item.text;
-                }
-
-                var term = select2_query.term || '';
-                // var $result = markMatch(item.text, term);
-                var $result = item.text, term;
-
-                return $result;
-            },
-            language: {
-                searching: function (params) {
-                    // Intercept the query as it is happening
-                    select2_query = params;
-
-                    // Change this to be appropriate for your application
-                    return 'Searching...';
-                }
+        $("#unpaid").on("click", function() {
+            if ($("#unpaid").is(':checked')) {
+                document.getElementById('date_paid').readOnly = true;
+                document.getElementById('date_paid').value = '';
+            } else {
+                document.getElementById('date_paid').removeAttribute('readonly');
             }
         });
 
+
+        var rupiah1 = document.getElementById("rupiah1");
+        rupiah1.addEventListener("keyup", function(e) {
+            rupiah1.value = formatRupiah(this.value, "");
+        });
+
+        var rupiah2 = document.getElementById("rupiah2");
+        rupiah2.addEventListener("keyup", function(e) {
+            rupiah2.value = formatRupiah(this.value, "");
+        });
+
+        /* Fungsi formatRupiah */
+        function formatRupiah(angka, prefix) {
+            var number_string = angka.replace(/[^,\d]/g, "").toString(),
+                split = number_string.split(","),
+                sisa = split[0].length % 3,
+                rupiah = split[0].substr(0, sisa),
+                ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+            // tambahkan titik jika yang di input sudah menjadi angka ribuan
+            if (ribuan) {
+                separator = sisa ? "." : "";
+                rupiah += separator + ribuan.join(".");
+            }
+
+            rupiah = split[1] != undefined ? rupiah + "," + split[1] : rupiah;
+            return prefix == undefined ? rupiah : rupiah ? "" + rupiah : "";
+        }
+    </script>
+
+    <script>
         tinymce.init({
             selector: 'textarea#editor',
             height: 500,
@@ -277,7 +361,7 @@
             image_dimensions: false,
             image_advtab: true,
             image_caption: true,
-            images_upload_url: "{{ route('adm.program.image.content.submit') }}",
+            images_upload_url: "{{ route('adm.program-payout.image.content.submit') }}",
 
             file_picker_types: 'image',
             images_file_types: 'jpg,jpeg,png,gif,webp',
@@ -292,10 +376,10 @@
                 return new Promise((resolve, reject) => {
                     const formData = new FormData();
                     formData.append('file', blobInfo.blob(), blobInfo.filename());
-                    formData.append('program_title', document.getElementById('program_title').value);
+                    formData.append('program_title', $('#program-select2 option:selected').text());
 
                     const xhr = new XMLHttpRequest();
-                    xhr.open('POST', "{{ route('adm.program.image.content.submit') }}", true);
+                    xhr.open('POST', "{{ route('adm.program-payout.image.content.submit') }}", true);
                     xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
 
                     xhr.upload.onprogress = function(e) {
@@ -521,44 +605,28 @@
                 });
             }
         });
-    });
+    </script>
 
-    $("#unpaid").on("click", function(){
-        if ($("#unpaid").is(':checked')) {
-            document.getElementById('date_paid').readOnly = true;
-            document.getElementById('date_paid').value = '';
-        } else {
-            document.getElementById('date_paid').removeAttribute('readonly');
-        }
-    });
-
-
-    var rupiah1 = document.getElementById("rupiah1");
-    rupiah1.addEventListener("keyup", function(e) {
-      rupiah1.value = formatRupiah(this.value, "");
-    });
-
-    var rupiah2 = document.getElementById("rupiah2");
-    rupiah2.addEventListener("keyup", function(e) {
-      rupiah2.value = formatRupiah(this.value, "");
-    });
-
-    /* Fungsi formatRupiah */
-    function formatRupiah(angka, prefix) {
-      var number_string = angka.replace(/[^,\d]/g, "").toString(),
-        split = number_string.split(","),
-        sisa = split[0].length % 3,
-        rupiah = split[0].substr(0, sisa),
-        ribuan = split[0].substr(sisa).match(/\d{3}/gi);
-
-      // tambahkan titik jika yang di input sudah menjadi angka ribuan
-      if (ribuan) {
-        separator = sisa ? "." : "";
-        rupiah += separator + ribuan.join(".");
-      }
-
-      rupiah = split[1] != undefined ? rupiah + "," + split[1] : rupiah;
-      return prefix == undefined ? rupiah : rupiah ? "" + rupiah : "";
-    }
-</script>
+    <script>
+        @if (session('message'))
+            Swal.fire({
+                toast: true,
+                position: 'bottom-end',
+                icon: '{{ session('message')['status'] }}',
+                title: '{{ session('message')['message'] }}',
+                showConfirmButton: false,
+                timer: 15000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'rounded shadow-sm px-3 py-2 border-0 d-flex flex-row align-middle-center justify-content-center'
+                },
+                background: '{{ session('message')['status'] === 'success' ? '#d1fae5' : '#fee2e2' }}',
+                color: '{{ session('message')['status'] === 'success' ? '#065f46' : '#b91c1c' }}',
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+        @endif
+    </script>
 @endsection

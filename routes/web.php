@@ -327,3 +327,7 @@ Route::post('/program-submit-image-content', [Admin\ProgramController::class, 'u
 Route::post('/program-info-submit-image-content', [Admin\ProgramInfoController::class, 'uploadImageContent'])
     ->middleware(['web', 'auth'])
     ->name('adm.program-info.image.content.submit');
+// PROGRAM PAYOUT CONTENT IMAGE UPLOAD
+Route::post('/program-payout-submit-image-content', [Admin\PayoutController::class, 'uploadImageContent'])
+    ->middleware(['web', 'auth'])
+    ->name('adm.program-payout.image.content.submit');

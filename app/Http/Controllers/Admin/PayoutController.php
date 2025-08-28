@@ -39,56 +39,79 @@ class PayoutController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'program'          => 'required|numeric',
+            'program_id'        => 'required|numeric',
+            'nominal_request'   => 'required',
+            'nominal_approved'  => 'required',
             'desc_request'      => 'required|string',
-            'nominal_request'  => 'required',
-            'nominal_approved' => 'required'
+            'date_paid'         => 'nullable|date',
+            'file_submit'       => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:1024',
+            'file_paid'         => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:1024',
+            'file_accepted'     => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:1024'
+        ], [
+            'program_id.required'       => 'Program harus diisi',
+            'desc_request.required'     => 'Deskripsi harus diisi',
+            'nominal_request.required'  => 'Nominal harus diisi',
+            'nominal_approved.required' => 'Nominal harus diisi',
+            'date_paid.date'            => 'Format tanggal salah',
+            'file_submit.file'          => 'Format file salah, format yang didukung jpg, jpeg, png, pdf',
+            'file_paid.file'            => 'Format file salah, format yang didukung jpg, jpeg, png, pdf',
+            'file_accepted.file'        => 'Format file salah, format yang didukung jpg, jpeg, png, pdf',
+            'file_submit.max'           => 'Ukuran file maksimal 1MB',
+            'file_paid.max'             => 'Ukuran file maksimal 1MB',
+            'file_accepted.max'         => 'Ukuran file maksimal 1MB'
         ]);
 
         try {
-            $imagePath = 'public/images/program/payout';
+            $imagePath = 'images/program/payout';
 
             $data                   = new Payout;
-            $data->program_id       = $request->program;
+            $data->program_id       = $request->program_id;
             $data->nominal_request  = str_replace('.', '', $request->nominal_request);
             $data->nominal_approved = str_replace('.', '', $request->nominal_approved);
             $data->desc_request     = $request->desc_request;
             $data->status           = $request->status;
 
-            if($request->program!='') {
+            if($request->filled('date_paid')) {
                 $data->paid_at      = $request->date_paid;
             }
-            // else paid_at = null
 
-            // upload file_submit
-            if ($request->hasFile('file_submit')) { 
-                $file1              = $request->file('file_submit');
-                $filename           = time().'_'.$file1->getClientOriginalName();
-                $file1->storeAs($imagePath, $filename, 'public_uploads');
-                $data->file_submit  = $filename;
-            }
+            foreach (['file_submit', 'file_paid', 'file_accepted'] as $fileField) {
+                if ($request->hasFile($fileField)) {
+                    $file = $request->file($fileField);
+                    $extension = strtolower($file->getClientOriginalExtension());
+                    $original_name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
 
-            // upload file_paid
-            if ($request->hasFile('file_paid')) { 
-                $file2              = $request->file('file_paid');
-                $filename           = time().'_'.$file2->getClientOriginalName();
-                $file2->storeAs($imagePath, $filename, 'public_uploads');
-                $data->file_paid    = $filename;
-            }
-
-            // upload file_accepted
-            if ($request->hasFile('file_accepted')) { 
-                $file3               = $request->file('file_accepted');
-                $filename            = time().'_'.$file3->getClientOriginalName();
-                $file3->storeAs($imagePath, $filename, 'public_uploads');
-                $data->file_accepted = $filename;
+                    if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                        $image = Image::make($file->getRealPath())
+                            ->resize(800, null, function ($constraint) {
+                                $constraint->aspectRatio();
+                                $constraint->upsize();
+                            })
+                            ->encode('jpg', 80);
+                        
+                        $filename = time() . '_' . $original_name . '.jpg';
+                        $fullPath = $imagePath . '/' . $filename;
+                        Storage::disk('public_uploads')->put($fullPath, $image->stream());
+                        $data->{$fileField} = $filename;
+                    } else {
+                        $filename = time() . '_' . $file->getClientOriginalName();
+                        Storage::disk('public_uploads')->putFileAs($imagePath, $file, $filename);
+                        $data->{$fileField} = $filename;
+                    }
+                }
             }
 
             $data->save();
 
-            return redirect()->back()->with('success', 'Berhasil tambah data Penyaluran Proagram');
+            return redirect(route('adm.payout.index'))->with('message', [
+                'status' => 'success', 
+                'message' => 'Berhasil tambah data Penyaluran Program'
+            ]);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal tambah, ada kesalahan teknis');
+            return back()->with('message', [
+                'status' => 'error', 
+                'message' => 'Gagal tambah data Penyaluran Program'
+            ]);
         }
     }
 
@@ -119,11 +142,15 @@ class PayoutController extends Controller
             'program'          => 'required|numeric',
             'desc_request'      => 'required|string',
             'nominal_request'  => 'required',
-            'nominal_approved' => 'required'
+            'nominal_approved' => 'required',
+            'date_paid'         => 'nullable|date',
+            'file_submit'       => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'file_paid'         => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'file_accepted'     => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048'
         ]);
 
         try {
-            $imagePath = 'public/images/program/payout';
+            $imagePath = 'images/program/payout';
 
             $data                   = Payout::findOrFail($id);
             $data->program_id       = $request->program;
@@ -132,41 +159,55 @@ class PayoutController extends Controller
             $data->desc_request     = $request->desc_request;
             $data->status           = $request->status;
 
-            if($request->program!='') {
+            if($request->filled('date_paid')) {
                 $data->paid_at      = $request->date_paid;
-            }
-            // else paid_at = null
-
-            // upload file_submit
-            if ($request->hasFile('file_submit')) { 
-                $file1              = $request->file('file_submit');
-                $filename           = time().'_'.$file1->getClientOriginalName();
-                $file1->storeAs($imagePath, $filename, 'public_uploads');
-                $data->file_submit  = $filename;
+            } else {
+                $data->paid_at      = null;
             }
 
-            // upload file_paid
-            if ($request->hasFile('file_paid')) { 
-                $file2              = $request->file('file_paid');
-                $filename           = time().'_'.$file2->getClientOriginalName();
-                $file2->storeAs($imagePath, $filename, 'public_uploads');
-                $data->file_paid    = $filename;
-            }
+            foreach (['file_submit', 'file_paid', 'file_accepted'] as $fileField) {
+                if ($request->hasFile($fileField)) {
+                    // Delete old file if it exists
+                    if ($data->{$fileField}) {
+                        Storage::disk('public_uploads')->delete($imagePath . '/' . $data->{$fileField});
+                    }
 
-            // upload file_accepted
-            if ($request->hasFile('file_accepted')) { 
-                $file3               = $request->file('file_accepted');
-                $filename            = time().'_'.$file3->getClientOriginalName();
-                $file3->storeAs($imagePath, $filename, 'public_uploads');
-                $data->file_accepted = $filename;
+                    $file = $request->file($fileField);
+                    $extension = strtolower($file->getClientOriginalExtension());
+                    $original_name = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+
+                    if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                        $image = Image::make($file->getRealPath())
+                            ->resize(800, null, function ($constraint) {
+                                $constraint->aspectRatio();
+                                $constraint->upsize();
+                            })
+                            ->encode('jpg', 80);
+                        
+                        $filename = time() . '_' . $original_name . '.jpg';
+                        $fullPath = $imagePath . '/' . $filename;
+                        Storage::disk('public_uploads')->put($fullPath, $image->stream());
+                        $data->{$fileField} = $filename;
+                    } else {
+                        $filename = time() . '_' . $file->getClientOriginalName();
+                        Storage::disk('public_uploads')->putFileAs($imagePath, $file, $filename);
+                        $data->{$fileField} = $filename;
+                    }
+                }
             }
 
             $data->updated_at  = date('Y-m-d H:i:s');
             $data->save();
 
-            return redirect()->back()->with('success', 'Berhasil update data Penyaluran Proagram');
+            return redirect(route('adm.payout.index'))->with('message', [
+                'status' => 'success', 
+                'message' => 'Berhasil update data Penyaluran Program'
+            ]);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal update, ada kesalahan teknis');
+            return back()->with('message', [
+                'status' => 'error', 
+                'message' => 'Gagal update data Penyaluran Program'
+            ]);
         }
     }
 
