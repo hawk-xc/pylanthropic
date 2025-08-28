@@ -4,30 +4,22 @@
 
 @section('content')
     <header class="section-t-space pt-0">
-        <div class="header-panel bg-me header-title">
-            <a href="{{ url('/' . $program->slug) }}">
+        <div class="header-panel header-title header-transparent">
+            <a href="{{ url('/' . $program->slug) }}" aria-label="Back to Home">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="#fff">
                     <line x1="19" y1="12" x2="5" y2="12"></line>
                     <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
             </a>
-            <h2 class="fs-16">Informasi Penyaluran</h2>
         </div>
     </header>
     <section class="section-t-space pt-3 mt-1" style="padding-bottom: 80px;">
         <div class="custom-container">
-            <div class="row">
-                <div class="col-12">
-                    <img class="img-fluid  img rounded w-100"
-                        src="{{ asset('public/images/program') . '/' . $program->thumbnail }}"
-                        alt="{{ ucwords($program->title) }}"
-                        onerror="this.src='{{ asset('not-found.png') }}';" />
-                    <h5 class="mt-3">{{ ucwords($program->title) }}</h5>
-                </div>
-            </div>
+            <h4 class="title-detail-program">{{ ucwords($program->title) }}</h4>
+            <div class="short-desc mt-2 pt-1">{{ $program->short_desc }}</div>
 
-            <div class="row pt-3">
+            <div class="row pt-3 gx-1">
                 <div class="col-6">
                     <div class="card w-full">
                         <div class="card-body">

@@ -189,7 +189,6 @@
         <img alt="{{ ucwords($program->title) }}" class="h-auto w-100 lazyload"
             data-original="{{ asset('public/images/program/' . $program->image) }}">
     </div>
-    <!-- header end -->
 
     <!-- Detail section start  -->
     <section class="pt-3">
