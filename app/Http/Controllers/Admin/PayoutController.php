@@ -113,6 +113,7 @@ class PayoutController extends Controller
                 'message' => 'Berhasil tambah data Penyaluran Program'
             ]);
         } catch (\Exception $e) {
+            dd($e->getMessage());
             return back()->with('message', [
                 'status' => 'error', 
                 'message' => 'Gagal tambah data Penyaluran Program: ' . $e->getMessage()
@@ -233,7 +234,7 @@ class PayoutController extends Controller
      */
     public function payoutDatatables(Request $request)
     {
-        $data = Payout::select('payout.*', 'program.title as program_title')
+        $data = Payout::select('payout.*', 'program.title as program_title', 'slug')
                 ->join('program', 'program.id', 'payout.program_id')->orderBy('created_at', 'DESC');
 
         $order_column = $request->input('order.0.column');
@@ -304,7 +305,7 @@ class PayoutController extends Controller
                 return $status;
             })
             ->addColumn('action', function($row){
-                $view = '<a href="" href="'.route("adm.payout.show", $row->id).'" target="_blank" class="btn btn-info btn-xs"><i class="fa fa-eye"></i></a>';
+                $view = '<a href="'.route("program.payout", $row->slug).'" target="_blank" class="btn btn-info btn-xs"><i class="fa fa-eye"></i></a>';
                 $edit = '<a href="'.route("adm.payout.edit", $row->id).'" target="_blank" class="edit btn btn-warning btn-xs"><i class="fa fa-edit"></i></a>';
                 return $view.'<br>'.$edit;
             })
@@ -362,7 +363,7 @@ class PayoutController extends Controller
             }
 
             // Path structure
-            $contentDir = 'images/program/payout/' . $programSlug;
+            $contentDir = 'images/program/payout/' . $programSlug . '/content';
             $baseName = $programSlug;
 
             // Find existing files to determine the counter

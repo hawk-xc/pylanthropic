@@ -190,48 +190,78 @@
                     <div class="input-group">
                         <input type="file" name="file_submit"
                             class="form-control form-control-sm @error('file_submit') is-invalid @enderror"
-                            id="file_submit" onchange="previewImage('file_submit', 'preview_submit')">
+                            id="file_submit" onchange="previewFile('file_submit', 'preview_container_submit')">
                     </div>
                     @error('file_submit')
                         <div class="invalid-feedback d-block">
                             {{ $message }}
                         </div>
                     @enderror
-                    <img id="preview_submit"
-                        src="{{ isset($payout) && $payout->file_submit ? asset('storage/' . $payout->file_submit) : '#' }}"
-                        alt="your image" class="mt-2" style="width: 100%;" onerror="this.onerror=null;this.src='{{ asset('not-found.png') }}';" />
+                    <div id="preview_container_submit" class="mt-2">
+                        @if(isset($payout) && $payout->file_submit)
+                            @php
+                                $filePath = $payout->file_submit;
+                                $isImage = in_array(strtolower(pathinfo($filePath, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                            @endphp
+                            @if($isImage)
+                                <img src="{{ asset($filePath) }}" alt="Preview" style="width: 100%;" />
+                            @else
+                                <a href="{{ asset($filePath) }}" target="_blank">{{ basename($filePath) }}</a>
+                            @endif
+                        @endif
+                    </div>
                 </div>
                 <div class="col-4">
                     <label class="form-label fw-semibold">Bukti Dibayar oleh BaBe</label>
                     <div class="input-group">
                         <input type="file" name="file_paid"
                             class="form-control form-control-sm @error('file_paid') is-invalid @enderror" id="file_paid"
-                            onchange="previewImage('file_paid', 'preview_paid')">
+                            onchange="previewFile('file_paid', 'preview_container_paid')">
                     </div>
                     @error('file_paid')
                         <div class="invalid-feedback d-block">
                             {{ $message }}
                         </div>
                     @enderror
-                    <img id="preview_paid"
-                        src="{{ isset($payout) && $payout->file_paid ? asset('storage/' . $payout->file_paid) : '#' }}"
-                        alt="your image" class="mt-2" style="width: 100%;" onerror="this.onerror=null;this.src='{{ asset('not-found.png') }}';" />
+                    <div id="preview_container_paid" class="mt-2">
+                        @if(isset($payout) && $payout->file_paid)
+                            @php
+                                $filePath = $payout->file_paid;
+                                $isImage = in_array(strtolower(pathinfo($filePath, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                            @endphp
+                            @if($isImage)
+                                <img src="{{ asset($filePath) }}" alt="Preview" style="width: 100%;" />
+                            @else
+                                <a href="{{ asset($filePath) }}" target="_blank">{{ basename($filePath) }}</a>
+                            @endif
+                        @endif
+                    </div>
                 </div>
                 <div class="col-4">
                     <label class="form-label fw-semibold">Bukti Terima Bantuan oleh Campaigner</label>
                     <div class="input-group">
                         <input type="file" name="file_accepted"
                             class="form-control form-control-sm @error('file_accepted') is-invalid @enderror"
-                            id="file_accepted" onchange="previewImage('file_accepted', 'preview_accepted')">
+                            id="file_accepted" onchange="previewFile('file_accepted', 'preview_container_accepted')">
                     </div>
                     @error('file_accepted')
                         <div class="invalid-feedback d-block">
                             {{ $message }}
                         </div>
                     @enderror
-                    <img id="preview_accepted"
-                        src="{{ isset($payout) && $payout->file_accepted ? asset('storage/' . $payout->file_accepted) : '#' }}"
-                        alt="your image" class="mt-2" style="width: 100%;" onerror="this.onerror=null;this.src='{{ asset('not-found.png') }}';" />
+                    <div id="preview_container_accepted" class="mt-2">
+                        @if(isset($payout) && $payout->file_accepted)
+                            @php
+                                $filePath = $payout->file_accepted;
+                                $isImage = in_array(strtolower(pathinfo($filePath, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                            @endphp
+                            @if($isImage)
+                                <img src="{{ asset($filePath) }}" alt="Preview" style="width: 100%;" />
+                            @else
+                                <a href="{{ asset($filePath) }}" target="_blank">{{ basename($filePath) }}</a>
+                            @endif
+                        @endif
+                    </div>
                 </div>
                 <!-- END IMAGE IN CONTENT -->
                 <div class="col-12">
@@ -260,18 +290,40 @@
 @section('js_plugins')
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
     <script src="https://cdn.tiny.cloud/1/wphaz17bf6i1tsqq7cjt8t5w6r275bw3b8acq6u2gi4hnan4/tinymce/7/tinymce.min.js"
-        referrerpolicy="origin"></script>
+        referrerpolicy="origin">
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 @endsection
 
-
 @section('js_inline')
     <script type="text/javascript">
-        function previewImage(inputId, previewId) {
-            const [file] = document.getElementById(inputId).files
-            if (file) {
-                document.getElementById(previewId).src = URL.createObjectURL(file)
+        function previewFile(inputId, previewContainerId) {
+            const fileInput = document.getElementById(inputId);
+            const previewContainer = document.getElementById(previewContainerId);
+            
+            if (fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                const fileUrl = URL.createObjectURL(file);
+
+                // Clear previous preview
+                previewContainer.innerHTML = '';
+
+                if (file.type.startsWith('image/')) {
+                    const img = document.createElement('img');
+                    img.src = fileUrl;
+                    img.alt = 'Preview';
+                    img.style.width = '100%';
+                    img.classList.add('mt-2');
+                    previewContainer.appendChild(img);
+                } else {
+                    const link = document.createElement('a');
+                    link.href = fileUrl;
+                    link.target = '_blank';
+                    link.textContent = file.name;
+                    link.classList.add('mt-2', 'd-block');
+                    previewContainer.appendChild(link);
+                }
             }
         }
 
@@ -283,7 +335,6 @@
                 document.getElementById('date_paid').removeAttribute('readonly');
             }
         });
-
 
         var rupiah1 = document.getElementById("rupiah1");
         rupiah1.addEventListener("keyup", function(e) {
