@@ -3,9 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Program;
-use App\Models\TrackingVisitor;
-use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +16,14 @@ use Intervention\Image\ImageManagerStatic as Image;
 use Illuminate\Support\Facades\File;
 use Yajra\DataTables\Facades\DataTables;
 use Exception;
+use Carbon\Carbon;
+
+use App\Models\Program;
+use App\Models\TrackingVisitor;
+use App\Models\Transaction;
+use App\Models\ProgramSpend;
+use App\Models\AdsCampaign;
+use App\Models\Payout;
 
 class ProgramController extends Controller
 {
@@ -500,152 +505,352 @@ class ProgramController extends Controller
     /**
      * Datatables Program
      */
+    // public function datatablesProgram(Request $request)
+    // {
+    //     $data = Program::select('program.*', 'organization.name as organization')->join('organization', 'organization.id', 'program.organization_id');
+
+    //     if ($request->query('active') == '1') {
+    //         $data->where('is_publish', 1)->where('end_date', '>=', date('Y-m-d'));
+    //     }
+    //     if ($request->query('inactive') == '1') {
+    //         $data->where('is_publish', 0);
+    //     }
+    //     if ($request->query('winning') == '1') {
+    //         $data->where('donate_sum', '>=', 8000000);
+    //     }
+    //     if ($request->query('recom') == '1') {
+    //         $data->where('is_recommended', 1);
+    //     }
+    //     if ($request->query('urgent') == '1') {
+    //         $data->where('is_urgent', 1);
+    //     }
+    //     if ($request->query('newest') == '1') {
+    //         $data->where('is_show_home', 1);
+    //     }
+    //     if ($request->query('publish15day') == '1') {
+    //         $data->where('program.approved_at', '>=', date('Y-m-d', strtotime(date('Y-m-d') . '-15 days')));
+    //     }
+    //     if ($request->query('end15day') == '1') {
+    //         $data->where('end_date', '<=', date('Y-m-d', strtotime(date('Y-m-d') . '+15 days')));
+    //     }
+    //     if ($request->filled('program_title')) {
+    //         $data->where('program.title', 'like', '%' . $request->program_title . '%');
+    //     }
+    //     if ($request->filled('organization_name')) {
+    //         $data->where('organization.name', 'like', '%' . $request->organization_name . '%');
+    //     }
+
+    //     return Datatables::of($data)
+    //         ->addIndexColumn()
+    //         ->addColumn('nominal', function ($row) {
+    //             $sum = \App\Models\Transaction::where('program_id', $row->id)->where('status', 'success')->sum('nominal_final');
+    //             $sum_percent = 0;
+    //             if ($sum > 0 && $row->nominal_approved > 0) {
+    //                 $sum_percent = round(($sum / $row->nominal_approved) * 100, 2);
+    //             }
+
+    //             $spend = \App\Models\ProgramSpend::where('program_id', $row->id)->where('status', 'done')->sum('nominal_approved');
+    //             $spend_percent = 0;
+    //             if ($spend > 0 && $sum > 0) {
+    //                 $spend_percent = round(($spend / $sum) * 100, 2);
+    //             }
+
+    //             $param = $row->id . ", '" . ucwords(str_replace("'", '', $row->title)) . "'";
+
+    //             return '<span class="badge badge-light" style="cursor:pointer" onclick="showSummary('
+    //                 . $param
+    //                 . ')">
+    //                     <i class="fa fa-check-double icon-gradient bg-happy-green"></i> Rp.'
+    //                 . str_replace(',', '.', number_format($row->nominal_approved))
+    //                 . '</span>
+    //                     <br>
+    //                     <span class="badge badge-light modal_status" style="cursor:pointer" onclick="showDonate('
+    //                 . $param
+    //                 . ')">
+    //                     <i class="fa fa-money-bill icon-gradient bg-happy-green"></i> Rp.'
+    //                 . number_format($sum)
+    //                 . ' ('
+    //                 . $sum_percent
+    //                 . '%)</span>
+    //                     <br>
+    //                     <span class="badge badge-light" style="cursor:pointer" onclick="inpSpend('
+    //                 . $param
+    //                 . ')">
+    //                     <i class="fa fa-credit-card icon-gradient bg-strong-bliss"></i> Rp.'
+    //                 . number_format($spend)
+    //                 . ' ('
+    //                 . $spend_percent
+    //                 . '%)</span>';
+    //         })
+    //         ->addColumn('status', function ($row) {
+    //             if ($row->approved_at !== null) {
+    //                 // disetujui
+    //                 if ($row->end_date > date('Y-m-d') && $row->is_publish == '1') {
+    //                     // masih publish belum berakhir
+    //                     if ($row->is_recommended == 1) {
+    //                         $status = '<span class="badge badge-success">Tampil Dipilihan</span>';
+    //                         $status .= '<br>Start: ' . date('d-M-Y', strtotime($row->approved_at));
+    //                         $status .= '<br>End: ' . ($row->end_date ? date('d-M-Y', strtotime($row->end_date)) : 'selamanya');
+    //                     } elseif ($row->is_show_home == 1) {
+    //                         $status = '<span class="badge badge-success">Tampil Diterbaru</span>';
+    //                         $status .= '<br>Start: ' . date('d-M-Y', strtotime($row->approved_at));
+    //                         $status .= '<br>End: ' . ($row->end_date ? date('d-M-Y', strtotime($row->end_date)) : 'selamanya');
+    //                     } else {
+    //                         $status = '<span class="badge badge-success">Tampil Dipencarian</span>';
+    //                         $status .= '<br>Start: ' . date('d-M-Y', strtotime($row->approved_at));
+    //                         $status .= '<br>End: ' . ($row->end_date ? date('d-M-Y', strtotime($row->end_date)) : 'selamanya');
+    //                     }
+    //                 } elseif ($row->is_publish == '0') {
+    //                     // tidak dipublikasi
+    //                     $status = '<span class="badge badge-danger">Tidak Tampil</span>';
+    //                     $status .= '<br>Start: ' . date('d-M-Y', strtotime($row->approved_at));
+    //                     $status .= '<br>End: ' . $row->end_date;
+    //                 } else {
+    //                     // sudah berakhir
+    //                     $status = '<span class="badge badge-danger">Sudah Berakhir</span>';
+    //                     $status .= '<br>Start: ' . date('d-M-Y', strtotime($row->approved_at));
+    //                     $status .= '<br>End: ' . $row->end_date;
+    //                 }
+    //             } else {
+    //                 // belum disetujui
+    //                 $status = '<span class="badge badge-secondary">Belum Disetujui</span>';
+    //             }
+
+    //             return $status;
+    //         })
+    //         ->addColumn('stats', function ($row) {
+    //             return '-';
+    //         })
+    //         ->addColumn('donate', function ($row) {
+    //             return number_format($row->donate_sum);
+    //         })
+    //         ->addColumn('action', function ($row) {
+    //             $url_edit = route('adm.program.edit', $row->id);
+    //             $actionBtn =
+    //                 '<a href="' . $url_edit . '" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
+    //                 <a href="' . route('adm.program.detail.stats', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Statistik"><i class="fa fa-chart-line"></i></a>
+    //                 <a href="' . route('adm.program.detail.fundraiser', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Donasi"><i class="fa fa-donate"></i></a>
+    //                 <a href="' . route('adm.program.detail.donatur', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Donatur"><i class="fa fa-users"></i></a>
+    //                 <a href="' . route('adm.program.detail.fundraiser', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Fundraiser"><i class="fa fa-people-carry"></i></a>
+    //                 <a href="' . route('adm.program.detail.fundraiser', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Penyaluran"><i class="fa fa-hand-holding-heart"></i></a>
+    //                 <a href="' . route('adm.program.detail.fundraiser', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Operasional"><i class="fa fa-file-invoice-dollar"></i></a>
+    //                 <a href="' . route('program.index', $row->slug) . '" class="edit btn btn-info btn-xs mb-1" title="Link" target="_blank"><i class="fa fa-external-link-alt"></i></a>';
+    //             return $actionBtn;
+    //         })
+    //         ->filter(function ($query) use ($request) {
+    //             if ($request->has('search') && !empty($request->input('search.value'))) {
+    //                 $search = $request->input('search.value');
+    //                 $query->where(function ($q) use ($search) {
+    //                     $q->where('program.title', 'like', '%' . $search . '%')
+    //                         ->orWhere('program.slug', 'like', '%' . $search . '%')
+    //                         ->orWhere('program.short_desc', 'like', '%' . $search . '%')
+    //                         ->orWhere('organization.name', 'like', '%' . $search . '%');
+    //                 });
+    //             }
+    //         }, true)
+    //         ->rawColumns(['action', 'nominal', 'status', 'stats', 'donate'])
+    //         ->make(true);
+    // }
     public function datatablesProgram(Request $request)
     {
-        $data = Program::select('program.*', 'organization.name as organization')->join('organization', 'organization.id', 'program.organization_id');
+        $today = Carbon::today()->toDateString();
+        $d15ago = Carbon::today()->subDays(15)->toDateString();
+        $d15ahead = Carbon::today()->addDays(15)->toDateString();
 
-        if ($request->query('active') == '1') {
-            $data->where('is_publish', 1)->where('end_date', '>=', date('Y-m-d'));
-        }
-        if ($request->query('inactive') == '1') {
-            $data->where('is_publish', 0);
-        }
-        if ($request->query('winning') == '1') {
-            $data->where('donate_sum', '>=', 8000000);
-        }
-        if ($request->query('recom') == '1') {
-            $data->where('is_recommended', 1);
-        }
-        if ($request->query('urgent') == '1') {
-            $data->where('is_urgent', 1);
-        }
-        if ($request->query('newest') == '1') {
-            $data->where('is_show_home', 1);
-        }
-        if ($request->query('publish15day') == '1') {
-            $data->where('program.approved_at', '>=', date('Y-m-d', strtotime(date('Y-m-d') . '-15 days')));
-        }
-        if ($request->query('end15day') == '1') {
-            $data->where('end_date', '<=', date('Y-m-d', strtotime(date('Y-m-d') . '+15 days')));
-        }
-        if ($request->filled('program_title')) {
-            $data->where('program.title', 'like', '%' . $request->program_title . '%');
-        }
-        if ($request->filled('organization_name')) {
-            $data->where('organization.name', 'like', '%' . $request->organization_name . '%');
+        // Base query + JOIN + subselect aggregates (no per-row queries)
+        $data = Program::query()
+            ->from('program')
+            ->join('organization', 'organization.id', '=', 'program.organization_id')
+            ->select([
+                'program.*',
+                'organization.name as organization',
+            ])
+            // Sum donasi sukses
+            ->addSelect([
+                'donate_total' => Transaction::query()
+                    ->selectRaw('COALESCE(SUM(nominal_final),0)')
+                    ->whereColumn('program_id', 'program.id')
+                    ->where('status', 'success'),
+            ])
+            // Sum pengeluaran (spend) done
+            ->addSelect([
+                'spend_sum' => ProgramSpend::query()
+                    ->selectRaw('COALESCE(SUM(nominal_approved),0)')
+                    ->whereColumn('program_id', 'program.id')
+                    ->where('status', 'done'),
+            ])
+            // Sum pengeluaran berdasarkan ads_campaign
+            ->addSelect([
+                'spend_ads_campaign' => AdsCampaign::query()
+                    ->selectRaw('COALESCE(SUM(spend),0)')
+                    ->whereColumn('program_id', 'program.id'),
+            ])
+            // Sum penyaluran paid
+            ->addSelect([
+                'payout_sum' => Payout::query()
+                    ->selectRaw('COALESCE(SUM(nominal_approved),0)')
+                    ->whereColumn('program_id', 'program.id')
+                    ->where('status', 'paid'),
+            ]);
+
+        // Flag filters (pakai ->when biar clean)
+        $data->when($request->query('active') === '1', fn($q) =>
+            $q->where('is_publish', 1)->where('end_date', '>=', $today)
+        )->when($request->query('inactive') === '1', fn($q) =>
+            $q->where('is_publish', 0)
+        )->when($request->query('winning') === '1', fn($q) =>
+            // pakai HAVING untuk alias aggregate
+            $q->having('donate_total', '>=', 8000000)
+        )->when($request->query('recom') === '1', fn($q) =>
+            $q->where('is_recommended', 1)
+        )->when($request->query('urgent') === '1', fn($q) =>
+            $q->where('is_urgent', 1)
+        )->when($request->query('newest') === '1', fn($q) =>
+            $q->where('is_show_home', 1)
+        )->when($request->query('publish15day') === '1', function ($q) use ($d15ago) {
+            return $q->where('program.approved_at', '>=', $d15ago);
+        })->when($request->query('end15day') === '1', function ($q) use ($d15ahead) {
+            return $q->where('end_date', '<=', $d15ahead);
+        });
+
+        // Optional filters (search by field)
+        $data->when($request->filled('program_title'), fn($q) => 
+            $q->where('program.title', 'like', '%'.$request->program_title.'%')
+        )->when($request->filled('organization_name'), fn($q) => 
+            $q->where('organization.name', 'like', '%'.$request->organization_name.'%')
+        );
+
+        // Urutkan/sort
+        $sort = $request->input('sort');                  // e.g. payout_sum
+        $dir  = strtolower($request->input('dir','desc'));// asc|desc
+        $allowed = [
+            'payout_sum', 'donate_total', 'spend_sum', 'spend_ads_campaign',
+            'approved_at', 'end_date'
+        ];
+        if (in_array($sort, $allowed, true)) {
+            $dir = $dir === 'asc' ? 'asc' : 'desc';
+            $data->orderBy($sort, $dir);
         }
 
-        return Datatables::of($data)
+        return DataTables::of($data)
             ->addIndexColumn()
             ->addColumn('nominal', function ($row) {
-                $sum = \App\Models\Transaction::where('program_id', $row->id)->where('status', 'success')->sum('nominal_final');
-                $sum_percent = 0;
-                if ($sum > 0 && $row->nominal_approved > 0) {
-                    $sum_percent = round(($sum / $row->nominal_approved) * 100, 2);
-                }
+                $sum = (float) $row->donate_total;
+                $spend = (float) $row->spend_sum;
 
-                $spend = \App\Models\ProgramSpend::where('program_id', $row->id)->where('status', 'done')->sum('nominal_approved');
-                $spend_percent = 0;
-                if ($spend > 0 && $sum > 0) {
-                    $spend_percent = round(($spend / $sum) * 100, 2);
-                }
+                $sum_percent = ($sum > 0 && $row->nominal_approved > 0) ? round(($sum / $row->nominal_approved) * 100, 2) : 0;
+                $spend_percent = ($spend > 0 && $sum > 0) ? round(($spend / $sum) * 100, 2) : 0;
 
-                $param = $row->id . ", '" . ucwords(str_replace("'", '', $row->title)) . "'";
+                $payout_sum_show = number_format($row->payout_sum, 0, ',', '.');
+                $payout_sum_percent = ($sum > 0 && $row->payout_sum > 0) ? round(($row->payout_sum / $sum) * 100, 2) : 0;
 
-                return '<span class="badge badge-light" style="cursor:pointer" onclick="showSummary('
-                    . $param
-                    . ')">
-                        <i class="fa fa-check-double icon-gradient bg-happy-green"></i> Rp.'
-                    . str_replace(',', '.', number_format($row->nominal_approved))
-                    . '</span>
-                        <br>
-                        <span class="badge badge-light modal_status" style="cursor:pointer" onclick="showDonate('
-                    . $param
-                    . ')">
-                        <i class="fa fa-money-bill icon-gradient bg-happy-green"></i> Rp.'
-                    . number_format($sum)
-                    . ' ('
-                    . $sum_percent
-                    . '%)</span>
-                        <br>
-                        <span class="badge badge-light" style="cursor:pointer" onclick="inpSpend('
-                    . $param
-                    . ')">
-                        <i class="fa fa-credit-card icon-gradient bg-strong-bliss"></i> Rp.'
-                    . number_format($spend)
-                    . ' ('
-                    . $spend_percent
-                    . '%)</span>';
+                // amanin tanda kutip biar onclick gak pecah
+                $safeTitle = ucwords(str_replace("'", '', $row->title));
+                $param = $row->id.", '".e($safeTitle)."'";
+
+                return '<span class="badge badge-light" style="cursor:pointer" onclick="showSummary(' . $param . ')">
+                            <i class="fa fa-check-double icon-gradient bg-happy-green"></i> Rp.' . str_replace(',', '.', number_format($row->nominal_approved)) . '
+                        </span><br>
+                        <span class="badge badge-light modal_status" style="cursor:pointer" onclick="showDonate(' . $param . ')">
+                            <i class="fa fa-hand-holding-heart icon-gradient bg-happy-green"></i> Rp.' . number_format($sum) . ' (' . $sum_percent . '%)
+                        </span><br>
+                        <span class="badge badge-light">
+                            <i class="fa fa-share icon-gradient bg-happy-green"></i> Rp.' . $payout_sum_show . ' (' . $payout_sum_percent . '%)
+                        </span>';
             })
-            ->addColumn('status', function ($row) {
-                if ($row->approved_at !== null) {
-                    // disetujui
-                    if ($row->end_date > date('Y-m-d') && $row->is_publish == '1') {
-                        // masih publish belum berakhir
-                        if ($row->is_recommended == 1) {
+            ->addColumn('status', function ($row) use ($today) {
+                if (!is_null($row->approved_at)) {
+                    if ($row->end_date > $today && (string)$row->is_publish === '1') {
+                        if ((int)$row->is_recommended === 1) {
                             $status = '<span class="badge badge-success">Tampil Dipilihan</span>';
-                            $status .= '<br>Start: ' . date('d-M-Y', strtotime($row->approved_at));
-                            $status .= '<br>End: ' . ($row->end_date ? date('d-M-Y', strtotime($row->end_date)) : 'selamanya');
-                        } elseif ($row->is_show_home == 1) {
+                        } elseif ((int)$row->is_show_home === 1) {
                             $status = '<span class="badge badge-success">Tampil Diterbaru</span>';
-                            $status .= '<br>Start: ' . date('d-M-Y', strtotime($row->approved_at));
-                            $status .= '<br>End: ' . ($row->end_date ? date('d-M-Y', strtotime($row->end_date)) : 'selamanya');
                         } else {
                             $status = '<span class="badge badge-success">Tampil Dipencarian</span>';
-                            $status .= '<br>Start: ' . date('d-M-Y', strtotime($row->approved_at));
-                            $status .= '<br>End: ' . ($row->end_date ? date('d-M-Y', strtotime($row->end_date)) : 'selamanya');
                         }
-                    } elseif ($row->is_publish == '0') {
-                        // tidak dipublikasi
+                        $status .= '<br>Start: ' . date('d-M-Y', strtotime($row->approved_at));
+                        $status .= '<br>End: ' . ($row->end_date ? date('d-M-Y', strtotime($row->end_date)) : 'selamanya');
+                    } elseif ((string)$row->is_publish === '0') {
                         $status = '<span class="badge badge-danger">Tidak Tampil</span>';
                         $status .= '<br>Start: ' . date('d-M-Y', strtotime($row->approved_at));
-                        $status .= '<br>End: ' . $row->end_date;
+                        $status .= '<br>End: ' . ($row->end_date ? date('d-M-Y', strtotime($row->end_date)) : '-');
                     } else {
-                        // sudah berakhir
                         $status = '<span class="badge badge-danger">Sudah Berakhir</span>';
                         $status .= '<br>Start: ' . date('d-M-Y', strtotime($row->approved_at));
-                        $status .= '<br>End: ' . $row->end_date;
+                        $status .= '<br>End: ' . ($row->end_date ? date('d-M-Y', strtotime($row->end_date)) : '-');
                     }
                 } else {
-                    // belum disetujui
                     $status = '<span class="badge badge-secondary">Belum Disetujui</span>';
                 }
-
                 return $status;
             })
             ->addColumn('stats', function ($row) {
-                return '-';
+                $sum = (float) $row->donate_total;
+                $spend = (float) $row->spend_sum;
+                $dss_spend = $sum-$spend;
+                
+                $spend_show = number_format($spend, 0, ',', '.');
+                $spend_percent = ($spend > 0 && $sum > 0) ? round(($spend / $sum) * 100, 2) : 0;
+
+                $dss_spend_show    = number_format($dss_spend, 0, ',', '.');
+                $dss_spend_percent = ($sum > 0 &&$dss_spend > 0) ? round(($sum / $dss_spend) * 100, 2) : 0;
+
+                // amanin tanda kutip biar onclick gak pecah
+                $safeTitle = ucwords(str_replace("'", '', $row->title));
+                $param = $row->id.", '".e($safeTitle)."'";
+
+                return '<span class="badge badge-light" style="cursor:pointer" onclick="inpSpend(' . $param . ')">
+                            <i class="fa fa-credit-card icon-gradient bg-strong-bliss"></i> Rp.' . $spend_show . ' (' . $spend_percent . '%)
+                        </span><br>
+                        <span class="badge badge-light">
+                            <i class="fa fa-heart icon-gradient bg-happy-green"></i> Rp.' . $dss_spend_show . ' (' . $dss_spend_percent . '%)
+                        </span>';
             })
             ->addColumn('donate', function ($row) {
-                return number_format($row->donate_sum);
+                $sum = (float) $row->donate_total;
+                $dss_ads_campaign   = $sum-$row->spend_ads_campaign;
+                
+                $spend_ads_campaign = number_format($row->spend_ads_campaign, 0, ',', '.');
+                $spend_ads_campaign_percent = ($sum > 0 && $row->spend_ads_campaign > 0) ? round(($sum / $row->spend_ads_campaign) * 100, 2) : 0;
+
+                $dss_ads_campaign_show   = number_format($dss_ads_campaign, 0, ',', '.');
+                $dss_ads_campaign_percent = ($sum > 0 && $dss_ads_campaign > 0) ? round(($sum / $dss_ads_campaign) * 100, 2) : 0;
+
+                return '<span class="badge badge-light">
+                            <i class="fa fa-credit-card icon-gradient bg-strong-bliss"></i> Rp.' . $spend_ads_campaign . ' (' . $spend_ads_campaign_percent . '%)
+                        </span><br>
+                        <span class="badge badge-light">
+                            <i class="fa fa-heart icon-gradient bg-happy-green"></i> Rp.' . $dss_ads_campaign_show . ' (' . $dss_ads_campaign_percent . '%)
+                        </span>';
             })
             ->addColumn('action', function ($row) {
                 $url_edit = route('adm.program.edit', $row->id);
-                $actionBtn =
-                    '<a href="' . $url_edit . '" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
-                    <a href="' . route('adm.program.detail.stats', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Statistik"><i class="fa fa-chart-line"></i></a>
-                    <a href="' . route('adm.program.detail.fundraiser', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Donasi"><i class="fa fa-donate"></i></a>
-                    <a href="' . route('adm.program.detail.donatur', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Donatur"><i class="fa fa-users"></i></a>
-                    <a href="' . route('adm.program.detail.fundraiser', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Fundraiser"><i class="fa fa-people-carry"></i></a>
-                    <a href="' . route('adm.program.detail.fundraiser', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Penyaluran"><i class="fa fa-hand-holding-heart"></i></a>
-                    <a href="' . route('adm.program.detail.fundraiser', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Operasional"><i class="fa fa-file-invoice-dollar"></i></a>
-                    <a href="' . route('program.index', $row->slug) . '" class="edit btn btn-info btn-xs mb-1" title="Link" target="_blank"><i class="fa fa-external-link-alt"></i></a>';
-                return $actionBtn;
+                return
+                    '<a href="'. $url_edit .'" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
+                    <a href="'. route('adm.program.detail.stats', $row->id) .'" class="edit btn btn-info btn-xs mb-1" title="Statistik"><i class="fa fa-chart-line"></i></a>
+                    <a href="'. route('adm.program.detail.fundraiser', $row->id) .'" class="edit btn btn-info btn-xs mb-1" title="Donasi"><i class="fa fa-donate"></i></a>
+                    <a href="'. route('adm.program.detail.donatur', $row->id) .'" class="edit btn btn-info btn-xs mb-1" title="Donatur"><i class="fa fa-users"></i></a>
+                    <a href="'. route('adm.program.detail.fundraiser', $row->id) .'" class="edit btn btn-info btn-xs mb-1" title="Fundraiser"><i class="fa fa-people-carry"></i></a>
+                    <a href="'. route('adm.program.detail.fundraiser', $row->id) .'" class="edit btn btn-info btn-xs mb-1" title="Penyaluran"><i class="fa fa-hand-holding-heart"></i></a>
+                    <a href="'. route('adm.program.detail.fundraiser', $row->id) .'" class="edit btn btn-info btn-xs mb-1" title="Operasional"><i class="fa fa-file-invoice-dollar"></i></a>
+                    <a href="'. route('program.index', $row->slug) .'" class="edit btn btn-info btn-xs mb-1" title="Link" target="_blank"><i class="fa fa-external-link-alt"></i></a>';
             })
+            // Server-side global search (biar tetap scalable)
             ->filter(function ($query) use ($request) {
-                if ($request->has('search') && !empty($request->input('search.value'))) {
-                    $search = $request->input('search.value');
+                $search = data_get($request->input('search'), 'value');
+                if (!empty($search)) {
                     $query->where(function ($q) use ($search) {
-                        $q->where('program.title', 'like', '%' . $search . '%')
-                            ->orWhere('program.slug', 'like', '%' . $search . '%')
-                            ->orWhere('program.short_desc', 'like', '%' . $search . '%')
-                            ->orWhere('organization.name', 'like', '%' . $search . '%');
+                        $q->where('program.title', 'like', "%{$search}%")
+                        ->orWhere('program.slug', 'like', "%{$search}%")
+                        ->orWhere('program.short_desc', 'like', "%{$search}%")
+                        ->orWhere('organization.name', 'like', "%{$search}%");
                     });
                 }
             }, true)
-            ->rawColumns(['action', 'nominal', 'status', 'stats', 'donate'])
+            ->rawColumns(['action','nominal','status','stats','donate'])
             ->make(true);
     }
+
 
     /**
      * Datatables Program Dashboard
