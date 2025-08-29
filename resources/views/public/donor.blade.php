@@ -1,8 +1,8 @@
 @extends('layouts.public', [
-    'second_title' => 'Penyaluran Dana',
+    'second_title' => 'Donatur',
 ])
 
-@section('page_title', 'Penyaluran Dana')
+@section('page_title', 'Donatur')
 
 @section('content')
     <header class="section-t-space pt-0">
@@ -14,7 +14,7 @@
                     <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
             </a>
-            <h1 class="title-font">Penyaluran Dana</h1>
+            <h1 class="title-font">Donatur</h1>
         </div>
     </header>
 
@@ -40,7 +40,7 @@
             @if(isset($program->nominal_approved) && $program->nominal_approved > 0)
             <div class="progress mt-2" role="progressbar" aria-label="Basic example" aria-valuenow="{{ ceil(($sum_amount / $program->nominal_approved) * 100) }}" aria-valuemin="0"
                 aria-valuemax="100" style="height: 5px">
-                <div class="progress-bar"
+                <div class="progress-bar" 
                     style="width: {{ ceil(($sum_amount / $program->nominal_approved) * 100) }}%"></div>
             </div>
             @endif
@@ -107,62 +107,79 @@
 
     <section class="section-t-space pt-0 mt-1" style="padding-bottom: 80px;">
         <div class="custom-container">
-            <div class="row pt-3 gx-1">
-                <div class="col-6">
-                    <div class="card w-full">
-                        <div class="card-body">
-                            <h6 class="card-title">Dana Dicairkan</h6>
-                            <p class="card-text">Rp {{ number_format($total_disbursed, 0, ',', '.') }}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="card w-100">
-                        <div class="card-body">
-                            <h6 class="card-title">Total Penyaluran</h6>
-                            <p class="card-text">{{ $count_payout }} Kali</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <div class="row gy-3 pt-4">
                 <div class="col-12">
-                    <h3 class="fw-semibold">Riwayat Penyaluran Dana</h3>
+                    <h3 class="fw-bold fs-16" id="donasi">Donatur ({{ number_format($count_donate) }})</h3>
                 </div>
+            </div>
+            <div class="row gy-3" id="donor-list">
+                @include('public.partials.donor_items', ['donors' => $donors])
+            </div>
 
-                @forelse($payouts as $payout)
-                    <div class="col-12">
-                        <div class="d-flex align-items-center">
-                            <div class="flex-shrink-0">
-                                <img src="{{ asset('public/images/fundraiser/' . $program->programOrganization->logo) }}" alt="..." class="avatar-sm rounded-circle">
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h3 class="mb-0">{{ $program->programOrganization->name }}</h3>
-                                <small>{{ \Carbon\Carbon::parse($payout->paid_at)->locale('id')->translatedFormat('d F Y') }}</small>
-                            </div>
-                        </div>
-                        <h2 class="mt-4" style="font-size: 1.2rem;">Pencairan Dana Rp {{ number_format($payout->nominal_approved, 0, ',', '.') }}
-                            <span class="badge @switch($payout->status)
-                                @case('request') bg-warning text-dark @break
-                                @case('process') bg-info text-dark @break
-                                @case('paid') bg-success @break
-                                @case('cancel') bg-secondary @break
-                                @case('reject') bg-danger @break
-                                @default bg-light text-dark
-                            @endswitch">{{ ucfirst($payout->status) }}</span>
-                        </h2>
-                        <p class="mt-2">{!! $payout->desc_request !!}</p>
-                        <hr>
-                    </div>
-                @empty
-                    <div class="col-12 text-center">
-                        <p>Belum ada data penyaluran.</p>
-                    </div>
-                @endforelse
+            <div id="loading" style="display: none; text-align: center; padding: 20px;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
             </div>
         </div>
     </section>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let page = 1;
+        let lastPage = {{ $donors->lastPage() }};
+        let isLoading = false;
+        const donorList = document.getElementById('donor-list');
+        const loadingIndicator = document.getElementById('loading');
+
+        function loadMoreData() {
+            if (isLoading || page >= lastPage) {
+                if (page >= lastPage) {
+                    loadingIndicator.style.display = 'none';
+                }
+                return;
+            }
+
+            isLoading = true;
+            page++;
+            loadingIndicator.style.display = 'block';
+
+            fetch('{{ url()->current() }}?page=' + page, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                loadingIndicator.style.display = 'none';
+                if (data.html && data.html.trim().length > 0) {
+                    donorList.insertAdjacentHTML('beforeend', data.html);
+                    lastPage = data.last_page;
+                } else {
+                    lastPage = page;
+                }
+                isLoading = false;
+            })
+            .catch(error => {
+                console.error('Error loading more data:', error);
+                loadingIndicator.style.display = 'none';
+                isLoading = false;
+            });
+        }
+
+        window.addEventListener('scroll', () => {
+            const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+            if (scrollTop + clientHeight >= scrollHeight - 150) {
+                loadMoreData();
+            }
+        });
+    });
+    </script>
 @endsection
 
 @section('content_modal')

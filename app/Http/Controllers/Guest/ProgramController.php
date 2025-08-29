@@ -227,7 +227,7 @@ class ProgramController extends Controller
     {
         $program = Program::with('programOrganization')
             ->where('slug', $request->slug)
-            ->select('id', 'title', 'slug', 'short_desc', 'image', 'thumbnail', 'nominal_approved', 'organization_id')
+            ->select('program.*')
             ->where('is_publish', 1)
             ->first();
 
@@ -238,9 +238,57 @@ class ProgramController extends Controller
                 ->get();
 
             $total_disbursed = $payouts->sum('nominal_approved');
-            $total_payouts = $payouts->count();
+            
+            $transaction = Transaction::where('program_id', $program->id)->where('status', 'success');
+            $sum_amount = $transaction->sum('nominal_final');
+            if($program->show_minus > 0 && !is_null($program->show_minus) && $sum_amount > 0) {
+                $sum_amount = $sum_amount - ($sum_amount * $program->show_minus / 100);
+            }
+            $count_donate = $transaction->count();
+            $sum_news = ProgramInfo::select('id')->where('program_id', $program->id)->where('is_publish', 1)->count();
+            $count_payout = $payouts->count();
 
-            return view('public.payout', compact('program', 'payouts', 'total_disbursed', 'total_payouts'));
+            return view('public.payout', compact('program', 'payouts', 'total_disbursed', 'sum_amount', 'count_donate', 'sum_news', 'count_payout'));
+        } else {
+            return view('public.not_found');
+        }
+    }
+
+    public function donor(Request $request)
+    {
+        $program = Program::with('programOrganization')
+            ->where('slug', $request->slug)
+            ->select('program.*')
+            ->where('is_publish', 1)
+            ->first();
+
+        if($program) {
+            $donors = Transaction::join('donatur', 'donatur.id', 'transaction.donatur_id')
+                ->where('program_id', $program->id)
+                ->where('status', 'success')
+                ->select('transaction.nominal_final', 'transaction.created_at', 'transaction.is_show_name', 'transaction.message', 'donatur.name')
+                ->orderBy('transaction.created_at', 'DESC')
+                ->paginate(10);
+
+            $donors->map(function($donor, $key) {
+                return $donor->date_string = (new FormatDateController)->timeDonate($donor->created_at);
+            });
+
+            if ($request->ajax()) {
+                $view = view('public.partials.donor_items', compact('donors'))->render();
+                return response()->json(['html' => $view, 'last_page' => $donors->lastPage()]);
+            }
+
+            $transaction = Transaction::where('program_id', $program->id)->where('status', 'success');
+            $sum_amount = $transaction->sum('nominal_final');
+            if($program->show_minus > 0 && !is_null($program->show_minus) && $sum_amount > 0) {
+                $sum_amount = $sum_amount - ($sum_amount * $program->show_minus / 100);
+            }
+            $count_donate = $transaction->count();
+            $sum_news = ProgramInfo::select('id')->where('program_id', $program->id)->where('is_publish', 1)->count();
+            $count_payout = \App\Models\Payout::select('id')->where('program_id', $program->id)->where('status', 'paid')->count();
+
+            return view('public.donor', compact('program', 'donors', 'sum_amount', 'count_donate', 'sum_news', 'count_payout'));
         } else {
             return view('public.not_found');
         }
