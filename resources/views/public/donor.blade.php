@@ -2,6 +2,40 @@
     'second_title' => 'Donatur',
 ])
 
+@section('css_plugins')
+<style>
+.switch-container {
+    background-color: #f1f5f9;
+    border-radius: 50px;
+    padding: 4px;
+    display: inline-block;
+}
+.switch-pills {
+    display: flex;
+    align-items: center;
+}
+.switch-link {
+    background-color: transparent;
+    color: #475569;
+    border-radius: 50px;
+    padding: 0.35rem 0.75rem;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.switch-link:hover {
+    color: #0d6efd;
+}
+.switch-link.active {
+    background-color: #ffffff;
+    color: #6698e2ff;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+}
+</style>
+@endsection
+
 @section('page_title', 'Donatur')
 
 @section('content')
@@ -107,12 +141,20 @@
 
     <section class="section-t-space pt-0 mt-1" style="padding-bottom: 80px;">
         <div class="custom-container">
-            <div class="row gy-3 pt-4">
-                <div class="col-12">
-                    <h3 class="fw-bold fs-16" id="donasi">Donatur ({{ number_format($count_donate) }})</h3>
+            <div class="row gy-3 pt-4 align-items-center">
+                <div class="col-6">
+                    <h3 class="fw-bold fs-16 mb-0" id="donasi">Donatur ({{ number_format($count_donate) }})</h3>
+                </div>
+                <div class="col-6 d-flex justify-content-end">
+                    <div class="switch-container">
+                        <div class="switch-pills">
+                            <a class="switch-link {{ ($sort ?? 'terbaru') == 'terbaru' ? 'active' : '' }}" href="{{ route('program.donor', ['slug' => $program->slug, 'sort' => 'terbaru']) }}">Terbaru</a>
+                            <a class="switch-link {{ $sort == 'terbesar' ? 'active' : '' }}" href="{{ route('program.donor', ['slug' => $program->slug, 'sort' => 'terbesar']) }}">Terbesar</a>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="row gy-3" id="donor-list">
+            <div class="row gy-3 mt-2" id="donor-list">
                 @include('public.partials.donor_items', ['donors' => $donors])
             </div>
 
@@ -131,6 +173,7 @@
         let isLoading = false;
         const donorList = document.getElementById('donor-list');
         const loadingIndicator = document.getElementById('loading');
+        const sortOrder = '{{ $sort ?? 'terbaru' }}';
 
         function loadMoreData() {
             if (isLoading || page >= lastPage) {
@@ -144,7 +187,7 @@
             page++;
             loadingIndicator.style.display = 'block';
 
-            fetch('{{ url()->current() }}?page=' + page, {
+            fetch(`{{ url()->current() }}?sort=${sortOrder}&page=${page}`, {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 }

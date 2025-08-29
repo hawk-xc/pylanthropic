@@ -263,12 +263,19 @@ class ProgramController extends Controller
             ->first();
 
         if($program) {
-            $donors = Transaction::join('donatur', 'donatur.id', 'transaction.donatur_id')
+            $donorsQuery = Transaction::join('donatur', 'donatur.id', 'transaction.donatur_id')
                 ->where('program_id', $program->id)
                 ->where('status', 'success')
-                ->select('transaction.nominal_final', 'transaction.created_at', 'transaction.is_show_name', 'transaction.message', 'donatur.name')
-                ->orderBy('transaction.created_at', 'DESC')
-                ->paginate(10);
+                ->select('transaction.nominal_final', 'transaction.created_at', 'transaction.is_show_name', 'transaction.message', 'donatur.name');
+
+            $sort = $request->input('sort', 'terbaru');
+            if ($sort == 'terbesar') {
+                $donorsQuery->orderBy('transaction.nominal_final', 'DESC');
+            } else {
+                $donorsQuery->orderBy('transaction.created_at', 'DESC');
+            }
+            
+            $donors = $donorsQuery->paginate(10);
 
             $donors->map(function($donor, $key) {
                 return $donor->date_string = (new FormatDateController)->timeDonate($donor->created_at);
@@ -288,7 +295,7 @@ class ProgramController extends Controller
             $sum_news = ProgramInfo::select('id')->where('program_id', $program->id)->where('is_publish', 1)->count();
             $count_payout = \App\Models\Payout::select('id')->where('program_id', $program->id)->where('status', 'paid')->count();
 
-            return view('public.donor', compact('program', 'donors', 'sum_amount', 'count_donate', 'sum_news', 'count_payout'));
+            return view('public.donor', compact('program', 'donors', 'sum_amount', 'count_donate', 'sum_news', 'count_payout', 'sort'));
         } else {
             return view('public.not_found');
         }
