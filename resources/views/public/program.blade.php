@@ -641,7 +641,6 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery-lazyload@1.9.7/jquery.lazyload.min.js"></script>
 @endsection
 
-
 @section('js_inline')
     <script type="text/javascript">
         $("img.lazyload").lazyload();

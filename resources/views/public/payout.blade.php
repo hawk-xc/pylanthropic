@@ -189,3 +189,101 @@
     </div>
     <!-- cart popup end -->
 @endsection
+
+@section('js_inline')
+    <script type="text/javascript">
+        $("img.lazyload").lazyload();
+
+        $(".share-btn").on("click", function() {
+            var myOffcanvas = document.getElementById("offcanvas");
+            var bsOffcanvas = new bootstrap.Offcanvas(myOffcanvas);
+            bsOffcanvas.show();
+        });
+
+        // action link share
+        $(".btn-icon-share").on("click", function() {
+            let name = $(this).attr('aria-label');
+            let uri = "{{ url('/') . '/' . $program->slug }}";
+            let txt =
+                'Jangan%20biarakan%20mereka%20merasa%20sendirian!%0AYuk%20berinfaq%20untuk%20memuliakan%20dan%20membahagiakan%20adik-adik%20yatim%20yang%20membutuhkan%20bantuan..%20Bantu%20Donasi%20dengan%20klik';
+            let txt2 =
+                'Jangan biarkan mereka merasa sendirian! Yuk bantu bersama yang membutuhkan bantuan, dengan klik';
+            let utm = 'utm_source=';
+            let utm2 =
+                'utm_source%3Dsocialsharing_donor_web_null%26utm_medium%3Dshare_campaign_whatsapp%26utm_campaign%3Dshare_detail_campaign';
+            if (name == 'facebook') {
+                var url = encodeURI('https://www.facebook.com/sharer/sharer.php?u=' + uri + '?' + utm +
+                    'fb&quote%3D' + txt2);
+                window.open(url, 'name', 'width=600,height=400');
+            } else if (name == 'twitter') {
+                let url = encodeURI('https://twitter.com/intent/tweet?url=' + uri + '?' + utm + 'tw&text=' + txt2);
+                window.open(url, 'name', 'width=600,height=400');
+            } else if (name == 'whatsapp') {
+                let url = encodeURI('https://api.whatsapp.com/send?phone=&text=' + txt2 + ' ' + uri + '?' + utm +
+                    'wa');
+                window.open(url, 'name', 'width=600,height=400');
+            } else if (name == 'telegram') {
+                let url = encodeURI('https://telegram.me/share/url?url=' + uri + '&text={{ $program->title }}');
+                window.open(url, 'name', 'width=600,height=400');
+            } else if (name == 'line') {
+                let url = encodeURI('https://social-plugins.line.me/lineit/share?url=' + uri + '?' + utm +
+                    'line&text=' + txt2);
+                window.open(url, 'name', 'width=600,height=400');
+            } else if (name == 'linkedin') {
+                let url = encodeURI('https://www.linkedin.com/shareArticle?url=' + uri +
+                    '&mini=true&title={{ $program->title }}&summary={{ $program->short_desc }}&source={{ url('/') }}'
+                    );
+                window.open(url, 'name', 'width=600,height=400');
+            } else if (name == 'email') {
+                let url = encodeURI(
+                    'mailto:Bantubersama.com<contact@bantubersama.com>?subject={{ $program->title }}&body=' +
+                    txt2 + ' ' + uri);
+                window.open(url);
+            } else {
+                let link_share = $(this).attr('data-clipboard-text');
+                navigator.clipboard.writeText(link_share);
+                $('#copyUrlToast').toast({
+                    animation: false,
+                    delay: 3000
+                });
+                $('#copyUrlToast').toast('show');
+
+                // var myAlert = document.getElementById('copyUrlToast');//select id of toast
+                // var bsAlert = new bootstrap.Toast(myAlert);//inizialize it
+                // bsAlert.show();//show it
+
+                // alert('ok');
+            }
+        });
+
+        // Baca selengkapnya About
+        $("#about-more").on("click", function() {
+            $('#preview-about').addClass('no-after');
+            $('#preview-about').css('height', '100%');
+            $('#preview-about').css('max-height', '100%');
+            $(this).remove();
+
+            $.ajax({
+                type: "POST",
+                url: "{{ route('program.count.read_more', $program->slug) }}",
+                data: {
+                    "_token": "{{ csrf_token() }}"
+                },
+                success: function(data) {
+                    console.log(data);
+                    if (data == 'success') {
+                        // toast success  
+                    }
+                }
+            });
+        });
+
+        // Baca selengkapnya Info
+        $("#info-more").on("click", function() {
+            $('#preview-info').addClass('no-after');
+            $('#preview-info').css('height', '100%');
+            $('#preview-info').css('max-height', '100%');
+            $(this).remove();
+        });
+    </script>
+@endsection
