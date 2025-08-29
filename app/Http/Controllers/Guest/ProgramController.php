@@ -271,6 +271,9 @@ class ProgramController extends Controller
             $sort = $request->input('sort', 'terbaru');
             if ($sort == 'terbesar') {
                 $donorsQuery->orderBy('transaction.nominal_final', 'DESC');
+            } else if ($sort == 'berpesan') {
+                $donorsQuery->whereNotNull('transaction.message')->where('transaction.message', '!=', '');
+                $donorsQuery->orderBy('transaction.created_at', 'DESC');
             } else {
                 $donorsQuery->orderBy('transaction.created_at', 'DESC');
             }
