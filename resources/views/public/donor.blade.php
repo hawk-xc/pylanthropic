@@ -48,7 +48,6 @@
                     <polyline points="12 19 5 12 12 5"></polyline>
                 </svg>
             </a>
-            <h1 class="title-font">Donatur</h1>
         </div>
     </header>
 
