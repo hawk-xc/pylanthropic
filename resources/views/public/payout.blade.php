@@ -4,6 +4,18 @@
 
 @section('page_title', 'Penyaluran Dana')
 
+@section('css_plugins')
+<style>
+.btn-donate-detail-full {
+    background-color: #fff;
+    border: 1px solid #e5e7eb;
+    padding: 10px;
+    text-align: center;
+    border-radius: 8px;
+}
+</style>
+@endsection
+
 @section('content')
     <header class="section-t-space pt-0">
         <div class="header-panel header-title header-transparent">
@@ -106,21 +118,34 @@
 
     <section class="section-t-space pt-0 mt-1" style="padding-bottom: 80px;">
         <div class="custom-container">
-            <div class="row pt-3 gx-1">
-                <div class="col-6">
-                    <div class="card w-full">
-                        <div class="card-body">
-                            <h6 class="card-title">Dana Dicairkan</h6>
-                            <p class="card-text">Rp {{ number_format($total_disbursed, 0, ',', '.') }}</p>
+            <div class="row pt-3">
+                <div class="col-12">
+                    <div class="btn-donate-detail-full">
+                        <div>
+                            <!-- Icon Uang (20x20) -->
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ikon uang" class="mt-0.5">
+                            <!-- bill -->
+                            <rect x="1.5" y="4.25" width="19" height="11.5" rx="2.25" fill="#F8FAFB"/>
+                            <path d="M4 6.5h16M4 13h10" stroke="#6A6A6A" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+                            <!-- left emblem on bill -->
+                            <circle cx="6.5" cy="9.75" r="1.2" fill="#6A6A6A"/>
+
+                            <!-- coin (foreground) -->
+                            <g transform="translate(12,8)">
+                                <circle cx="4" cy="4" r="4.1" fill="#3BA8DD"/>
+                                <path d="M4 1.6v5.5" stroke="#FFFFFF" stroke-width="0.9" stroke-linecap="round"/>
+                                <path d="M2.1 3.2h3.8M2.1 5.2h3.8" stroke="#FFFFFF" stroke-width="0.9" stroke-linecap="round"/>
+                            </g>
+
+                            <!-- subtle outline & shadow -->
+                            <path d="M3 3.5a1.25 1.25 0 0 0-1.5 1.25v9.5A1.25 1.25 0 0 0 3 15.5h18a1.25 1.25 0 0 0 1.5-1.25v-9.5A1.25 1.25 0 0 0 21 3.5H3z"
+                                    stroke="#E6E6E6" stroke-width="0.6" fill="none"/>
+                            </svg>
+
+                            <span class="fw-semibold fs-14">Rp {{ number_format($total_disbursed, 0, ',', '.') }}</span>
                         </div>
-                    </div>
-                </div>
-                <div class="col-6">
-                    <div class="card w-100">
-                        <div class="card-body">
-                            <h6 class="card-title">Total Penyaluran</h6>
-                            <p class="card-text">{{ $count_payout }} Kali</p>
-                        </div>
+                        <div class="fs-13">Dana Dicairkan</div>
                     </div>
                 </div>
             </div>
