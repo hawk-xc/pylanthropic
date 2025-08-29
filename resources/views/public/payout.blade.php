@@ -155,7 +155,8 @@
                         <hr>
                     </div>
                 @empty
-                    <div class="col-12 text-center">
+                    <div class="col-12 text-center h-100 p-5 d-flex flex-column justify-content-center align-items-center gap-2" style="min-height: 350px;">
+                        <img src="{{ asset('leaf.png') }}" alt="..." class="img-fluid w-25 opacity-50">
                         <p>Belum ada data penyaluran.</p>
                     </div>
                 @endforelse

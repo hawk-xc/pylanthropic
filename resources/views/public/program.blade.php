@@ -486,7 +486,8 @@
                     <div class="fw-bold fs-16" id="donasi">Donatur</div>
                 </div>
                 <div class="row mb-3">
-                    <div class="col-12">
+                    <div class="col-12 text-center h-100 p-5 d-flex flex-column justify-content-center align-items-center gap-3" style="min-height: 350px;">
+                        <img src="{{ asset('give-love.png') }}" alt="..." class="img-fluid w-25 opacity-50">
                         <div class="text-center fs-14 lh-20 text-muted">Jadikan Anda sebagai pelopor orang baik untuk
                             program ini</div>
                     </div>
