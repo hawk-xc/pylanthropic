@@ -49,6 +49,7 @@
             opacity: 0.05
         }
 
+<<<<<<< HEAD
         .swiper-wrapper {
             align-items: stretch;
         }
@@ -95,6 +96,16 @@
         .program-image {
             max-height: 90px;
             background-color: #eee;
+=======
+        /* Judul fleksibel: tidak dipotong, tapi ada tinggi minimum */
+        .two-line {
+            --lh: 12px;
+            --lines: 2;
+            line-height: var(--lh);
+            min-height: calc(var(--lh) * var(--lines));
+            overflow-wrap: anywhere;
+            word-break: break-word;
+>>>>>>> bantubersama_dev
         }
     </style>
 @endsection
@@ -180,39 +191,54 @@
                     @foreach ($selected as $vsl)
                         <div class="swiper-slide">
                             <a href="{{ url('/') . '/' . $vsl->slug }}" class="">
-                                <div class="product-box">
-                                    <img class="img-fluid rounded-top lazyload program-image"
-                                        data-original="{{ asset('public/images/program') . '/' . $vsl->thumbnail }}"
-                                        alt="{{ ucwords($vsl->title) }}" />
-                                    <div class="product-box-detail product-box-bg">
-                                        <h5 class="two-line mt-1 mb-1 fs-11 lh-14">{{ ucwords($vsl->title) }}</h5>
-                                        <ul class="timing mt-2 mb-2">
-                                            <li class="fs-11 lh-14">
-                                                {{ ucwords($vsl->name) }}
-                                                @if ($vsl->status == 'verified' || $vsl->status == 'verif_org')
-                                                    <span class="star"><i class="ri-star-s-fill"></i></span>
-                                                @endif
-                                            </li>
-                                        </ul>
-                                        <div class="progress mt-1" role="progressbar" aria-label="Basic example"
-                                            aria-valuenow="86" aria-valuemin="0" aria-valuemax="100" style="height: 5px">
-                                            <div class="progress-bar"
-                                                style="width: {{ ceil(($vsl->sum_amount / $vsl->nominal_approved) * 100) }}%">
-                                            </div>
+                                <div class="product-box d-flex flex-column">
+                                    <!-- gambar tetap di atas -->
+                                    <div class="ratio ratio-16x9">
+                                        <img class="img-fluid rounded-top lazyload object-fit-cover"
+                                            data-original="{{ asset('public/images/program') . '/' . $vsl->thumbnail }}"
+                                            alt="{{ ucwords($vsl->title) }}" />
+                                    </div>
+
+                                    <!-- detail card -->
+                                    <div class="product-box-detail product-box-bg d-flex flex-column flex-grow-1">
+                                        <!-- konten utama -->
+                                        <div class="flex-grow-1">
+                                            <h5 class="two-line mt-1 mb-1 fs-11 lh-14">{{ ucwords($vsl->title) }}
+                                            </h5>
+                                            <ul class="timing mt-2 mb-2">
+                                                <li class="fs-11 lh-14 two-line">
+                                                    {{ ucwords($vsl->name) }}
+                                                    @if ($vsl->status == 'verified' || $vsl->status == 'verif_org')
+                                                        <span class="star"><i class="ri-star-s-fill"></i></span>
+                                                    @endif
+                                                </li>
+                                            </ul>
                                         </div>
-                                        <div class="bottom-panel">
-                                            <div class="pe-0 fw-semibold fs-11 lh-16">Rp
-                                                {{ str_replace(',', '.', number_format($vsl->sum_amount)) }}</div>
-                                            <div class="fw-semibold fs-11 lh-16 text-end">
-                                                {{ now()->diffInDays(substr($vsl->end_date, 0, 10)) }}
+
+                                        <!-- bagian bawah selalu rata -->
+                                        <div class="mt-auto">
+                                            <div class="progress mt-1" role="progressbar" aria-valuenow="86"
+                                                aria-valuemin="0" aria-valuemax="100" style="height: 5px">
+                                                <div class="progress-bar"
+                                                    style="width: {{ ceil(($vsl->sum_amount / $vsl->nominal_approved) * 100) }}%">
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div class="bottom-panel mt-0">
-                                            <div class="fw-light fs-10 lh-14 pe-0">Donasi Terkumpul</div>
-                                            <div class="fw-light fs-10 lh-14 text-end">Hari Lagi</div>
+                                            <div class="bottom-panel">
+                                                <div class="pe-0 fw-semibold fs-11 lh-16">Rp
+                                                    {{ str_replace(',', '.', number_format($vsl->sum_amount)) }}
+                                                </div>
+                                                <div class="fw-semibold fs-11 lh-16 text-end">
+                                                    {{ now()->diffInDays(substr($vsl->end_date, 0, 10)) }}
+                                                </div>
+                                            </div>
+                                            <div class="bottom-panel mt-0">
+                                                <div class="fw-light fs-10 lh-14 pe-0">Donasi Terkumpul</div>
+                                                <div class="fw-light fs-10 lh-14 text-end">Hari Lagi</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+
                             </a>
                         </div>
                     @endforeach
@@ -241,7 +267,7 @@
                                     <div class="product-box-detail product-box-bg">
                                         <h5 class="two-line mt-1 mb-1 fs-11 lh-14">{{ ucwords($vu->title) }}</h5>
                                         <ul class="timing mt-2 mb-2">
-                                            <li class="fs-11 lh-14">
+                                            <li class="fs-11 lh-14 two-line">
                                                 {{ ucwords($vu->name) }}
                                                 @if ($vu->status == 'verified' || $vu->status == 'verif_org')
                                                     <span class="star"><i class="ri-star-s-fill"></i></span>
@@ -478,11 +504,11 @@
                                 </div>
                                 <div class="order-type">
                                     <!-- <div class="auth-form search-form">
-                              <div class="form-check">
-                                <label class="form-check-label" for="fixed1">Sosial</label>
-                                <input class="form-check-input" type="radio" name="kategori" value="sosial" />
-                              </div>
-                            </div> -->
+                                          <div class="form-check">
+                                            <label class="form-check-label" for="fixed1">Sosial</label>
+                                            <input class="form-check-input" type="radio" name="kategori" value="sosial" />
+                                          </div>
+                                        </div> -->
                                     <div class="auth-form search-form">
                                         <div class="form-check">
                                             <label class="form-check-label" for="fixed1">Bencana Alam</label>
@@ -568,19 +594,19 @@
 
     <!-- pwa install app popup start -->
     <!-- <div class="offcanvas offcanvas-bottom addtohome-popup theme-offcanvas" tabindex="-1" id="offcanvas">
-              <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-              <div class="offcanvas-body small">
-                <div class="app-info">
-                  <img src="{{ asset('Logo Bantubersama.png') }}" class="img-fluid" alt="" />
-                  <div class="content">
-                    <h3>Bantubersama</h3>
-                    <a href="#">www.bantubersama.com</a>
-                  </div>
-                </div>
-                <a href="#!" class="btn theme-btn-me install-app btn-inline home-screen-btn m-0" id="installApp">Add to Home
-                  Screen</a>
-              </div>
-            </div> -->
+                          <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                          <div class="offcanvas-body small">
+                            <div class="app-info">
+                              <img src="{{ asset('Logo Bantubersama.png') }}" class="img-fluid" alt="" />
+                              <div class="content">
+                                <h3>Bantubersama</h3>
+                                <a href="#">www.bantubersama.com</a>
+                              </div>
+                            </div>
+                            <a href="#!" class="btn theme-btn-me install-app btn-inline home-screen-btn m-0" id="installApp">Add to Home
+                              Screen</a>
+                          </div>
+                        </div> -->
     <!-- pwa install app popup start -->
 @endsection
 

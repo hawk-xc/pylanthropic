@@ -1,20 +1,51 @@
 @extends('layouts.public', [
-    'second_title' => 'Penyaluran Dana',
+    'second_title' => 'Donatur',
 ])
-
-@section('page_title', 'Penyaluran Dana')
 
 @section('css_plugins')
 <style>
-.btn-donate-detail-full {
-    background-color: #fff;
-    border: 1px solid #e5e7eb;
-    padding: 10px;
-    text-align: center;
-    border-radius: 8px;
+.switch-container {
+    background-color: #f1f5f9;
+    border-radius: 50px;
+    padding: 4px;
+    display: inline-block;
+}
+.switch-pills {
+    display: flex;
+    align-items: center;
+}
+.switch-link {
+    background-color: transparent;
+    color: #475569;
+    border-radius: 50px;
+    padding: 0.35rem 0.75rem;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.switch-link:hover {
+    color: #0d6efd;
+}
+.switch-link.active {
+    background-color: #ffffff;
+    color: #6698e2ff;
+    font-weight: 600;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
 }
 </style>
 @endsection
+
+@section('js_plugins')
+    <!-- JQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"
+        integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+    <script src="{{ asset('public') }}/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-lazyload@1.9.7/jquery.lazyload.min.js"></script>
+@endsection
+
+@section('page_title', 'Donatur')
 
 @section('content')
     <header class="section-t-space pt-0">
@@ -51,7 +82,7 @@
             @if(isset($program->nominal_approved) && $program->nominal_approved > 0)
             <div class="progress mt-2" role="progressbar" aria-label="Basic example" aria-valuenow="{{ ceil(($sum_amount / $program->nominal_approved) * 100) }}" aria-valuemin="0"
                 aria-valuemax="100" style="height: 5px">
-                <div class="progress-bar"
+                <div class="progress-bar" 
                     style="width: {{ ceil(($sum_amount / $program->nominal_approved) * 100) }}%"></div>
             </div>
             @endif
@@ -118,86 +149,33 @@
 
     <section class="section-t-space pt-0 mt-1" style="padding-bottom: 80px;">
         <div class="custom-container">
-            <div class="row pt-3">
+            <div class="row gy-3 pt-4">
                 <div class="col-12">
-                    <div class="btn-donate-detail-full">
-                        <div>
-                            <!-- Icon Uang (20x20) -->
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                                xmlns="http://www.w3.org/2000/svg" role="img" aria-label="ikon uang" class="mt-0.5">
-                            <!-- bill -->
-                            <rect x="1.5" y="4.25" width="19" height="11.5" rx="2.25" fill="#F8FAFB"/>
-                            <path d="M4 6.5h16M4 13h10" stroke="#6A6A6A" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
-                            <!-- left emblem on bill -->
-                            <circle cx="6.5" cy="9.75" r="1.2" fill="#6A6A6A"/>
-
-                            <!-- coin (foreground) -->
-                            <g transform="translate(12,8)">
-                                <circle cx="4" cy="4" r="4.1" fill="#3BA8DD"/>
-                                <path d="M4 1.6v5.5" stroke="#FFFFFF" stroke-width="0.9" stroke-linecap="round"/>
-                                <path d="M2.1 3.2h3.8M2.1 5.2h3.8" stroke="#FFFFFF" stroke-width="0.9" stroke-linecap="round"/>
-                            </g>
-
-                            <!-- subtle outline & shadow -->
-                            <path d="M3 3.5a1.25 1.25 0 0 0-1.5 1.25v9.5A1.25 1.25 0 0 0 3 15.5h18a1.25 1.25 0 0 0 1.5-1.25v-9.5A1.25 1.25 0 0 0 21 3.5H3z"
-                                    stroke="#E6E6E6" stroke-width="0.6" fill="none"/>
-                            </svg>
-
-                            <span class="fw-semibold fs-14">Rp {{ number_format($total_disbursed, 0, ',', '.') }}</span>
+                    <h3 class="fw-bold fs-16 mb-2" id="donasi">Donatur ({{ number_format($count_donate) }})</h3>
+                </div>
+                <div class="col-12 d-flex justify-content-center">
+                    <div class="switch-container">
+                        <div class="switch-pills">
+                            <a class="switch-link {{ ($sort ?? 'terbaru') == 'terbaru' ? 'active' : '' }}" href="{{ route('program.donor', ['slug' => $program->slug, 'sort' => 'terbaru']) }}">Terbaru</a>
+                            <a class="switch-link {{ $sort == 'terbesar' ? 'active' : '' }}" href="{{ route('program.donor', ['slug' => $program->slug, 'sort' => 'terbesar']) }}">Terbesar</a>
+                            <a class="switch-link {{ $sort == 'berpesan' ? 'active' : '' }}" href="{{ route('program.donor', ['slug' => $program->slug, 'sort' => 'berpesan']) }}">Berpesan</a>
                         </div>
-                        <div class="fs-13">Dana Dicairkan</div>
                     </div>
                 </div>
             </div>
+            <div class="row gy-3 mt-2" id="donor-list">
+                @include('public.partials.donor_items', ['donors' => $donors])
+            </div>
 
-            <div class="row gy-3 pt-4">
-                <div class="col-12">
-                    <h3 class="fw-semibold">Riwayat Penyaluran Dana</h3>
+            <div id="loading" style="display: none; text-align: center; padding: 20px;">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
                 </div>
-
-                @forelse($payouts as $payout)
-                    <div class="col-12">
-                        <div class="d-flex align-items-center">
-                            <div class="flex-shrink-0">
-                                <img src="{{ asset('public/images/fundraiser/' . $program->programOrganization->logo) }}" alt="..." class="avatar-sm rounded-circle">
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h3 class="mb-0">{{ $program->programOrganization->name }}</h3>
-                                <small>{{ \Carbon\Carbon::parse($payout->paid_at)->locale('id')->translatedFormat('d F Y') }}</small>
-                            </div>
-                        </div>
-                        <h2 class="mt-4" style="font-size: 1.2rem;">Pencairan Dana Rp {{ number_format($payout->nominal_approved, 0, ',', '.') }}
-                            <span class="badge @switch($payout->status)
-                                @case('request') bg-warning text-dark @break
-                                @case('process') bg-info text-dark @break
-                                @case('paid') bg-success @break
-                                @case('cancel') bg-secondary @break
-                                @case('reject') bg-danger @break
-                                @default bg-light text-dark
-                            @endswitch">{{ ucfirst($payout->status) }}</span>
-                        </h2>
-                        <p class="mt-2">{!! $payout->desc_request !!}</p>
-                        <hr>
-                    </div>
-                @empty
-                    <div class="col-12 text-center h-100 p-5 d-flex flex-column justify-content-center align-items-center gap-2" style="min-height: 350px;">
-                        <img src="{{ asset('leaf.png') }}" alt="..." class="img-fluid w-25 opacity-50">
-                        <p>Belum ada data penyaluran.</p>
-                    </div>
-                @endforelse
             </div>
         </div>
     </section>
-@endsection
 
-@section('js_plugins')
-    <!-- JQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"
-        integrity="sha256-2Pmvv0kuTBOenSvLm6bvfBSSHrUJ+3A7x6P5Ebd07/g=" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
-    <script src="{{ asset('public') }}/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery-lazyload@1.9.7/jquery.lazyload.min.js"></script>
-@endsection
+    @endsection
 
 @section('content_modal')
     <!-- cart popup start -->
@@ -323,7 +301,10 @@
 @endsection
 
 @section('js_inline')
-    <script type="text/javascript">
+<script type="text/javascript">
+document.addEventListener('DOMContentLoaded', function () {
+    // jQuery dependent scripts
+    if (window.jQuery) {
         $("img.lazyload").lazyload();
 
         $(".share-btn").on("click", function() {
@@ -379,43 +360,64 @@
                     delay: 3000
                 });
                 $('#copyUrlToast').toast('show');
-
-                // var myAlert = document.getElementById('copyUrlToast');//select id of toast
-                // var bsAlert = new bootstrap.Toast(myAlert);//inizialize it
-                // bsAlert.show();//show it
-
-                // alert('ok');
             }
         });
+    }
 
-        // Baca selengkapnya About
-        $("#about-more").on("click", function() {
-            $('#preview-about').addClass('no-after');
-            $('#preview-about').css('height', '100%');
-            $('#preview-about').css('max-height', '100%');
-            $(this).remove();
+    // Infinite scroll
+    let page = 1;
+    let lastPage = {{ $donors->lastPage() }};
+    let isLoading = false;
+    const donorList = document.getElementById('donor-list');
+    const loadingIndicator = document.getElementById('loading');
+    const sortOrder = '{{ $sort ?? 'terbaru' }}';
 
-            $.ajax({
-                type: "POST",
-                url: "{{ route('program.count.read_more', $program->slug) }}",
-                data: {
-                    "_token": "{{ csrf_token() }}"
-                },
-                success: function(data) {
-                    console.log(data);
-                    if (data == 'success') {
-                        // toast success  
-                    }
-                }
-            });
+    function loadMoreData() {
+        if (isLoading || page >= lastPage) {
+            if (page >= lastPage) {
+                if(loadingIndicator) loadingIndicator.style.display = 'none';
+            }
+            return;
+        }
+
+        isLoading = true;
+        page++;
+        if(loadingIndicator) loadingIndicator.style.display = 'block';
+
+        fetch(`{{ url()->current() }}?sort=${sortOrder}&page=${page}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok.');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if(loadingIndicator) loadingIndicator.style.display = 'none';
+            if (data.html && data.html.trim().length > 0) {
+                donorList.insertAdjacentHTML('beforeend', data.html);
+                lastPage = data.last_page;
+            } else {
+                lastPage = page;
+            }
+            isLoading = false;
+        })
+        .catch(error => {
+            console.error('Error loading more data:', error);
+            if(loadingIndicator) loadingIndicator.style.display = 'none';
+            isLoading = false;
         });
+    }
 
-        // Baca selengkapnya Info
-        $("#info-more").on("click", function() {
-            $('#preview-info').addClass('no-after');
-            $('#preview-info').css('height', '100%');
-            $('#preview-info').css('max-height', '100%');
-            $(this).remove();
-        });
-    </script>
+    window.addEventListener('scroll', () => {
+        const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+        if (scrollTop + clientHeight >= scrollHeight - 150) {
+            loadMoreData();
+        }
+    });
+});
+</script>
 @endsection

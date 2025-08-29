@@ -61,7 +61,12 @@ class Donatur extends Model
 
     public function donatur_short_links()
     {
-        return $this->hasMany(DonaturSortLink::class, 'donatur_id', 'id');
+        return $this->hasMany(DonaturShortLink::class, 'donatur_id', 'id');
+    }
+
+    public function program()
+    {
+        return $this->belongsTo(Program::class, 'program_id', 'id');
     }
 }
 

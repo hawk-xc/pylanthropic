@@ -90,11 +90,16 @@ class Program extends Model
     }
 
     public function leadsCRM() {
-        $this->hasMany(LeadsCRM::class, 'program_id', 'id');
+        return $this->hasMany(LeadsCRM::class, 'program_id', 'id');
+    }
+
+    public function donor()
+    {
+        return $this->hasMany(Donatur::class, 'program_id', 'id');
     }
 
     public function donatur_short_links()
     {
-        $this->hasMany(DonaturShortLink::class, 'program_id', 'id');
+        return $this->hasMany(DonaturShortLink::class, 'program_id', 'id');
     }
 }

@@ -442,7 +442,7 @@
             @if (count($donate) > 0)
                 <div class="title mb-3 pb-1">
                     <div class="fw-bold fs-16" id="donasi">Donatur ({{ number_format($count_donate) }})</div>
-                    <a href="#" class="d-flex fs-15 align-items-center">
+                    <a href="{{ route('program.donor', $program->slug) }}" class="d-flex fs-15 align-items-center">
                         <span class="fs-14 color-me">Lihat Semua</span>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="24" viewBox="0 0 24 24"
                             fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -486,7 +486,8 @@
                     <div class="fw-bold fs-16" id="donasi">Donatur</div>
                 </div>
                 <div class="row mb-3">
-                    <div class="col-12">
+                    <div class="col-12 text-center h-100 p-5 d-flex flex-column justify-content-center align-items-center gap-3" style="min-height: 350px;">
+                        <img src="{{ asset('give-love.png') }}" alt="..." class="img-fluid w-25 opacity-50">
                         <div class="text-center fs-14 lh-20 text-muted">Jadikan Anda sebagai pelopor orang baik untuk
                             program ini</div>
                     </div>
@@ -639,7 +640,6 @@
     <!-- lazy load -->
     <script src="https://cdn.jsdelivr.net/npm/jquery-lazyload@1.9.7/jquery.lazyload.min.js"></script>
 @endsection
-
 
 @section('js_inline')
     <script type="text/javascript">
