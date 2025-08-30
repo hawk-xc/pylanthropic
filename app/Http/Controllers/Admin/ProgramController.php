@@ -784,10 +784,27 @@ class ProgramController extends Controller
                 }
                 return $status;
             })
-            ->addColumn('stats', function ($row) {
+            ->addColumn('donate', function ($row) { // ads_campaign
+                $sum = (float) $row->donate_total;
+                $dss_ads_campaign   = $sum-$row->spend_ads_campaign-$row->payout_sum-(0.15*$sum)-(0.02*$sum);
+                
+                $spend_ads_campaign = number_format($row->spend_ads_campaign, 0, ',', '.');
+                $spend_ads_campaign_percent = ($sum > 0 && $row->spend_ads_campaign > 0) ? round(($sum / $row->spend_ads_campaign) * 100, 2) : 0;
+
+                $dss_ads_campaign_show   = number_format($dss_ads_campaign, 0, ',', '.');
+                $dss_ads_campaign_percent = ($sum > 0 && $dss_ads_campaign > 0) ? round(($sum / $dss_ads_campaign) * 100, 2) : 0;
+
+                return '<span class="badge badge-light">
+                            <i class="fa fa-credit-card icon-gradient bg-strong-bliss"></i> Rp.' . $spend_ads_campaign . ' (' . $spend_ads_campaign_percent . '%)
+                        </span><br>
+                        <span class="badge badge-light">
+                            <i class="fa fa-heart icon-gradient bg-happy-green"></i> Rp.' . $dss_ads_campaign_show . ' (' . $dss_ads_campaign_percent . '%)
+                        </span>';
+            })
+            ->addColumn('stats', function ($row) {  // spend
                 $sum = (float) $row->donate_total;
                 $spend = (float) $row->spend_sum;
-                $dss_spend = $sum-$spend;
+                $dss_spend = $sum-$spend-$row->payout_sum-(0.15*$sum)-(0.02*$sum);
                 
                 $spend_show = number_format($spend, 0, ',', '.');
                 $spend_percent = ($spend > 0 && $sum > 0) ? round(($spend / $sum) * 100, 2) : 0;
@@ -804,23 +821,6 @@ class ProgramController extends Controller
                         </span><br>
                         <span class="badge badge-light">
                             <i class="fa fa-heart icon-gradient bg-happy-green"></i> Rp.' . $dss_spend_show . ' (' . $dss_spend_percent . '%)
-                        </span>';
-            })
-            ->addColumn('donate', function ($row) {
-                $sum = (float) $row->donate_total;
-                $dss_ads_campaign   = $sum-$row->spend_ads_campaign;
-                
-                $spend_ads_campaign = number_format($row->spend_ads_campaign, 0, ',', '.');
-                $spend_ads_campaign_percent = ($sum > 0 && $row->spend_ads_campaign > 0) ? round(($sum / $row->spend_ads_campaign) * 100, 2) : 0;
-
-                $dss_ads_campaign_show   = number_format($dss_ads_campaign, 0, ',', '.');
-                $dss_ads_campaign_percent = ($sum > 0 && $dss_ads_campaign > 0) ? round(($sum / $dss_ads_campaign) * 100, 2) : 0;
-
-                return '<span class="badge badge-light">
-                            <i class="fa fa-credit-card icon-gradient bg-strong-bliss"></i> Rp.' . $spend_ads_campaign . ' (' . $spend_ads_campaign_percent . '%)
-                        </span><br>
-                        <span class="badge badge-light">
-                            <i class="fa fa-heart icon-gradient bg-happy-green"></i> Rp.' . $dss_ads_campaign_show . ' (' . $dss_ads_campaign_percent . '%)
                         </span>';
             })
             ->addColumn('action', function ($row) {
