@@ -259,6 +259,7 @@ Route::group([
            Route::post('{prospectId}/update-pipeline', [Admin\Pipeline\CRMProspectController::class, 'updatePipeline'])->name('crm-prospect.update');
         });
 
+        // Donatur Short Link
         Route::prefix('donatur-short-link')->group(function() {
             Route::get('/donatur-short-link/{id}', [Admin\DonaturController::class, 'donaturShortLink'])->name('donatur.shorten-link.index');
             Route::get('/get-donatur-short-link/{id}', [Admin\DonaturController::class, 'getDonaturShortLink'])->name('donatur.shorten-link.get');
@@ -296,6 +297,8 @@ Route::group([
             'crm-prospect'     => Admin\Pipeline\CRMProspectController::class,
             'crm-prospect-activity' => Admin\Pipeline\CRMProspectActivityController::class,
             'crm-prospect-logs' => Admin\Pipeline\CRMProspectLogsController::class,
+            // Banner
+            'banner'            => Admin\BannerController::class
         ]);
     });
 });
@@ -328,7 +331,8 @@ Route::post('/program-submit-image-content', [Admin\ProgramController::class, 'u
 Route::post('/program-info-submit-image-content', [Admin\ProgramInfoController::class, 'uploadImageContent'])
     ->middleware(['web', 'auth'])
     ->name('adm.program-info.image.content.submit');
-// PROGRAM PAYOUT CONTENT IMAGE UPLOAD
+
+    // PROGRAM PAYOUT CONTENT IMAGE UPLOAD
 Route::post('/program-payout-submit-image-content', [Admin\PayoutController::class, 'uploadImageContent'])
     ->middleware(['web', 'auth'])
     ->name('adm.program-payout.image.content.submit');

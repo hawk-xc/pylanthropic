@@ -345,6 +345,10 @@
                     <a href="{{ route('adm.logs.index') }}"> <i
                             class="metismenu-icon pe-7s-news-paper icon-gradient bg-arielle-smile"></i> Logs </a>
                 </li>
+                <li class="{{ $sidebar_menu == 'banners' ? 'mm-active' : '' }}">
+                    <a href="{{ route('adm.banner.index') }}"> <i
+                            class="metismenu-icon pe-7s-photo icon-gradient bg-arielle-smile"></i> Banner Halaman Utama </a>
+                </li>
             </ul>
         </div>
     </div>
