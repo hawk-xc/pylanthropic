@@ -55,6 +55,38 @@
                 </div>
             </div>
             <div class="divider"></div>
+            <div class="row">
+                <div class="col-12 form-inline">
+                    <span>Filter :</span>
+                    <input type="text" id="donatur_title" placeholder="Judul Program" class="form-control form-control-sm me-1 ms-2">
+                    <input type="text" id="donatur_telp" placeholder="Target Donasi" class="form-control form-control-sm me-1"> 
+                    <input type="text" id="filter_nominal" placeholder="Nama Mitra" class="form-control form-control-sm me-1"> 
+                    <select class="form-control form-control-sm me-1" id="filter_status">
+                        <option value="">-- Pilih Status --</option>
+                        <option value="recommended">Pilihan</option>
+                        <option value="urgent">Mendesak</option>
+                        <option value="newest">Terbaru</option>
+                        <option value="search">Pencarian</option>
+                    </select>
+                    <button class="btn btn-sm btn-primary" id="filter_search">Cari</button>
+                </div>
+                <div class="col-12 form-inline mt-2">
+                    <span>Urutkan :</span>
+                    <select class="form-control form-control-sm me-1 ms-2" id="filter_sort">
+                        <option value="">-- Pilih --</option>
+                        <option value="donate_total">Jumlah Donasi</option>
+                        <option value="spend_sum">Jumlah Pengeluaran</option>
+                        <option value="spend_ads_campaign">Jumlah Pengeluaran Campaign</option>
+                        <option value="payout_sum">Jumlah Penyaluran</option>
+                        <option value="approved_at">Tanggal Publish</option>
+                        <option value="end_date">Tanggal Berakhir</option>
+                    </select>
+                    <input type="radio" name="dir" value="asc" class="me-1 ms-2" checked> Dari Terkecil
+                    <input type="radio" name="dir" value="desc"  class="me-1 ms-2"> Dari Terbesar
+                    <button class="btn btn-sm btn-primary ms-2" id="filter_sort_btn">Urutkan</button>
+                </div>
+            </div>
+            <div class="divider"></div>
             <table id="table-program" class="table table-hover table-striped table-bordered">
                 <thead>
                     <tr>
@@ -62,8 +94,8 @@
                         <th>Nominal</th>
                         <th>Status</th>
                         <th>Lembaga</th>
-                        <th>Donasi</th>
-                        <th>Statistik</th>
+                        <th>Ads Campaign</th>
+                        <th>Spend</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -212,395 +244,263 @@
 
 
 @section('js_inline')
-    <script type="text/javascript">
-        $(".filter_program").on("click", function() {
-            var fil_name = $(this).attr("data-id");
-            var fil_val = $(this).attr("data-val");
+<script type="text/javascript">
+    // ====== UTIL & STATE ======
+    const FILTER_BTN = '.filter_program';
+    const ACTIVE_CLASS = 'btn-primary';
+    const INACTIVE_CLASS = 'btn-outline-primary';
 
-            if (fil_name == 'active') {
-                if (fil_val == 0) {
-                    $(this).removeClass('btn-outline-primary');
-                    $(this).addClass('btn-primary');
-                    $(this).attr("data-val", "1");
-                    program_table();
-                } else {
-                    $(this).addClass('btn-outline-primary');
-                    $(this).removeClass('btn-primary');
-                    $(this).attr("data-val", "0");
-                    program_table();
-                }
-            } else if (fil_name == 'inactive') {
-                if (fil_val == 0) {
-                    $(this).removeClass('btn-outline-primary');
-                    $(this).addClass('btn-primary');
-                    $(this).attr("data-val", "1");
-                    program_table();
-                } else {
-                    $(this).addClass('btn-outline-primary');
-                    $(this).removeClass('btn-primary');
-                    $(this).attr("data-val", "0");
-                    program_table();
-                }
-            } else if (fil_name == 'winning') {
-                if (fil_val == 0) {
-                    $(this).removeClass('btn-outline-primary');
-                    $(this).addClass('btn-primary');
-                    $(this).attr("data-val", "1");
-                    program_table();
-                } else {
-                    $(this).addClass('btn-outline-primary');
-                    $(this).removeClass('btn-primary');
-                    $(this).attr("data-val", "0");
-                    program_table();
-                }
-            } else if (fil_name == 'publish15day') {
-                if (fil_val == 0) {
-                    $(this).removeClass('btn-outline-primary');
-                    $(this).addClass('btn-primary');
-                    $(this).attr("data-val", "1");
-                    program_table();
-                } else {
-                    $(this).addClass('btn-outline-primary');
-                    $(this).removeClass('btn-primary');
-                    $(this).attr("data-val", "0");
-                    program_table();
-                }
-            } else if (fil_name == 'end15day') {
-                if (fil_val == 0) {
-                    $(this).removeClass('btn-outline-primary');
-                    $(this).addClass('btn-primary');
-                    $(this).attr("data-val", "1");
-                    program_table();
-                } else {
-                    $(this).addClass('btn-outline-primary');
-                    $(this).removeClass('btn-primary');
-                    $(this).attr("data-val", "0");
-                    program_table();
-                }
-            } else if (fil_name == 'recom') {
-                if (fil_val == 0) {
-                    $(this).removeClass('btn-outline-primary');
-                    $(this).addClass('btn-primary');
-                    $(this).attr("data-val", "1");
-                    program_table();
-                } else {
-                    $(this).addClass('btn-outline-primary');
-                    $(this).removeClass('btn-primary');
-                    $(this).attr("data-val", "0");
-                    program_table();
-                }
-            } else if (fil_name == 'urgent') {
-                if (fil_val == 0) {
-                    $(this).removeClass('btn-outline-primary');
-                    $(this).addClass('btn-primary');
-                    $(this).attr("data-val", "1");
-                    program_table();
-                } else {
-                    $(this).addClass('btn-outline-primary');
-                    $(this).removeClass('btn-primary');
-                    $(this).attr("data-val", "0");
-                    program_table();
-                }
-            } else { // newest
-                if (fil_val == 0) {
-                    $(this).removeClass('btn-outline-primary');
-                    $(this).addClass('btn-primary');
-                    $(this).attr("data-val", "1");
-                    program_table();
-                } else {
-                    $(this).addClass('btn-outline-primary');
-                    $(this).removeClass('btn-primary');
-                    $(this).attr("data-val", "0");
-                    program_table();
-                }
+    let SORT_FIELD = 'payout_sum'; // default sesuai kebutuhan
+    let SORT_DIR   = 'desc';
+
+    // Toggle helper utk tombol boolean (aktif/inaktif/dll)
+    function setBtnState($btn, on) {
+        $btn.attr('data-val', on ? '1' : '0')
+            .toggleClass(ACTIVE_CLASS, on)
+            .toggleClass(INACTIVE_CLASS, !on);
+    }
+    function toggleBtn($btn) { setBtnState($btn, $btn.attr('data-val') !== '1'); }
+    function initButtons() {
+        $(FILTER_BTN).each(function() { setBtnState($(this), $(this).attr('data-val') === '1'); });
+    }
+
+    // Kumpulkan semua flag dari tombol 0/1
+    function getFlagFilters() {
+        const params = {};
+        $(FILTER_BTN).each(function() {
+            params[$(this).data('id')] = $(this).attr('data-val') || '0';
+        });
+        return params;
+    }
+
+    // Mapping dropdown status -> flag controller
+    function applyStatusSelection() {
+        const val = $('#filter_status').val(); // '', recommended, urgent, newest, search
+        // reset tiga flag dulu ke '0' (tanpa ngubah tombol lain)
+        const m = { recom: 'filter-recom', urgent: 'filter-urgent', newest: 'filter-newest' };
+        Object.entries(m).forEach(([flag, id]) => setBtnState($('#'+id), false));
+
+        if (val === 'recommended') setBtnState($('#filter-recom'), true);
+        if (val === 'urgent')      setBtnState($('#filter-urgent'), true);
+        if (val === 'newest')      setBtnState($('#filter-newest'), true);
+        // 'search' -> biarkan default; biasanya active=1 sudah ON dari tombol atas
+    }
+
+    // ====== DATA TABLE ======
+    const table = $('#table-program').DataTable({
+        processing: true,
+        serverSide: true,
+        responsive: true,
+        autoWidth: true,
+        columnDefs: [{ width: "22%", targets: 0 }],
+        order: [[4, 'desc']], // visual default; sorting "sesungguhnya" via sort/dir param
+        ajax: {
+            url: "{{ route('adm.program.datatables') }}",
+            data: function (d) {
+                // Ambil flag boolean
+                const flags = getFlagFilters();
+                // Ambil filter teks
+                const program_title     = $('#donatur_title').val() || '';
+                const organization_name = $('#filter_nominal').val() || '';
+
+                Object.assign(d, flags, {
+                    program_title,
+                    organization_name,
+                    sort: SORT_FIELD,
+                    dir:  SORT_DIR
+                });
+            }
+        },
+        columns: [
+            { data: 'title',        name: 'program.title' },
+            { data: 'nominal',      name: 'nominal',      orderable: false, searchable: false },
+            { data: 'status',       name: 'status',       orderable: false, searchable: false },
+            { data: 'organization', name: 'organization.name' },
+            { data: 'donate',       name: 'donate_total' }, // sinkron alias
+            { data: 'stats',        name: 'stats',        orderable: false, searchable: false },
+            { data: 'action',       name: 'action',       orderable: false, searchable: false },
+        ]
+    });
+
+    // ====== FILTER TOGGLE BUTTONS ======
+    $(document).on('click', FILTER_BTN, function() {
+        toggleBtn($(this));
+        table.ajax.reload();
+    });
+
+    // ====== FILTER TEKS & STATUS (Cari) ======
+    $('#filter_search').on('click', function() {
+        applyStatusSelection(); // set flag dari dropdown status
+        table.ajax.reload();
+    });
+
+    // ====== URUTKAN (opsi #2) ======
+    $('#filter_sort_btn').on('click', function() {
+        const allowed = ['payout_sum','donate_total','spend_sum','spend_ads_campaign','approved_at','end_date'];
+        const picked  = $('#filter_sort').val();
+        const dir     = $('input[name="dir"]:checked').val();
+
+        if (allowed.includes(picked)) {
+            SORT_FIELD = picked;
+            SORT_DIR   = (dir === 'asc' ? 'asc' : 'desc');
+            table.ajax.reload();
+        } else {
+            // kalau kosong, biarkan default
+            SORT_FIELD = 'payout_sum';
+            SORT_DIR   = 'desc';
+            table.ajax.reload();
+        }
+    });
+
+    // ====== (Optional) Sinkron klik header hanya utk kolom yg diizinkan ======
+    const DT_SORT_MAP = {
+        4: 'donate_total', // kolom "Ads Campaign" (isi donasi total) -> allowed
+        // Jangan map kolom 0/3 karena controller tidak whitelist title/organization
+    };
+    $('#table-program').on('order.dt', function() {
+        const order = table.order();
+        if (order && order.length) {
+            const [colIdx, dir] = order[0];
+            if (DT_SORT_MAP[colIdx]) {
+                SORT_FIELD = DT_SORT_MAP[colIdx];
+                SORT_DIR   = (dir === 'asc' ? 'asc' : 'desc');
+                table.ajax.reload(null, false);
+            }
+        }
+    });
+
+    // ====== INIT ======
+    $(function() {
+        initButtons();
+        // default sort
+        SORT_FIELD = 'payout_sum';
+        SORT_DIR   = 'desc';
+        table.ajax.reload();
+    });
+
+    // ====== MODALS & ACTIONS (tetap sama, hanya minor perapihan) ======
+    function showDonate(id, title) {
+        $("#modalTitle").text(title);
+        $.get("{{ route('adm.program.show.donate') }}", { "_token": "{{ csrf_token() }}", id }, function(html){
+            $("#modalBody").html(html);
+            new bootstrap.Modal(document.getElementById('modal_show_donate')).show();
+        });
+    }
+    function showSummary(id, title) {
+        $("#modalTitleSummary").text(title);
+        $.get("{{ route('adm.program.show.summary') }}", { "_token": "{{ csrf_token() }}", id }, function(html){
+            $("#modalBodySummary").html(html);
+            new bootstrap.Modal(document.getElementById('modal_show_summary')).show();
+        });
+    }
+    function hideFunc(name) {
+        const el = document.querySelector(name);
+        const modal = bootstrap.Modal.getInstance(el);
+        modal?.hide();
+    }
+    $("#submit_spend").on("click", function() {
+        const payload = {
+            "_token": "{{ csrf_token() }}",
+            "id_program": $("#id_program").val(),
+            "title": $("#title").val(),
+            "date_time": $("#date_time").val(),
+            "nominal": $('#rupiah').val()
+        };
+        $.post("{{ route('adm.program.spend.submit') }}", payload, function(res){
+            if (res === 'success') {
+                table.ajax.reload(null, false);
+                hideFunc('#modal_inp_spend');
+                alert("Berhasil Disimpan");
             }
         });
+    });
+    function inpSpend(id, title) {
+        $("#modalTitleSpend").text(title);
+        $("#id_program").val(id);
+        table_spent.ajax.url("{{ route('adm.program.spend.show') . '/?id=' }}"+id).load();
+        new bootstrap.Modal(document.getElementById('modal_inp_spend')).show();
+    }
 
-        function program_table() {
-            let active = $('#filter-active').attr("data-val");
-            let inactive = $('#filter-inactive').attr("data-val");
-            let winning = $('#filter-winning').attr("data-val");
-            let publish15day = $('#filter-publish15day').attr("data-val");
-            let end15day = $('#filter-end15day').attr("data-val");
-            let recom = $('#filter-recom').attr("data-val");
-            let urgent = $('#filter-urgent').attr("data-val");
-            let newest = $('#filter-newest').attr("data-val");
+    const table_spent = $('#table-spent').DataTable({
+        processing: true,
+        serverSide: true,
+        responsive: true,
+        autoWidth: false,
+        pageLength: 10,
+        order: [[0, 'desc']],
+        ajax: "{{ route('adm.program.spend.show') . '/?id=1' }}",
+        columns: [
+            { data: 'date',   name: 'date' },
+            { data: 'title',  name: 'title' },
+            { data: 'nominal',name: 'nominal' },
+            { data: 'status', name: 'status' },
+            { data: 'desc',   name: 'desc' },
+        ]
+    });
 
-            table.ajax.url("{{ route('adm.program.datatables') }}/?active=" + active + "&inactive=" + inactive +
-                "&winning=" + winning + "&publish15day=" + publish15day + "&end15day=" + end15day + "&recom=" + recom +
-                "&urgent=" + urgent + "&newest=" + newest).load();
-        }
+    // ====== +11% ======
+    $("#check11percent").on("click", function() {
+        let val = $('#rupiah').val().replaceAll(".", "");
+        val = Number(val) || 0;
+        const eleven = Math.ceil(val * 11 / 100);
+        const res = $(this).is(':checked') ? val + eleven : Math.max(val - eleven, 0);
+        $('#rupiah').val(formatRupiah(String(res), ""));
+    });
 
-        var table = $('#table-program').DataTable({
-            processing: true,
-            serverSide: true,
-            responsive: true,
-            autoWidth: true,
-            columnDefs: [{
-                "width": "22%",
-                "targets": 0
-            }],
-            order: [[4, 'desc']],
-            ajax: "{{ route('adm.program.datatables') }}/?active=1",
-            columns: [{
-                    data: 'title',
-                    name: 'program.title'
-                },
-                {
-                    data: 'nominal',
-                    name: 'nominal',
-                    orderable: false,
-                    searchable: false
-                },
-                {
-                    data: 'status',
-                    name: 'status',
-                    orderable: false,
-                    searchable: false
-                },
-                {
-                    data: 'organization',
-                    name: 'organization.name'
-                },
-                {
-                    data: 'donate',
-                    name: 'donate_sum'
-                },
-                {
-                    data: 'stats',
-                    name: 'stats',
-                    orderable: false,
-                    searchable: false
-                },
-                {
-                    data: 'action',
-                    name: 'action',
-                    orderable: false,
-                    searchable: false
-                },
-            ]
+    // ====== Format Rupiah ======
+    const rupiah = document.getElementById("rupiah");
+    if (rupiah) {
+        rupiah.addEventListener("keyup", function() {
+            this.value = formatRupiah(this.value, "");
         });
-
-        function showDonate(id, title) {
-            $("#modalTitle").html(title);
-
-            $.ajax({
-                type: "GET",
-                url: "{{ route('adm.program.show.donate') }}",
-                data: {
-                    "_token": "{{ csrf_token() }}",
-                    "id": id
-                },
-                success: function(data) {
-                    $("#modalBody").html(data);
-                }
-            });
-
-            let myModal = new bootstrap.Modal(document.getElementById('modal_show_donate'));
-            myModal.show();
+    }
+    function formatRupiah(angka, prefix) {
+        const number_string = (angka||'').replace(/[^,\d]/g, "");
+        const split = number_string.split(",");
+        const sisa = split[0].length % 3;
+        let rupiah = split[0].substr(0, sisa);
+        const ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+        if (ribuan) {
+            const separator = sisa ? "." : "";
+            rupiah += separator + ribuan.join(".");
         }
+        rupiah = split[1] !== undefined ? rupiah + "," + split[1] : rupiah;
+        return prefix === undefined ? rupiah : (rupiah ? "" + rupiah : "");
+    }
 
-        function showSummary(id, title) {
-            $("#modalTitleSummary").html(title);
-
-            $.ajax({
-                type: "GET",
-                url: "{{ route('adm.program.show.summary') }}",
-                data: {
-                    "_token": "{{ csrf_token() }}",
-                    "id": id
-                },
-                success: function(data) {
-                    $("#modalBodySummary").html(data);
-                }
-            });
-
-            let myModal = new bootstrap.Modal(document.getElementById('modal_show_summary'));
-            myModal.show();
-        }
-
-        function hideFunc(name) {
-            const truck_modal = document.querySelector(name);
-            const modal = bootstrap.Modal.getInstance(truck_modal);
-            modal.hide();
-        }
-
-        $("#submit_spend").on("click", function() {
-            var id_program = $("#id_program").val();
-            var title = $("#title").val();
-            var date_time = $("#date_time").val();
-            var nominal = $('#rupiah').val();
-
-            $.ajax({
-                type: "POST",
-                url: "{{ route('adm.program.spend.submit') }}",
-                data: {
-                    "_token": "{{ csrf_token() }}",
-                    "id_program": id_program,
-                    "title": title,
-                    "date_time": date_time,
-                    "nominal": nominal
-                },
-                success: function(data) {
-                    console.log(data);
-                    if (data == 'success') {
-                        table.ajax.reload();
-                        hideFunc('#modal_inp_spend');
-                        // toast success
-                        alert("Berhasil Disimpan");
-                    }
-                }
-            });
-        });
-
-        function inpSpend(id, title) {
-            $("#modalTitleSpend").html(title);
-            $("#id_program").val(id);
-
-            table_spent.ajax.url("{{ route('adm.program.spend.show') . '/?id=' }}" + id).load();
-
-            let myModal = new bootstrap.Modal(document.getElementById('modal_inp_spend'));
-            myModal.show();
-        }
-
-        var table_spent = $('#table-spent').DataTable({
-            processing: true,
-            serverSide: true,
-            responsive: true,
-            autoWidth: false,
-            pageLength: 10,
-            order: [
-                [0, 'desc']
-            ],
-            ajax: "{{ route('adm.program.spend.show') . '/?id=1' }}",
-            columns: [{
-                    data: 'date',
-                    name: 'date'
-                },
-                {
-                    data: 'title',
-                    name: 'title'
-                },
-                {
-                    data: 'nominal',
-                    name: 'nominal'
-                },
-                {
-                    data: 'status',
-                    name: 'status'
-                },
-                {
-                    data: 'desc',
-                    name: 'desc'
-                },
-            ]
-        });
-
-        $("#check11percent").on("click", function() {
-            var val_rupiah = $('#rupiah').val();
-            val_rupiah = val_rupiah.replaceAll(".", "");
-            val_rupiah = Number(val_rupiah);
-            var rupiah_11 = Math.ceil(val_rupiah * 11 / 100);
-            console.log(val_rupiah);
-
-            if ($('#check11percent').is(':checked')) {
-                console.log(rupiah_11);
-                $('#rupiah').val(val_rupiah + rupiah_11);
-                let rupiah_fix = formatRupiah(document.getElementById("rupiah").value, "");
-                $('#rupiah').val(rupiah_fix);
-            } else {
-                $('#rupiah').val(val_rupiah - rupiah_11);
-                let rupiah_fix = formatRupiah(document.getElementById("rupiah").value, "");
-                $('#rupiah').val(rupiah_fix);
+    // ====== SweetAlert (tanpa perubahan fungsional) ======
+    @if (session('success'))
+        Swal.fire({
+            title: 'Aksi: Berhasil',
+            icon: 'success',
+            text: "{{ session('success') }}",
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 7000,
+            timerProgressBar: true,
+            toast: true,
+            background: '#f8f9fa',
+            backdrop: false
+        }).then(() => {
+            if ($('#table-program').length) {
+                $('#table-program').DataTable().ajax.reload();
             }
         });
+    @endif
 
-        var rupiah = document.getElementById("rupiah");
-        rupiah.addEventListener("keyup", function(e) {
-            // tambahkan 'Rp.' pada saat form di ketik
-            // gunakan fungsi formatRupiah() untuk mengubah angka yang di ketik menjadi format angka
-            rupiah.value = formatRupiah(this.value, "");
+    @if (session('error'))
+        Swal.fire({
+            title: 'Aksi: Gagal',
+            icon: 'error',
+            text: "{{ session('error') }}",
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 5000,
+            timerProgressBar: true,
+            toast: true,
+            background: '#f8f9fa',
+            backdrop: false
         });
-
-        /* Fungsi formatRupiah */
-        function formatRupiah(angka, prefix) {
-            var number_string = angka.replace(/[^,\d]/g, "").toString(),
-                split = number_string.split(","),
-                sisa = split[0].length % 3,
-                rupiah = split[0].substr(0, sisa),
-                ribuan = split[0].substr(sisa).match(/\d{3}/gi);
-
-            // tambahkan titik jika yang di input sudah menjadi angka ribuan
-            if (ribuan) {
-                separator = sisa ? "." : "";
-                rupiah += separator + ribuan.join(".");
-            }
-
-            rupiah = split[1] != undefined ? rupiah + "," + split[1] : rupiah;
-            return prefix == undefined ? rupiah : rupiah ? "" + rupiah : "";
-        }
-    </script>
-
-    <script>
-        $(document).ready(function() {
-            // Cek apakah elemen yang diperlukan ada di halaman ini
-            if ($('#same_as_thumbnail').length && $('input[name="thumbnail"]').length) {
-                // Fungsi toggle thumbnail
-                function toggleThumbnailInput() {
-                    const thumbnailCol = $('input[name="thumbnail"]').closest('.col-6');
-                    if ($('#same_as_thumbnail').is(':checked')) {
-                        thumbnailCol.hide();
-                        $('input[name="thumbnail"]').removeAttr('required');
-                    } else {
-                        thumbnailCol.show();
-                        $('input[name="thumbnail"]').attr('required', 'required');
-                    }
-                }
-
-                // Inisialisasi awal
-                toggleThumbnailInput();
-
-                // Event listener
-                $('#same_as_thumbnail').on('change', toggleThumbnailInput);
-
-                console.log('Thumbnail toggle script initialized');
-            }
-        });
-
-        // SweetAlert notifications
-        // SweetAlert notifications dengan posisi kanan bawah dan auto close
-        @if (session('success'))
-            Swal.fire({
-                title: 'Aksi: Berhasil',
-                icon: 'success',
-                text: "{{ session('success') }}",
-                position: 'bottom-end', // Posisi kanan bawah
-                showConfirmButton: false, // Sembunyikan tombol OK
-                timer: 7000, // Auto close setelah 3 detik (3000ms)
-                timerProgressBar: true, // Tampilkan progress bar
-                toast: true, // Tampilan seperti toast notification
-                background: '#f8f9fa', // Warna background
-                backdrop: false // Nonaktifkan backdrop
-            }).then(() => {
-                if ($('#table-program').length) {
-                    $('#table-program').DataTable().ajax.reload();
-                }
-            });
-        @endif
-
-        @if (session('error'))
-            Swal.fire({
-                title: 'Aksi: Gagal',
-                icon: 'error',
-                text: "{{ session('error') }}",
-                position: 'bottom-end',
-                showConfirmButton: false,
-                timer: 5000, // Error lebih lama (5 detik)
-                timerProgressBar: true,
-                toast: true,
-                background: '#f8f9fa',
-                backdrop: false
-            });
-        @endif
-    </script>
+    @endif
+</script>
 @endsection
