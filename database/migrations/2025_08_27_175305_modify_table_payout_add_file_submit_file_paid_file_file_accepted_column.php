@@ -12,9 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('payout', function (Blueprint $table) {
-            $table->string('file_submit')->nullable()->after('paid_at');
-            $table->string('file_paid')->nullable()->after('file_submit');
-            $table->string('file_accepted')->nullable()->after('file_paid');
+            if (!Schema::hasColumn('payout', 'file_submit')) {
+                $table->string('file_submit')->nullable()->after('paid_at');
+            }
+            if (!Schema::hasColumn('payout', 'file_paid')) {
+                $table->string('file_paid')->nullable()->after('file_submit');
+            }
+            if (!Schema::hasColumn('payout', 'file_accepted')) {
+                $table->string('file_accepted')->nullable()->after('file_paid');
+            }
         });
     }
 
