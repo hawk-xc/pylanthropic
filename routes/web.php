@@ -123,6 +123,8 @@ Route::group([
         Route::get('/program-in-detail-category-datatables', [Admin\ProgramCategoryController::class, 'datatableProgramCategoryDetail'])->name('program-in-detail-category.datatables');
         // Leads Platform
         Route::get('/leads-platform-datatables', [Admin\LeadsController::class, 'getLeadsPlatformDatatable'])->name('leads-platform.datatables');
+        // Banner
+        Route::get('/banner-datatables', [Admin\BannerController::class, 'bannerDatatables'])->name('banner.datatables');
 
         // PROGRAM
         Route::get('/program-show-donate', [Admin\ProgramController::class, 'showDonate'])->name('program.show.donate');
