@@ -16,7 +16,7 @@ class BannerController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index() 
     {
         return view('admin.banner.index');
     }
@@ -75,9 +75,9 @@ class BannerController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'url' => 'required|url',
+            'url' => 'nullable|url',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'duration' => 'required|integer',
+            'duration' => 'integer',
             'is_publish' => 'required|boolean',
             'description' => 'nullable|string',
         ]);
@@ -87,23 +87,25 @@ class BannerController extends Controller
             $fileName = Str::slug($request->title) . '_' . time() . '.jpg';
             $path = 'images/banner/' . $fileName;
 
-            $image = Image::make($file->getRealPath())->encode('jpg', 85);
+            $image = Image::make($file->getRealPath())->fit(580, 280, function ($constraint) {
+                $constraint->upsize();
+            })->encode('jpg', 85);
 
             Storage::disk('public_uploads')->put($path, $image->stream());
 
             Banner::create([
                 'title' => $request->title,
                 'url' => $request->url,
-                'image' => $path,
-                'duration' => $request->duration,
+                'image' => 'public/' . $path,
+                'duration' => $request->duration ?? 0,
                 'is_publish' => $request->is_publish,
                 'description' => $request->description,
                 'created_by' => auth()->user()->id,
             ]);
 
-            return redirect()->route('adm.banner.index')->with('success', 'Banner berhasil ditambahkan.');
+            return redirect()->route('adm.banner.index')->with('message', ['type' => 'success', 'text' => 'Banner berhasil ditambahkan.']);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal menambahkan banner: ' . $e->getMessage())->withInput();
+            return redirect()->back()->with('message', ['type' => 'error', 'text' => 'Banner gagal ditambahkan.'])->withInput();
         }
     }
 
@@ -150,10 +152,12 @@ class BannerController extends Controller
                 $fileName = Str::slug($request->title) . '_' . time() . '.jpg';
                 $path = 'images/banner/' . $fileName;
     
-                $image = Image::make($file->getRealPath())->encode('jpg', 85);
+                $image = Image::make($file->getRealPath())->fit(580, 280, function ($constraint) {
+                    $constraint->upsize();
+                })->encode('jpg', 85);
     
                 Storage::disk('public_uploads')->put($path, $image->stream());
-                $imagePath = $path;
+                $imagePath = 'public/' . $path;
             }
 
             $banner->update([
@@ -165,9 +169,9 @@ class BannerController extends Controller
                 'description' => $request->description,
             ]);
 
-            return redirect()->route('adm.banner.index')->with('success', 'Banner berhasil diupdate.');
+            return redirect()->route('adm.banner.index')->with('message', ['type' => 'success', 'text' => 'Banner berhasil diupdate.']);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal mengupdate banner: ' . $e->getMessage())->withInput();
+            return redirect()->back()->with('message', ['type' => 'error', 'text' => 'Banner gagal diupdate.'])->withInput();
         }
     }
 
@@ -182,9 +186,9 @@ class BannerController extends Controller
                 Storage::disk('public_uploads')->delete($banner->image);
             }
             $banner->delete();
-            return redirect()->route('adm.banner.index')->with('success', 'Banner berhasil dihapus.');
+            return redirect()->route('adm.banner.index')->with('message', ['type' => 'success', 'text' => 'Banner berhasil dihapus.']);
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal menghapus banner: ' . $e->getMessage());
+            return redirect()->back()->with('message', ['type' => 'error', 'text' => 'Banner gagal dihapus.']);
         }
     }
 }

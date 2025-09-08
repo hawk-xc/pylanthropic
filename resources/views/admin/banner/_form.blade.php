@@ -20,7 +20,7 @@
     <!-- Other Fields -->
     <div class="col-md-12">
         <div class="form-group mb-3">
-            <label for="title" class="form-label">Judul <span class="text-danger">*</span></label>
+            <label for="title" class="form-label">Judul {!! printRequired() !!}</label>
             <input type="text" class="form-control @error('title') is-invalid @enderror" id="title" name="title" value="{{ old('title', $banner->title ?? '') }}" required>
             @error('title')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -29,8 +29,8 @@
     </div>
     <div class="col-md-12">
         <div class="form-group mb-3">
-            <label for="url" class="form-label">URL <span class="text-danger">*</span></label>
-            <input type="url" class="form-control @error('url') is-invalid @enderror" id="url" name="url" value="{{ old('url', $banner->url ?? '') }}" required placeholder="https://example.com">
+            <label for="url" class="form-label">URL</label>
+            <input type="url" class="form-control @error('url') is-invalid @enderror" id="url" name="url" value="{{ old('url', $banner->url ?? '') }}" placeholder="https://bantubersama.com/sedekahmasjid">
             @error('url')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -38,7 +38,7 @@
     </div>
     <div class="col-md-6">
         <div class="form-group mb-3">
-            <label for="duration" class="form-label">Durasi (hari) <span class="text-danger">*</span></label>
+            <label for="duration" class="form-label">Durasi (hari)</label>
             <input type="number" class="form-control @error('duration') is-invalid @enderror" id="duration" name="duration" value="{{ old('duration', $banner->duration ?? 7) }}" required>
             @error('duration')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -47,7 +47,7 @@
     </div>
     <div class="col-md-6">
         <div class="form-group mb-3">
-            <label for="is_publish" class="form-label">Status <span class="text-danger">*</span></label>
+            <label for="is_publish" class="form-label">Status {!! printRequired() !!}</label>
             <select class="form-control @error('is_publish') is-invalid @enderror" id="is_publish" name="is_publish" required>
                 <option value="1" {{ old('is_publish', $banner->is_publish ?? '') == 1 ? 'selected' : '' }}>Publikasi</option>
                 <option value="0" {{ old('is_publish', $banner->is_publish ?? '') == 0 ? 'selected' : '' }}>Draft</option>
@@ -102,4 +102,27 @@ function previewImage() {
     }
 }
 </script>
+
+<script>
+        @if (session('message'))
+            Swal.fire({
+                toast: true,
+                position: 'bottom-end',
+                icon: '{{ session('message')['type'] }}',
+                title: '{{ session('message')['text'] }}',
+                showConfirmButton: false,
+                timer: 15000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'rounded shadow-sm px-3 py-2 border-0 d-flex flex-row align-middle-center justify-content-center'
+                },
+                background: '{{ session('message')['type'] === 'success' ? '#d1fae5' : '#fee2e2' }}',
+                color: '{{ session('message')['type'] === 'success' ? '#065f46' : '#b91c1c' }}',
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                }
+            });
+        @endif
+    </script>
 @endsection

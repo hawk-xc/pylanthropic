@@ -67,57 +67,80 @@
 @endsection
 
 @section('js_inline')
-<script>
-    $(function() {
-        var table = $('#banner-table').DataTable({
-            processing: true,
-            serverSide: true,
-            responsive: true,
-            order: [[1, 'desc']],
-            ajax: {
-                url: '{{ route("adm.banner.datatables") }}',
-                type: "GET",
-                error: function (xhr, error, thrown) {
-                    console.log("AJAX Error:", xhr, error, thrown);
-                    $('#banner-table').DataTable().clear().draw();
-                    alert('Gagal memuat data. Silakan refresh halaman.');
+    <script>
+        $(function() {
+            var table = $('#banner-table').DataTable({
+                processing: true,
+                serverSide: true,
+                responsive: true,
+                order: [[1, 'desc']],
+                ajax: {
+                    url: '{{ route("adm.banner.datatables") }}',
+                    type: "GET",
+                    error: function (xhr, error, thrown) {
+                        console.log("AJAX Error:", xhr, error, thrown);
+                        $('#banner-table').DataTable().clear().draw();
+                        alert('Gagal memuat data. Silakan refresh halaman.');
+                    }
+                },
+                columns: [
+                    { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false, width: '5%' },
+                    { data: 'title', name: 'title' },
+                    { data: 'links', name: 'links', orderable: false, searchable: false },
+                    { data: 'is_publish', name: 'is_publish', width: '10%' },
+                    { data: 'action', name: 'action', orderable: false, searchable: false, width: '15%' }
+                ],
+                language: {
+                    emptyTable: "Tidak ada data banner",
+                    zeroRecords: "Data banner tidak ditemukan"
                 }
-            },
-            columns: [
-                { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false, width: '5%' },
-                { data: 'title', name: 'title' },
-                { data: 'links', name: 'links', orderable: false, searchable: false },
-                { data: 'is_publish', name: 'is_publish', width: '10%' },
-                { data: 'action', name: 'action', orderable: false, searchable: false, width: '15%' }
-            ],
-            language: {
-                emptyTable: "Tidak ada data banner",
-                zeroRecords: "Data banner tidak ditemukan"
-            }
-        });
+            });
 
-        $('#refresh_table_banner').on('click', function() {
-            table.ajax.reload();
-        });
+            $('#refresh_table_banner').on('click', function() {
+                table.ajax.reload();
+            });
 
-        $('#banner-table').on('click', '.delete-btn', function(e) {
-            e.preventDefault();
-            var form = $(this).closest('form');
+            $('#banner-table').on('click', '.delete-btn', function(e) {
+                e.preventDefault();
+                var form = $(this).closest('form');
+                Swal.fire({
+                    title: 'Anda yakin?',
+                    text: "Banner akan dihapus secara permanen!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                })
+            });
+        });
+    </script>
+
+    <script>
+        @if (session('message'))
             Swal.fire({
-                title: 'Anda yakin?',
-                text: "Banner akan dihapus secara permanen!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya, hapus!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit();
+                toast: true,
+                position: 'bottom-end',
+                icon: '{{ session('message')['type'] }}',
+                title: '{{ session('message')['text'] }}',
+                showConfirmButton: false,
+                timer: 15000,
+                timerProgressBar: true,
+                customClass: {
+                    popup: 'rounded shadow-sm px-3 py-2 border-0 d-flex flex-row align-middle-center justify-content-center'
+                },
+                background: '{{ session('message')['type'] === 'success' ? '#d1fae5' : '#fee2e2' }}',
+                color: '{{ session('message')['type'] === 'success' ? '#065f46' : '#b91c1c' }}',
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                    toast.addEventListener('mouseleave', Swal.resumeTimer)
                 }
-            })
-        });
-    });
-</script>
+            });
+        @endif
+    </script>
 @endsection
