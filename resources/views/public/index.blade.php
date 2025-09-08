@@ -91,8 +91,10 @@
                 <div class="swiper-wrapper">
                     @foreach ($slider as $vs)
                         <div class="swiper-slide">
-                            <img class="img-fluid banner-img" src="{{ asset($vs->image) }}"
-                                alt="{{ $vs->alt }}" />
+                            <a href="{{ $vs->url }}">
+                                <img class="img-fluid banner-img" src="{{ asset($vs->image) }}"
+                                    alt="{{ $vs->alt }}" />
+                            </a>
                         </div>
                     @endforeach
                 </div>

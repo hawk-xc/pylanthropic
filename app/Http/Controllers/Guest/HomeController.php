@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models;
 use App\Models\ShortLinkModel;
 use App\Models\DonaturShortLink;
+use Carbon\Carbon;
 
 class HomeController extends Controller
 {
@@ -15,7 +16,31 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $slider = Models\Banner::where('is_publish', 1)->orderBy('title', 'ASC')->get();
+        $today = Carbon::today();
+
+        $slider = Models\Banner::where('is_publish', 1)
+            ->where('type', 'banner')
+            ->where(function ($q) use ($today) {
+                $q->where('is_forever', 1)
+                ->orWhere(function ($q2) use ($today) {
+                    $q2->whereNotNull('expire_date')
+                        ->where('expire_date', '>=', $today);
+                });
+            })
+            ->orderBy('title', 'ASC')
+            ->get();
+
+        $popup = Models\Banner::where('is_publish', 1)
+            ->where('type', 'popup')
+            ->where(function ($q) use ($today) {
+                $q->where('is_forever', 1)
+                ->orWhere(function ($q2) use ($today) {
+                    $q2->whereNotNull('expire_date')
+                        ->where('expire_date', '>=', $today);
+                });
+            })
+            ->first();
+
         $category = Models\ProgramCategory::where('is_show', 1)->orderBy('sort_number', 'ASC')->get();
         $selected = Models\Program::where('is_publish', 1)->select('program.*', 'organization.name', 'organization.status')->join('organization', 'program.organization_id', 'organization.id')->where('is_recommended', 1)->whereNotNull('program.approved_at')->where('end_date', '>', date('Y-m-d'))->orderBy('program.created_at', 'DESC')->limit(6)->get();
         $selected->map(function ($selected, $key) {
@@ -46,7 +71,7 @@ class HomeController extends Controller
                 return $newest->sum_amount = $sum_amount;
             }
         });
-        return view('public.index', compact('category', 'slider', 'selected', 'newest', 'urgent'));
+        return view('public.index', compact('category', 'slider', 'popup', 'selected', 'newest', 'urgent'));
     }
 
     public function aboutUs()
