@@ -39,11 +39,15 @@
         $selected_organization = \App\Models\Organization::find($organization_id);
     }
 
-    // Get category IDs from old input, or from the program's existing categories
-    $category_ids = old('category', $program->categories->pluck('id')->toArray());
+    // Get category IDs from old input, or from the database if no old input
+    $category_ids = old('category');
+    if (is_null($category_ids)) {
+        // Query the pivot model directly to avoid relationship issues
+        $category_ids = \App\Models\ProgramCategories::where('program_id', $program->id)->pluck('program_category_id')->toArray();
+    }
+
     $selected_categories = [];
     if (!empty($category_ids)) {
-        // This assumes ProgramCategory model exists and is correct
         $selected_categories = \App\Models\ProgramCategory::whereIn('id', $category_ids)->get();
     }
 @endphp
