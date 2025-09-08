@@ -63,13 +63,13 @@
                             <span class="fw-bold">Filter :</span>
                         </div>
                         <div class="col">
-                            <input type="text" id="donatur_title" placeholder="Judul Program" class="form-control form-control-sm">
+                            <input type="text" id="program_title" placeholder="Judul Program" class="form-control form-control-sm">
                         </div>
                         <div class="col">
-                            <input type="text" id="donatur_telp" placeholder="Target Donasi" class="form-control form-control-sm">
+                            <input type="text" id="donation_target" placeholder="Target Donasi" class="form-control form-control-sm">
                         </div>
                         <div class="col">
-                            <input type="text" id="filter_nominal" placeholder="Nama Mitra" class="form-control form-control-sm">
+                            <input type="text" id="organization_name" placeholder="Nama Mitra" class="form-control form-control-sm">
                         </div>
                         <div class="col">
                             <select class="form-select form-select-sm" id="filter_status">
@@ -332,8 +332,8 @@
                 // Ambil flag boolean
                 const flags = getFlagFilters();
                 // Ambil filter teks
-                const program_title     = $('#donatur_title').val() || '';
-                const organization_name = $('#filter_nominal').val() || '';
+                const program_title     = $('#program_title').val() || '';
+                const organization_name = $('#organization_name').val() || '';
 
                 Object.assign(d, flags, {
                     program_title,
