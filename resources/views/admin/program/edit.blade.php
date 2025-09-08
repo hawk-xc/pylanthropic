@@ -31,6 +31,22 @@
     </style>
 @endsection
 
+@php
+    // For retaining select2 values on validation error
+    $organization_id = old('organization', $program->organization_id);
+    $selected_organization = null;
+    if ($organization_id) {
+        $selected_organization = \App\Models\Organization::find($organization_id);
+    }
+
+    // Get category IDs from old input, or from the program's existing categories
+    $category_ids = old('category', $program->categories->pluck('id')->toArray());
+    $selected_categories = [];
+    if (!empty($category_ids)) {
+        // This assumes ProgramCategory model exists and is correct
+        $selected_categories = \App\Models\ProgramCategory::whereIn('id', $category_ids)->get();
+    }
+@endphp
 
 @section('content')
     <div class="main-card mb-3 card">
@@ -51,6 +67,16 @@
                 </div>
             </div>
             <div class="divider"></div>
+
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <ul class="mb-0">
+                        @foreach ($errors->all() as $error)
+                            <li><i class="ri-error-warning-line"></i> {{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
             @if (session('success'))
                 <div class="alert alert-success" id="success-alert">
@@ -79,7 +105,7 @@
                         <span class="input-group-text"><input type="checkbox" class="mr-2" id="edit_url"> Edit</span>
                         <span class="input-group-text">{{ url('/') }}/</span>
                         <input type="text" class="form-control" name="url" placeholder="bangunmasjidmandangin"
-                            id="url" value="{{ old('slug', $program->slug) }}" readonly>
+                            id="url" value="{{ old('url', $program->slug) }}" readonly>
                         <span class="input-group-text p-0"><button class="btn btn-sm btn-info" id="cek_url"
                                 type="button">Cek & Lanjut</button></span>
                     </div>
@@ -90,10 +116,26 @@
 
                 <div class="divider mt-4"></div>
 
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Kategori (boleh lebih dari 1 kategori)</label>
+                    <select class="form-control form-control-sm" name="category[]" id="kategori-select2" multiple="multiple" required>
+                        @if (!empty($selected_categories))
+                            @foreach ($selected_categories as $category)
+                                <option value="{{ $category->id }}" selected>{{ $category->name }}</option>
+                            @endforeach
+                        @endif
+                    </select>
+                    @error('category')
+                        <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i> {{ $message }}</div>
+                    @enderror
+                </div>
+
                 <div class="col-6">
                     <label class="form-label fw-semibold">Lembaga</label>
                     <select class="form-control form-control-sm" name="organization" id="lembaga-select2" required>
-                        <option value="{{ $program->organization_id }}">{{ $program->name }}</option>
+                        @if ($selected_organization)
+                            <option value="{{ $selected_organization->id }}" selected>{{ $selected_organization->name }}</option>
+                        @endif
                     </select>
                     @error('organization')
                         <div class="mt-2 text-danger">{{ $message }}</div>
@@ -169,8 +211,8 @@
                 <div class="col-12">
                     <div class="mt-2 p-3 rounded" style="background-color: rgb(224, 243, 255);">
                         <div class="form-check d-flex align-items-center">
-                            <input class="form-check-input input-lg mb-2" type="checkbox" name="is_islami"
-                                id="is_islami" @checked($program->is_islami == 1)>
+                            <input class="form-check-input input-lg mb-2" type="checkbox" name="is_islami" value="1"
+                                id="is_islami" @checked(old('is_islami', $program->is_islami))>
                             <label class="form-check-label fw-bold" for="is_islami">
                                 Program Islami
                             </label>
@@ -213,13 +255,11 @@
                 <div class="col-6">
                     <label class="form-label fw-semibold">Gambar Utama (600 x 320 px)</label>
                     <input type="file" class="form-control form-control-sm" name="img_primary">
-                    {{-- start image preview --}}
-                    <img id="primary_image_preview" src="" class="mt-2 img-preview w-100">
-                    {{-- end image preview --}}
-                    @if (isset($program->image) && $program->image != '')
+                    <img id="primary_image_preview" src="" class="mt-2 img-preview w-100" style="display:none;">
+                    @if (!$errors->any() && isset($program->image) && $program->image != '')
                         <img id="primary_image_main" src="{{ asset('public/images/program/' . $program->image) }}"
                             class="mt-2 img-preview w-100">
-                    @else
+                    @elseif (!isset($program->image) || $program->image == '')
                         <div class="mt-2 text-danger">Belum ada gambar utama</div>
                     @endif
                     <div class="d-flex align-items-center mt-2">
@@ -240,13 +280,11 @@
                 <div class="col-6">
                     <label class="form-label fw-semibold">Thumbnail (292 x 156 px)</label>
                     <input type="file" class="form-control form-control-sm" name="thumbnail">
-                    {{-- start image preview --}}
-                    <img id="thumbnail_image_preview" src="" class="mt-2 img-preview w-100">
-                    {{-- end image preview --}}
-                    @if (isset($program->thumbnail) && $program->thumbnail != '')
+                    <img id="thumbnail_image_preview" src="" class="mt-2 img-preview w-100" style="display:none;">
+                    @if (!$errors->any() && isset($program->thumbnail) && $program->thumbnail != '')
                         <img id="thumbnail_image_main" src="{{ asset('public/images/program/' . $program->thumbnail) }}"
                             class="mt-2 img-preview w-100">
-                    @else
+                    @elseif (!isset($program->thumbnail) || $program->thumbnail == '')
                         <div class="mt-2 text-danger">Belum ada thumbnail</div>
                     @endif
                     @error('thumbnail')
@@ -289,6 +327,7 @@
 @section('js_inline')
     <script type="text/javascript">
         $(document).ready(function() {
+            let select2_query;
             $("#lembaga-select2").select2({
                 placeholder: 'Cari Lembaga',
                 theme: 'bootstrap-5',
@@ -301,8 +340,6 @@
                             search: params.term,
                             page: params.page || 1
                         }
-
-                        // Query parameters will be ?search=[term]&type=public
                         return query;
                     },
                     processResults: function(data, params) {
@@ -314,9 +351,6 @@
                             return obj;
                         });
                         params.page = params.page || 1;
-
-                        // console.log(items);
-                        // Transforms the top-level key of the response object from 'items' to 'results'
                         return {
                             results: items,
                             pagination: {
@@ -326,14 +360,10 @@
                     },
                 },
                 templateResult: function(item) {
-                    // console.log(item);
-                    // No need to template the searching text
                     if (item.loading) {
                         return item.text;
                     }
-
                     var term = select2_query.term || '';
-                    // var $result = markMatch(item.text, term);
                     var $result = item.text,
                         term;
 
@@ -341,10 +371,7 @@
                 },
                 language: {
                     searching: function(params) {
-                        // Intercept the query as it is happening
                         select2_query = params;
-
-                        // Change this to be appropriate for your application
                         return 'Searching...';
                     }
                 }
@@ -363,8 +390,6 @@
                             search: params.term,
                             page: params.page || 1
                         }
-
-                        // Query parameters will be ?search=[term]&type=public
                         return query;
                     },
                     processResults: function(data, params) {
@@ -376,9 +401,6 @@
                             return obj;
                         });
                         params.page = params.page || 1;
-
-                        // console.log(items);
-                        // Transforms the top-level key of the response object from 'items' to 'results'
                         return {
                             results: items,
                             pagination: {
@@ -388,14 +410,10 @@
                     },
                 },
                 templateResult: function(item) {
-                    // console.log(item);
-                    // No need to template the searching text
                     if (item.loading) {
                         return item.text;
                     }
-
                     var term = select2_query.term || '';
-                    // var $result = markMatch(item.text, term);
                     var $result = item.text,
                         term;
 
@@ -403,17 +421,12 @@
                 },
                 language: {
                     searching: function(params) {
-                        // Intercept the query as it is happening
                         select2_query = params;
-
-                        // Change this to be appropriate for your application
                         return 'Searching...';
                     }
                 }
             });
-        });
 
-        $(document).ready(function() {
             // Cek status awal checkbox
             toggleThumbnailInput();
 
@@ -423,19 +436,13 @@
             });
 
             function toggleThumbnailInput() {
-                // Periksa apakah checkbox dicentang atau ada nilai old dari Laravel
                 var isChecked = $('#same_as_thumbnail').is(':checked') || {{ old('same_as_thumbnail', 'false') }};
 
                 if (isChecked) {
-                    // Jika checkbox dicentang, sembunyikan input thumbnail
                     $('input[name="thumbnail"]').closest('.col-6').hide();
-                    // Hapus required attribute jika ada
                     $('input[name="thumbnail"]').removeAttr('required');
                 } else {
-                    // Jika checkbox tidak dicentang, tampilkan input thumbnail
                     $('input[name="thumbnail"]').closest('.col-6').show();
-                    // Tambahkan required attribute kembali
-                    // $('input[name="thumbnail"]').attr('required', 'required');
                 }
             }
 
@@ -464,215 +471,210 @@
                     reader.readAsDataURL(this.files[0]);
                 }
             });
-        });
 
-        $("#program_title").on("keyup change", function() {
-            var title = $(this).val();
-            var title = title.length;
-            if (title > 75) {
-                $("#count_title").html(title + ' / 75');
-                $("#count_title").addClass('text-danger');
-            } else {
-                $("#count_title").html(title + ' / 75');
-                $("#count_title").removeClass('text-warning');
-            }
-        });
-
-        $("#cek_url").on("click", function() {
-            var url_data = $('#url').val();
-
-            $.ajax({
-                url: "{{ route('adm.program.create.check_url') }}",
-                type: "POST",
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                data: {
-                    "url": url_data
-                },
-                success: function(data) {
-                    if (data == 'valid') {
-                        console.log(data);
-                        $('#status_url').html('Valid');
-                        $('#status_url').removeClass('text-danger');
-                        $('#status_url').addClass('text-success');
-                    } else {
-                        console.log(data);
-                        $('#status_url').html('Sudah Dipakai');
-                        $('#status_url').removeClass('text-success');
-                        $('#status_url').addClass('text-danger');
-                    }
-
-                },
-                error: function(data) {
-                    console.log("error");
-                    console.log(data);
+            $("#program_title").on("keyup change", function() {
+                var title = $(this).val();
+                var title = title.length;
+                if (title > 75) {
+                    $("#count_title").html(title + ' / 75');
+                    $("#count_title").addClass('text-danger');
+                } else {
+                    $("#count_title").html(title + ' / 75');
+                    $("#count_title").removeClass('text-warning');
                 }
             });
-        });
 
-        $("#edit_url").on("click", function() {
-            if ($("#edit_url").is(':checked')) {
-                document.getElementById('url').removeAttribute('readonly');
-            } else {
-                document.getElementById('url').readOnly = true;
-            }
-        });
+            $("#cek_url").on("click", function() {
+                var url_data = $('#url').val();
 
-        $("#button-addon1").on("click", function() {
-            imageContentUpload('img1');
-            $(this).attr('disabled', 'disabled');
-        });
-
-        $("#button-addon2").on("click", function() {
-            imageContentUpload('img2');
-            $(this).attr('disabled', 'disabled');
-        });
-
-        $("#button-addon3").on("click", function() {
-            imageContentUpload('img3');
-            $(this).attr('disabled', 'disabled');
-        });
-
-        $("#copy_img1").on("click", function() {
-            navigator.clipboard.writeText($('#full_img1').val());
-        });
-
-        $("#copy_img2").on("click", function() {
-            navigator.clipboard.writeText($('#full_img2').val());
-        });
-
-        $("#copy_img3").on("click", function() {
-            navigator.clipboard.writeText($('#full_img3').val());
-        });
-
-        var rupiah = document.getElementById("rupiah");
-        rupiah.addEventListener("keyup", function(e) {
-            rupiah.value = formatRupiah(this.value, "");
-        });
-
-        /* Fungsi formatRupiah */
-        function formatRupiah(angka, prefix) {
-            var number_string = angka.replace(/[^,\d]/g, "").toString(),
-                split = number_string.split(","),
-                sisa = split[0].length % 3,
-                rupiah = split[0].substr(0, sisa),
-                ribuan = split[0].substr(sisa).match(/\d{3}/gi);
-
-            // tambahkan titik jika yang di input sudah menjadi angka ribuan
-            if (ribuan) {
-                separator = sisa ? "." : "";
-                rupiah += separator + ribuan.join(".");
-            }
-
-            rupiah = split[1] != undefined ? rupiah + "," + split[1] : rupiah;
-            return prefix == undefined ? rupiah : rupiah ? "" + rupiah : "";
-        }
-    </script>
-
-    <script>
-        tinymce.init({
-            selector: 'textarea#editor',
-            height: 1000,
-            plugins: [
-                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                'insertdatetime', 'media', 'table', 'help', 'wordcount', 'image'
-            ],
-            toolbar: 'undo redo | blocks | ' +
-                'bold italic backcolor | alignleft aligncenter ' +
-                'alignright alignjustify | bullist numlist outdent indent | ' +
-                'table tabledelete | tableprops tablerowprops tablecellprops | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol | ' +
-                'removeformat | help | image',
-
-            toolbar_sticky: true,
-            toolbar_sticky_offset: 50,
-
-            table_style_by_css: true,
-            table_default_styles: {
-                'border-collapse': 'collapse',
-                'width': '100%',
-                'margin': '15px 0'
-            },
-            table_default_attributes: {
-                'border': '1'
-            },
-            table_appearance_options: {
-                enabled: true,
-                showHeaderOption: true,
-                showBorderOption: true
-            },
-            table_cell_appearance_options: {
-                enabled: true,
-                borderColors: ['#34495e', '#3498db', '#e74c3c'],
-                backgroundColors: ['#f8f9fa', '#e9ecef', '#dee2e6']
-            },
-            table_row_appearance_options: {
-                enabled: true,
-                backgroundColors: ['#f8f9fa', '#e9ecef', '#dee2e6']
-            },
-
-            contextmenu: 'paste | link image inserttable | cell row column deletetable',
-            image_dimensions: false,
-            image_advtab: true,
-            image_caption: true,
-            images_upload_url: "{{ route('adm.program.image.content.submit') }}",
-
-            file_picker_types: 'image',
-            images_file_types: 'jpg,jpeg,png,gif,webp',
-
-            table_appearance_options: {
-                enabled: true,
-                showHeaderOption: true,
-                showBorderOption: true
-            },
-
-            images_upload_handler: function(blobInfo, progress) {
-                return new Promise((resolve, reject) => {
-                    const formData = new FormData();
-                    formData.append('file', blobInfo.blob(), blobInfo.filename());
-                    formData.append('program_title', document.getElementById('program_title').value);
-
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('POST', "{{ route('adm.program.image.content.submit') }}", true);
-                    xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
-
-                    xhr.upload.onprogress = function(e) {
-                        progress(e.loaded / e.total * 100);
-                    };
-
-                    xhr.onload = function() {
-                        if (xhr.status < 200 || xhr.status >= 300) {
-                            reject('HTTP Error: ' + xhr.status);
-                            return;
+                $.ajax({
+                    url: "{{ route('adm.program.create.check_url') }}",
+                    type: "POST",
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    data: {
+                        "url": url_data
+                    },
+                    success: function(data) {
+                        if (data == 'valid') {
+                            console.log(data);
+                            $('#status_url').html('Valid');
+                            $('#status_url').removeClass('text-danger');
+                            $('#status_url').addClass('text-success');
+                        } else {
+                            console.log(data);
+                            $('#status_url').html('Sudah Dipakai');
+                            $('#status_url').removeClass('text-success');
+                            $('#status_url').addClass('text-danger');
                         }
 
-                        const json = JSON.parse(xhr.responseText);
-
-                        if (!json || typeof json.location != 'string') {
-                            reject('Invalid JSON: ' + xhr.responseText);
-                            return;
-                        }
-
-                        // Kembalikan URL langsung tanpa konversi ke lazyload
-                        resolve(json.location);
-                    };
-
-                    xhr.onerror = function() {
-                        reject('Image upload failed due to a XHR Transport error. Status: ' + xhr
-                            .status);
-                    };
-
-                    xhr.send(formData);
+                    },
+                    error: function(data) {
+                        console.log("error");
+                        console.log(data);
+                    }
                 });
-            },
+            });
 
-            image_class_list: [{
-                title: 'Responsive',
-                value: 'img-responsive'
-            }],
+            $("#edit_url").on("click", function() {
+                if ($("#edit_url").is(':checked')) {
+                    document.getElementById('url').removeAttribute('readonly');
+                } else {
+                    document.getElementById('url').readOnly = true;
+                }
+            });
 
-            content_style: `
+            $("#button-addon1").on("click", function() {
+                imageContentUpload('img1');
+                $(this).attr('disabled', 'disabled');
+            });
+
+            $("#button-addon2").on("click", function() {
+                imageContentUpload('img2');
+                $(this).attr('disabled', 'disabled');
+            });
+
+            $("#button-addon3").on("click", function() {
+                imageContentUpload('img3');
+                $(this).attr('disabled', 'disabled');
+            });
+
+            $("#copy_img1").on("click", function() {
+                navigator.clipboard.writeText($('#full_img1').val());
+            });
+
+            $("#copy_img2").on("click", function() {
+                navigator.clipboard.writeText($('#full_img2').val());
+            });
+
+            $("#copy_img3").on("click", function() {
+                navigator.clipboard.writeText($('#full_img3').val());
+            });
+
+            var rupiah = document.getElementById("rupiah");
+            rupiah.addEventListener("keyup", function(e) {
+                rupiah.value = formatRupiah(this.value, "");
+            });
+
+            /* Fungsi formatRupiah */
+            function formatRupiah(angka, prefix) {
+                var number_string = angka.replace(/[^,\d]/g, "").toString(),
+                    split = number_string.split(","),
+                    sisa = split[0].length % 3,
+                    rupiah = split[0].substr(0, sisa),
+                    ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+                if (ribuan) {
+                    separator = sisa ? "." : "";
+                    rupiah += separator + ribuan.join(".");
+                }
+
+                rupiah = split[1] != undefined ? rupiah + "," + split[1] : rupiah;
+                return prefix == undefined ? rupiah : rupiah ? "" + rupiah : "";
+            }
+
+            tinymce.init({
+                selector: 'textarea#editor',
+                height: 1000,
+                plugins: [
+                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                    'insertdatetime', 'media', 'table', 'help', 'wordcount', 'image'
+                ],
+                toolbar: 'undo redo | blocks | ' +
+                    'bold italic backcolor | alignleft aligncenter ' +
+                    'alignright alignjustify | bullist numlist outdent indent | ' +
+                    'table tabledelete | tableprops tablerowprops tablecellprops | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol | ' +
+                    'removeformat | help | image',
+
+                toolbar_sticky: true,
+                toolbar_sticky_offset: 50,
+
+                table_style_by_css: true,
+                table_default_styles: {
+                    'border-collapse': 'collapse',
+                    'width': '100%',
+                    'margin': '15px 0'
+                },
+                table_default_attributes: {
+                    'border': '1'
+                },
+                table_appearance_options: {
+                    enabled: true,
+                    showHeaderOption: true,
+                    showBorderOption: true
+                },
+                table_cell_appearance_options: {
+                    enabled: true,
+                    borderColors: ['#34495e', '#3498db', '#e74c3c'],
+                    backgroundColors: ['#f8f9fa', '#e9ecef', '#dee2e6']
+                },
+                table_row_appearance_options: {
+                    enabled: true,
+                    backgroundColors: ['#f8f9fa', '#e9ecef', '#dee2e6']
+                },
+
+                contextmenu: 'paste | link image inserttable | cell row column deletetable',
+                image_dimensions: false,
+                image_advtab: true,
+                image_caption: true,
+                images_upload_url: "{{ route('adm.program.image.content.submit') }}",
+
+                file_picker_types: 'image',
+                images_file_types: 'jpg,jpeg,png,gif,webp',
+
+                table_appearance_options: {
+                    enabled: true,
+                    showHeaderOption: true,
+                    showBorderOption: true
+                },
+
+                images_upload_handler: function(blobInfo, progress) {
+                    return new Promise((resolve, reject) => {
+                        const formData = new FormData();
+                        formData.append('file', blobInfo.blob(), blobInfo.filename());
+                        formData.append('program_title', document.getElementById('program_title').value);
+
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('POST', "{{ route('adm.program.image.content.submit') }}", true);
+                        xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
+
+                        xhr.upload.onprogress = function(e) {
+                            progress(e.loaded / e.total * 100);
+                        };
+
+                        xhr.onload = function() {
+                            if (xhr.status < 200 || xhr.status >= 300) {
+                                reject('HTTP Error: ' + xhr.status);
+                                return;
+                            }
+
+                            const json = JSON.parse(xhr.responseText);
+
+                            if (!json || typeof json.location != 'string') {
+                                reject('Invalid JSON: ' + xhr.responseText);
+                                return;
+                            }
+
+                            resolve(json.location);
+                        };
+
+                        xhr.onerror = function() {
+                            reject('Image upload failed due to a XHR Transport error. Status: ' + xhr
+                                .status);
+                        };
+
+                        xhr.send(formData);
+                    });
+                },
+
+                image_class_list: [{
+                    title: 'Responsive',
+                    value: 'img-responsive'
+                }],
+
+                content_style: `
                 body {
                     font-family: Helvetica, Arial, sans-serif;
                     font-size: 16px;
@@ -680,7 +682,6 @@
                     line-height: 1.6;
                 }
 
-                /* Style untuk gambar */
                 img {
                     max-width: 100%;
                     height: auto;
@@ -692,7 +693,6 @@
                     height: auto;
                 }
 
-                /* Style untuk tabel */
                 table {
                     border-collapse: collapse;
                     width: 100%;
@@ -728,7 +728,6 @@
                     padding: 15px;
                 }
 
-                /* Style untuk toolbar sticky */
                 .tox-tinymce--toolbar-sticky .tox-editor-header {
                     position: sticky;
                     top: 0;
@@ -750,103 +749,95 @@
                 }
             `,
 
-            setup: function(editor) {
-                editor.on('init', function() {
-                    let content = editor.getContent();
-                    
-                    // 1. Perbaiki path relatif di src dan data-original
-                    content = content.replace(
-                        /(src|data-original)="(\.\.\/)+public\/images\/([^"]+)"/g,
-                        '$1="{{ url('/') }}/public/images/$3"'
-                    );
-                    
-                    content = content.replace(
-                        /(src|data-original)="(\.\.\/)+images\/([^"]+)"/g,
-                        '$1="{{ url('/') }}/public/images/$3"'
-                    );
-                    
-                    // 2. Untuk gambar yang memiliki src valid, pertahankan dan tambahkan class img-responsive
-                    content = content.replace(
-                        /<img[^>]+class="lazyload"[^>]+src="([^"]+\.(jpg|jpeg|png|gif|webp))"[^>]+data-original="[^"]+"[^>]*>/g,
-                        '<img class="img-responsive" src="$1" alt="">'
-                    );
-                    
-                    // 3. Untuk gambar yang hanya memiliki data-original, gunakan sebagai src
-                    content = content.replace(
-                        /<img[^>]+class="lazyload"[^>]+data-original="([^"]+\.(jpg|jpeg|png|gif|webp))"[^>]*>/g,
-                        '<img class="img-responsive" src="$1" alt="">'
-                    );
-
-                    editor.dom.addStyle(
-                        'table { border-collapse: collapse; width: 100%; } ' +
-                        'table, th, td { border: 1px solid #34495e; } ' +
-                        'th { background-color: #34495e; color: white; }'
-                    );
-
-                    var tables = editor.getBody().getElementsByTagName('table');
-                    for (var i = 0; i < tables.length; i++) {
-                        editor.dom.addClass(tables[i], 'content-table');
-                    }
-
-                    editor.on('ExecCommand', function(e) {
-                        if (e.command === 'mceInsertTable') {
-                            setTimeout(function() {
-                                var tables = editor.getBody().getElementsByTagName('table');
-                                editor.dom.addClass(tables[tables.length - 1], 'content-table');
-                            }, 100);
-                        }
-                    });
-
-                    editor.on('SaveContent', function(e) {
-                        var div = document.createElement('div');
-                        div.innerHTML = e.content;
-                        var tables = div.getElementsByTagName('table');
-                                    
-                        for (var i = 0; i < tables.length; i++) {
-                            tables[i].className = 'content-table';
-                            // Force inline styles sebagai fallback
-                            tables[i].style.borderCollapse = 'collapse';
-                            tables[i].style.width = '100%';
-                            tables[i].style.margin = '15px 0';
-                        }
-                        e.content = div.innerHTML;
-                    });
-                    
-                    editor.setContent(content);
-                });
-
-                // When new table is inserted
-                editor.on('NewRow', function(e) {
-                    editor.dom.addClass(e.row.parentNode.parentNode, 'content-table');
-                });
-            
-                editor.on('NewCell', function(e) {
-                    var dom = editor.dom;
-                    dom.setAttrib(e.cell, 'style', 'border-color: #34495e; padding: 8px;');
-                });
-            
-                // Pada saat menyimpan, konversi kembali ke format lazyload
-                editor.on('SaveContent', function(e) {
-                    e.content = e.content.replace(
-                        /<img[^>]+src="([^"]+\.(jpg|jpeg|png|gif|webp))"[^>]*>/g,
-                        '<img class="img-fluid lazyload" data-original="$1" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="">'
-                    );
-                });
-
-                // on edit in text editor
-                editor.on('PostProcess', function(e) {
-                    if (!e.get) {
-                        // Kembalikan ke gambar normal tanpa lazyload di editor
-                        e.content = e.content.replace(
-                            /<img([^>]+)class="[^"]*lazyload[^"]*"([^>]+)data-original="([^"]+)"([^>]*)>/g,
-                            '<img$1class="img-fluid"$2src="$3"$4>'
+                setup: function(editor) {
+                    editor.on('init', function() {
+                        let content = editor.getContent();
+                        
+                        content = content.replace(
+                            /(src|data-original)="(\.\.\/)+public\/images\/([^"]+)"/g,
+                            '$1="{{ url('/') }}/public/images/$3"'
+                        );
+                        
+                        content = content.replace(
+                            /(src|data-original)="(\.\.\/)+images\/([^"]+)"/g,
+                            '$1="{{ url('/') }}/public/images/$3"'
+                        );
+                        
+                        content = content.replace(
+                            /<img[^>]+class="lazyload"[^>]+src="([^"]+\.(jpg|jpeg|png|gif|webp))"[^>]+data-original="[^"]+"[^>]*>/g,
+                            '<img class="img-responsive" src="$1" alt="">'
+                        );
+                        
+                        content = content.replace(
+                            /<img[^>]+class="lazyload"[^>]+data-original="([^"]+\.(jpg|jpeg|png|gif|webp))"[^>]*>/g,
+                            '<img class="img-responsive" src="$1" alt="">'
                         );
 
-                        // Hapus atribut dimensi yang mungkin tersisa
-                        e.content = e.content.replace(/<img([^>]+)(width|height)="[^"]*"/g, '<img$1');
-                    }
-                });
-            }
+                        editor.dom.addStyle(
+                            'table { border-collapse: collapse; width: 100%; } ' +
+                            'table, th, td { border: 1px solid #34495e; } ' +
+                            'th { background-color: #34495e; color: white; }'
+                        );
+
+                        var tables = editor.getBody().getElementsByTagName('table');
+                        for (var i = 0; i < tables.length; i++) {
+                            editor.dom.addClass(tables[i], 'content-table');
+                        }
+
+                        editor.on('ExecCommand', function(e) {
+                            if (e.command === 'mceInsertTable') {
+                                setTimeout(function() {
+                                    var tables = editor.getBody().getElementsByTagName('table');
+                                    editor.dom.addClass(tables[tables.length - 1], 'content-table');
+                                }, 100);
+                            }
+                        });
+
+                        editor.on('SaveContent', function(e) {
+                            var div = document.createElement('div');
+                            div.innerHTML = e.content;
+                            var tables = div.getElementsByTagName('table');
+                                        
+                            for (var i = 0; i < tables.length; i++) {
+                                tables[i].className = 'content-table';
+                                tables[i].style.borderCollapse = 'collapse';
+                                tables[i].style.width = '100%';
+                                tables[i].style.margin = '15px 0';
+                            }
+                            e.content = div.innerHTML;
+                        });
+                        
+                        editor.setContent(content);
+                    });
+
+                    editor.on('NewRow', function(e) {
+                        editor.dom.addClass(e.row.parentNode.parentNode, 'content-table');
+                    });
+                
+                    editor.on('NewCell', function(e) {
+                        var dom = editor.dom;
+                        dom.setAttrib(e.cell, 'style', 'border-color: #34495e; padding: 8px;');
+                    });
+                
+                    editor.on('SaveContent', function(e) {
+                        e.content = e.content.replace(
+                            /<img[^>]+src="([^"]+\.(jpg|jpeg|png|gif|webp))"[^>]*>/g,
+                            '<img class="img-fluid lazyload" data-original="$1" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="">'
+                        );
+                    });
+
+                    editor.on('PostProcess', function(e) {
+                        if (!e.get) {
+                            e.content = e.content.replace(
+                                /<img([^>]+)class="[^"]*lazyload[^"]*"([^>]+)data-original="([^"]+)"([^>]*)>/g,
+                                '<img$1class="img-fluid"$2src="$3"$4>'
+                            );
+
+                            e.content = e.content.replace(/<img([^>]+)(width|height)="[^"]*"/g, '<img$1');
+                        }
+                    });
+                }
+            });
         });
     </script>
 @endsection

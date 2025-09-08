@@ -23,6 +23,21 @@
     </div>
 @endif
 
+@php
+    // For retaining select2 values on validation error
+    $old_organization_id = old('organization');
+    $selected_organization = null;
+    if ($old_organization_id) {
+        $selected_organization = \App\Models\Organization::find($old_organization_id);
+    }
+
+    $old_category_ids = old('category', []);
+    $selected_categories = [];
+    if (!empty($old_category_ids)) {
+        $selected_categories = \App\Models\ProgramCategory::whereIn('id', $old_category_ids)->get();
+    }
+@endphp
+
 @section('content')
     <div class="main-card mb-3 card">
         <div class="card-body">
@@ -72,15 +87,27 @@
 
                 <div class="col-12">
                     <label class="form-label fw-semibold">Kategori (boleh lebih dari 1 kategori)</label>
-                    <select class="form-control form-control-sm" name="category[]" id="kategori-select2" required></select>
+                    <select class="form-control form-control-sm" name="category[]" id="kategori-select2" multiple required>
+                        @if (!empty($selected_categories))
+                            @foreach ($selected_categories as $category)
+                                <option value="{{ $category->id }}" selected>{{ $category->name }}</option>
+                            @endforeach
+                        @endif
+                    </select>
                     @error('category')
-                        <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i> {{ $message }}
-                        </div>
+                        <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i> {{ $message }}</div>
                     @enderror
                 </div>
+
+
                 <div class="col-6">
                     <label class="form-label fw-semibold">Lembaga</label>
-                    <select class="form-control form-control-sm" name="organization" id="lembaga-select2" required></select>
+                    <select class="form-control form-control-sm" name="organization" id="lembaga-select2" required>
+                        @if ($selected_organization)
+                            <option value="{{ $selected_organization->id }}" selected>{{ $selected_organization->name }}
+                            </option>
+                        @endif
+                    </select>
                     @error('organization')
                         <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i> {{ $message }}
                         </div>
@@ -103,8 +130,8 @@
                     <div class="input-group input-group-sm">
                         <span class="input-group-text"><input type="checkbox" class="mr-2" id="forever_checked">
                             Selamanya</span>
-                        <input type="date" class="form-control form-control-sm" id="forever" min="{{ date('Y-m-d') }}"
-                            name="date_end" value="{{ old('date') }}" required>
+                        <input type="date" class="form-control form-control-sm" id="forever"
+                            min="{{ date('Y-m-d') }}" name="date_end" value="{{ old('date_end') }}" required>
                         @error('date_end')
                             <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i> {{ $message }}
                             </div>
@@ -138,7 +165,7 @@
                         </div>
                     @enderror
                 </div>
-                
+
                 <div class="col-12">
                     <label class="form-label fw-semibold">Cerita Singkat (caption)</label>
                     <input type="text" class="form-control form-control-sm" name="caption"
@@ -154,7 +181,7 @@
                     <div class="mt-2 p-3 rounded" style="background-color: rgb(224, 243, 255);">
                         <div class="form-check d-flex align-items-center">
                             <input class="form-check-input input-lg mb-2" type="checkbox" name="is_islami"
-                                id="is_islami">
+                                value="1" id="is_islami" @if (old('is_islami')) checked @endif>
                             <label class="form-check-label fw-bold" for="is_islami">
                                 Program Islami
                             </label>
@@ -173,7 +200,7 @@
                     <label class="form-label fw-semibold">Gambar Utama (600 x 320 px)</label>
                     <input type="file" class="form-control form-control-sm" name="img_primary" required>
                     {{-- start image preview --}}
-                    <img id="primary_image_preview" src="" class="mt-2 img-preview w-100">
+                    <img id="primary_image_preview" src="" class="mt-2 img-preview w-100" style="display:none;">
                     {{-- end image preview --}}
                     <div class="d-flex align-items-center mt-2">
                         <div class="form-check">
@@ -195,7 +222,8 @@
                     <label class="form-label fw-semibold">Thumbnail (292 x 156 px)</label>
                     <input type="file" class="form-control form-control-sm" name="thumbnail" required>
                     {{-- start image preview --}}
-                    <img id="thumbnail_image_preview" src="" class="mt-2 img-preview w-100">
+                    <img id="thumbnail_image_preview" src="" class="mt-2 img-preview w-100"
+                        style="display:none;">
                     {{-- end image preview --}}
                     @error('thumbnail')
                         <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i> {{ $message }}
@@ -284,7 +312,291 @@
 
 @section('js_inline')
     <script type="text/javascript">
+        function initTiny() {
+            tinymce.init({
+                selector: 'textarea#editor',
+                height: 1000,
+                plugins: [
+                    'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
+                    'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
+                    'insertdatetime', 'media', 'table', 'help', 'wordcount', 'image'
+                ],
+                toolbar: 'undo redo | blocks | ' +
+                    'bold italic backcolor | alignleft aligncenter ' +
+                    'alignright alignjustify | bullist numlist outdent indent | ' +
+                    'table tabledelete | tableprops tablerowprops tablecellprops | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol | ' +
+                    'removeformat | help | image',
+
+                toolbar_sticky: true,
+                toolbar_sticky_offset: 50,
+
+                table_style_by_css: true,
+                table_default_styles: {
+                    'border-collapse': 'collapse',
+                    'width': '100%',
+                    'margin': '15px 0'
+                },
+                table_default_attributes: {
+                    'border': '1'
+                },
+                table_appearance_options: {
+                    enabled: true,
+                    showHeaderOption: true,
+                    showBorderOption: true
+                },
+                table_cell_appearance_options: {
+                    enabled: true,
+                    borderColors: ['#34495e', '#3498db', '#e74c3c'],
+                    backgroundColors: ['#f8f9fa', '#e9ecef', '#dee2e6']
+                },
+                table_row_appearance_options: {
+                    enabled: true,
+                    backgroundColors: ['#f8f9fa', '#e9ecef', '#dee2e6']
+                },
+
+                contextmenu: 'paste | link image inserttable | cell row column deletetable',
+                image_dimensions: false,
+                image_advtab: true,
+                image_caption: true,
+                images_upload_url: "{{ route('adm.program.image.content.submit') }}",
+
+                file_picker_types: 'image',
+                images_file_types: 'jpg,jpeg,png,gif,webp',
+
+                table_appearance_options: {
+                    enabled: true,
+                    showHeaderOption: true,
+                    showBorderOption: true
+                },
+
+                images_upload_handler: function(blobInfo, progress) {
+                    return new Promise((resolve, reject) => {
+                        const formData = new FormData();
+                        formData.append('file', blobInfo.blob(), blobInfo.filename());
+                        formData.append('program_title', document.getElementById('program_title')
+                        .value);
+
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('POST', "{{ route('adm.program.image.content.submit') }}", true);
+                        xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
+
+                        xhr.upload.onprogress = function(e) {
+                            progress(e.loaded / e.total * 100);
+                        };
+
+                        xhr.onload = function() {
+                            if (xhr.status < 200 || xhr.status >= 300) {
+                                reject('HTTP Error: ' + xhr.status);
+                                return;
+                            }
+
+                            const json = JSON.parse(xhr.responseText);
+
+                            if (!json || typeof json.location != 'string') {
+                                reject('Invalid JSON: ' + xhr.responseText);
+                                return;
+                            }
+
+                            resolve(json.location);
+                        };
+
+                        xhr.onerror = function() {
+                            reject('Image upload failed due to a XHR Transport error. Status: ' +
+                                xhr
+                                .status);
+                        };
+
+                        xhr.send(formData);
+                    });
+                },
+
+                image_class_list: [{
+                    title: 'Responsive',
+                    value: 'img-responsive'
+                }],
+
+                content_style: `
+                body {
+                    font-family: Helvetica, Arial, sans-serif;
+                    font-size: 16px;
+                    max-width: 100%;
+                    line-height: 1.6;
+                }
+
+                img {
+                    max-width: 100%;
+                    height: auto;
+                    display: block;
+                    margin: 10px auto;
+                }
+                .img-responsive, .img-fluid {
+                    max-width: 100%;
+                    height: auto;
+                }
+
+                table {
+                    border-collapse: collapse;
+                    width: 100%;
+                    margin: 15px 0;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }
+                table, th, td {
+                    border: 1px solid #ddd;
+                }
+                th {
+                    background-color: #34495e;
+                    color: white;
+                    padding: 12px;
+                    text-align: left;
+                    font-weight: bold;
+                }
+
+                td {
+                    padding: 10px 12px;
+                    vertical-align: top;
+                }
+                tr:nth-child(even) {
+                    background-color: #f8f9fa;
+                }
+
+                tr:hover {
+                    background-color: #e9f7fe;
+                }
+
+                .mce-content-body {
+                    max-width: 800px;
+                    margin: 0 auto;
+                    padding: 15px;
+                }
+
+                .tox-tinymce--toolbar-sticky .tox-editor-header {
+                    position: sticky;
+                    top: 0;
+                    z-index: 1000;
+                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+                }
+
+                table.content-table {
+                    border-collapse: collapse;
+                    width: 100%;
+                    margin: 15px 0;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                }
+
+                table.content-table, 
+                table.content-table th, 
+                table.content-table td {
+                    border: 1px solid #34495e !important;
+                }
+            `,
+
+                setup: function(editor) {
+                    editor.on('init', function() {
+                        let content = editor.getContent();
+
+                        content = content.replace(
+                            /src="(\.\.\/)+public\/images\/([^"]+)"/g,
+                            'src="{{ url('/') }}/public/images/$2"'
+                        );
+
+                        content = content.replace(
+                            /src="(\.\.\/)+images\/([^"]+)"/g,
+                            'src="{{ url('/') }}/public/images/$2"'
+                        );
+
+                        content = content.replace(
+                            /<img[^>]+src="([^"]+)"[^>]*>/g,
+                            function(match, src) {
+                                return '<img class="img-responsive" src="' + src + '" alt="">';
+                            }
+                        );
+
+                        editor.dom.addStyle(
+                            'table { border-collapse: collapse; width: 100%; } ' +
+                            'table, th, td { border: 1px solid #34495e; } ' +
+                            'th { background-color: #34495e; color: white; }'
+                        );
+
+                        var tables = editor.getBody().getElementsByTagName('table');
+                        for (var i = 0; i < tables.length; i++) {
+                            editor.dom.addClass(tables[i], 'content-table');
+                        }
+
+                        editor.on('ExecCommand', function(e) {
+                            if (e.command === 'mceInsertTable') {
+                                setTimeout(function() {
+                                    var tables = editor.getBody().getElementsByTagName(
+                                        'table');
+                                    editor.dom.addClass(tables[tables.length - 1],
+                                        'content-table');
+                                }, 100);
+                            }
+                        });
+
+                        editor.on('SaveContent', function(e) {
+                            var div = document.createElement('div');
+                            div.innerHTML = e.content;
+                            var tables = div.getElementsByTagName('table');
+
+                            for (var i = 0; i < tables.length; i++) {
+                                tables[i].className = 'content-table';
+                                tables[i].style.borderCollapse = 'collapse';
+                                tables[i].style.width = '100%';
+                                tables[i].style.margin = '15px 0';
+                            }
+                            e.content = div.innerHTML;
+                        });
+
+                        editor.setContent(content);
+                    });
+
+                    editor.on('NewRow', function(e) {
+                        editor.dom.addClass(e.row.parentNode.parentNode, 'content-table');
+                    });
+
+                    editor.on('NewCell', function(e) {
+                        var dom = editor.dom;
+                        dom.setAttrib(e.cell, 'style', 'border-color: #34495e; padding: 8px;');
+                    });
+
+                    editor.on('BeforeSetContent', function(e) {
+                        if (e.content) {
+                            e.content = e.content.replace(
+                                new RegExp('src="{{ url('/') }}/public/images/([^"]+)"', 'g'),
+                                'src="/public/images/$1"'
+                            );
+                        }
+                    });
+
+                    editor.on('SaveContent', function(e) {
+                        e.content = e.content.replace(
+                            /<img[^>]+src="([^"]+)"[^>]*>/g,
+                            '<img class="lazyload" data-original="$1" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="">'
+                        );
+                    });
+
+                    editor.on('PostProcess', function(e) {
+                        if (!e.get) {
+
+                            e.content = e.content.replace(
+                                /<img([^>]+)class="[^"]*lazyload[^"]*"([^>]+)data-original="([^"]+)"([^>]*)>/g,
+                                '<img$1class="img-fluid"$2src="$3"$4>'
+                            );
+
+                            e.content = e.content.replace(/<img([^>]+)(width|height)="[^"]*"/g,
+                                '<img$1');
+
+                        }
+                    });
+                }
+            });
+        }
+
         $(document).ready(function() {
+            let select2_query;
+            
+            initTiny();
+            
             $("#lembaga-select2").select2({
                 placeholder: 'Cari Lembaga',
                 theme: 'bootstrap-5',
@@ -407,9 +719,7 @@
                     }
                 }
             });
-        });
 
-        $(document).ready(function() {
             // Cek status awal checkbox
             toggleThumbnailInput();
 
@@ -455,460 +765,163 @@
                     reader.readAsDataURL(this.files[0]);
                 }
             });
-        });
 
-        $("#program_title").on("keyup change", function() {
-            var title = $(this).val();
-            var title = title.length;
-            if (title > 75) {
-                $("#count_title").html(title + ' / 75');
-                $("#count_title").addClass('text-danger');
-            } else {
-                $("#count_title").html(title + ' / 75');
-                $("#count_title").removeClass('text-warning');
-            }
-        });
-
-        $("#program_title").on("blur", function() {
-            var title = $(this).val();
-            var title = title.toLowerCase();
-            var title = title.replace(/[^a-zA-Z0-9 ]/g, '');
-            var title = title.replace(/ /g, "-");
-            var title = title.replace(/--/g, "-");
-            var title = encodeURI(title);
-            var title = title.replace(/[^a-zA-Z0-9-]/g, '');
-            $("#url").val(title);
-        });
-
-        $("#cek_url").on("click", function() {
-            var url_data = $('#url').val();
-
-            $.ajax({
-                url: "{{ route('adm.program.create.check_url') }}",
-                type: "POST",
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                data: {
-                    "url": url_data
-                },
-                success: function(data) {
-                    if (data == 'valid') {
-                        console.log(data);
-                        $('#status_url').html('Valid');
-                        $('#status_url').removeClass('text-danger');
-                        $('#status_url').addClass('text-success');
-                    } else {
-                        console.log(data);
-                        $('#status_url').html('Sudah Dipakai');
-                        $('#status_url').removeClass('text-success');
-                        $('#status_url').addClass('text-danger');
-                    }
-
-                },
-                error: function(data) {
-                    console.log("error");
-                    console.log(data);
+            $("#program_title").on("keyup change", function() {
+                var title = $(this).val();
+                var title = title.length;
+                if (title > 75) {
+                    $("#count_title").html(title + ' / 75');
+                    $("#count_title").addClass('text-danger');
+                } else {
+                    $("#count_title").html(title + ' / 75');
+                    $("#count_title").removeClass('text-warning');
                 }
             });
-        });
 
-        $("#edit_url").on("click", function() {
-            if ($("#edit_url").is(':checked')) {
-                document.getElementById('url').removeAttribute('readonly');
-            } else {
-                document.getElementById('url').readOnly = true;
-            }
-        });
+            $("#program_title").on("blur", function() {
+                var title = $(this).val();
+                var title = title.toLowerCase();
+                var title = title.replace(/[^a-zA-Z0-9 ]/g, '');
+                var title = title.replace(/ /g, "-");
+                var title = title.replace(/--/g, "-");
+                var title = encodeURI(title);
+                var title = title.replace(/[^a-zA-Z0-9-]/g, '');
+                $("#url").val(title);
+            });
 
-        $("#button-addon1").on("click", function() {
-            imageContentUpload('img1');
-            $(this).attr('disabled', 'disabled');
-        });
+            $("#cek_url").on("click", function() {
+                var url_data = $('#url').val();
 
-        $("#button-addon2").on("click", function() {
-            imageContentUpload('img2');
-            $(this).attr('disabled', 'disabled');
-        });
+                $.ajax({
+                    url: "{{ route('adm.program.create.check_url') }}",
+                    type: "POST",
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    data: {
+                        "url": url_data
+                    },
+                    success: function(data) {
+                        if (data == 'valid') {
+                            console.log(data);
+                            $('#status_url').html('Valid');
+                            $('#status_url').removeClass('text-danger');
+                            $('#status_url').addClass('text-success');
+                        } else {
+                            console.log(data);
+                            $('#status_url').html('Sudah Dipakai');
+                            $('#status_url').removeClass('text-success');
+                            $('#status_url').addClass('text-danger');
+                        }
 
-        $("#button-addon3").on("click", function() {
-            imageContentUpload('img3');
-            $(this).attr('disabled', 'disabled');
-        });
+                    },
+                    error: function(data) {
+                        console.log("error");
+                        console.log(data);
+                    }
+                });
+            });
 
-        function imageContentUpload(img, editor = null) {
-            var imgname = $('input[name=title]').val();
-            var data = new FormData();
+            $("#edit_url").on("click", function() {
+                if ($("#edit_url").is(':checked')) {
+                    document.getElementById('url').removeAttribute('readonly');
+                } else {
+                    document.getElementById('url').readOnly = true;
+                }
+            });
 
-            // Handle both file input and editor upload
-            var file = $('#' + img)[0] ? $('#' + img)[0].files[0] : img;
-            data.append('file', file);
-            data.append('name', imgname);
-            data.append('number', img);
+            $("#button-addon1").on("click", function() {
+                imageContentUpload('img1');
+                $(this).attr('disabled', 'disabled');
+            });
 
-            $.ajax({
-                url: "{{ route('adm.program.image.content.submit') }}",
-                type: "POST",
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                data: data,
-                enctype: 'multipart/form-data',
-                processData: false,
-                contentType: false,
-                success: function(data) {
-                    if (editor) {
-                        // For CKEditor
-                        editor.model.change(writer => {
-                            const imageElement = writer.createElement('image', {
-                                src: data.link
+            $("#button-addon2").on("click", function() {
+                imageContentUpload('img2');
+                $(this).attr('disabled', 'disabled');
+            });
+
+            $("#button-addon3").on("click", function() {
+                imageContentUpload('img3');
+                $(this).attr('disabled', 'disabled');
+            });
+
+            function imageContentUpload(img, editor = null) {
+                var imgname = $('input[name=title]').val();
+                var data = new FormData();
+
+                var file = $('#' + img)[0] ? $('#' + img)[0].files[0] : img;
+                data.append('file', file);
+                data.append('name', imgname);
+                data.append('number', img);
+
+                $.ajax({
+                    url: "{{ route('adm.program.image.content.submit') }}",
+                    type: "POST",
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    data: data,
+                    enctype: 'multipart/form-data',
+                    processData: false,
+                    contentType: false,
+                    success: function(data) {
+                        if (editor) {
+                            editor.model.change(writer => {
+                                const imageElement = writer.createElement('image', {
+                                    src: data.link
+                                });
+                                editor.model.insertContent(imageElement);
                             });
-                            editor.model.insertContent(imageElement);
-                        });
-                    } else {
-                        // For manual upload
-                        $('#link_' + img).html(data.link);
-                        $('#full_' + img).val(data.full);
+                        } else {
+                            $('#link_' + img).html(data.link);
+                            $('#full_' + img).val(data.full);
+                        }
+                    },
+                    error: function(data) {
+                        console.log("error");
+                        console.log(data);
+                        if (editor) {
+                            editor.notification.showWarning('Upload gambar gagal', {
+                                title: 'Error'
+                            });
+                        }
                     }
-                },
-                error: function(data) {
-                    console.log("error");
-                    console.log(data);
-                    if (editor) {
-                        editor.notification.showWarning('Upload gambar gagal', {
-                            title: 'Error'
-                        });
-                    }
-                }
-            });
-            return false;
-        }
-
-        $("#copy_img1").on("click", function() {
-            navigator.clipboard.writeText($('#full_img1').val());
-        });
-
-        $("#copy_img2").on("click", function() {
-            navigator.clipboard.writeText($('#full_img2').val());
-        });
-
-        $("#copy_img3").on("click", function() {
-            navigator.clipboard.writeText($('#full_img3').val());
-        });
-
-        var rupiah = document.getElementById("rupiah");
-        rupiah.addEventListener("keyup", function(e) {
-            rupiah.value = formatRupiah(this.value, "");
-        });
-
-        /* Fungsi formatRupiah */
-        function formatRupiah(angka, prefix) {
-            var number_string = angka.replace(/[^,\d]/g, "").toString(),
-                split = number_string.split(","),
-                sisa = split[0].length % 3,
-                rupiah = split[0].substr(0, sisa),
-                ribuan = split[0].substr(sisa).match(/\d{3}/gi);
-
-            // tambahkan titik jika yang di input sudah menjadi angka ribuan
-            if (ribuan) {
-                separator = sisa ? "." : "";
-                rupiah += separator + ribuan.join(".");
+                });
+                return false;
             }
 
-            rupiah = split[1] != undefined ? rupiah + "," + split[1] : rupiah;
-            return prefix == undefined ? rupiah : rupiah ? "" + rupiah : "";
-        }
-    </script>
+            $("#copy_img1").on("click", function() {
+                navigator.clipboard.writeText($('#full_img1').val());
+            });
 
-    <script>
-        tinymce.init({
-            selector: 'textarea#editor',
-            height: 1000,
-            plugins: [
-                'advlist', 'autolink', 'lists', 'link', 'image', 'charmap', 'preview',
-                'anchor', 'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                'insertdatetime', 'media', 'table', 'help', 'wordcount', 'image'
-            ],
-            toolbar: 'undo redo | blocks | ' +
-                'bold italic backcolor | alignleft aligncenter ' +
-                'alignright alignjustify | bullist numlist outdent indent | ' +
-                'table tabledelete | tableprops tablerowprops tablecellprops | tableinsertrowbefore tableinsertrowafter tabledeleterow | tableinsertcolbefore tableinsertcolafter tabledeletecol | ' +
-                'removeformat | help | image',
-            
-            toolbar_sticky: true,
-            toolbar_sticky_offset: 50,
+            $("#copy_img2").on("click", function() {
+                navigator.clipboard.writeText($('#full_img2').val());
+            });
 
-            table_style_by_css: true,
-            table_default_styles: {
-                'border-collapse': 'collapse',
-                'width': '100%',
-                'margin': '15px 0'
-            },
-            table_default_attributes: {
-                'border': '1'
-            },
-            table_appearance_options: {
-                enabled: true,
-                showHeaderOption: true,
-                showBorderOption: true
-            },
-            table_cell_appearance_options: {
-                enabled: true,
-                borderColors: ['#34495e', '#3498db', '#e74c3c'],
-                backgroundColors: ['#f8f9fa', '#e9ecef', '#dee2e6']
-            },
-            table_row_appearance_options: {
-                enabled: true,
-                backgroundColors: ['#f8f9fa', '#e9ecef', '#dee2e6']
-            },
+            $("#copy_img3").on("click", function() {
+                navigator.clipboard.writeText($('#full_img3').val());
+            });
 
-            contextmenu: 'paste | link image inserttable | cell row column deletetable',
-            // image dimensions
-            image_dimensions: false,
-            image_advtab: true,
-            image_caption: true,
-            images_upload_url: "{{ route('adm.program.image.content.submit') }}",
+            var rupiah = document.getElementById("rupiah");
+            rupiah.addEventListener("keyup", function(e) {
+                rupiah.value = formatRupiah(this.value, "");
+            });
 
-            file_picker_types: 'image',
-            images_file_types: 'jpg,jpeg,png,gif,webp',
+            /* Fungsi formatRupiah */
+            function formatRupiah(angka, prefix) {
+                var number_string = angka.replace(/[^,\d]/g, "").toString(),
+                    split = number_string.split(","),
+                    sisa = split[0].length % 3,
+                    rupiah = split[0].substr(0, sisa),
+                    ribuan = split[0].substr(sisa).match(/\d{3}/gi);
 
-            table_appearance_options: {
-                enabled: true,
-                showHeaderOption: true,
-                showBorderOption: true
-            },
-
-            images_upload_handler: function(blobInfo, progress) {
-                return new Promise((resolve, reject) => {
-                    const formData = new FormData();
-                    formData.append('file', blobInfo.blob(), blobInfo.filename());
-                    formData.append('program_title', document.getElementById('program_title').value);
-
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('POST', "{{ route('adm.program.image.content.submit') }}", true);
-                    xhr.setRequestHeader('X-CSRF-TOKEN', '{{ csrf_token() }}');
-
-                    xhr.upload.onprogress = function(e) {
-                        progress(e.loaded / e.total * 100);
-                    };
-
-                    xhr.onload = function() {
-                        if (xhr.status < 200 || xhr.status >= 300) {
-                            reject('HTTP Error: ' + xhr.status);
-                            return;
-                        }
-
-                        const json = JSON.parse(xhr.responseText);
-
-                        if (!json || typeof json.location != 'string') {
-                            reject('Invalid JSON: ' + xhr.responseText);
-                            return;
-                        }
-
-                        // Kembalikan URL langsung tanpa konversi ke lazyload
-                        resolve(json.location);
-                    };
-
-                    xhr.onerror = function() {
-                        reject('Image upload failed due to a XHR Transport error. Status: ' + xhr
-                            .status);
-                    };
-
-                    xhr.send(formData);
-                });
-            },
-
-            image_class_list: [{
-                title: 'Responsive',
-                value: 'img-responsive'
-            }],
-
-            content_style: `
-                body {
-                    font-family: Helvetica, Arial, sans-serif;
-                    font-size: 16px;
-                    max-width: 100%;
-                    line-height: 1.6;
+                if (ribuan) {
+                    separator = sisa ? "." : "";
+                    rupiah += separator + ribuan.join(".");
                 }
 
-                /* Style untuk gambar */
-                img {
-                    max-width: 100%;
-                    height: auto;
-                    display: block;
-                    margin: 10px auto;
-                }
-                .img-responsive, .img-fluid {
-                    max-width: 100%;
-                    height: auto;
-                }
-
-                /* Style untuk tabel */
-                table {
-                    border-collapse: collapse;
-                    width: 100%;
-                    margin: 15px 0;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                }
-                table, th, td {
-                    border: 1px solid #ddd;
-                }
-                th {
-                    background-color: #34495e;
-                    color: white;
-                    padding: 12px;
-                    text-align: left;
-                    font-weight: bold;
-                }
-
-                td {
-                    padding: 10px 12px;
-                    vertical-align: top;
-                }
-                tr:nth-child(even) {
-                    background-color: #f8f9fa;
-                }
-
-                tr:hover {
-                    background-color: #e9f7fe;
-                }
-
-                .mce-content-body {
-                    max-width: 800px;
-                    margin: 0 auto;
-                    padding: 15px;
-                }
-
-                /* Style untuk toolbar sticky */
-                .tox-tinymce--toolbar-sticky .tox-editor-header {
-                    position: sticky;
-                    top: 0;
-                    z-index: 1000;
-                    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-                }
-
-                table.content-table {
-                    border-collapse: collapse;
-                    width: 100%;
-                    margin: 15px 0;
-                    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                }
-
-                table.content-table, 
-                table.content-table th, 
-                table.content-table td {
-                    border: 1px solid #34495e !important;
-                }
-            `,
-
-            setup: function(editor) {
-                // Nonaktifkan sementara konversi lazyload saat init
-                editor.on('init', function() {
-                    let content = editor.getContent();
-
-                    // Perbaiki path gambar yang relatif
-                    content = content.replace(
-                        /src="(\.\.\/)+public\/images\/([^"]+)"/g,
-                        'src="{{ url('/') }}/public/images/$2"'
-                    );
-
-                    content = content.replace(
-                        /src="(\.\.\/)+images\/([^"]+)"/g,
-                        'src="{{ url('/') }}/public/images/$2"'
-                    );
-
-                    // Untuk gambar baru, tampilkan langsung tanpa lazyload di editor
-                    content = content.replace(
-                        /<img[^>]+src="([^"]+)"[^>]*>/g,
-                        function(match, src) {
-                            return '<img class="img-responsive" src="' + src + '" alt="">';
-                        }
-                    );
-
-                     editor.dom.addStyle(
-                        'table { border-collapse: collapse; width: 100%; } ' +
-                        'table, th, td { border: 1px solid #34495e; } ' +
-                        'th { background-color: #34495e; color: white; }'
-                    );
-
-                    var tables = editor.getBody().getElementsByTagName('table');
-                    for (var i = 0; i < tables.length; i++) {
-                        editor.dom.addClass(tables[i], 'content-table');
-                    }
-
-                    editor.on('ExecCommand', function(e) {
-                        if (e.command === 'mceInsertTable') {
-                            setTimeout(function() {
-                                var tables = editor.getBody().getElementsByTagName('table');
-                                editor.dom.addClass(tables[tables.length - 1], 'content-table');
-                            }, 100);
-                        }
-                    });
-
-                    editor.on('SaveContent', function(e) {
-                        var div = document.createElement('div');
-                        div.innerHTML = e.content;
-                        var tables = div.getElementsByTagName('table');
-                                    
-                        for (var i = 0; i < tables.length; i++) {
-                            tables[i].className = 'content-table';
-                            // Force inline styles sebagai fallback
-                            tables[i].style.borderCollapse = 'collapse';
-                            tables[i].style.width = '100%';
-                            tables[i].style.margin = '15px 0';
-                        }
-                        e.content = div.innerHTML;
-                    });
-
-                    editor.setContent(content);
-                });
-
-                editor.on('NewRow', function(e) {
-                    editor.dom.addClass(e.row.parentNode.parentNode, 'content-table');
-                });
-            
-                editor.on('NewCell', function(e) {
-                    var dom = editor.dom;
-                    dom.setAttrib(e.cell, 'style', 'border-color: #34495e; padding: 8px;');
-                });
-
-                // Format lazyload hanya saat menyimpan
-                editor.on('BeforeSetContent', function(e) {
-                    if (e.content) {
-                        // Pastikan path konsisten sebelum disimpan
-                        e.content = e.content.replace(
-                            new RegExp('src="{{ url('/') }}/public/images/([^"]+)"', 'g'),
-                            'src="/public/images/$1"'
-                        );
-                    }
-                });
-
-                // Saat menyimpan, konversi ke format lazyload
-                editor.on('SaveContent', function(e) {
-                    e.content = e.content.replace(
-                        /<img[^>]+src="([^"]+)"[^>]*>/g,
-                        '<img class="lazyload" data-original="$1" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="">'
-                    );
-                });
-
-                // Untuk konten yang ditampilkan di editor, gunakan gambar asli
-                editor.on('PostProcess', function(e) {
-                    if (!e.get) { // Hanya untuk konten yang ditampilkan, bukan yang disimpan
-
-                        e.content = e.content.replace(
-                            /<img([^>]+)class="[^"]*lazyload[^"]*"([^>]+)data-original="([^"]+)"([^>]*)>/g,
-                            '<img$1class="img-fluid"$2src="$3"$4>'
-                        );
-
-                        e.content = e.content.replace(/<img([^>]+)(width|height)="[^"]*"/g, '<img$1');
-
-                        // disable previous dimension size
-                        // e.content = e.content.replace(
-                        //     /<img[^>]+class="lazyload"[^>]+data-original="([^"]+)"[^>]*>/g,
-                        //     '<img class="img-responsive" src="$1" alt="">'
-                        // );
-                    }
-                });
+                rupiah = split[1] != undefined ? rupiah + "," + split[1] : rupiah;
+                return prefix == undefined ? rupiah : rupiah ? "" + rupiah : "";
             }
         });
     </script>
