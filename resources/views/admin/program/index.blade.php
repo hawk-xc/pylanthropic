@@ -52,38 +52,69 @@
                     <!-- <button class="btn btn-outline-primary"><i class="fa fa-filter mr-1"></i> Filter</button> -->
                     <a href="{{ route('adm.program.create') }}" class="btn btn-outline-primary"><i
                             class="fa fa-plus mr-1"></i> Tambah</a>
+                    <button class="btn btn-outline-info" id="refresh-datatable"><i class="fa fa-sync"></i> Refresh Data</button>
                 </div>
             </div>
             <div class="divider"></div>
             <div class="row">
-                <div class="col-12 form-inline">
-                    <span>Filter :</span>
-                    <input type="text" id="donatur_title" placeholder="Judul Program" class="form-control form-control-sm me-1 ms-2">
-                    <input type="text" id="donatur_telp" placeholder="Target Donasi" class="form-control form-control-sm me-1"> 
-                    <input type="text" id="filter_nominal" placeholder="Nama Mitra" class="form-control form-control-sm me-1"> 
-                    <select class="form-control form-control-sm me-1" id="filter_status">
-                        <option value="">-- Pilih Status --</option>
-                        <option value="recommended">Pilihan</option>
-                        <option value="urgent">Mendesak</option>
-                        <option value="newest">Terbaru</option>
-                        <option value="search">Pencarian</option>
-                    </select>
-                    <button class="btn btn-sm btn-primary" id="filter_search">Cari</button>
+                <div class="col-12">
+                    <div class="row gx-3 align-items-center">
+                        <div class="col-auto">
+                            <span class="fw-bold">Filter :</span>
+                        </div>
+                        <div class="col">
+                            <input type="text" id="donatur_title" placeholder="Judul Program" class="form-control form-control-sm">
+                        </div>
+                        <div class="col">
+                            <input type="text" id="donatur_telp" placeholder="Target Donasi" class="form-control form-control-sm">
+                        </div>
+                        <div class="col">
+                            <input type="text" id="filter_nominal" placeholder="Nama Mitra" class="form-control form-control-sm">
+                        </div>
+                        <div class="col">
+                            <select class="form-select form-select-sm" id="filter_status">
+                                <option value="">-- Pilih Status --</option>
+                                <option value="recommended">Pilihan</option>
+                                <option value="urgent">Mendesak</option>
+                                <option value="newest">Terbaru</option>
+                                <option value="search">Pencarian</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <button class="btn btn-sm btn-primary" id="filter_search">Cari</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-12 form-inline mt-2">
-                    <span>Urutkan :</span>
-                    <select class="form-control form-control-sm me-1 ms-2" id="filter_sort">
-                        <option value="">-- Pilih --</option>
-                        <option value="donate_total">Jumlah Donasi</option>
-                        <option value="spend_sum">Jumlah Pengeluaran</option>
-                        <option value="spend_ads_campaign">Jumlah Pengeluaran Campaign</option>
-                        <option value="payout_sum">Jumlah Penyaluran</option>
-                        <option value="approved_at">Tanggal Publish</option>
-                        <option value="end_date">Tanggal Berakhir</option>
-                    </select>
-                    <input type="radio" name="dir" value="asc" class="me-1 ms-2" checked> Dari Terkecil
-                    <input type="radio" name="dir" value="desc"  class="me-1 ms-2"> Dari Terbesar
-                    <button class="btn btn-sm btn-primary ms-2" id="filter_sort_btn">Urutkan</button>
+                <div class="col-12 mt-2">
+                     <div class="row gx-3 align-items-center">
+                        <div class="col-auto">
+                            <span class="fw-bold">Urutkan :</span>
+                        </div>
+                        <div class="col">
+                            <select class="form-select form-select-sm" id="filter_sort">
+                                <option value="">-- Pilih --</option>
+                                <option value="donate_total">Jumlah Donasi</option>
+                                <option value="spend_sum">Jumlah Pengeluaran</option>
+                                <option value="spend_ads_campaign">Jumlah Pengeluaran Campaign</option>
+                                <option value="payout_sum">Jumlah Penyaluran</option>
+                                <option value="approved_at">Tanggal Publish</option>
+                                <option value="end_date">Tanggal Berakhir</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <div class="form-check form-check-inline mb-0">
+                                <input class="form-check-input" type="radio" name="dir" id="dir_asc" value="asc" checked>
+                                <label class="form-check-label" for="dir_asc">Dari Terkecil</label>
+                            </div>
+                            <div class="form-check form-check-inline mb-0">
+                                <input class="form-check-input" type="radio" name="dir" id="dir_desc" value="desc">
+                                <label class="form-check-label" for="dir_desc">Dari Terbesar</label>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <button class="btn btn-sm btn-primary" id="filter_sort_btn">Urutkan</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="divider"></div>
@@ -289,6 +320,7 @@
     // ====== DATA TABLE ======
     const table = $('#table-program').DataTable({
         processing: true,
+        searching: false,
         serverSide: true,
         responsive: true,
         autoWidth: true,
@@ -326,6 +358,11 @@
     $(document).on('click', FILTER_BTN, function() {
         toggleBtn($(this));
         table.ajax.reload();
+    });
+
+    $('#refresh-datatable').on('click', function(e) {
+        e.preventDefault();
+        table.ajax.url("{{ route('adm.program.datatables') }}?refresh=true").load();
     });
 
     // ====== FILTER TEKS & STATUS (Cari) ======
