@@ -46,23 +46,47 @@
             @enderror
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="form-group mb-3">
-            <label for="duration" class="form-label">Durasi (hari)</label>
-            <input type="number" class="form-control @error('duration') is-invalid @enderror" id="duration" name="duration" value="{{ old('duration', $banner->duration ?? 7) }}" required>
-            @error('duration')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
+    <div class="col-md-4">
+    <div class="form-group mb-3">
+        <label for="expire_date" class="form-label fw-semibold">Tanggal Kedaluwarsa</label>
+        <div class="input-group input-group">
+            <span class="input-group-text d-flex align-items-center">
+                <input class="form-check-input me-2" type="checkbox" 
+                    value="1" name="is_forever" id="is_forever"
+                    {{ old('is_forever', $banner->is_forever ?? '') ? 'checked' : '' }}>
+                <label for="is_forever" class="mb-0">Selamanya</label>
+            </span>
+            <input type="date" 
+                class="form-control form-control @error('expire_date') is-invalid @enderror"
+                id="expire_date" name="expire_date"
+                value="{{ old('expire_date', isset($banner->expire_date) ? \Carbon\Carbon::parse($banner->expire_date)->format('Y-m-d') : '') }}">
         </div>
+        @error('expire_date')
+            <div class="text-danger small mt-1"><i class="ri-error-warning-line"></i> {{ $message }}</div>
+        @enderror
     </div>
-    <div class="col-md-6">
+</div>
+
+    <div class="col-md-4">
         <div class="form-group mb-3">
             <label for="is_publish" class="form-label">Status {!! printRequired() !!}</label>
-            <select class="form-control @error('is_publish') is-invalid @enderror" id="is_publish" name="is_publish" required>
+            <select class="form-select @error('is_publish') is-invalid @enderror" id="is_publish" name="is_publish" required>
                 <option value="1" {{ old('is_publish', $banner->is_publish ?? '') == 1 ? 'selected' : '' }}>Publikasi</option>
                 <option value="0" {{ old('is_publish', $banner->is_publish ?? '') == 0 ? 'selected' : '' }}>Draft</option>
             </select>
             @error('is_publish')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="form-group mb-3">
+            <label for="type" class="form-label">Tipe {!! printRequired() !!}</label>
+            <select class="form-select @error('type') is-invalid @enderror" id="type" name="type" required>
+                <option value="banner" {{ old('type', $banner->type ?? 'banner') == 'banner' ? 'selected' : '' }}>Banner</option>
+                <option value="popup" {{ old('type', $banner->type ?? '') == 'popup' ? 'selected' : '' }}>Popup</option>
+            </select>
+            @error('type')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
@@ -111,6 +135,22 @@ function previewImage() {
         imgPreview.src = oFREvent.target.result;
     }
 }
+
+$(document).ready(function() {
+    function toggleExpireDate() {
+        if ($('#is_forever').is(':checked')) {
+            $('#expire_date').prop('disabled', true).val('');
+        } else {
+            $('#expire_date').prop('disabled', false);
+        }
+    }
+
+    toggleExpireDate();
+
+    $('#is_forever').on('change', function() {
+        toggleExpireDate();
+    });
+});
 </script>
 
 <script>

@@ -44,10 +44,11 @@
                 <thead>
                     <tr>
                         <th>No</th>
-                        <th>Title</th>
-                        <th>Links</th>
+                        <th>Judul</th>
+                        <th>Tautan</th>
+                        <th>Tipe</th>
                         <th>Status</th>
-                        <th>Action</th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -87,6 +88,7 @@
                     { data: 'DT_RowIndex', name: 'DT_RowIndex', orderable: false, searchable: false, width: '5%' },
                     { data: 'title', name: 'title' },
                     { data: 'links', name: 'links', orderable: false, searchable: false },
+                    { data: 'type', name: 'type' },
                     { data: 'is_publish', name: 'is_publish', width: '10%' },
                     { data: 'action', name: 'action', orderable: false, searchable: false, width: '15%' }
                 ],
@@ -117,6 +119,52 @@
                         form.submit();
                     }
                 })
+            });
+
+            $('#banner-table').on('click', '.change-status-btn', function(e) {
+                e.preventDefault();
+                var bannerId = $(this).data('id');
+                var url = "{{ route('adm.banner.change-status') }}";
+
+                Swal.fire({
+                    title: 'Ubah Status?',
+                    text: "Anda akan mengubah status publikasi item ini.",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, ubah!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: url,
+                            type: 'POST',
+                            data: {
+                                '_token': '{{ csrf_token() }}',
+                                'id': bannerId
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    Swal.fire({
+                                        toast: true,
+                                        position: 'top-end',
+                                        icon: 'success',
+                                        title: response.message,
+                                        showConfirmButton: false,
+                                        timer: 2000
+                                    });
+                                    table.ajax.reload(null, false);
+                                } else {
+                                    Swal.fire('Gagal!', response.message, 'error');
+                                }
+                            },
+                            error: function() {
+                                Swal.fire('Error!', 'Terjadi kesalahan saat menghubungi server.', 'error');
+                            }
+                        });
+                    }
+                });
             });
         });
     </script>

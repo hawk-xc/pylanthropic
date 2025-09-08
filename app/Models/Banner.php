@@ -13,8 +13,11 @@ class Banner extends Model
         'title',
         'url',
         'image',
+        'type',
         'alt',
-        'duration',
+        // 'duration',
+        'expire_date',
+        'is_forever',
         'is_publish',
         'description',
         'created_by'

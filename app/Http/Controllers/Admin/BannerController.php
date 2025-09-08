@@ -26,7 +26,7 @@ class BannerController extends Controller
      */
     public function bannerDatatables(Request $request)
     {
-        $data = Banner::select('id', 'title', 'url', 'is_publish', 'created_at', 'image')->latest();
+        $data = Banner::select('id', 'title', 'url', 'is_publish', 'created_at', 'image', 'type')->latest();
 
         return Datatables::of($data)
             ->addIndexColumn()
@@ -54,9 +54,18 @@ class BannerController extends Controller
                 return $actionBtn;
             })
             ->editColumn('is_publish', function ($row) {
-                return $row->is_publish ? '<span class="badge bg-success">Published</span>' : '<span class="badge bg-danger">Draft</span>';
+                $status = $row->is_publish ? '<span class="badge bg-success">Published</span>' : '<span class="badge bg-danger">Draft</span>';
+                return '<a href="#" class="change-status-btn" data-id="' . $row->id . '" title="Klik untuk ubah status">' . $status . '</a>';
             })
-            ->rawColumns(['action', 'is_publish', 'links'])
+            ->addColumn('type', function ($row) {
+                if ($row->type === 'banner') {
+                    return '<span class="badge bg-primary">Banner</span>';
+                } elseif ($row->type === 'popup') {
+                    return '<span class="badge bg-secondary">Popup</span>';
+                }
+                return '-';
+            })
+            ->rawColumns(['action', 'is_publish', 'links', 'type'])
             ->make(true);
     }
 
@@ -78,19 +87,31 @@ class BannerController extends Controller
             'url' => 'nullable|url',
             'alt' => 'nullable|string|max:255',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'duration' => 'integer',
             'is_publish' => 'required|boolean',
             'description' => 'nullable|string',
+            'type' => 'required|string|in:banner,popup',
+            'is_forever' => 'nullable|boolean',
+            'expire_date' => $request->is_forever ? 'nullable|date' : 'required|date',
         ]);
 
         try {
             $file = $request->file('image');
             $fileName = Str::slug($request->title) . '_' . time() . '.jpg';
-            $path = 'images/banner/' . $fileName;
+            $path = 'images/' . $request->type . '/' . $fileName;
 
-            $image = Image::make($file->getRealPath())->fit(580, 280, function ($constraint) {
-                $constraint->upsize();
-            })->encode('jpg', 85);
+            $image = Image::make($file->getRealPath());
+
+            if ($request->type === 'popup') {
+                $image->fit(320, 320, function ($constraint) {
+                    $constraint->upsize();
+                });
+            } else {
+                $image->fit(580, 280, function ($constraint) {
+                    $constraint->upsize();
+                });
+            }
+
+            $image->encode('jpg', 85);
 
             Storage::disk('public_uploads')->put($path, $image->stream());
 
@@ -101,15 +122,18 @@ class BannerController extends Controller
                 'url' => $request->url,
                 'image' => 'public/' . $path,
                 'alt' => $imageAlt,
-                'duration' => $request->duration ?? 0,
                 'is_publish' => $request->is_publish,
                 'description' => $request->description,
                 'created_by' => auth()->user()->id,
+                'type' => $request->type,
+                'is_forever' => $request->boolean('is_forever'),
+                'expire_date' => $request->boolean('is_forever') ? null : $request->expire_date,
             ]);
 
-            return redirect()->route('adm.banner.index')->with('message', ['type' => 'success', 'text' => 'Banner berhasil ditambahkan.']);
+            return redirect()->route('adm.banner.index')->with('message', ['type' => 'success', 'text' => 'Data berhasil ditambahkan.']);
         } catch (\Exception $e) {
-            return redirect()->back()->with('message', ['type' => 'error', 'text' => 'Banner gagal ditambahkan.'])->withInput();
+            dd($e->getMessage());
+            return redirect()->back()->with('message', ['type' => 'error', 'text' => 'Data gagal ditambahkan.'])->withInput();
         }
     }
 
@@ -139,9 +163,11 @@ class BannerController extends Controller
             'url' => 'required|url',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'alt' => 'nullable|string|max:255',
-            'duration' => 'required|integer',
             'is_publish' => 'required|boolean',
             'description' => 'nullable|string',
+            'type' => 'required|string|in:banner,popup',
+            'is_forever' => 'nullable|boolean',
+            'expire_date' => $request->is_forever ? 'nullable|date' : 'required|date',
         ]);
 
         try {
@@ -155,11 +181,21 @@ class BannerController extends Controller
                 // Store new image
                 $file = $request->file('image');
                 $fileName = Str::slug($request->title) . '_' . time() . '.jpg';
-                $path = 'images/banner/' . $fileName;
+                $path = 'images/' . $request->type . '/' . $fileName;
     
-                $image = Image::make($file->getRealPath())->fit(580, 280, function ($constraint) {
-                    $constraint->upsize();
-                })->encode('jpg', 85);
+                $image = Image::make($file->getRealPath());
+
+                if ($request->type === 'popup') {
+                    $image->fit(320, 320, function ($constraint) {
+                        $constraint->upsize();
+                    });
+                } else {
+                    $image->fit(580, 280, function ($constraint) {
+                        $constraint->upsize();
+                    });
+                }
+
+                $image->encode('jpg', 85);
     
                 Storage::disk('public_uploads')->put($path, $image->stream());
                 $imagePath = 'public/' . $path;
@@ -172,14 +208,16 @@ class BannerController extends Controller
                 'url' => $request->url,
                 'alt' => $imageAlt,
                 'image' => $imagePath,
-                'duration' => $request->duration,
                 'is_publish' => $request->is_publish,
                 'description' => $request->description,
+                'type' => $request->type,
+                'is_forever' => $request->boolean('is_forever'),
+                'expire_date' => $request->boolean('is_forever') ? null : $request->expire_date,
             ]);
 
-            return redirect()->route('adm.banner.index')->with('message', ['type' => 'success', 'text' => 'Banner berhasil diupdate.']);
+            return redirect()->route('adm.banner.index')->with('message', ['type' => 'success', 'text' => 'Data berhasil diupdate.']);
         } catch (\Exception $e) {
-            return redirect()->back()->with('message', ['type' => 'error', 'text' => 'Banner gagal diupdate.'])->withInput();
+            return redirect()->back()->with('message', ['type' => 'error', 'text' => 'Data gagal diupdate.'])->withInput();
         }
     }
 
@@ -197,6 +235,19 @@ class BannerController extends Controller
             return redirect()->route('adm.banner.index')->with('message', ['type' => 'success', 'text' => 'Banner berhasil dihapus.']);
         } catch (\Exception $e) {
             return redirect()->back()->with('message', ['type' => 'error', 'text' => 'Banner gagal dihapus.']);
+        }
+    }
+
+    public function changeStatus(Request $request)
+    {
+        $request->validate(['id' => 'required|integer|exists:banners,id']);
+
+        try {
+            $banner = Banner::findOrFail($request->id);
+            $banner->update(['is_publish' => !$banner->is_publish]);
+            return response()->json(['success' => true, 'message' => 'Status berhasil diubah.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Gagal mengubah status.'], 500);
         }
     }
 }
