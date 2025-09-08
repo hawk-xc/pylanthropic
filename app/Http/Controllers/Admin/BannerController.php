@@ -76,6 +76,7 @@ class BannerController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'url' => 'nullable|url',
+            'alt' => 'nullable|string|max:255',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'duration' => 'integer',
             'is_publish' => 'required|boolean',
@@ -93,10 +94,13 @@ class BannerController extends Controller
 
             Storage::disk('public_uploads')->put($path, $image->stream());
 
+            $imageAlt = $request->alt ?? Str::slug('title');
+
             Banner::create([
                 'title' => $request->title,
                 'url' => $request->url,
                 'image' => 'public/' . $path,
+                'alt' => $imageAlt,
                 'duration' => $request->duration ?? 0,
                 'is_publish' => $request->is_publish,
                 'description' => $request->description,
@@ -134,6 +138,7 @@ class BannerController extends Controller
             'title' => 'required|string|max:255',
             'url' => 'required|url',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'alt' => 'nullable|string|max:255',
             'duration' => 'required|integer',
             'is_publish' => 'required|boolean',
             'description' => 'nullable|string',
@@ -160,9 +165,12 @@ class BannerController extends Controller
                 $imagePath = 'public/' . $path;
             }
 
+            $imageAlt = $request->alt ?? Str::slug('title');
+
             $banner->update([
                 'title' => $request->title,
                 'url' => $request->url,
+                'alt' => $imageAlt,
                 'image' => $imagePath,
                 'duration' => $request->duration,
                 'is_publish' => $request->is_publish,

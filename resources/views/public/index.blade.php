@@ -49,54 +49,6 @@
             opacity: 0.05
         }
 
-<<<<<<< HEAD
-        .swiper-wrapper {
-            align-items: stretch;
-        }
-
-        .swiper-slide {
-            height: auto;
-        }
-
-        .product-box {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .product-box-detail {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .product-box-detail .progress {
-            margin-bottom: auto;
-        }
-
-        .vertical-product-box {
-            display: flex;
-        }
-
-        .vertical-box-details,
-        .vertical-box-details>a {
-            height: 100%;
-        }
-
-        .vertical-box-head {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .vertical-box-head .progress {
-            margin-bottom: auto;
-        }
-
-        .program-image {
-            max-height: 90px;
-            background-color: #eee;
-=======
         /* Judul fleksibel: tidak dipotong, tapi ada tinggi minimum */
         .two-line {
             --lh: 12px;
@@ -105,12 +57,9 @@
             min-height: calc(var(--lh) * var(--lines));
             overflow-wrap: anywhere;
             word-break: break-word;
->>>>>>> bantubersama_dev
         }
     </style>
 @endsection
-
-
 
 @section('content')
     <!-- search section starts -->
@@ -142,8 +91,8 @@
                 <div class="swiper-wrapper">
                     @foreach ($slider as $vs)
                         <div class="swiper-slide">
-                            <img class="img-fluid banner-img" src="{{ asset('public/images/banner') . '/' . $vs->image }}"
-                                alt="{{ $vs->name }}" />
+                            <img class="img-fluid banner-img" src="{{ asset($vs->image) }}"
+                                alt="{{ $vs->alt }}" />
                         </div>
                     @endforeach
                 </div>
@@ -261,7 +210,7 @@
                         <div class="swiper-slide">
                             <a href="{{ url('/') . '/' . $vu->slug }}" class="">
                                 <div class="product-box">
-                                    <img id="program-image" class="img-fluid rounded-top lazyload"
+                                    <img class="img-fluid rounded-top lazyload"
                                         data-original="{{ asset('public/images/program') . '/' . $vu->thumbnail }}"
                                         alt="{{ ucwords($vu->title) }}" />
                                     <div class="product-box-detail product-box-bg">

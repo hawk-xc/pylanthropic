@@ -15,7 +15,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $slider = Models\Slider::where('is_show', 1)->orderBy('sort_number', 'ASC')->get();
+        $slider = Models\Banner::where('is_publish', 1)->orderBy('title', 'ASC')->get();
         $category = Models\ProgramCategory::where('is_show', 1)->orderBy('sort_number', 'ASC')->get();
         $selected = Models\Program::where('is_publish', 1)->select('program.*', 'organization.name', 'organization.status')->join('organization', 'program.organization_id', 'organization.id')->where('is_recommended', 1)->whereNotNull('program.approved_at')->where('end_date', '>', date('Y-m-d'))->orderBy('program.created_at', 'DESC')->limit(6)->get();
         $selected->map(function ($selected, $key) {

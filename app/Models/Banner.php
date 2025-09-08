@@ -13,6 +13,7 @@ class Banner extends Model
         'title',
         'url',
         'image',
+        'alt',
         'duration',
         'is_publish',
         'description',

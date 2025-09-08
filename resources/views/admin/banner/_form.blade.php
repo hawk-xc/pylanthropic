@@ -36,6 +36,16 @@
             @enderror
         </div>
     </div>
+    <div class="col-md-12">
+        <div class="form-group mb-3">
+            <label for="alt" class="form-label">Alt Gambar (opsional)</label>
+            <input type="alt" class="form-control @error('alt') is-invalid @enderror" id="alt" name="alt" value="{{ old('alt', $banner->alt ?? '') }}" placeholder="sedekah-masjid">
+            <small class="form-text text-muted">Form ini bersifat opsional. Gunakan "-" untuk memisahkan kata.</small>
+            @error('alt')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
+    </div>
     <div class="col-md-6">
         <div class="form-group mb-3">
             <label for="duration" class="form-label">Durasi (hari)</label>

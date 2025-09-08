@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('title')->nullable(false);
             $table->string('url')->nullable(true);
             $table->string('image')->nullable(false);
+            $table->string('alt')->nullable(true);
             $table->integer('duration')->default(30);
             $table->boolean('is_publish')->default(1);
             $table->text('description')->nullable(true);
