@@ -16,7 +16,7 @@ class BannerController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index() 
+    public function index()
     {
         return view('admin.banner.index');
     }
@@ -26,7 +26,7 @@ class BannerController extends Controller
      */
     public function bannerDatatables(Request $request)
     {
-        $data = Banner::select('id', 'title', 'url', 'is_publish', 'created_at', 'image', 'type')->latest();
+        $data = Banner::select('id', 'title', 'url', 'is_publish', 'created_at', 'image', 'type', 'is_forever', 'expire_date')->latest();
 
         return Datatables::of($data)
             ->addIndexColumn()
@@ -44,17 +44,31 @@ class BannerController extends Controller
                 $url_edit = route('adm.banner.edit', $row->id);
                 $url_delete = route('adm.banner.destroy', $row->id);
                 $actionBtn =
-                    '<a href="' . $url_show . '" class="btn btn-info btn-xs mb-1" title="Show"><i class="fa fa-eye"></i></a>
-                    <a href="' . $url_edit . '" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
-                    <form action="' . $url_delete . '" method="POST" class="d-inline" id="delete-form-'.$row->id.'">
-                        ' . csrf_field() . '
-                        ' . method_field('DELETE') . '
-                        <button type="button" class="btn btn-danger btn-xs mb-1 delete-btn" data-id="'.$row->id.'" title="Delete"><i class="fa fa-trash"></i></button>
+                    '<a href="' .
+                    $url_show .
+                    '" class="btn btn-info btn-xs mb-1" title="Show"><i class="fa fa-eye"></i></a>
+                    <a href="' .
+                    $url_edit .
+                    '" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
+                    <form action="' .
+                    $url_delete .
+                    '" method="POST" class="d-inline" id="delete-form-' .
+                    $row->id .
+                    '">
+                        ' .
+                    csrf_field() .
+                    '
+                        ' .
+                    method_field('DELETE') .
+                    '
+                        <button type="button" class="btn btn-danger btn-xs mb-1 delete-btn" data-id="' .
+                    $row->id .
+                    '" title="Delete"><i class="fa fa-trash"></i></button>
                     </form>';
                 return $actionBtn;
             })
             ->editColumn('is_publish', function ($row) {
-                $status = $row->is_publish ? '<span class="badge bg-success">Published</span>' : '<span class="badge bg-danger">Draft</span>';
+                $status = $row->is_publish ? '<span class="badge bg-success"><i class="fa fa-edit"></i> Published</span>' : '<span class="badge bg-danger"><i class="fa fa-edit"></i> Draft</span>';
                 return '<a href="#" class="change-status-btn" data-id="' . $row->id . '" title="Klik untuk ubah status">' . $status . '</a>';
             })
             ->addColumn('type', function ($row) {
@@ -65,7 +79,20 @@ class BannerController extends Controller
                 }
                 return '-';
             })
-            ->rawColumns(['action', 'is_publish', 'links', 'type'])
+            ->addColumn('kadaluarsa', function ($row) {
+                if ($row->is_forever) {
+                    return '<span class="badge bg-info">Selamanya</span>';
+                }
+                
+                if ($row->expire_date) {
+                    $isPast = \Carbon\Carbon::parse($row->expire_date)->isPast();
+                    $badgeColor = $isPast ? 'bg-secondary' : 'bg-success';
+                    return '<span class="badge ' . $badgeColor . '">' . \Carbon\Carbon::parse($row->expire_date)->format('d M Y') . '</span>';
+                }
+
+                return '-';
+            })
+            ->rawColumns(['action', 'is_publish', 'links', 'type', 'kadaluarsa'])
             ->make(true);
     }
 
@@ -86,7 +113,7 @@ class BannerController extends Controller
             'title' => 'required|string|max:255',
             'url' => 'nullable|url',
             'alt' => 'nullable|string|max:255',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'is_publish' => 'required|boolean',
             'description' => 'nullable|string',
             'type' => 'required|string|in:banner,popup',
@@ -96,13 +123,22 @@ class BannerController extends Controller
 
         try {
             $file = $request->file('image');
-            $fileName = Str::slug($request->title) . '_' . time() . '.jpg';
+
+            // Tentukan extension asli
+            $extension = strtolower($file->getClientOriginalExtension());
+
+            // Default ke png kalau mau simpan transparansi
+            if (!in_array($extension, ['png', 'webp'])) {
+                $extension = 'png';
+            }
+
+            $fileName = Str::slug($request->title) . '_' . time() . '.' . $extension;
             $path = 'images/' . $request->type . '/' . $fileName;
 
             $image = Image::make($file->getRealPath());
 
             if ($request->type === 'popup') {
-                $image->fit(320, 320, function ($constraint) {
+                $image->fit(580, 580, function ($constraint) {
                     $constraint->upsize();
                 });
             } else {
@@ -111,12 +147,14 @@ class BannerController extends Controller
                 });
             }
 
-            $image->encode('jpg', 85);
+            // Encode sesuai extension
+            $image->encode($extension, 90);
 
             Storage::disk('public_uploads')->put($path, $image->stream());
 
-            $imageAlt = $request->alt ?? Str::slug('title');
+            $imageAlt = $request->alt ?? Str::slug($request->title);
 
+            // Hanya satu popup yang bisa aktif
             if ($request->type === 'popup' && $request->boolean('is_publish')) {
                 Banner::where('type', 'popup')
                     ->where('is_publish', true)
@@ -136,10 +174,14 @@ class BannerController extends Controller
                 'expire_date' => $request->boolean('is_forever') ? null : $request->expire_date,
             ]);
 
-            return redirect()->route('adm.banner.index')->with('message', ['type' => 'success', 'text' => 'Data berhasil ditambahkan.']);
+            return redirect()
+                ->route('adm.banner.index')
+                ->with('message', ['type' => 'success', 'text' => 'Data berhasil ditambahkan.']);
         } catch (\Exception $e) {
-            dd($e->getMessage());
-            return redirect()->back()->with('message', ['type' => 'error', 'text' => 'Data gagal ditambahkan.'])->withInput();
+            return redirect()
+                ->back()
+                ->with('message', ['type' => 'error', 'text' => 'Data gagal ditambahkan.'])
+                ->withInput();
         }
     }
 
@@ -166,8 +208,8 @@ class BannerController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'url' => 'required|url',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'url' => 'nullable|url',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:2048',
             'alt' => 'nullable|string|max:255',
             'is_publish' => 'required|boolean',
             'description' => 'nullable|string',
@@ -178,21 +220,28 @@ class BannerController extends Controller
 
         try {
             $imagePath = $banner->image;
+
             if ($request->hasFile('image')) {
                 // Delete old image
                 if ($banner->image && Storage::disk('public_uploads')->exists($banner->image)) {
                     Storage::disk('public_uploads')->delete($banner->image);
                 }
-                
-                // Store new image
+
                 $file = $request->file('image');
-                $fileName = Str::slug($request->title) . '_' . time() . '.jpg';
+
+                // Tentukan extension asli
+                $extension = strtolower($file->getClientOriginalExtension());
+                if (!in_array($extension, ['png', 'webp'])) {
+                    $extension = 'png'; // supaya transparansi aman
+                }
+
+                $fileName = Str::slug($request->title) . '_' . time() . '.' . $extension;
                 $path = 'images/' . $request->type . '/' . $fileName;
-    
+
                 $image = Image::make($file->getRealPath());
 
                 if ($request->type === 'popup') {
-                    $image->fit(320, 320, function ($constraint) {
+                    $image->fit(580, 580, function ($constraint) {
                         $constraint->upsize();
                     });
                 } else {
@@ -201,14 +250,15 @@ class BannerController extends Controller
                     });
                 }
 
-                $image->encode('jpg', 85);
-    
+                $image->encode($extension, 90);
+
                 Storage::disk('public_uploads')->put($path, $image->stream());
                 $imagePath = 'public/' . $path;
             }
 
-            $imageAlt = $request->alt ?? Str::slug('title');
+            $imageAlt = $request->alt ?? Str::slug($request->title);
 
+            // Hanya satu popup yang bisa aktif
             if ($request->type === 'popup' && $request->boolean('is_publish')) {
                 Banner::where('type', 'popup')
                     ->where('is_publish', true)
@@ -228,9 +278,14 @@ class BannerController extends Controller
                 'expire_date' => $request->boolean('is_forever') ? null : $request->expire_date,
             ]);
 
-            return redirect()->route('adm.banner.index')->with('message', ['type' => 'success', 'text' => 'Data berhasil diupdate.']);
+            return redirect()
+                ->route('adm.banner.index')
+                ->with('message', ['type' => 'success', 'text' => 'Data berhasil diupdate.']);
         } catch (\Exception $e) {
-            return redirect()->back()->with('message', ['type' => 'error', 'text' => 'Data gagal diupdate.'])->withInput();
+            return redirect()
+                ->back()
+                ->with('message', ['type' => 'error', 'text' => 'Data gagal diupdate.'])
+                ->withInput();
         }
     }
 
@@ -245,9 +300,13 @@ class BannerController extends Controller
                 Storage::disk('public_uploads')->delete($banner->image);
             }
             $banner->delete();
-            return redirect()->route('adm.banner.index')->with('message', ['type' => 'success', 'text' => 'Banner berhasil dihapus.']);
+            return redirect()
+                ->route('adm.banner.index')
+                ->with('message', ['type' => 'success', 'text' => 'Banner berhasil dihapus.']);
         } catch (\Exception $e) {
-            return redirect()->back()->with('message', ['type' => 'error', 'text' => 'Banner gagal dihapus.']);
+            return redirect()
+                ->back()
+                ->with('message', ['type' => 'error', 'text' => 'Banner gagal dihapus.']);
         }
     }
 
@@ -265,7 +324,7 @@ class BannerController extends Controller
                     ->where('id', '!=', $banner->id)
                     ->update(['is_publish' => false]);
             }
-            
+
             $banner->update(['is_publish' => $newStatus]);
             return response()->json(['success' => true, 'message' => 'Status berhasil diubah.']);
         } catch (\Exception $e) {

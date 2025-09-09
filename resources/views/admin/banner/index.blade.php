@@ -48,6 +48,7 @@
                         <th>Tautan</th>
                         <th>Tipe</th>
                         <th>Status</th>
+                        <th>Kadaluarsa</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -90,6 +91,7 @@
                     { data: 'links', name: 'links', orderable: false, searchable: false },
                     { data: 'type', name: 'type' },
                     { data: 'is_publish', name: 'is_publish', width: '10%' },
+                    { data: 'kadaluarsa', name: 'kadaluarsa' },
                     { data: 'action', name: 'action', orderable: false, searchable: false, width: '15%' }
                 ],
                 language: {
