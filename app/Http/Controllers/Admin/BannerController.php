@@ -117,6 +117,12 @@ class BannerController extends Controller
 
             $imageAlt = $request->alt ?? Str::slug('title');
 
+            if ($request->type === 'popup' && $request->boolean('is_publish')) {
+                Banner::where('type', 'popup')
+                    ->where('is_publish', true)
+                    ->update(['is_publish' => false]);
+            }
+
             Banner::create([
                 'title' => $request->title,
                 'url' => $request->url,
@@ -203,6 +209,13 @@ class BannerController extends Controller
 
             $imageAlt = $request->alt ?? Str::slug('title');
 
+            if ($request->type === 'popup' && $request->boolean('is_publish')) {
+                Banner::where('type', 'popup')
+                    ->where('is_publish', true)
+                    ->where('id', '!=', $banner->id)
+                    ->update(['is_publish' => false]);
+            }
+
             $banner->update([
                 'title' => $request->title,
                 'url' => $request->url,
@@ -244,7 +257,16 @@ class BannerController extends Controller
 
         try {
             $banner = Banner::findOrFail($request->id);
-            $banner->update(['is_publish' => !$banner->is_publish]);
+            $newStatus = !$banner->is_publish;
+
+            if ($banner->type === 'popup' && $newStatus) {
+                Banner::where('type', 'popup')
+                    ->where('is_publish', true)
+                    ->where('id', '!=', $banner->id)
+                    ->update(['is_publish' => false]);
+            }
+            
+            $banner->update(['is_publish' => $newStatus]);
             return response()->json(['success' => true, 'message' => 'Status berhasil diubah.']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Gagal mengubah status.'], 500);

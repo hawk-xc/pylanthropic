@@ -58,10 +58,66 @@
             overflow-wrap: anywhere;
             word-break: break-word;
         }
+
+        /* Overlay gelap */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            /* hitam transparan */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        /* Konten popup */
+        .popup-content {
+            background: transparent;
+            /* tidak ada background */
+            border: none;
+            display: flex;
+            flex-direction: column;
+            outline: none;
+        }
+
+        .popup-image {
+            max-width: 90%;
+            height: auto;
+        }
+
+        #close-popup {
+            background: #fff;
+            border: none;
+            width: 30%;
+            min-width: 80px;
+            margin-inline: auto;
+            padding: 6px 18px;
+            border-radius: 6px;
+            font-weight: bold;
+        }
     </style>
 @endsection
 
 @section('content')
+    <!-- Popup Overlay -->
+    @if ($popup)
+        <div id="popup-overlay" class="popup-overlay">
+            <div class="popup-content text-center">
+                <!-- Gambar -->
+                <a href="{{ $popup->url }}" target="_blank">
+                    <img src="{{ asset($popup->image) }}" alt="{{ $popup->alt }}" class="popup-image">
+                </a>
+
+                <!-- Tombol Tutup -->
+                <button id="close-popup" class="btn btn-light mt-3">Tutup</button>
+            </div>
+        </div>
+    @endif
+
     <!-- search section starts -->
     <section class="search-section pt-3">
         <div class="custom-container">
@@ -92,8 +148,7 @@
                     @foreach ($slider as $vs)
                         <div class="swiper-slide">
                             <a href="{{ $vs->url }}">
-                                <img class="img-fluid banner-img" src="{{ asset($vs->image) }}"
-                                    alt="{{ $vs->alt }}" />
+                                <img class="img-fluid banner-img" src="{{ asset($vs->image) }}" alt="{{ $vs->alt }}" />
                             </a>
                         </div>
                     @endforeach
@@ -455,11 +510,11 @@
                                 </div>
                                 <div class="order-type">
                                     <!-- <div class="auth-form search-form">
-                                          <div class="form-check">
-                                            <label class="form-check-label" for="fixed1">Sosial</label>
-                                            <input class="form-check-input" type="radio" name="kategori" value="sosial" />
-                                          </div>
-                                        </div> -->
+                                                      <div class="form-check">
+                                                        <label class="form-check-label" for="fixed1">Sosial</label>
+                                                        <input class="form-check-input" type="radio" name="kategori" value="sosial" />
+                                                      </div>
+                                                    </div> -->
                                     <div class="auth-form search-form">
                                         <div class="form-check">
                                             <label class="form-check-label" for="fixed1">Bencana Alam</label>
@@ -545,19 +600,19 @@
 
     <!-- pwa install app popup start -->
     <!-- <div class="offcanvas offcanvas-bottom addtohome-popup theme-offcanvas" tabindex="-1" id="offcanvas">
-                          <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                          <div class="offcanvas-body small">
-                            <div class="app-info">
-                              <img src="{{ asset('Logo Bantubersama.png') }}" class="img-fluid" alt="" />
-                              <div class="content">
-                                <h3>Bantubersama</h3>
-                                <a href="#">www.bantubersama.com</a>
-                              </div>
-                            </div>
-                            <a href="#!" class="btn theme-btn-me install-app btn-inline home-screen-btn m-0" id="installApp">Add to Home
-                              Screen</a>
-                          </div>
-                        </div> -->
+                                      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                                      <div class="offcanvas-body small">
+                                        <div class="app-info">
+                                          <img src="{{ asset('Logo Bantubersama.png') }}" class="img-fluid" alt="" />
+                                          <div class="content">
+                                            <h3>Bantubersama</h3>
+                                            <a href="#">www.bantubersama.com</a>
+                                          </div>
+                                        </div>
+                                        <a href="#!" class="btn theme-btn-me install-app btn-inline home-screen-btn m-0" id="installApp">Add to Home
+                                          Screen</a>
+                                      </div>
+                                    </div> -->
     <!-- pwa install app popup start -->
 @endsection
 
@@ -670,6 +725,20 @@
                 if (e.target.value == '') setTimeout(aw.start, 400);
             });
         });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const popup = document.getElementById("popup-overlay");
+            const closeBtn = document.getElementById("close-popup");
+
+            // Popup terbuka otomatis
+            popup.style.display = "flex";
+
+            // Tutup popup
+            closeBtn.addEventListener("click", function() {
+                popup.style.display = "none";
+            });
+        });
+
         // end typing in search
 
         // show add to home screen
