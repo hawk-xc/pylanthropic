@@ -34,10 +34,11 @@
                     </nav>
                 </div>
                 <div class="col-7 fc-rtl">
-                    <button class="btn btn-outline-primary">Biasa</button>
-                    <button class="btn btn-outline-primary">Terverifikasi</button>
-                    <button class="btn btn-outline-primary">Banned</button>
-                    <button class="btn btn-outline-primary">Lembaga</button>
+                    <button class="btn btn-outline-primary org-status-filter active" data-status-filter="">Semua</button>
+                    <button class="btn btn-outline-primary org-status-filter" data-status-filter="regular">Biasa</button>
+                    <button class="btn btn-outline-primary org-status-filter" data-status-filter="verified">Terverifikasi</button>
+                    <button class="btn btn-outline-primary org-status-filter" data-status-filter="banned">Banned</button>
+                    <button class="btn btn-outline-primary org-status-filter" data-status-filter="verif_org">Lembaga</button>
                     <button class="btn btn-outline-primary mr-1" id="refresh_table_org"><i class="fa fa-sync"></i>
                         Refresh</button>
                     <a href="{{ route('adm.organization.create') }}" target="_blank" class="btn btn-outline-primary"><i
@@ -228,6 +229,13 @@
                     d.refresh = true;
                     refreshCache = false; // Reset flag
                 }
+                // Add status filter parameter
+                const activeFilter = $('.org-status-filter.active').data('status-filter');
+                if (activeFilter) {
+                    d.status_filter = activeFilter;
+                } else {
+                    delete d.status_filter; // Remove parameter if 'Semua' is selected
+                }
             }
         },
         columns: [
@@ -272,6 +280,16 @@
             btn.prop('disabled', false).html('<i class="fa fa-sync"></i> Refresh');
             callToast('success', 'Cache berhasil dihapus, data dimuat ulang.');
         }, false); // false to keep pagination
+    });
+
+    // Filter buttons for organization status
+    $('.org-status-filter').on('click', function() {
+        // Remove active class from all buttons and add to the clicked one
+        $('.org-status-filter').removeClass('active');
+        $(this).addClass('active');
+
+        // Reload DataTable to apply filter
+        table.ajax.reload(null, false); // null for callback, false to keep pagination
     });
 
     // Global tag management variables

@@ -263,7 +263,8 @@ class OrganizationController extends Controller
      */
     public function orgDatatables(Request $request)
     {
-        $cacheKey = 'org_list';
+        // Make cache key dynamic based on request parameters
+        $cacheKey = 'org_list.' . md5(json_encode($request->all()));
 
         if ($request->has('refresh')) {
             Cache::forget($cacheKey);
@@ -271,8 +272,8 @@ class OrganizationController extends Controller
         
         $cacheTTL = now()->addDays(3);
 
-        $data = Cache::remember($cacheKey, $cacheTTL, function () {
-            return Organization::select($this->organizationColumn)
+        $data = Cache::remember($cacheKey, $cacheTTL, function () use ($request) { // Pass $request into the closure
+            $query = Organization::select($this->organizationColumn)
                 // total payout // mengambil dari payout.nominal_approved
                 ->withSum(
                     [
@@ -307,9 +308,20 @@ class OrganizationController extends Controller
                             $query->join('transaction', 'transaction.program_id', '=', 'program.id')->where('transaction.status', 'success');
                         },
                     ]
-                )
-                ->orderBy('name', 'DESC')
-                ->get();
+                );
+
+            // Add status filters here to the query
+            $query->when($request->query('status_filter') === 'regular', fn($q) =>
+                $q->where('status', 'regular')
+            )->when($request->query('status_filter') === 'verified', fn($q) =>
+                $q->where('status', 'verified')
+            )->when($request->query('status_filter') === 'banned', fn($q) =>
+                $q->where('status', 'banned')
+            )->when($request->query('status_filter') === 'verif_org', fn($q) =>
+                $q->where('status', 'verif_org')
+            );
+
+            return $query->orderBy('name', 'DESC')->get();
         });
 
         // Filter manual sesuai request
