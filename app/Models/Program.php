@@ -98,6 +98,11 @@ class Program extends Model
         return $this->hasMany(Donatur::class, 'program_id', 'id');
     }
 
+    public function adsCampaigns()
+    {
+        return $this->hasMany(AdsCampaign::class, 'program_id', 'id');
+    }
+
     public function donatur_short_links()
     {
         return $this->hasMany(DonaturShortLink::class, 'program_id', 'id');

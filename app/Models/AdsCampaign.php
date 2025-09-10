@@ -36,4 +36,9 @@ class AdsCampaign extends Model
         'updated_at',
         'created_at'
     ];
+
+    public function program()
+    {
+        return $this->belongsTo(Program::class, 'program_id', 'id');
+    }
 }

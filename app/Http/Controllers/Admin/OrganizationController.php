@@ -23,6 +23,42 @@ class OrganizationController extends Controller
      */
     public function index()
     {
+        $organization_total_payout = \App\Models\Organization::withSum(
+            [
+                'program as total_nominal_payout' => function ($query) {
+                    $query->join('payout', 'payout.program_id', '=', 'program.id')->where('payout.status', 'paid'); // kalau hanya mau yang status paid
+                },
+            ],
+            'payout.nominal_approved',
+        )
+            ->orderBy('id', 'asc') // ambil organisasi pertama
+            ->first();
+
+        $organization_total_pengeluaran_ads = \App\Models\Organization::withSum(
+            [
+                'program as total_ads_nominal' => function ($query) {
+                    $query->join('ads_campaign', 'ads_campaign.program_id', '=', 'program.id'); // kalau hanya mau yang status paid
+                },
+            ],
+            'ads_campaign.spend',
+        )
+            ->orderBy('id', 'asc') // ambil organisasi pertama
+            ->find(2);
+
+        $organization_total_donation = \App\Models\Organization::withSum(
+            [
+                'program as total_donation_nominal' => function ($query) {
+                    $query->join('transaction', 'transaction.program_id', '=', 'program.id'); // kalau hanya mau yang status paid
+                },
+            ],
+            'transaction.nominal_final',
+        )
+            ->orderBy('id', 'asc') // ambil organisasi pertama
+            ->latest()
+            ->first();
+
+        $organization_dss = $organization_total_donation->total_donation_nominal - $organization_total_pengeluaran_ads->total_ads_nominal;
+
         return view('admin.org.index');
     }
 
@@ -69,35 +105,34 @@ class OrganizationController extends Controller
             if ($request->hasFile('logo')) {
                 $file = $request->file('logo');
                 $filename_logo = 'logo_' . $filename . '.jpg';
-                
+
                 // Process image with Intervention Image
                 $image = Image::make($file->getRealPath())
                     ->fit(50, 50) // Resize to 50x50
                     ->encode('jpg', 80);
-                
+
                 // Path for storage
                 $path = 'images/fundraiser/' . $filename_logo;
-                
+
                 // Save using Storage
                 Storage::disk('public_uploads')->put($path, $image->stream());
-                
+
                 $data->logo = $filename_logo;
             }
 
             if ($request->hasFile('pic_image')) {
                 $filet = $request->file('pic_image');
                 $filename_vr = 'verified_' . $filename . '.jpg';
-                
+
                 // Process image with Intervention Image
-                $image = Image::make($filet->getRealPath())
-                    ->encode('jpg', 80);
-                
+                $image = Image::make($filet->getRealPath())->encode('jpg', 80);
+
                 // Path for storage
                 $path = 'images/fundraiser/' . $filename_vr;
-                
+
                 // Save using Storage
                 Storage::disk('public_uploads')->put($path, $image->stream());
-                
+
                 $data->pic_image = $filename_vr;
             }
 
@@ -105,10 +140,11 @@ class OrganizationController extends Controller
 
             return redirect()->route('adm.organization.index')->with('success', 'Berhasil tambah data lembaga');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal tambah, ada kesalahan teknis: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal tambah, ada kesalahan teknis: ' . $e->getMessage());
         }
     }
-
 
     /**
      * Show the form for editing the specified resource.
@@ -173,18 +209,18 @@ class OrganizationController extends Controller
 
                 $file = $request->file('logo');
                 $filename_logo = 'logo_' . $filename . '.jpg';
-                
+
                 // Process image with Intervention Image
                 $image = Image::make($file->getRealPath())
                     ->fit(50, 50) // Resize to 50x50
                     ->encode('jpg', 80);
-                
+
                 // Path for storage
                 $path = 'images/fundraiser/' . $filename_logo;
-                
+
                 // Save using Storage
                 Storage::disk('public_uploads')->put($path, $image->stream());
-                
+
                 $data->logo = $filename_logo;
             }
 
@@ -199,17 +235,16 @@ class OrganizationController extends Controller
 
                 $filet = $request->file('pic_image');
                 $filename_vr = 'verified_' . $filename . '.jpg';
-                
+
                 // Process image with Intervention Image
-                $image = Image::make($filet->getRealPath())
-                    ->encode('jpg', 80);
-                
+                $image = Image::make($filet->getRealPath())->encode('jpg', 80);
+
                 // Path for storage
                 $path = 'images/fundraiser/' . $filename_vr;
-                
+
                 // Save using Storage
                 Storage::disk('public_uploads')->put($path, $image->stream());
-                
+
                 $data->pic_image = $filename_vr;
             }
 
@@ -217,7 +252,9 @@ class OrganizationController extends Controller
 
             return redirect()->back()->with('success', 'Berhasil update data lembaga');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal update, ada kesalahan teknis: ' . $e->getMessage());
+            return redirect()
+                ->back()
+                ->with('error', 'Gagal update, ada kesalahan teknis: ' . $e->getMessage());
         }
     }
 
@@ -230,13 +267,41 @@ class OrganizationController extends Controller
         $cacheTTL = now()->addDays(3);
 
         $data = Cache::remember($cacheKey, $cacheTTL, function () {
-            return Organization::select($this->organizationColumn)->orderBy('name', 'DESC')->get();
+            return Organization::select($this->organizationColumn)
+                ->withSum(
+                    [
+                        'programs as total_nominal_payout' => function ($query) {
+                            $query->join('payout', 'payout.program_id', '=', 'program.id')->where('payout.status', 'paid');
+                        },
+                    ],
+                    'payout.nominal_approved',
+                )
+                ->withSum(
+                    [
+                        'programs as total_ads_nominal' => function ($query) {
+                            $query->join('ads_campaign', 'ads_campaign.program_id', '=', 'program.id');
+                        },
+                    ],
+                    'ads_campaign.spend',
+                )
+                ->withSum(
+                    [
+                        'programs as total_donation_nominal' => function ($query) {
+                            $query->join('transaction', 'transaction.program_id', '=', 'program.id')->where('transaction.status', 'success');
+                        },
+                    ],
+                    'transaction.nominal_final',
+                )
+                ->orderBy('name', 'DESC')
+                ->get();
         });
 
+        // Filter manual sesuai request
         $data = $data->filter(function ($item) use ($request) {
             return (!$request->filled('name') || str_contains(strtolower($item->name), strtolower(urldecode($request->name)))) && (!$request->filled('phone') || str_contains(strtolower($item->phone), strtolower(urldecode($request->phone)))) && (!$request->filled('email') || str_contains(strtolower($item->email), strtolower(urldecode($request->email)))) && (!$request->filled('about') || str_contains(strtolower($item->about), strtolower(urldecode($request->about)))) && (!$request->filled('status') || str_contains(strtolower($item->status), strtolower(urldecode($request->status))));
         });
 
+        // Search global
         $search = $request->input('search.value');
         if ($search) {
             $data = $data->filter(function ($item) use ($search) {
@@ -279,30 +344,41 @@ class OrganizationController extends Controller
                 $sum_donate_paid = \App\Models\Transaction::join('program', 'program.id', '=', 'program_id')->where('organization_id', $row->id)->where('transaction.status', 'success')->sum('nominal_final');
                 return number_format($count_program, 0, ',', '.') . ' Program <br>Rp. ' . number_format($sum_donate_paid, 0, ',', '.');
             })
+            ->addColumn('finance', function ($row) {
+                $total_donation = $row->total_donation_nominal ?? 0;
+                $total_pengeluaran = $row->total_ads_nominal ?? 0;
+                $total_penyaluran = $row->total_nominal_payout ?? 0;
+                return '<b>Donasi:</b> Rp ' . number_format($total_donation, 0, ',', '.') . '<br><b>Pengeluaran:</b> Rp ' . number_format($total_pengeluaran, 0, ',', '.') . '<br><b>Penyaluran:</b> Rp ' . number_format($total_penyaluran, 0, ',', '.');
+            })
+            ->addColumn('dss', function ($row) {
+                $total_donation = $row->total_donation_nominal ?? 0;
+                $total_pengeluaran = $row->total_ads_nominal ?? 0;
+                $dss = $total_donation - $total_pengeluaran;
+                return '<b>DSS:</b> Rp ' . number_format($dss, 0, ',', '.');
+            })
             ->addColumn('action', function ($row) {
                 $btn_edit = '<a href="' . route('adm.organization.edit', $row->id) . '" target="_blank" class="edit btn btn-warning btn-xs" title="Edit"><i class="fa fa-edit"></i></a>';
                 $btn_link = '<a href="' . route('campaigner', $row->uuid) . '" target="_blank" class="edit btn btn-info btn-xs" title="Link"><i class="fa fa-external-link-alt"></i></a>';
                 return $btn_link . ' ' . $btn_edit;
             })
             ->addColumn('alias_names', function ($row) {
-                // Handle empty/null cases and ensure we always have an array
                 $aliases = $row->alias_names ? json_decode($row->alias_names, true) : [];
+                $alias_names = !empty($aliases) ? collect($aliases)->map(fn($item) => '<span class="badge badge-sm badge-info">' . htmlspecialchars($item) . '</span>')->implode(' ') : '<span class="badge badge-sm badge-secondary">belum ada alias</span>';
 
-                // Generate badges
-                $alias_names = !empty($aliases)
-                    ? collect($aliases)->map(function ($item) {
-                        return '<span class="badge badge-sm badge-info">' . htmlspecialchars($item) . '</span>';
-                    })->implode(' ')
-                    : '<span class="badge badge-sm badge-secondary">belum ada alias</span>';
+                $alias_names_js = $row->alias_names ?: '[]';
 
-                // Ensure we always pass a JSON string (empty array if null)
-                $alias_names_js = $row->alias_names ? $row->alias_names : '[]';
-
-                return $alias_names . ' <a href="#" class="edit-icon" title="Edit" style="cursor: pointer;"
-                       onClick=\'openAddAliasModal(' . $row->id . ', "' . addslashes($row->name) . '", ' . $alias_names_js . ')\'>
-                       <i class="fa fa-edit"></i></a>';
+                return $alias_names .
+                    ' <a href="#" class="edit-icon" title="Edit" style="cursor: pointer;"
+                onClick=\'openAddAliasModal(' .
+                    $row->id .
+                    ', "' .
+                    addslashes($row->name) .
+                    '", ' .
+                    $alias_names_js .
+                    ')\'>
+                <i class="fa fa-edit"></i></a>';
             })
-            ->rawColumns(['name', 'action', 'contact', 'summary', 'alias_names'])
+            ->rawColumns(['name', 'contact', 'summary', 'finance', 'dss', 'action', 'alias_names'])
             ->make(true);
     }
 
@@ -334,14 +410,17 @@ class OrganizationController extends Controller
 
     public function newOrgAlias(Request $request)
     {
-        $validated = $request->validate([
-            'id_organization' => 'required|exists:organization,id',
-            'aliases_array' => 'required|json',
-        ], [
-            'id_organization.exists' => 'Data Organization tidak ditemukan',
-            'aliases_array.json' => 'Data Nama Alias harus berupa JSON',
-            'aliases_array.required' => 'Data Nama Alias harus diisi',
-        ]);
+        $validated = $request->validate(
+            [
+                'id_organization' => 'required|exists:organization,id',
+                'aliases_array' => 'required|json',
+            ],
+            [
+                'id_organization.exists' => 'Data Organization tidak ditemukan',
+                'aliases_array.json' => 'Data Nama Alias harus berupa JSON',
+                'aliases_array.required' => 'Data Nama Alias harus diisi',
+            ],
+        );
 
         $organization = Organization::find($request->id_organization);
 

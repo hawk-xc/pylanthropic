@@ -51,6 +51,8 @@
                         <th>Nama</th>
                         <th>Kontak</th>
                         <th>Rangkuman</th>
+                        <th>Finance</th>
+                        <th>DSS</th>
                         <th>Alamat</th>
                         <th>Nama Alias</th>
                         <th>Action</th>
@@ -222,6 +224,8 @@
             { data: 'name', name: 'name' },
             { data: 'contact', name: 'contact' },
             { data: 'summary', name: 'summary' },
+            { data: 'finance', name: 'finance', orderable: false, searchable: false },
+            { data: 'dss', name: 'dss', orderable: false, searchable: false },
             { data: 'address', name: 'address' },
             { data: 'alias_names', name: 'alias_names' },
             {
