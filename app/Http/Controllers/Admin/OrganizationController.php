@@ -354,7 +354,16 @@ class OrganizationController extends Controller
                 $total_donation = $row->total_donation_nominal ?? 0;
                 $total_pengeluaran = $row->total_ads_nominal ?? 0;
                 $dss = $total_donation - $total_pengeluaran;
-                return '<b>DSS:</b> Rp ' . number_format($dss, 0, ',', '.');
+
+                if ($dss >= 0) {
+                    $badge_class = 'badge-success';
+                    $icon = 'fa-arrow-up';
+                } else {
+                    $badge_class = 'badge-danger';
+                    $icon = 'fa-arrow-down';
+                }
+
+                return '<span class="badge ' . $badge_class . '"><i class="fa ' . $icon . '"></i> Rp ' . number_format($dss, 0, ',', '.') . '</span>';
             })
             ->addColumn('action', function ($row) {
                 $btn_edit = '<a href="' . route('adm.organization.edit', $row->id) . '" target="_blank" class="edit btn btn-warning btn-xs" title="Edit"><i class="fa fa-edit"></i></a>';
