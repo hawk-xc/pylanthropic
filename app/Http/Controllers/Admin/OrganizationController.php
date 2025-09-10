@@ -314,7 +314,24 @@ class OrganizationController extends Controller
 
         // Filter manual sesuai request
         $data = $data->filter(function ($item) use ($request) {
-            return (!$request->filled('name') || str_contains(strtolower($item->name), strtolower(urldecode($request->name)))) && (!$request->filled('phone') || str_contains(strtolower($item->phone), strtolower(urldecode($request->phone)))) && (!$request->filled('email') || str_contains(strtolower($item->email), strtolower(urldecode($request->email)))) && (!$request->filled('about') || str_contains(strtolower($item->about), strtolower(urldecode($request->about)))) && (!$request->filled('status') || str_contains(strtolower($item->status), strtolower(urldecode($request->status))));
+            $name_filter = (!$request->filled('name') || str_contains(strtolower($item->name), strtolower(urldecode($request->name))));
+            $phone_filter = (!$request->filled('phone') || str_contains(strtolower($item->phone), strtolower(urldecode($request->phone))));
+            $email_filter = (!$request->filled('email') || str_contains(strtolower($item->email), strtolower(urldecode($request->email))));
+            $about_filter = (!$request->filled('about') || str_contains(strtolower($item->about), strtolower(urldecode($request->about))));
+            $status_filter = (!$request->filled('status') || str_contains(strtolower($item->status), strtolower(urldecode($request->status))));
+
+            // Finance column filter
+            $finance_search_value = $request->input('columns.3.search.value'); // Assuming finance is column 3
+            $finance_filter = true; // Assume true if no search value for finance
+            if ($finance_search_value) {
+                $finance_search_value = strtolower($finance_search_value);
+                $finance_filter = str_contains(strtolower((string)($item->total_donation_nominal ?? '')), $finance_search_value) ||
+                                  str_contains(strtolower((string)($item->total_donation_count ?? '')), $finance_search_value) ||
+                                  str_contains(strtolower((string)($item->total_ads_nominal ?? '')), $finance_search_value) ||
+                                  str_contains(strtolower((string)($item->total_nominal_payout ?? '')), $finance_search_value);
+            }
+
+            return $name_filter && $phone_filter && $email_filter && $about_filter && $status_filter && $finance_filter;
         });
 
         // Search global
@@ -322,7 +339,17 @@ class OrganizationController extends Controller
         if ($search) {
             $data = $data->filter(function ($item) use ($search) {
                 $search = strtolower($search);
-                return str_contains(strtolower($item->name), $search) || str_contains(strtolower($item->phone), $search) || str_contains(strtolower($item->email), $search) || str_contains(strtolower($item->address), $search) || str_contains(strtolower($item->status), $search) || str_contains(strtolower($item->about), $search);
+                return str_contains(strtolower($item->name), $search) ||
+                       str_contains(strtolower($item->phone), $search) ||
+                       str_contains(strtolower($item->email), $search) ||
+                       str_contains(strtolower($item->address), $search) ||
+                       str_contains(strtolower($item->status), $search) ||
+                       str_contains(strtolower($item->about), $search) ||
+                       // Add finance related fields here
+                       str_contains(strtolower((string)($item->total_donation_nominal ?? '')), $search) ||
+                       str_contains(strtolower((string)($item->total_donation_count ?? '')), $search) ||
+                       str_contains(strtolower((string)($item->total_ads_nominal ?? '')), $search) ||
+                       str_contains(strtolower((string)($item->total_nominal_payout ?? '')), $search);
             });
         }
 

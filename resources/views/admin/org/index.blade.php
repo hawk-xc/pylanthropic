@@ -51,7 +51,7 @@
                         <th>Nama</th>
                         <th>Kontak</th>
                         <th>Rangkuman</th>
-                        <th>Finance</th>
+                        <th>Informasi Donasi</th>
                         <th>DSS</th>
                         <th>Alamat</th>
                         <th>Nama Alias</th>
@@ -220,6 +220,7 @@
         serverSide: true,
         responsive: true,
         order: [],
+        dom: 'lrtip', // Remove the global search input (f)
         ajax: {
             url: "{{ route('adm.org.datatables') }}",
             data: function (d) {
