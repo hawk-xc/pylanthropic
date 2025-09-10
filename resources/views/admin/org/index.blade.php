@@ -211,6 +211,7 @@
 
 @section('js_inline')
     <script type="text/javascript">
+    let refreshCache = false;
     // Initialize DataTable
     var table = $('#table-organization').DataTable({
         orderCellsTop: true,
@@ -219,7 +220,15 @@
         serverSide: true,
         responsive: true,
         order: [],
-        ajax: "{{ route('adm.org.datatables') }}",
+        ajax: {
+            url: "{{ route('adm.org.datatables') }}",
+            data: function (d) {
+                if (refreshCache) {
+                    d.refresh = true;
+                    refreshCache = false; // Reset flag
+                }
+            }
+        },
         columns: [
             { data: 'name', name: 'name' },
             { data: 'contact', name: 'contact' },
@@ -252,7 +261,16 @@
 
     // Refresh table button
     $("#refresh_table_org").on("click", function() {
-        table.ajax.reload();
+        const btn = $(this);
+        btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Refreshing...');
+        
+        refreshCache = true;
+        
+        table.ajax.reload(function(json) {
+            // This callback is executed after the reload is complete
+            btn.prop('disabled', false).html('<i class="fa fa-sync"></i> Refresh');
+            callToast('success', 'Cache berhasil dihapus, data dimuat ulang.');
+        }, false); // false to keep pagination
     });
 
     // Global tag management variables

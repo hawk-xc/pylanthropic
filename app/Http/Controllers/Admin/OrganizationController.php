@@ -264,33 +264,49 @@ class OrganizationController extends Controller
     public function orgDatatables(Request $request)
     {
         $cacheKey = 'org_list';
+
+        if ($request->has('refresh')) {
+            Cache::forget($cacheKey);
+        }
+        
         $cacheTTL = now()->addDays(3);
 
         $data = Cache::remember($cacheKey, $cacheTTL, function () {
             return Organization::select($this->organizationColumn)
+                // total payout // mengambil dari payout.nominal_approved
                 ->withSum(
                     [
-                        'programs as total_nominal_payout' => function ($query) {
+                        'program as total_nominal_payout' => function ($query) {
                             $query->join('payout', 'payout.program_id', '=', 'program.id')->where('payout.status', 'paid');
                         },
                     ],
                     'payout.nominal_approved',
                 )
+                // total ads // mengambil dari ads_campaign.spend
                 ->withSum(
                     [
-                        'programs as total_ads_nominal' => function ($query) {
+                        'program as total_ads_nominal' => function ($query) {
                             $query->join('ads_campaign', 'ads_campaign.program_id', '=', 'program.id');
                         },
                     ],
                     'ads_campaign.spend',
                 )
+                // total donate paid // mengambil dari transaction.nominal_final
                 ->withSum(
                     [
-                        'programs as total_donation_nominal' => function ($query) {
+                        'program as total_donation_nominal' => function ($query) {
                             $query->join('transaction', 'transaction.program_id', '=', 'program.id')->where('transaction.status', 'success');
                         },
                     ],
                     'transaction.nominal_final',
+                )
+                // total donate count // mengambil dari transaction
+                ->withCount(
+                    [
+                        'program as total_donation_count' => function ($query) {
+                            $query->join('transaction', 'transaction.program_id', '=', 'program.id')->where('transaction.status', 'success');
+                        },
+                    ]
                 )
                 ->orderBy('name', 'DESC')
                 ->get();
@@ -326,13 +342,13 @@ class OrganizationController extends Controller
             ->addIndexColumn()
             ->addColumn('name', function ($row) {
                 if ($row->status == 'verified') {
-                    $status = '<span class="badge badge-sm badge-success"><i class="fa fa-check"></i> Personal</span>';
+                    $status = '<span class="badge badge-sm badge-success" title="Terverifikasi sebagai perorangan"><i class="fa fa-check"></i> Personal</span>';
                 } elseif ($row->status == 'verif_org') {
-                    $status = '<span class="badge badge-sm badge-success"><i class="fa fa-check"></i> Lembaga</span>';
+                    $status = '<span class="badge badge-sm badge-success" title="Terverifikasi sebagai lembaga"><i class="fa fa-check"></i> Lembaga</span>';
                 } elseif ($row->status == 'banned') {
-                    $status = '<span class="badge badge-sm badge-danger"><i class="fa fa-times"></i> Banned</span>';
+                    $status = '<span class="badge badge-sm badge-danger" title="Diblokir"><i class="fa fa-times"></i> Banned</span>';
                 } else {
-                    $status = '<span class="badge badge-sm badge-info"><i class="fa fa-question"></i> Belum</span>';
+                    $status = '<span class="badge badge-sm badge-info" title="Belum terverifikasi"><i class="fa fa-question"></i> Belum</span>';
                 }
                 return ucwords($row->name) . '<br>' . $status;
             })
@@ -345,10 +361,25 @@ class OrganizationController extends Controller
                 return number_format($count_program, 0, ',', '.') . ' Program <br>Rp. ' . number_format($sum_donate_paid, 0, ',', '.');
             })
             ->addColumn('finance', function ($row) {
-                $total_donation = $row->total_donation_nominal ?? 0;
+                $total_donation_nominal = $row->total_donation_nominal ?? 0;
+                $total_donation_count = $row->total_donation_count ?? 0;
                 $total_pengeluaran = $row->total_ads_nominal ?? 0;
                 $total_penyaluran = $row->total_nominal_payout ?? 0;
-                return '<b>Donasi:</b> Rp ' . number_format($total_donation, 0, ',', '.') . '<br><b>Pengeluaran:</b> Rp ' . number_format($total_pengeluaran, 0, ',', '.') . '<br><b>Penyaluran:</b> Rp ' . number_format($total_penyaluran, 0, ',', '.');
+
+                $donasi_show = number_format($total_donation_nominal, 0, ',', '.');
+                $donasi_qty_show = number_format($total_donation_count, 0, ',', '.');
+                $pengeluaran_show = number_format($total_pengeluaran, 0, ',', '.');
+                $penyaluran_show = number_format($total_penyaluran, 0, ',', '.');
+
+                return '<span class="badge badge-light" title="Total Donasi">
+                            <i class="fa fa-hand-holding-heart icon-gradient bg-happy-green"></i> Rp.' . $donasi_show . ' (' . $donasi_qty_show . ' qty)
+                        </span><br>
+                        <span class="badge badge-light" title="Total Pengeluaran ADS">
+                            <i class="fa fa-credit-card icon-gradient bg-strong-bliss"></i> Rp.' . $pengeluaran_show . '
+                        </span><br>
+                        <span class="badge badge-light" title="Total Penyaluran">
+                            <i class="fa fa-share icon-gradient bg-happy-green"></i> Rp.' . $penyaluran_show . '
+                        </span>';
             })
             ->addColumn('dss', function ($row) {
                 $total_donation = $row->total_donation_nominal ?? 0;
