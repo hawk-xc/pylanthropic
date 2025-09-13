@@ -46,6 +46,43 @@
                 </div>
             </div>
             <div class="divider"></div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="row gx-3 align-items-center">
+                        <div class="col-auto"><span class="fw-bold">Filter :</span></div>
+                        <div class="col"><input type="text" id="name_filter" placeholder="Nama" class="form-control form-control-sm"></div>
+                        <div class="col"><input type="text" id="phone_filter" placeholder="Telepon" class="form-control form-control-sm"></div>
+                        <div class="col"><input type="text" id="email_filter" placeholder="Email" class="form-control form-control-sm"></div>
+                        <div class="col-auto"><button class="btn btn-sm btn-primary" id="filter_search">Cari</button></div>
+                    </div>
+                </div>
+                <div class="col-12 mt-2">
+                    <div class="row gx-3 align-items-center">
+                        <div class="col-auto"><span class="fw-bold">Urutkan :</span></div>
+                        <div class="col">
+                            <select class="form-select form-select-sm" id="filter_sort">
+                                <option value="">-- Pilih --</option>
+                                <option value="total_donation_nominal">Total Donasi</option>
+                                <option value="total_ads_nominal">Total Pengeluaran Ads</option>
+                                <option value="total_nominal_payout">Total Penyaluran</option>
+                                <option value="dss">DSS</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <div class="form-check form-check-inline mb-0">
+                                <input class="form-check-input" type="radio" name="dir" id="dir_asc" value="asc">
+                                <label class="form-check-label" for="dir_asc">Dari Terkecil</label>
+                            </div>
+                            <div class="form-check form-check-inline mb-0">
+                                <input class="form-check-input" type="radio" name="dir" id="dir_desc" value="desc" checked>
+                                <label class="form-check-label" for="dir_desc">Dari Terbesar</label>
+                            </div>
+                        </div>
+                        <div class="col-auto"><button class="btn btn-sm btn-primary" id="filter_sort_btn">Urutkan</button></div>
+                    </div>
+                </div>
+            </div>
+            <div class="divider"></div>
             <table id="table-organization" class="table table-hover table-striped table-bordered">
                 <thead>
                     <tr>
@@ -213,18 +250,20 @@
 @section('js_inline')
     <script type="text/javascript">
     let refreshCache = false;
+    let SORT_FIELD = '';
+    let SORT_DIR = 'desc';
+
     // Initialize DataTable
     var table = $('#table-organization').DataTable({
-        orderCellsTop: true,
-        fixedHeader: true,
         processing: true,
         serverSide: true,
         responsive: true,
+        searching: false,
         order: [],
         dom: 'lrtip', // Remove the global search input (f)
         ajax: {
             url: "{{ route('adm.org.datatables') }}",
-            data: function (d) {
+            data: function(d) {
                 if (refreshCache) {
                     d.refresh = true;
                     refreshCache = false; // Reset flag
@@ -236,6 +275,15 @@
                 } else {
                     delete d.status_filter; // Remove parameter if 'Semua' is selected
                 }
+
+                // Add new filters
+                d.name = $('#name_filter').val();
+                d.phone = $('#phone_filter').val();
+                d.email = $('#email_filter').val();
+
+                // Add sort
+                d.sort = SORT_FIELD;
+                d.dir = SORT_DIR;
             }
         },
         columns: [
@@ -243,7 +291,7 @@
             { data: 'contact', name: 'contact' },
             { data: 'summary', name: 'summary' },
             { data: 'finance', name: 'finance', orderable: false, searchable: false },
-            { data: 'dss', name: 'dss', orderable: false, searchable: false },
+            { data: 'dss', name: 'dss', orderable: true, searchable: false },
             { data: 'address', name: 'address' },
             { data: 'alias_names', name: 'alias_names' },
             {
@@ -255,26 +303,13 @@
         ]
     });
 
-    // Add search inputs to header
-    $('#table-organization thead tr').clone(true).appendTo('#table-organization thead');
-    $('#table-organization tr:eq(1) th').each(function(i) {
-        var title = $(this).text();
-        $(this).html('<input type="text" class="form-control form-control-sm" placeholder="Search ' + title + '" />');
-
-        $('input', this).on('keyup change', function() {
-            if (table.column(i).search() !== this.value) {
-                table.column(i).search(this.value).draw();
-            }
-        });
-    });
-
     // Refresh table button
     $("#refresh_table_org").on("click", function() {
         const btn = $(this);
         btn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Refreshing...');
-        
+
         refreshCache = true;
-        
+
         table.ajax.reload(function(json) {
             // This callback is executed after the reload is complete
             btn.prop('disabled', false).html('<i class="fa fa-sync"></i> Refresh');
@@ -291,6 +326,44 @@
         // Reload DataTable to apply filter
         table.ajax.reload(null, false); // null for callback, false to keep pagination
     });
+
+    // Search button
+    $('#filter_search').on('click', function() {
+        table.ajax.reload();
+    });
+
+    // Sort button
+    $('#filter_sort_btn').on('click', function() {
+        const allowed = ['total_donation_nominal', 'total_ads_nominal', 'total_nominal_payout', 'dss'];
+        const picked = $('#filter_sort').val();
+        const dir = $('input[name="dir"]:checked').val();
+
+        if (allowed.includes(picked)) {
+            SORT_FIELD = picked;
+            SORT_DIR = (dir === 'asc' ? 'asc' : 'desc');
+            table.ajax.reload();
+        } else {
+            SORT_FIELD = '';
+            SORT_DIR = 'asc';
+            table.ajax.reload();
+        }
+    });
+
+    const DT_SORT_MAP = {
+        4: 'dss', 
+    };
+    $('#table-organization').on('order.dt', function() {
+        const order = table.order();
+        if (order && order.length) {
+            const [colIdx, dir] = order[0];
+            if (DT_SORT_MAP[colIdx]) {
+                SORT_FIELD = DT_SORT_MAP[colIdx];
+                SORT_DIR = (dir === 'asc' ? 'asc' : 'desc');
+                table.ajax.reload(null, false);
+            }
+        }
+    });
+
 
     // Global tag management variables
     let tags = [];

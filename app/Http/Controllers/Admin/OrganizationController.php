@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManagerStatic as Image;
 
 use Yajra\DataTables\DataTables;
+use Illuminate\Support\Facades\DB;
 
 use App\Models\Organization;
 use Exception;
@@ -263,52 +264,69 @@ class OrganizationController extends Controller
      */
     public function orgDatatables(Request $request)
     {
-        // Make cache key dynamic based on request parameters
         $cacheKey = 'org_list.' . md5(json_encode($request->all()));
 
         if ($request->has('refresh')) {
             Cache::forget($cacheKey);
         }
-        
+
         $cacheTTL = now()->addDays(3);
 
-        $data = Cache::remember($cacheKey, $cacheTTL, function () use ($request) { // Pass $request into the closure
-            $query = Organization::select($this->organizationColumn)
+        return Cache::remember($cacheKey, $cacheTTL, function () use ($request) {
+            $query = Organization::query()
+                ->select('organization.*')
                 // total payout // mengambil dari payout.nominal_approved
-                ->withSum(
+                ->addSelect(
                     [
-                        'program as total_nominal_payout' => function ($query) {
-                            $query->join('payout', 'payout.program_id', '=', 'program.id')->where('payout.status', 'paid');
-                        },
-                    ],
-                    'payout.nominal_approved',
+                        'total_nominal_payout' => \App\Models\Program::query()
+                            ->selectRaw('COALESCE(SUM(payout.nominal_approved), 0)')
+                            ->join('payout', 'payout.program_id', '=', 'program.id')
+                            ->whereColumn('organization_id', 'organization.id')
+                            ->where('payout.status', 'paid'),
+                    ]
                 )
                 // total ads // mengambil dari ads_campaign.spend
-                ->withSum(
+                ->addSelect(
                     [
-                        'program as total_ads_nominal' => function ($query) {
-                            $query->join('ads_campaign', 'ads_campaign.program_id', '=', 'program.id');
-                        },
-                    ],
-                    'ads_campaign.spend',
+                        'total_ads_nominal' => \App\Models\Program::query()
+                            ->selectRaw('COALESCE(SUM(ads_campaign.spend), 0)')
+                            ->join('ads_campaign', 'ads_campaign.program_id', '=', 'program.id')
+                            ->whereColumn('organization_id', 'organization.id'),
+                    ]
                 )
                 // total donate paid // mengambil dari transaction.nominal_final
-                ->withSum(
+                ->addSelect(
                     [
-                        'program as total_donation_nominal' => function ($query) {
-                            $query->join('transaction', 'transaction.program_id', '=', 'program.id')->where('transaction.status', 'success');
-                        },
-                    ],
-                    'transaction.nominal_final',
+                        'total_donation_nominal' => \App\Models\Program::query()
+                            ->selectRaw('COALESCE(SUM(transaction.nominal_final), 0)')
+                            ->join('transaction', 'transaction.program_id', '=', 'program.id')
+                            ->whereColumn('organization_id', 'organization.id')
+                            ->where('transaction.status', 'success'),
+                    ]
                 )
                 // total donate count // mengambil dari transaction
-                ->withCount(
+                ->addSelect(
                     [
-                        'program as total_donation_count' => function ($query) {
-                            $query->join('transaction', 'transaction.program_id', '=', 'program.id')->where('transaction.status', 'success');
-                        },
+                        'total_donation_count' => \App\Models\Program::query()
+                            ->selectRaw('COALESCE(COUNT(transaction.id), 0)')
+                            ->join('transaction', 'transaction.program_id', '=', 'program.id')
+                            ->whereColumn('organization_id', 'organization.id')
+                            ->where('transaction.status', 'success'),
                     ]
-                );
+                )
+                // DSS
+                ->addSelect(DB::raw('(
+                    (SELECT COALESCE(SUM(t.nominal_final), 0) 
+                     FROM transaction t 
+                     JOIN program p ON t.program_id = p.id 
+                     WHERE p.organization_id = organization.id AND t.status = \'success\') 
+                    - 
+                    (SELECT COALESCE(SUM(ac.spend), 0) 
+                     FROM ads_campaign ac 
+                     JOIN program p2 ON ac.program_id = p2.id 
+                     WHERE p2.organization_id = organization.id)
+                ) as dss'));
+
 
             // Add status filters here to the query
             $query->when($request->query('status_filter') === 'regular', fn($q) =>
@@ -321,64 +339,30 @@ class OrganizationController extends Controller
                 $q->where('status', 'verif_org')
             );
 
-            return $query->orderBy('name', 'DESC')->get();
-        });
+            // Text filters
+            $query->when($request->filled('name'), fn($q) =>
+                $q->where('organization.name', 'like', '%' . urldecode($request->name) . '%')
+            )->when($request->filled('phone'), fn($q) =>
+                $q->where('organization.phone', 'like', '%' . urldecode($request->phone) . '%')
+            )->when($request->filled('email'), fn($q) =>
+                $q->where('organization.email', 'like', '%' . urldecode($request->email) . '%')
+            );
 
-        // Filter manual sesuai request
-        $data = $data->filter(function ($item) use ($request) {
-            $name_filter = (!$request->filled('name') || str_contains(strtolower($item->name), strtolower(urldecode($request->name))));
-            $phone_filter = (!$request->filled('phone') || str_contains(strtolower($item->phone), strtolower(urldecode($request->phone))));
-            $email_filter = (!$request->filled('email') || str_contains(strtolower($item->email), strtolower(urldecode($request->email))));
-            $about_filter = (!$request->filled('about') || str_contains(strtolower($item->about), strtolower(urldecode($request->about))));
-            $status_filter = (!$request->filled('status') || str_contains(strtolower($item->status), strtolower(urldecode($request->status))));
+            // Urutkan/sort
+            $sort = $request->input('sort');
+            $dir  = strtolower($request->input('dir','desc'));
+            $allowed = ['total_donation_nominal', 'total_ads_nominal', 'total_nominal_payout', 'dss'];
 
-            // Finance column filter
-            $finance_search_value = $request->input('columns.3.search.value'); // Assuming finance is column 3
-            $finance_filter = true; // Assume true if no search value for finance
-            if ($finance_search_value) {
-                $finance_search_value = strtolower($finance_search_value);
-                $finance_filter = str_contains(strtolower((string)($item->total_donation_nominal ?? '')), $finance_search_value) ||
-                                  str_contains(strtolower((string)($item->total_donation_count ?? '')), $finance_search_value) ||
-                                  str_contains(strtolower((string)($item->total_ads_nominal ?? '')), $finance_search_value) ||
-                                  str_contains(strtolower((string)($item->total_nominal_payout ?? '')), $finance_search_value);
+            if (in_array($sort, $allowed, true)) {
+                $dir = $dir === 'asc' ? 'asc' : 'desc';
+                $query->orderBy($sort, $dir);
+            } else {
+                $query->orderBy('name', 'ASC');
             }
 
-            return $name_filter && $phone_filter && $email_filter && $about_filter && $status_filter && $finance_filter;
-        });
-
-        // Search global
-        $search = $request->input('search.value');
-        if ($search) {
-            $data = $data->filter(function ($item) use ($search) {
-                $search = strtolower($search);
-                return str_contains(strtolower($item->name), $search) ||
-                       str_contains(strtolower($item->phone), $search) ||
-                       str_contains(strtolower($item->email), $search) ||
-                       str_contains(strtolower($item->address), $search) ||
-                       str_contains(strtolower($item->status), $search) ||
-                       str_contains(strtolower($item->about), $search) ||
-                       // Add finance related fields here
-                       str_contains(strtolower((string)($item->total_donation_nominal ?? '')), $search) ||
-                       str_contains(strtolower((string)($item->total_donation_count ?? '')), $search) ||
-                       str_contains(strtolower((string)($item->total_ads_nominal ?? '')), $search) ||
-                       str_contains(strtolower((string)($item->total_nominal_payout ?? '')), $search);
-            });
-        }
-
-        $count_total = Cache::get($cacheKey)->count();
-        $count_filter = $data->count();
-
-        $pageSize = $request->input('length', 10);
-        $start = $request->input('start', 0);
-        $pagedData = $data->slice($start, $pageSize)->values();
-
-        return Datatables::of($pagedData)
-            ->with([
-                'recordsTotal' => $count_total,
-                'recordsFiltered' => $count_filter,
-            ])
-            ->setOffset($start)
+            return DataTables::of($query)
             ->addIndexColumn()
+
             ->addColumn('name', function ($row) {
                 if ($row->status == 'verified') {
                     $status = '<span class="badge badge-sm badge-success" title="Terverifikasi sebagai perorangan"><i class="fa fa-check"></i> Personal</span>';
@@ -433,7 +417,7 @@ class OrganizationController extends Controller
                     $icon = 'fa-arrow-down';
                 }
 
-                return '<span class="badge ' . $badge_class . '"><i class="fa ' . $icon . '"></i> Rp ' . number_format($dss, 0, ',', '.') . '</span>';
+                return '<span class="badge ' . $badge_class . '"><i class="fa ' . $icon . '"></i> Rp ' . number_format($dss, 0, ",", ".") . '</span>';
             })
             ->addColumn('action', function ($row) {
                 $btn_edit = '<a href="' . route('adm.organization.edit', $row->id) . '" target="_blank" class="edit btn btn-warning btn-xs" title="Edit"><i class="fa fa-edit"></i></a>';
@@ -458,12 +442,25 @@ class OrganizationController extends Controller
                 <i class="fa fa-edit"></i></a>';
             })
             ->rawColumns(['name', 'contact', 'summary', 'finance', 'dss', 'action', 'alias_names'])
+            ->filter(function ($query) use ($request) {
+                    $search = data_get($request->input('search'), 'value');
+                    if (!empty($search)) {
+                        $query->where(function ($q) use ($search) {
+                            $q->where('organization.name', 'like', "%{$search}%")
+                            ->orWhere('organization.phone', 'like', "%{$search}%")
+                            ->orWhere('organization.email', 'like', "%{$search}%")
+                            ->orWhere('organization.address', 'like', "%{$search}%");
+                        });
+                    }
+                }, true)
             ->make(true);
+        });
     }
 
     /**
      * Remove the specified resource from storage.
      */
+
     public function select2(Request $request)
     {
         $query = Organization::query();
