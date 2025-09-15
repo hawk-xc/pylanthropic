@@ -2,7 +2,7 @@
     'second_title'    => 'Edit Org - Leads',
     'header_title'    => 'Edit Lembaga - Leads',
     'sidebar_menu'    => 'leads',
-    'sidebar_submenu' => 'leads'
+    'sidebar_submenu' => 'org-list'
 ])
 
 
@@ -26,7 +26,7 @@
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 pb-0 pl-0">
                             <li class="breadcrumb-item"><a href="{{ route('adm.index') }}">Home</a></li>
-                            <li class="breadcrumb-item active" aria-current="page"><a href="{{ route('adm.leads.index') }}">Leads</a></li>
+                            <li class="breadcrumb-item active" aria-current="page"><a href="{{ route('adm.leads.org.list') }}">Leads</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Edit Organization</li>
                         </ol>
                     </nav>

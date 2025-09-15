@@ -40,8 +40,9 @@
                         <th>Nama Lembaga</th>
                         <th>Kontak</th>
                         <th>Alamat</th>
+                        <th>Informasi Program</th> 
                         <th>Sosial Media</th>
-                        <th></th>
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -205,20 +206,37 @@
                     name: 'address'
                 },
                 {
+                    data: 'informasi_program',
+                    name: 'informasi_program',
+                    orderable: false,
+                    searchable: true
+                },
+                {
                     data: 'socmed',
                     name: 'socmed'
                 },
                 {
                     data: 'action',
-                    name: 'action'
+                    name: 'action',
+                    orderable: false,
+                    searchable: false
                 },
             ]
         });
         $('#table-organization_list thead tr').clone(true).appendTo('#table-organization_list thead');
         $('#table-organization_list tr:eq(1) th').each(function(i) {
             var title = $(this).text();
-            $(this).html('<input type="text" class="form-control form-control-sm" placeholder="Search ' + title +
-                '" />');
+            if (!table.settings()[0].aoColumns[i].bSearchable) {
+                $(this).html('');
+                return;
+            }
+
+            var input = '<input type="text" class="form-control form-control-sm" placeholder="Search ' + title + '" />';
+            if (i === 3) { // "Informasi Program" column index
+                input = '<input type="number" class="form-control form-control-sm" placeholder="Search ' + title + '" />';
+            }
+            
+            $(this).html(input);
 
             $('input', this).on('keyup change', function() {
                 if (table.column(i).search() !== this.value) {

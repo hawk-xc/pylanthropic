@@ -321,8 +321,15 @@ class LeadsController extends Controller
      */
     public function orgDatatables(Request $request)
     {
-        $data = Cache::remember('grab_organization_data', 60, function () {
-            return GrabOrganization::select($this->GrabOrganizationColumn)->orderBy('created_at', 'DESC')->get();
+        $data = Cache::remember('grab_organization_data_with_programs_count', 60, function () {
+            return GrabOrganization::withCount([
+                'grab_programs as garap_count' => function ($query) {
+                    $query->where('is_taken', 1);
+                },
+                'grab_programs as menarik_count' => function ($query) {
+                    $query->where('is_interest', 1);
+                }
+            ])->orderBy('created_at', 'DESC')->get();
         });
 
         if (isset($request->ada_wa)) {
@@ -339,6 +346,15 @@ class LeadsController extends Controller
 
         $order_column = $request->input('order.0.column');
         $order_dir = $request->input('order.0.dir') ? $request->input('order.0.dir') : 'asc';
+
+        // Custom column search for 'informasi_program'
+        $columnSearch = $request->input('columns');
+        if (isset($columnSearch[3]['search']['value']) && is_numeric($columnSearch[3]['search']['value'])) {
+            $numSearch = (int) $columnSearch[3]['search']['value'];
+            $data = $data->filter(function ($item) use ($numSearch) {
+                return ($item->garap_count === $numSearch) || ($item->menarik_count === $numSearch);
+            });
+        }
 
         $count_total = $data->count();
 
@@ -411,11 +427,25 @@ class LeadsController extends Controller
                 return $fb . ' ' . $tw . ' ' . $ig . ' ' . $yt;
             })
             ->addColumn('action', function ($row) {
-                $btn_edit = '<a href="' . route('adm.leads.org.edit', $row->user_id) . '" target="_blank" class="badge badge-sm badge-warning"><i class="fa fa-edit"></i></a>';
-
-                return $btn_edit;
+                if ($row->user_id) {
+                    $btn_edit = '<a href="' . route('adm.leads.org.edit', $row->user_id) . '" target="_blank" class="badge badge-sm badge-warning"><i class="fa fa-edit"></i></a>';
+                    return $btn_edit;
+                }
+                return '-';
             })
-            ->rawColumns(['name', 'contact', 'socmed', 'action'])
+            ->addColumn('informasi_program', function ($row) {
+                $garapCount = $row->garap_count ?? 0;
+                $menarikCount = $row->menarik_count ?? 0;
+
+                if ($garapCount == 0 && $menarikCount == 0) {
+                    return 'belum terdapat informasi';
+                }
+
+                $garapBadge = '<span class="badge badge-sm badge-info">Garap: ' . $garapCount . '</span>';
+                $menarikBadge = '<span class="badge badge-sm badge-success">Menarik: ' . $menarikCount . '</span>';
+                return $garapBadge . ' ' . $menarikBadge;
+            })
+            ->rawColumns(['name', 'contact', 'socmed', 'action', 'informasi_program'])
             ->make(true);
     }
 
