@@ -151,10 +151,6 @@
             </div>
 
             <div class="row gy-3 pt-4">
-                <div class="col-12">
-                    <h3 class="fw-semibold">Riwayat Penyaluran Dana</h3>
-                </div>
-
                 @forelse($payouts as $payout)
                     <div class="col-12">
                         <div class="d-flex align-items-center">
@@ -166,7 +162,7 @@
                                 <small>{{ \Carbon\Carbon::parse($payout->paid_at)->locale('id')->translatedFormat('d F Y') }}</small>
                             </div>
                         </div>
-                        <h2 class="mt-4" style="font-size: 1.2rem;">Pencairan Dana Rp {{ number_format($payout->nominal_approved, 0, ',', '.') }}
+                        <h2 class="mt-4" style="font-size: 16px">Pencairan Dana Rp {{ number_format($payout->nominal_approved, 0, ',', '.') }}
                             <span class="badge @switch($payout->status)
                                 @case('request') bg-warning text-dark @break
                                 @case('process') bg-info text-dark @break
