@@ -8,7 +8,13 @@
 
 @section('css_plugins')
     <link href="{{ asset('admin/dataTables.bootstrap5.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
     <style type="text/css">
+        .dataTables_filter {
+            display: none;
+        }
         .big-checkbox .form-check-input {
             width: 16px;
             height: 16px;
@@ -28,7 +34,7 @@
     <div class="main-card mb-3 card">
         <div class="card-body">
             <div class="row">
-                <div class="col-2">
+                <div class="col-md-6">
                     <nav aria-label="breadcrumb">
                         <ol class="breadcrumb mb-0 pb-0">
                             <li class="breadcrumb-item"><a href="{{ route('adm.index') }}">Home</a></li>
@@ -36,39 +42,62 @@
                         </ol>
                     </nav>
                 </div>
-                <div class="col-10 fc-rtl">
-                    <!-- <button class="btn btn-outline-primary"><i class="fa fa-sync mr-1"></i> BCA</button>
-                    <button class="btn btn-outline-primary"><i class="fa fa-sync mr-1"></i> BRI</button>
-                    <button class="btn btn-outline-primary"><i class="fa fa-sync mr-1"></i> BNI</button>
-                    <button class="btn btn-outline-primary"><i class="fa fa-sync mr-1"></i> BSI</button>
-                    <button class="btn btn-outline-primary mr-3"><i class="fa fa-sync mr-1"></i> Mandiri</button> -->
-
+                <div class="col-md-6 fc-rtl text-end">
                     <button class="btn btn-outline-primary" id="playButton"><i class="fa fa-volume-mute mr-1"></i> OFF</button>
-                    <!-- <button class="btn btn-outline-primary"><i class="fa fa-filter mr-1"></i> Filter</button> -->
-                    <button class="btn btn-outline-primary filter_payment" id="filter-bni" data-id="bni">BNI</button>
-                    <button class="btn btn-outline-primary filter_payment" id="filter-bsi" data-id="bsi">BSI</button>
-                    <button class="btn btn-outline-primary filter_payment" id="filter-bri" data-id="bri">BRI</button>
-                    <button class="btn btn-outline-primary filter_payment" id="filter-qris" data-id="qris">QRIS</button>
-                    <button class="btn btn-outline-primary filter_payment" id="filter-gopay" data-id="gopay">Gopay</button>
-                    <button class="btn btn-outline-primary filter_payment" id="filter-mandiri" data-id="mandiri">Mandiri</button>
-                    <button class="btn btn-outline-primary" id="filter-fu"><i class="fa fa-filter mr-1" id="filter-fu-icon"></i> Butuh FU</button>
-                    <button class="btn btn-outline-primary" id="filter-1day"><i class="fa fa-filter mr-1" id="filter-1day-icon"></i> Show Kemarin</button>
-                    <button class="btn btn-primary" id="filter-5day"><i class="fa fa-check mr-1" id="filter-5day-icon"></i> Show 5 Hari</button>
                     <button class="btn btn-outline-primary mr-1" id="refresh_table_donate"><i class="fa fa-sync"></i> Refresh</button>
-                    <!-- <a href="#" class="btn btn-outline-primary"><i class="fa fa-plus mr-1"></i> Tambah Donasi</a> -->
                 </div>
             </div>
             <div class="divider"></div>
-            <div class="row">
-                <div class="col-12 form-inline">
-                    <span>Filter :</span>
-                    <input type="text" id="donatur_name" placeholder="Nama Donatur" class="form-control form-control-sm me-1 ms-2"> 
-                    <input type="text" id="donatur_telp" placeholder="Telp Donatur ex: 8574..." class="form-control form-control-sm me-1"> 
-                    <input type="text" id="filter_nominal" placeholder="Nominal" class="form-control form-control-sm me-1"> 
-                    <input type="text" id="donatur_title" placeholder="Judul Program" class="form-control form-control-sm me-1">
-                    <button class="btn btn-sm btn-primary" id="filter_search">Cari</button>
+            
+            <div class="col-12">
+                <div class="row">
+                    <div class="col-12 text-end">
+                        <button class="btn btn-outline-primary filter_payment" id="filter-bni" data-id="bni">BNI</button>
+                        <button class="btn btn-outline-primary filter_payment" id="filter-bsi" data-id="bsi">BSI</button>
+                        <button class="btn btn-outline-primary filter_payment" id="filter-bri" data-id="bri">BRI</button>
+                        <button class="btn btn-outline-primary filter_payment" id="filter-qris" data-id="qris">QRIS</button>
+                        <button class="btn btn-outline-primary filter_payment" id="filter-gopay" data-id="gopay">Gopay</button>
+                        <button class="btn btn-outline-primary filter_payment" id="filter-mandiri" data-id="mandiri">Mandiri</button>
+                        <button class="btn btn-outline-primary" id="filter-fu"><i class="fa fa-filter mr-1" id="filter-fu-icon"></i> Butuh FU</button>
+                        <button class="btn btn-outline-primary" id="filter-1day"><i class="fa fa-filter mr-1" id="filter-1day-icon"></i> Show Kemarin</button>
+                        <button class="btn btn-primary" id="filter-5day"><i class="fa fa-check mr-1" id="filter-5day-icon"></i> Show 5 Hari</button>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <select class="form-control form-control-sm" id="program_id" name="program_id"></select>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-md-3">
+                        <input type="text" id="donatur_name" placeholder="Nama Donatur" class="form-control form-control filter-input">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" id="donatur_telp" placeholder="Telp Donatur ex: 8574..." class="form-control form-control filter-input">
+                    </div>
+                    <div class="col-md-3">
+                        <input type="text" id="filter_nominal" placeholder="Nominal" class="form-control form-control filter-input">
+                    </div>
+                    <div class="col-md-3">
+                        <select id="status_filter" class="form-select form-select">
+                            <option value="">Semua Status</option>
+                            <option value="success">Success</option>
+                            <option value="draft">Draft</option>
+                            <option value="cancel">Cancel</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Reset button -->
+                <div class="row mt-2">
+                    <div class="col-12 text-end">
+                        <button class="btn btn-sm btn-secondary" id="reset_filter">Reset Filter</button>
+                    </div>
                 </div>
             </div>
+
             <div class="divider"></div>
             <table id="table-donatur" class="table table-hover table-striped table-bordered">
                 <thead>
@@ -76,9 +105,9 @@
                         <th>Nama</th>
                         <th>Jml Donasi</th>
                         <th>Judul</th>
-                        <th>Staus</th>
+                        <th>Status</th>
                         <th>Tgl Donasi</th>
-                        <!-- <th>Action</th> -->
+                        <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -169,6 +198,8 @@
         </div>
       </div>
     </div>
+
+    
 @endsection
 
 @section('js_plugins')
@@ -176,11 +207,13 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @endsection
 
 
 @section('js_inline')
-<script type="text/javascript">    
+<script type="text/javascript">
     function editStatus(id, status, nominal) {
         $("#id_trans").val(id);
         $("#rupiah").val(nominal.replace('Rp. ', ''));
@@ -210,21 +243,12 @@
 
     $("#filter-5day").on("click", function(){
         let fil_5day    = $('#5day_val').val();
-        var need_fu     = $('#fu_val').val();
-        var fil_1day    = $('#1day_val').val();
-        var fil_bni     = $('#bni_val').val();
-        var fil_bsi     = $('#bsi_val').val();
-        var fil_bri     = $('#bri_val').val();
-        var fil_qris    = $('#qris_val').val();
-        var fil_gopay   = $('#gopay_val').val();
-        var fil_mandiri = $('#mandiri_val').val();
         if(fil_5day==1) {       // before click or want to change become 5 day off
             $('#filter-5day-icon').removeClass('fa-check');
             $('#filter-5day-icon').addClass('fa-filter');
             $('#filter-5day').removeClass('btn-primary');
             $('#filter-5day').addClass('btn-outline-primary');
             $('#5day_val').val(0);            
-            // donate_table(need_fu, fil_1day, 0, fil_bni, fil_bsi, fil_bri, fil_qris, fil_gopay, fil_mandiri);
             donate_table();
         } else {                // want to change become 5 day on
             $('#filter-5day-icon').removeClass('fa-filter');
@@ -238,28 +262,18 @@
             $('#filter-1day-icon').addClass('fa-filter');
             $('#filter-1day').removeClass('btn-primary');
             $('#filter-1day').addClass('btn-outline-primary');
-            // donate_table(need_fu, 0, 1, fil_bni, fil_bsi, fil_bri, fil_qris, fil_gopay, fil_mandiri);
             donate_table();
         }
     });
 
     $("#filter-1day").on("click", function(){
         let fil_1day    = $('#1day_val').val();
-        let fil_5day    = $('#5day_val').val();
-        var need_fu     = $('#fu_val').val();
-        var fil_bni     = $('#bni_val').val();
-        var fil_bsi     = $('#bsi_val').val();
-        var fil_bri     = $('#bri_val').val();
-        var fil_qris    = $('#qris_val').val();
-        var fil_gopay   = $('#gopay_val').val();
-        var fil_mandiri = $('#mandiri_val').val();
         if(fil_1day==1) {       // before click or want to change become 1 day off
             $('#filter-5day-icon').removeClass('fa-check');
             $('#filter-5day-icon').addClass('fa-filter');
             $('#filter-5day').removeClass('btn-primary');
             $('#filter-5day').addClass('btn-outline-primary');
             $('#5day_val').val(0);
-            // donate_table(need_fu, 0, fil_5day, fil_bni, fil_bsi, fil_bri, fil_qris, fil_gopay, fil_mandiri);
             donate_table();
         } else {                // want to change become 1 day on
             $('#filter-1day-icon').removeClass('fa-filter');
@@ -273,28 +287,18 @@
             $('#filter-5day-icon').addClass('fa-filter');
             $('#filter-5day').removeClass('btn-primary');
             $('#filter-5day').addClass('btn-outline-primary');
-            // donate_table(need_fu, 1, 0, fil_bni, fil_bsi, fil_bri, fil_qris, fil_gopay, fil_mandiri);
             donate_table();
         }
     });
 
     $("#filter-fu").on("click", function(){
-        let fil_5day    = $('#5day_val').val();
-        let fil_1day    = $('#1day_val').val();
         var need_fu     = $('#fu_val').val();
-        var fil_bni     = $('#bni_val').val();
-        var fil_bsi     = $('#bsi_val').val();
-        var fil_bri     = $('#bri_val').val();
-        var fil_qris    = $('#qris_val').val();
-        var fil_gopay   = $('#gopay_val').val();
-        var fil_mandiri = $('#mandiri_val').val();
         if(need_fu==0) {
             $('#filter-fu-icon').removeClass('fa-filter');
             $('#filter-fu-icon').addClass('fa-check');
             $('#filter-fu').removeClass('btn-outline-primary');
             $('#filter-fu').addClass('btn-primary');
             $('#fu_val').val(1);
-            // donate_table(1, fil_1day, fil_5day, fil_bni, fil_bsi, fil_bri, fil_qris, fil_gopay, fil_mandiri);
             donate_table();
         } else {
             $('#filter-fu-icon').removeClass('fa-check');
@@ -302,123 +306,30 @@
             $('#filter-fu').removeClass('btn-primary');
             $('#filter-fu').addClass('btn-outline-primary');
             $('#fu_val').val(0);
-            // donate_table(0, fil_1day, fil_5day, fil_bni, fil_bsi, fil_bri, fil_qris, fil_gopay, fil_mandiri);
             donate_table();
         }
     });
 
     $(".filter_payment").on("click", function(){
-        let fil_5day    = $('#5day_val').val();
-        let fil_1day    = $('#1day_val').val();
-        var need_fu     = $('#fu_val').val();
-        var fil_bni     = $('#bni_val').val();
-        var fil_bsi     = $('#bsi_val').val();
-        var fil_bri     = $('#bri_val').val();
-        var fil_qris    = $('#qris_val').val();
-        var fil_gopay   = $('#gopay_val').val();
-        var fil_mandiri = $('#mandiri_val').val();
         var fil_payment = $(this).attr("data-id");
+        var current_val = $('#'+fil_payment+'_val').val();
 
-        if(fil_payment=='bni') {
-            if(fil_bni==0) {
-                $('#filter-bni').removeClass('btn-outline-primary');
-                $('#filter-bni').addClass('btn-primary');
-                $('#bni_val').val(1);
-                // donate_table(need_fu, fil_1day, fil_5day, 1, fil_bsi, fil_bri, fil_qris, fil_gopay, fil_mandiri);
-                donate_table();
-            } else {
-                $('#filter-bni').addClass('btn-outline-primary');
-                $('#filter-bni').removeClass('btn-primary');
-                $('#bni_val').val(0);
-                // donate_table(need_fu, fil_1day, fil_5day, 0, fil_bsi, fil_bri, fil_qris, fil_gopay, fil_mandiri);
-                donate_table();
-            }
-        } else if(fil_payment=='bsi') {
-            if(fil_bsi==0) {
-                $('#filter-bsi').removeClass('btn-outline-primary');
-                $('#filter-bsi').addClass('btn-primary');
-                $('#bsi_val').val(1);
-                // donate_table(need_fu, fil_1day, fil_5day, fil_bni, 1, fil_bri, fil_qris, fil_gopay, fil_mandiri);
-                donate_table();
-            } else {
-                $('#filter-bsi').addClass('btn-outline-primary');
-                $('#filter-bsi').removeClass('btn-primary');
-                $('#bsi_val').val(0);
-                // donate_table(need_fu, fil_1day, fil_5day, fil_bni, 0, fil_bri, fil_qris, fil_gopay, fil_mandiri);
-                donate_table();
-            }
-        } else if(fil_payment=='bri') {
-            if(fil_bri==0) {
-                $('#filter-bri').removeClass('btn-outline-primary');
-                $('#filter-bri').addClass('btn-primary');
-                $('#bri_val').val(1);
-                // donate_table(need_fu, fil_1day, fil_5day, fil_bni, fil_bsi, 1, fil_qris, fil_gopay, fil_mandiri);
-                donate_table();
-            } else {
-                $('#filter-bri').addClass('btn-outline-primary');
-                $('#filter-bri').removeClass('btn-primary');
-                $('#bri_val').val(0);
-                // donate_table(need_fu, fil_1day, fil_5day, fil_bni, fil_bsi, 0, fil_qris, fil_gopay, fil_mandiri);
-                donate_table();
-            }
-        } else if(fil_payment=='qris') {
-            if(fil_qris==0) {
-                $('#filter-qris').removeClass('btn-outline-primary');
-                $('#filter-qris').addClass('btn-primary');
-                $('#qris_val').val(1);
-                // donate_table(need_fu, fil_1day, fil_5day, fil_bni, fil_bsi, fil_bri, 1, fil_gopay, fil_mandiri);
-                donate_table();
-            } else {
-                $('#filter-qris').addClass('btn-outline-primary');
-                $('#filter-qris').removeClass('btn-primary');
-                $('#qris_val').val(0);
-                // donate_table(need_fu, fil_1day, fil_5day, fil_bni, fil_bsi, fil_bri, 0, fil_gopay, fil_mandiri);
-                donate_table();
-            }
-        } else if(fil_payment=='gopay') {
-            if(fil_gopay==0) {
-                $('#filter-gopay').removeClass('btn-outline-primary');
-                $('#filter-gopay').addClass('btn-primary');
-                $('#gopay_val').val(1);
-                // donate_table(need_fu, fil_1day, fil_5day, fil_bni, fil_bsi, fil_bri, fil_qris, 1, fil_mandiri);
-                donate_table();
-            } else {
-                $('#filter-gopay').addClass('btn-outline-primary');
-                $('#filter-gopay').removeClass('btn-primary');
-                $('#gopay_val').val(0);
-                // donate_table(need_fu, fil_1day, fil_5day, fil_bni, fil_bsi, fil_bri, fil_qris, 0, fil_mandiri);/
-                donate_table();
-            }
-        } else { // mandiri
-            if(fil_mandiri==0) {
-                $('#filter-mandiri').removeClass('btn-outline-primary');
-                $('#filter-mandiri').addClass('btn-primary');
-                $('#mandiri_val').val(1);
-                // donate_table(need_fu, fil_1day, fil_5day, fil_bni, fil_bsi, fil_bri, fil_qris, fil_gopay, 1);
-                donate_table();
-            } else {
-                $('#filter-mandiri').addClass('btn-outline-primary');
-                $('#filter-mandiri').removeClass('btn-primary');
-                $('#mandiri_val').val(0);
-                // donate_table(need_fu, fil_1day, fil_5day, fil_bni, fil_bsi, fil_bri, fil_qris, fil_gopay, 0);
-                donate_table();
-            }
+        if(current_val==0) {
+            $('#filter-'+fil_payment).removeClass('btn-outline-primary').addClass('btn-primary');
+            $('#'+fil_payment+'_val').val(1);
+        } else {
+            $('#filter-'+fil_payment).addClass('btn-outline-primary').removeClass('btn-primary');
+            $('#'+fil_payment+'_val').val(0);
         }
+        donate_table();
     });
 
     function hideFunc(name) {
-        // const truck_modal = document.querySelector('#modal_status');
         const truck_modal = document.querySelector(name);
         const modal = bootstrap.Modal.getInstance(truck_modal);    
         modal.hide();
     }
 
-
-    $("#filter_search").on("click", function(){
-        donate_table();
-    });
-
-    // function donate_table(need_fu_ar, day1_ar, day5_ar, bni_ar, bsi_ar, bri_ar, qris_ar, gopay_ar, mandiri_ar) {
     function donate_table() {
         let day5_ar        = $('#5day_val').val();
         let day1_ar        = $('#1day_val').val();
@@ -433,14 +344,13 @@
         let donatur_name   = $('#donatur_name').val();
         let donatur_telp   = $('#donatur_telp').val();
         let filter_nominal = $('#filter_nominal').val();
-        let donatur_title  = $('#donatur_title').val();
+        let program_id     = $('#program_id').val();
+        let status         = $('#status_filter').val();
 
-        table.ajax.url("{{ route('adm.donate.datatables') }}/?need_fu="+need_fu_ar+"&day1="+day1_ar+"&day5="+day5_ar+"&bni="+bni_ar+"&bsi="+bsi_ar+"&bri="+bri_ar+"&qris="+qris_ar+"&gopay="+gopay_ar+"&mandiri="+mandiri_ar+"&donatur_name="+encodeURI(donatur_name)+"&donatur_telp="+donatur_telp+"&filter_nominal="+filter_nominal+"&donatur_title="+encodeURI(donatur_title)).load();
+        table.ajax.url("{{ route('adm.donate.datatables') }}/?need_fu="+need_fu_ar+"&day1="+day1_ar+"&day5="+day5_ar+"&bni="+bni_ar+"&bsi="+bsi_ar+"&bri="+bri_ar+"&qris="+qris_ar+"&gopay="+gopay_ar+"&mandiri="+mandiri_ar+"&donatur_name="+encodeURI(donatur_name)+"&donatur_telp="+donatur_telp+"&filter_nominal="+filter_nominal+"&program_id="+(program_id ? program_id : '')+"&status="+status).load();
     }
     
     var table = $('#table-donatur').DataTable({
-        orderCellsTop: true,
-        fixedHeader: true,
         processing: true,
         serverSide: true,
         responsive: true,
@@ -449,12 +359,11 @@
         "columnDefs": [
             { "width": "21%", "targets": 0 },
             { "width": "14%", "targets": 1 },
-            { "width": "35%", "targets": 2 },
+            { "width": "30%", "targets": 2 },
             { "width": "16%", "targets": 3 },
             { "width": "14%", "targets": 4 },
-            { "orderable": false, "targets": 1 },
-            { "orderable": false, "targets": 2 },
-            { "orderable": false, "targets": 3 },
+            { "width": "5%", "targets": 5 },
+            { "orderable": false, "targets": [1, 2, 3, 5] },
         ],
         columns: [
             {data: 'name', name: 'name'},
@@ -462,27 +371,8 @@
             {data: 'title', name: 'title'},
             {data: 'invoice', name: 'invoice'},
             {data: 'created_at', name: 'created_at'},
-            // {
-            //     data: 'action', 
-            //     name: 'action', 
-            //     orderable: false, 
-            //     searchable: false
-            // },
+            {data: 'action', name: 'action', orderable: false, searchable: false}
         ]
-    });
-    $('#table-donatur thead tr').clone(true).appendTo( '#table-donatur thead' );
-    $('#table-donatur tr:eq(1) th').each( function (i) {
-        var title = $(this).text();
-        $(this).html( '<input type="text" class="form-control form-control-sm" placeholder="Search '+title+'" />' );
-    
-        $( 'input', this ).on( 'keyup change', function () {
-            if ( table.column(i).search() !== this.value ) {
-                table
-                    .column(i)
-                    .search( this.value )
-                    .draw();
-            }
-        } );
     });
 
     $("#refresh_table_donate").on("click", function() {
@@ -513,7 +403,6 @@
             success: function(data){
                 console.log(data);
                 if(data.status=='success') {
-                    // toast success
                     let status_id = '#status_'+id_trans;
                     if(status=='draft') {
                         $(status_id).html(data.nominal+'<br><span class="badge badge-warning">BELUM DIBAYAR</span>');
@@ -553,7 +442,6 @@
                 console.log(data);
                 if(data=='success') {
                     hideFunc('#modal_fu');
-                    // toast success
                     alert("Sudah dikirim");
                 }
             }
@@ -565,7 +453,6 @@
         document.querySelector('#playButton').innerHTML = '<i class="fa fa-volume-up mr-1"></i> ON';
     });
 
-    // ALARM NEW DONATE
     function alarmNewDonate() {
         var last_donate = $('#last_donate').val();
         
@@ -590,12 +477,161 @@
         });
     }
 
+    function openDeleteModal(transactionId) {
+        Swal.fire({
+            title: 'Konfirmasi Hapus',
+            text: "Pilih jenis penghapusan:",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Hapus Transaksi Saja',
+            showDenyButton: true,
+            denyButtonColor: '#ffc107',
+            denyButtonText: `Hapus Transaksi & Donatur`,
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteTransaction(transactionId, 'transaction_only');
+            } else if (result.isDenied) {
+                deleteTransaction(transactionId, 'with_donatur');
+            }
+        });
+    }
+
+    function deleteTransaction(transactionId, deleteType) {
+        $.ajax({
+            url: '/adm/donate/' + transactionId,
+            type: 'POST',
+            data: {
+                _token: "{{ csrf_token() }}",
+                _method: 'DELETE',
+                delete_type: deleteType
+            },
+            success: function(response) {
+                if(response.status === 'success') {
+                    table.ajax.reload();
+                    Swal.fire({
+                        title: 'Berhasil!',
+                        text: response.message,
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire(
+                        'Gagal!',
+                        response.message,
+                        'error'
+                    );
+                }
+            },
+            error: function(xhr) {
+                Swal.fire(
+                    'Error!',
+                    'Terjadi kesalahan. Silakan coba lagi.',
+                    'error'
+                );
+            }
+        });
+    }
+
     $(document).ready(function(){
         setInterval( function () {
-            table.ajax.reload();    // reset paging
-            // table.ajax.reload(null, false);    // paging retained
+            table.ajax.reload(null, false); 
             alarmNewDonate();
         }, 250000 );
+
+        function debounce(func, delay) {
+            let timeout;
+            return function(...args) {
+                const context = this;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), delay);
+            };
+        }
+
+        $('#program_id, #status_filter').on('change', function() {
+            donate_table();
+        });
+
+        $('.filter-input').on('keyup', debounce(function() {
+            donate_table();
+        }, 500));
+
+        $("#reset_filter").on("click", function(){
+            $('.filter-input').val('');
+            $('#program_id').val(null).trigger('change.select2');
+            $('#status_filter').val('');
+
+            $('#fu_val').val(0);
+            $('#filter-fu-icon').addClass('fa-filter').removeClass('fa-check');
+            $('#filter-fu').addClass('btn-outline-primary').removeClass('btn-primary');
+
+            $('#1day_val').val(0);
+            $('#filter-1day-icon').addClass('fa-filter').removeClass('fa-check');
+            $('#filter-1day').addClass('btn-outline-primary').removeClass('btn-primary');
+
+            $('#5day_val').val(1);
+            $('#filter-5day-icon').addClass('fa-check').removeClass('fa-filter');
+            $('#filter-5day').addClass('btn-primary').removeClass('btn-outline-primary');
+
+            $('.filter_payment').addClass('btn-outline-primary').removeClass('btn-primary');
+            $('#bni_val').val(0);
+            $('#bsi_val').val(0);
+            $('#bri_val').val(0);
+            $('#qris_val').val(0);
+            $('#gopay_val').val(0);
+            $('#mandiri_val').val(0);
+
+            donate_table();
+        });
+
+        var select2_query;
+        $("#program_id").select2({
+            placeholder: 'Cari Program',
+            theme: 'bootstrap-5',
+            allowClear: true,
+            ajax: {
+                url: "{{ route('adm.program.select2.all') }}",
+                delay: 250,
+                data: function (params) {
+                    var query = {
+                        search: params.term,
+                        page: params.page || 1
+                    }
+                    return query;
+                },
+                processResults: function (data, params) {
+                    var items = $.map(data.data, function(obj){
+                        obj.id = obj.id;
+                        obj.text = obj.title;
+                        return obj;
+                    });
+                    params.page = params.page || 1;
+                    return {
+                        results: items,
+                        pagination: {
+                            more: params.page < data.extra_data.last_page
+                        }
+                    };
+                },
+            },
+            templateResult: function (item) {
+                if (item.loading) {
+                    return item.text;
+                }
+                var term = select2_query.term || '';
+                var $result = item.text;
+                return $result;
+            },
+            language: {
+                searching: function (params) {
+                    select2_query = params;
+                    return 'Searching...';
+                }
+            }
+        });
     });
 
 
@@ -608,12 +644,9 @@
 
     var rupiah = document.getElementById("rupiah");
     rupiah.addEventListener("keyup", function(e) {
-      // tambahkan 'Rp.' pada saat form di ketik
-      // gunakan fungsi formatRupiah() untuk mengubah angka yang di ketik menjadi format angka
       rupiah.value = formatRupiah(this.value, "");
     });
 
-    /* Fungsi formatRupiah */
     function formatRupiah(angka, prefix) {
       var number_string = angka.replace(/[^,\d]/g, "").toString(),
         split = number_string.split(","),
@@ -621,7 +654,6 @@
         rupiah = split[0].substr(0, sisa),
         ribuan = split[0].substr(sisa).match(/\d{3}/gi);
 
-      // tambahkan titik jika yang di input sudah menjadi angka ribuan
       if (ribuan) {
         separator = sisa ? "." : "";
         rupiah += separator + ribuan.join(".");

@@ -117,9 +117,26 @@ class DonateController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, string $id)
     {
-        //
+        try {
+            $transaction = Transaction::findOrFail($id);
+            $donaturId = $transaction->donatur_id;
+
+            if ($request->input('delete_type') === 'with_donatur') {
+                $transactionCount = Transaction::where('donatur_id', $donaturId)->count();
+                if ($transactionCount <= 1) {
+                    Donatur::findOrFail($donaturId)->delete();
+                }
+            }
+
+            $transaction->delete();
+
+            return response()->json(['status' => 'success', 'message' => 'Data berhasil dihapus.']);
+
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => 'Gagal menghapus data: ' . $e->getMessage()], 500);
+        }
     }
 
     /**
@@ -381,9 +398,9 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
                 }
             }
 
-            if(isset($request->program_title)) {     // program title
-                if($request->program_title!='') {
-                    $data = $data->where('program.title', 'like', '%'.urldecode($request->donatur_title).'%');
+            if(isset($request->program_id)) {     // program id
+                if($request->program_id!='') {
+                    $data = $data->where('transaction.program_id', $request->program_id);
                 }
             }
 
@@ -391,6 +408,10 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
                 if($request->donatur_id!='') {
                     $data = $data->where('donatur.id', $request->donatur_id);
                 }
+            }
+
+            if(isset($request->status) && $request->status != '') {
+                $data = $data->where('transaction.status', $request->status);
             }
 
             $order_column = $request->input('order.0.column');
@@ -483,8 +504,14 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
                     return $date.$chat_history;
                 })
                 ->addColumn('action', function($row){
-                    $actionBtn = '<a href="javascript:void(0)" class="edit btn btn-warning btn-sm">Edit</a>';
-                    return $actionBtn;
+                    $donaturBtn = '<a href="'.route('adm.donate.perdonatur', ['id' => $row->donatur_id]).'" class="btn btn-info btn-sm mb-1" title="Lihat Donatur"><i class="fa fa-user"></i></a>';
+                
+                    $deleteBtn = '';
+                    if ($row->status == 'cancel') {
+                        $deleteBtn = '<button class="btn btn-danger btn-sm mb-1" title="Hapus" onclick="openDeleteModal('.$row->id.')"><i class="fa fa-trash"></i></button>';
+                    }
+
+                    return $donaturBtn . ' ' . $deleteBtn;
                 })
                 ->rawColumns(['action', 'invoice', 'nominal_final', 'name', 'created_at'])
                 ->make(true);
