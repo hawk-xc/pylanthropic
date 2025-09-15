@@ -250,7 +250,7 @@
 @section('js_inline')
     <script type="text/javascript">
     let refreshCache = false;
-    let SORT_FIELD = '';
+    let SORT_FIELD = 'dss';
     let SORT_DIR = 'desc';
 
     // Initialize DataTable
