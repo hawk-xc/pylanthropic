@@ -45,7 +45,11 @@ class PayoutController extends Controller
             'date_paid'         => 'nullable|date',
             'file_submit'       => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:1024',
             'file_paid'         => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:1024',
-            'file_accepted'     => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:1024'
+            'file_accepted'     => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:1024',
+            'bank_fee'          => 'required|numeric',
+            'optimation_fee'    => 'required|numeric',
+            'ads_fee'           => 'required|numeric',
+            'platform_fee'      => 'required|numeric'
         ], [
             'program_id.required'       => 'Program harus diisi',
             'desc_request.required'     => 'Deskripsi harus diisi',
@@ -57,7 +61,15 @@ class PayoutController extends Controller
             'file_accepted.file'        => 'Format file salah, format yang didukung jpg, jpeg, png, pdf',
             'file_submit.max'           => 'Ukuran file maksimal 1MB',
             'file_paid.max'             => 'Ukuran file maksimal 1MB',
-            'file_accepted.max'         => 'Ukuran file maksimal 1MB'
+            'file_accepted.max'         => 'Ukuran file maksimal 1MB',
+            'bank_fee.numeric'          => 'Format angka salah',
+            'optimation_fee.numeric'    => 'Format angka salah',
+            'ads_fee.numeric'           => 'Format angka salah',
+            'platform_fee.numeric'      => 'Format angka salah',
+            'bank_fee.required'          => 'Bank Fee harus diisi',
+            'optimation_fee.required'    => 'Optimation Fee harus diisi',
+            'ads_fee.required'           => 'Ads Fee harus diisi',
+            'platform_fee.required'      => 'Platform Fee harus diisi'
         ]);
 
         try {
@@ -71,6 +83,10 @@ class PayoutController extends Controller
             $data->program_id       = $request->program_id;
             $data->nominal_request  = str_replace('.', '', $request->nominal_request);
             $data->nominal_approved = str_replace('.', '', $request->nominal_approved);
+            $data->bank_fee         = str_replace('.', '', $request->bank_fee);
+            $data->optimation_fee   = str_replace('.', '', $request->optimation_fee);
+            $data->ads_fee          = str_replace('.', '', $request->ads_fee);
+            $data->platform_fee     = str_replace('.', '', $request->platform_fee);
             $data->desc_request     = $request->desc_request;
             $data->status           = $request->status;
 
@@ -112,7 +128,6 @@ class PayoutController extends Controller
                 'message' => 'Berhasil tambah data Penyaluran Program'
             ]);
         } catch (\Exception $e) {
-            dd($e->getMessage());
             return back()->with('message', [
                 'status' => 'error', 
                 'message' => 'Gagal tambah data Penyaluran Program: ' . $e->getMessage()
@@ -151,7 +166,31 @@ class PayoutController extends Controller
             'date_paid'         => 'nullable|date',
             'file_submit'       => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             'file_paid'         => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'file_accepted'     => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048'
+            'file_accepted'     => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+            'bank_fee'          => 'required|numeric',
+            'optimation_fee'    => 'required|numeric',
+            'ads_fee'           => 'required|numeric',
+            'platform_fee'      => 'required|numeric'
+        ], [
+            'program_id.required'       => 'Program harus diisi',
+            'desc_request.required'     => 'Deskripsi harus diisi',
+            'nominal_request.required'  => 'Nominal harus diisi',
+            'nominal_approved.required' => 'Nominal harus diisi',
+            'date_paid.date'            => 'Format tanggal salah',
+            'file_submit.file'          => 'Format file salah, format yang didukung jpg, jpeg, png, pdf',
+            'file_paid.file'            => 'Format file salah, format yang didukung jpg, jpeg, png, pdf',
+            'file_accepted.file'        => 'Format file salah, format yang didukung jpg, jpeg, png, pdf',
+            'file_submit.max'           => 'Ukuran file maksimal 1MB',
+            'file_paid.max'             => 'Ukuran file maksimal 1MB',
+            'file_accepted.max'         => 'Ukuran file maksimal 1MB',
+            'bank_fee.numeric'          => 'Format angka salah',
+            'optimation_fee.numeric'    => 'Format angka salah',
+            'ads_fee.numeric'           => 'Format angka salah',
+            'platform_fee.numeric'      => 'Format angka salah',
+            'bank_fee.required'          => 'Bank Fee harus diisi',
+            'optimation_fee.required'    => 'Optimation Fee harus diisi',
+            'ads_fee.required'           => 'Ads Fee harus diisi',
+            'platform_fee.required'      => 'Platform Fee harus diisi'
         ]);
 
         try {
@@ -167,6 +206,10 @@ class PayoutController extends Controller
             $data->program_id       = $request->program_id;
             $data->nominal_request  = str_replace('.', '', $request->nominal_request);
             $data->nominal_approved = str_replace('.', '', $request->nominal_approved);
+            $data->bank_fee         = str_replace('.', '', $request->bank_fee);
+            $data->optimation_fee   = str_replace('.', '', $request->optimation_fee);
+            $data->platform_fee     = str_replace('.', '', $request->platform_fee);
+            $data->ads_fee          = str_replace('.', '', $request->ads_fee);
             $data->desc_request     = $request->desc_request;
             $data->status           = $request->status;
 
@@ -227,7 +270,6 @@ class PayoutController extends Controller
         }
     }
 
-
     /**
      * Show Donate from datatable program
      */
@@ -251,6 +293,10 @@ class PayoutController extends Controller
                             ->orWhere('program.slug', 'like', '%'.$search.'%')
                             ->orWhere('payout.nominal_request', 'like', '%'.str_replace([',', '.'], '', $search).'%')
                             ->orWhere('payout.nominal_approved', 'like', '%'.str_replace([',', '.'], '', $search).'%')
+                            ->orWhere('payout.bank_fee', 'like', '%'.str_replace([',', '.'], '', $search).'%')
+                            ->orWhere('payout.optimation_fee', 'like', '%'.str_replace([',', '.'], '', $search).'%')
+                            ->orWhere('payout.platform_fee', 'like', '%'.str_replace([',', '.'], '', $search).'%')
+                            ->orWhere('payout.ads_fee', 'like', '%'.str_replace([',', '.'], '', $search).'%')
                             ->orWhere('status', 'like', '%'.$search.'%')
                             ->orWhere('paid_at', 'like', '%'.$search.'%');
                         });

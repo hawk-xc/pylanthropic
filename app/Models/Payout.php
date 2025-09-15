@@ -28,7 +28,13 @@ class Payout extends Model
         'file_paid',
         'file_accepted',
         'created_at',
-        'updated_at'
+        'updated_at',
+
+        // new column
+        'bank_fee',
+        'optimation_fee',
+        'ads_fee',
+        'platform_fee'
     ];
 
     public function program()
