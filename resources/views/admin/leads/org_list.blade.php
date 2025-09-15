@@ -208,7 +208,7 @@
                 {
                     data: 'informasi_program',
                     name: 'informasi_program',
-                    orderable: false,
+                    orderable: true,
                     searchable: true
                 },
                 {

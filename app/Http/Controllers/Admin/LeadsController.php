@@ -376,6 +376,28 @@ class LeadsController extends Controller
             $count_filter = $data->count();
         }
 
+        // Manual Sorting
+        $order = $request->input('order');
+        if (!empty($order)) {
+            $order_column_index = $order[0]['column'];
+            $order_dir = $order[0]['dir'];
+            $columns = $request->input('columns');
+            $column_def = $columns[$order_column_index];
+
+            if ($column_def['orderable'] === 'true') {
+                if ($order_column_index == 3) { // "Informasi Program" column
+                    $sortMethod = $order_dir === 'asc' ? 'sortBy' : 'sortByDesc';
+                    $data = $data->{$sortMethod}(function ($row) {
+                        return ($row->garap_count ?? 0) + ($row->menarik_count ?? 0);
+                    });
+                } else { // Default sorting for other columns
+                    $column_name = $column_def['data'];
+                    $sortMethod = $order_dir === 'asc' ? 'sortBy' : 'sortByDesc';
+                    $data = $data->{$sortMethod}($column_name);
+                }
+            }
+        }
+
         $pageSize = $request->length ? $request->length : 10;
         $start = $request->start ? $request->start : 0;
 
@@ -386,6 +408,7 @@ class LeadsController extends Controller
                 'recordsTotal' => $count_total,
                 'recordsFiltered' => $count_filter,
             ])
+            ->order(function () {})
             ->setOffset($start)
             ->addIndexColumn()
             ->addColumn('name', function ($row) {
