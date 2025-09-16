@@ -72,19 +72,19 @@ class CRMPipelineController extends Controller
            if ($data->save()) {
             $leads_name = strtolower(CRMLeads::find($request->leads_id)->name);
             return redirect()->to('adm/crm-pipeline?leads=' . $leads_name)->with('message', [
-                'type' => 'success',
-                'text' => 'Berhasil menambah Data prospek!',
+                'status' => 'success',
+                'message' => 'Berhasil menambah Data prospek!',
             ]);
            }
 
            return back()->with('message', [
-                'type' => 'success',
-                'text' => 'Berhasil menambah Data prospek!',
+                'status' => 'success',
+                'message' => 'Berhasil menambah Data prospek!',
             ]);
         } catch (Exception $err) {
             return back()->with('message', [
-                'type' => 'error',
-                'text' => $err->getMessage()
+                'status' => 'error',
+                'message' => $err->getMessage()
             ]);
         }
     }
@@ -157,13 +157,13 @@ class CRMPipelineController extends Controller
             $pipeline->delete();
 
             return redirect()->to('/adm/crm-leads?leads=' . $leads_name)->with('message', [
-                'type' => 'success',
-                'text' => 'Berhasil menghapus data Pipeline!'
+                'status' => 'success',
+                'message' => 'Berhasil menghapus data Pipeline!'
             ]);
         } catch (Exception $err) {
             return back()->with('message', [
-                'type' => 'error',
-                'text' => 'Terjadi kesalahan' . $leads_name . ': ' . $err->getMessage()
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan' . $leads_name . ': ' . $err->getMessage()
             ]);
         }
     }
