@@ -8,6 +8,8 @@
 
 @section('css_plugins')
     <link href="{{ asset('admin/dataTables.bootstrap5.min.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
 @endsection
 
 
@@ -81,6 +83,59 @@
                         <input type="hidden" id="id_trans" name="id_trans" value="">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                         <button class="btn btn-primary" type="submit">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Add to CRM -->
+    <div class="modal fade" id="modal_add_to_crm" tabindex="-1" role="dialog" aria-labelledby="addToCrmModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <form id="add-to-crm-form" action="{{ route('adm.crm-prospect.store.from-grab') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="prospect_type" value="grab_organization">
+                    <input type="hidden" name="prospect_id" id="crm_grab_organization_id">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addToCrmModalLabel">Tambah Prospek dari Grab Organization</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="crm_name" class="form-label">Nama Prospect</label>
+                                <input type="text" class="form-control" name="name" id="crm_name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="crm_leads" class="form-label">Leads</label>
+                                <select class="form-control" name="lead_id" id="crm_leads" required style="width: 100%;"></select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="crm_pipeline" class="form-label">Pipeline</label>
+                                <select class="form-control" name="pipeline" id="crm_pipeline" required style="width: 100%;" disabled></select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="crm_assign_to" class="form-label">Pilih PIC</label>
+                                <select class="form-control" name="assign_to" id="crm_assign_to" required style="width: 100%;"></select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="crm_description" class="form-label">Deskripsi</label>
+                            <textarea class="form-control" id="crm_description" name="description" rows="4"></textarea>
+                        </div>
+                        <div class="ml-3 form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="is_potential" id="crm_is_potential" value="1" checked>
+                            <label class="form-check-label" for="crm_is_potential">Status Potensial</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
                     </div>
                 </form>
             </div>
@@ -172,6 +227,7 @@
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 @endsection
 
 
@@ -407,6 +463,110 @@
                 closeBtn.prop('disabled', false);
                 submitBtn.text('Update');
                 $('#update-phone')[0].reset();
+            });
+
+            // Add to CRM Modal Logic
+            var addToCrmModal = new bootstrap.Modal(document.getElementById('modal_add_to_crm'), {
+                keyboard: false
+            });
+
+            $('#table-organization_list').on('click', '.open-add-to-crm-modal', function() {
+                var orgId = $(this).data('id');
+                var orgName = $(this).data('name');
+
+                $('#crm_grab_organization_id').val(orgId);
+                $('#crm_name').val(orgName + ' Prospect');
+                $('#addToCrmModalLabel').text('Tambah Prospek untuk "' + orgName + '"');
+
+                addToCrmModal.show();
+            });
+
+            function initializeSelect2(element, url, placeholder, textMapping, getDynamicData = null) {
+                $(element).select2({
+                    theme: 'bootstrap-5',
+                    dropdownParent: $('#modal_add_to_crm'),
+                    placeholder: placeholder,
+                    ajax: {
+                        url: url,
+                        dataType: 'json',
+                        delay: 250,
+                        data: function(params) {
+                            var query = {
+                                search: params.term,
+                                page: params.page || 1
+                            };
+                            if (getDynamicData) {
+                                $.extend(query, getDynamicData());
+                            }
+                            return query;
+                        },
+                        processResults: function(data, params) {
+                            params.page = params.page || 1;
+                            return {
+                                results: data.data.map(textMapping),
+                                pagination: {
+                                    more: (params.page * 10) < data.total
+                                }
+                            };
+                        },
+                        cache: true
+                    }
+                });
+            }
+
+            initializeSelect2('#crm_leads', "{{ route('adm.crm-leads.select2.all') }}", 'Pilih Leads', function(item) {
+                return { id: item.id, text: item.name };
+            });
+
+            initializeSelect2('#crm_pipeline', "{{ route('adm.crm-pipeline.select2.all') }}", 'Pilih Pipeline', function(item) {
+                return { id: item.id, text: item.name };
+            }, function() {
+                return { lead_id: $('#crm_leads').val() };
+            });
+
+            initializeSelect2('#crm_assign_to', "{{ route('adm.users.select2.all') }}", 'Pilih PIC', function(item) {
+                return { id: item.id, text: item.name };
+            });
+
+            $('#crm_leads').on('change', function() {
+                var leadId = $(this).val();
+                var $pipelineSelect = $('#crm_pipeline');
+
+                // Reset pipeline selection
+                $pipelineSelect.val(null).trigger('change');
+
+                if (leadId) {
+                    $pipelineSelect.prop('disabled', false);
+                } else {
+                    $pipelineSelect.prop('disabled', true);
+                }
+            });
+
+            $('#add-to-crm-form').submit(function(e) {
+                e.preventDefault();
+                var form = $(this);
+                var url = form.attr('action');
+                var formData = form.serialize();
+
+                $.ajax({
+                    type: "POST",
+                    url: url,
+                    data: formData,
+                    success: function(response) {
+                        addToCrmModal.hide();
+                        form[0].reset();
+                        table.ajax.reload(null, false);
+                        callToast('success', response.message);
+                    },
+                    error: function(xhr) {
+                        var errors = xhr.responseJSON.errors;
+                        var errorMessage = '';
+                        $.each(errors, function(key, value) {
+                            errorMessage += value[0] + '\n';
+                        });
+                        callToast('error', errorMessage);
+                    }
+                });
             });
         });
 

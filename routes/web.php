@@ -204,6 +204,8 @@ Route::group([
         Route::get('/donatur-select2-all', [Admin\DonaturController::class,'select2'])->name('donatur.select2.all');
         Route::get('/users-select2-all', [Admin\UserController::class,'select2'])->name('users.select2.all');
         Route::get('/payment-type-select2-all', [PaymentController::class,'select2'])->name('payment-type.select2.all');
+        Route::get('/crm-pipeline-select2-all', [Admin\Pipeline\CRMPipelineController::class,'select2'])->name('crm-pipeline.select2.all');
+        Route::get('/crm-leads-select2-all', [App\Http\Controllers\Admin\Pipeline\CRMLeadsController::class, 'select2'])->name('crm-leads.select2.all');
 
         // LEADS
         Route::get('/leads-grabdo-platform', [Admin\LeadsController::class, 'grabdoPlatformLeads'])->name('leads.grabdo.platform');
@@ -261,6 +263,7 @@ Route::group([
 
         Route::prefix('crm-prospect')->group(function() {
            Route::post('{prospectId}/update-pipeline', [Admin\Pipeline\CRMProspectController::class, 'updatePipeline'])->name('crm-prospect.update');
+           Route::post('/store-from-grab', [App\Http\Controllers\Admin\Pipeline\CRMProspectController::class, 'storeFromGrab'])->name('crm-prospect.store.from-grab');
         });
 
         // Donatur Short Link

@@ -10,6 +10,7 @@ use App\Models\CRMProspectLogs;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
 
 class CRMProspectController extends Controller
 {
@@ -30,6 +31,7 @@ class CRMProspectController extends Controller
      */
     public function store(Request $request)
     {
+        dd($request->all());
         $request->validate(
             [
                 'name' => 'required|string',
@@ -107,6 +109,60 @@ class CRMProspectController extends Controller
                 'status' => 'error',
                 'message' => $err->getMessage(),
             ]);
+        }
+    }
+
+    public function storeFromGrab(Request $request)
+    {
+        $request->validate(
+            [
+                'name' => 'required|string',
+                'pipeline' => 'required|numeric',
+                'prospect_id' => 'required|numeric',
+                'assign_to' => 'required|numeric',
+                'description' => 'nullable|string',
+                'is_potential' => 'nullable|in:1,0',
+            ],
+            [
+                'name.required' => 'Nama prospect harus diisi.',
+                'pipeline.required' => 'Pipeline harus dipilih.',
+                'prospect_id.required' => 'Id Data harus dipilih.',
+                'assign_to.required' => 'Assign to harus dipilih.',
+            ],
+        );
+
+        try {
+            $prospect = new CRMProspect();
+            $prospect->name = $request->name;
+            $prospect->crm_pipeline_id = $request->pipeline;
+            $prospect->grab_organization_id = $request->prospect_id;
+            $prospect->prospect_type = 'grab_organization';
+            $prospect->assign_to = $request->assign_to;
+            $prospect->description = $request->description;
+            $prospect->is_potential = $request->has('is_potential') ? $request->is_potential : 0;
+            $prospect->created_by = auth()->user()->id;
+            $prospect->save();
+
+            $prospect_logs = new CRMProspectLogs();
+            $prospect_logs->pipeline_name = CRMPipeline::findOrFail($request->pipeline)->name;
+            $prospect_logs->crm_prospect_id = $prospect->id;
+            $prospect_logs->crm_pipeline_id = $request->pipeline;
+            $prospect_logs->created_by = auth()->user()->id;
+            $prospect_logs->save();
+
+            // Update grab_organization
+            $grab_org = \App\Models\GrabOrganization::find($request->prospect_id);
+            if ($grab_org) {
+                $grab_org->add_leads = true;
+                $grab_org->save();
+            }
+
+            Cache::forget('grab_organization_data_with_programs_count');
+
+            return response()->json(['status' => 'success', 'message' => 'Berhasil menambah data Prospek!']);
+
+        } catch (Exception $err) {
+            return response()->json(['status' => 'error', 'message' => $err->getMessage()], 500);
         }
     }
 

@@ -450,12 +450,21 @@ class LeadsController extends Controller
                 return $fb . ' ' . $tw . ' ' . $ig . ' ' . $yt;
             })
             ->addColumn('action', function ($row) {
+                $actions = '';
                 if ($row->user_id) {
-                    $add_leads_crm = '<a href="' . route('adm.leads.org.add', $row->user_id) . '" target="_blank" class="badge badge-sm badge-success badge-square"><i class="fa fa-handshake"></i></a>';
                     $btn_edit = '<a href="' . route('adm.leads.org.edit', $row->user_id) . '" target="_blank" class="badge badge-sm badge-warning badge-square"><i class="fa fa-edit"></i></a>';
-                    return $btn_edit . ' ' . $add_leads_crm;
+                    
+                    if ($row->add_leads === 1) {
+                        $add_leads_crm = '<a href="javascript:void(0)" class="badge badge-sm badge-success badge-square" title="Sudah ditambahkan ke CRM"><i class="fa fa-handshake"></i></a>';
+                    } else {
+                        $add_leads_crm = '<a href="javascript:void(0)" class="badge badge-sm badge-primary badge-square open-add-to-crm-modal" title="Tambahkan ke CRM" data-id="' . $row->id . '" data-name="' . e($row->name) . '"><i class="fa fa-handshake"></i></a>';
+                    }
+                    $actions = $btn_edit . ' ' . $add_leads_crm;
+                } else {
+                    $actions = '-';
                 }
-                return '-';
+
+                return $actions;
             })
             ->addColumn('informasi_program', function ($row) {
                 $garapCount = $row->garap_count ?? 0;

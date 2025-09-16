@@ -278,4 +278,27 @@ class CRMPipelineController extends Controller
             );
         }
     }
+
+    public function select2(Request $request)
+    {
+        $query = CRMPipeline::query();
+
+        if ($request->has('search') && $request->search != '') {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->has('lead_id') && $request->lead_id != '') {
+            $query->where('crm_leads_id', $request->lead_id);
+        }
+
+        $perPage = 10;
+        $paginator = $query->paginate($perPage);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $paginator->items(),
+            'total' => $paginator->total(),
+            'last_page' => $paginator->lastPage(),
+        ]);
+    }
 }
