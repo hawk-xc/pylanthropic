@@ -504,7 +504,7 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
                     return $date.$chat_history;
                 })
                 ->addColumn('action', function($row){
-                    $donaturBtn = '<a href="'.route('adm.donate.perdonatur', ['id' => $row->donatur_id]).'" class="btn btn-info btn-sm mb-1" title="Lihat Donatur"><i class="fa fa-user"></i></a>';
+                    $donaturBtn = '<a href="'.route('adm.donatur.show', $row->donatur_id).'" class="btn btn-info btn-sm mb-1" title="Lihat Donatur"><i class="fa fa-user"></i></a>';
                 
                     $deleteBtn = '';
                     if ($row->status == 'cancel') {
