@@ -451,8 +451,9 @@ class LeadsController extends Controller
             })
             ->addColumn('action', function ($row) {
                 if ($row->user_id) {
-                    $btn_edit = '<a href="' . route('adm.leads.org.edit', $row->user_id) . '" target="_blank" class="badge badge-sm badge-warning"><i class="fa fa-edit"></i></a>';
-                    return $btn_edit;
+                    $add_leads_crm = '<a href="' . route('adm.leads.org.add', $row->user_id) . '" target="_blank" class="badge badge-sm badge-success badge-square"><i class="fa fa-handshake"></i></a>';
+                    $btn_edit = '<a href="' . route('adm.leads.org.edit', $row->user_id) . '" target="_blank" class="badge badge-sm badge-warning badge-square"><i class="fa fa-edit"></i></a>';
+                    return $btn_edit . ' ' . $add_leads_crm;
                 }
                 return '-';
             })

@@ -13,6 +13,15 @@
  -->
 @endsection
 
+@section('css_inline')
+    <style type="text/css">
+        .btn-xs {       
+            aspect-ratio: 1 / 1;
+            font-size: 13px !important;
+        }
+    </style>
+@endsection
+
 
 @section('content')
     <div class="main-card mb-3 card">
@@ -55,6 +64,15 @@
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"
+        integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous">
+    </script>
+
+    {{-- sweetalert --}}
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.tiny.cloud/1/cwr0gleaw96v89pa0jnes11yfy617v1ef0nl4akq5qdl1cdn/tinymce/7/tinymce.min.js"
+        referrerpolicy="origin"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 @endsection
 
 

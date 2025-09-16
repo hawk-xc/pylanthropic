@@ -16,6 +16,16 @@
             padding: 3px !important;
             font-size: 13px !important;
         }
+
+        .badge-square {
+            width: 28px;
+            /* sesuaikan ukuran */
+            height: 28px;
+            /* hilangkan padding default */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
     </style>
 @endsection
 
@@ -52,7 +62,8 @@
                     <!-- <button class="btn btn-outline-primary"><i class="fa fa-filter mr-1"></i> Filter</button> -->
                     <a href="{{ route('adm.program.create') }}" class="btn btn-outline-primary"><i
                             class="fa fa-plus mr-1"></i> Tambah</a>
-                    <button class="btn btn-outline-info" id="refresh-datatable"><i class="fa fa-sync"></i> Refresh Data</button>
+                    <button class="btn btn-outline-info" id="refresh-datatable"><i class="fa fa-sync"></i> Refresh
+                        Data</button>
                 </div>
             </div>
             <div class="divider"></div>
@@ -63,13 +74,16 @@
                             <span class="fw-bold">Filter :</span>
                         </div>
                         <div class="col">
-                            <input type="text" id="program_title" placeholder="Judul Program" class="form-control form-control-sm">
+                            <input type="text" id="program_title" placeholder="Judul Program"
+                                class="form-control form-control-sm">
                         </div>
                         <div class="col">
-                            <input type="text" id="donation_target" placeholder="Target Donasi" class="form-control form-control-sm">
+                            <input type="text" id="donation_target" placeholder="Target Donasi"
+                                class="form-control form-control-sm">
                         </div>
                         <div class="col">
-                            <input type="text" id="organization_name" placeholder="Nama Mitra" class="form-control form-control-sm">
+                            <input type="text" id="organization_name" placeholder="Nama Mitra"
+                                class="form-control form-control-sm">
                         </div>
                         <div class="col">
                             <select class="form-select form-select-sm" id="filter_status">
@@ -86,7 +100,7 @@
                     </div>
                 </div>
                 <div class="col-12 mt-2">
-                     <div class="row gx-3 align-items-center">
+                    <div class="row gx-3 align-items-center">
                         <div class="col-auto">
                             <span class="fw-bold">Urutkan :</span>
                         </div>
@@ -103,11 +117,13 @@
                         </div>
                         <div class="col-auto">
                             <div class="form-check form-check-inline mb-0">
-                                <input class="form-check-input" type="radio" name="dir" id="dir_asc" value="asc" checked>
+                                <input class="form-check-input" type="radio" name="dir" id="dir_asc"
+                                    value="asc" checked>
                                 <label class="form-check-label" for="dir_asc">Dari Terkecil</label>
                             </div>
                             <div class="form-check form-check-inline mb-0">
-                                <input class="form-check-input" type="radio" name="dir" id="dir_desc" value="desc">
+                                <input class="form-check-input" type="radio" name="dir" id="dir_desc"
+                                    value="desc">
                                 <label class="form-check-label" for="dir_desc">Dari Terbesar</label>
                             </div>
                         </div>
@@ -140,7 +156,8 @@
 
 @section('content_modal')
     <!-- Modal Show Stats -->
-    <div class="modal fade" id="modal_show_donate" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="modal_show_donate" tabindex="-1" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
                 <div class="modal-header pt-2 pb-2">
@@ -158,7 +175,8 @@
     </div>
 
     <!-- Modal Show Summary -->
-    <div class="modal fade" id="modal_show_summary" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal fade" id="modal_show_summary" tabindex="-1" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header pt-2 pb-2">
@@ -275,269 +293,340 @@
 
 
 @section('js_inline')
-<script type="text/javascript">
-    // ====== UTIL & STATE ======
-    const FILTER_BTN = '.filter_program';
-    const ACTIVE_CLASS = 'btn-primary';
-    const INACTIVE_CLASS = 'btn-outline-primary';
+    <script type="text/javascript">
+        // ====== UTIL & STATE ======
+        const FILTER_BTN = '.filter_program';
+        const ACTIVE_CLASS = 'btn-primary';
+        const INACTIVE_CLASS = 'btn-outline-primary';
 
-    let SORT_FIELD = 'payout_sum'; // default sesuai kebutuhan
-    let SORT_DIR   = 'desc';
+        let SORT_FIELD = 'payout_sum'; // default sesuai kebutuhan
+        let SORT_DIR = 'desc';
 
-    // Toggle helper utk tombol boolean (aktif/inaktif/dll)
-    function setBtnState($btn, on) {
-        $btn.attr('data-val', on ? '1' : '0')
-            .toggleClass(ACTIVE_CLASS, on)
-            .toggleClass(INACTIVE_CLASS, !on);
-    }
-    function toggleBtn($btn) { setBtnState($btn, $btn.attr('data-val') !== '1'); }
-    function initButtons() {
-        $(FILTER_BTN).each(function() { setBtnState($(this), $(this).attr('data-val') === '1'); });
-    }
-
-    // Kumpulkan semua flag dari tombol 0/1
-    function getFlagFilters() {
-        const params = {};
-        $(FILTER_BTN).each(function() {
-            params[$(this).data('id')] = $(this).attr('data-val') || '0';
-        });
-        return params;
-    }
-
-    // Mapping dropdown status -> flag controller
-    function applyStatusSelection() {
-        const val = $('#filter_status').val(); // '', recommended, urgent, newest, search
-        // reset tiga flag dulu ke '0' (tanpa ngubah tombol lain)
-        const m = { recom: 'filter-recom', urgent: 'filter-urgent', newest: 'filter-newest' };
-        Object.entries(m).forEach(([flag, id]) => setBtnState($('#'+id), false));
-
-        if (val === 'recommended') setBtnState($('#filter-recom'), true);
-        if (val === 'urgent')      setBtnState($('#filter-urgent'), true);
-        if (val === 'newest')      setBtnState($('#filter-newest'), true);
-        // 'search' -> biarkan default; biasanya active=1 sudah ON dari tombol atas
-    }
-
-    // ====== DATA TABLE ======
-    const table = $('#table-program').DataTable({
-        processing: true,
-        searching: false,
-        serverSide: true,
-        responsive: true,
-        autoWidth: true,
-        columnDefs: [{ width: "22%", targets: 0 }],
-        order: [[4, 'desc']], // visual default; sorting "sesungguhnya" via sort/dir param
-        ajax: {
-            url: "{{ route('adm.program.datatables') }}",
-            data: function (d) {
-                // Ambil flag boolean
-                const flags = getFlagFilters();
-                // Ambil filter teks
-                const program_title     = $('#program_title').val() || '';
-                const organization_name = $('#organization_name').val() || '';
-
-                Object.assign(d, flags, {
-                    program_title,
-                    organization_name,
-                    sort: SORT_FIELD,
-                    dir:  SORT_DIR
-                });
-            }
-        },
-        columns: [
-            { data: 'title',        name: 'program.title' },
-            { data: 'nominal',      name: 'nominal',      orderable: false, searchable: false },
-            { data: 'status',       name: 'status',       orderable: false, searchable: false },
-            { data: 'organization', name: 'organization.name' },
-            { data: 'donate',       name: 'donate_total' }, // sinkron alias
-            { data: 'stats',        name: 'stats',        orderable: false, searchable: false },
-            { data: 'action',       name: 'action',       orderable: false, searchable: false },
-        ]
-    });
-
-    // ====== FILTER TOGGLE BUTTONS ======
-    $(document).on('click', FILTER_BTN, function() {
-        toggleBtn($(this));
-        table.ajax.reload();
-    });
-
-    $('#refresh-datatable').on('click', function(e) {
-        e.preventDefault();
-        table.ajax.url("{{ route('adm.program.datatables') }}?refresh=true").load();
-    });
-
-    // ====== FILTER TEKS & STATUS (Cari) ======
-    $('#filter_search').on('click', function() {
-        applyStatusSelection(); // set flag dari dropdown status
-        table.ajax.reload();
-    });
-
-    // ====== URUTKAN (opsi #2) ======
-    $('#filter_sort_btn').on('click', function() {
-        const allowed = ['payout_sum','donate_total','spend_sum','spend_ads_campaign','approved_at','end_date'];
-        const picked  = $('#filter_sort').val();
-        const dir     = $('input[name="dir"]:checked').val();
-
-        if (allowed.includes(picked)) {
-            SORT_FIELD = picked;
-            SORT_DIR   = (dir === 'asc' ? 'asc' : 'desc');
-            table.ajax.reload();
-        } else {
-            // kalau kosong, biarkan default
-            SORT_FIELD = 'payout_sum';
-            SORT_DIR   = 'desc';
-            table.ajax.reload();
+        // Toggle helper utk tombol boolean (aktif/inaktif/dll)
+        function setBtnState($btn, on) {
+            $btn.attr('data-val', on ? '1' : '0')
+                .toggleClass(ACTIVE_CLASS, on)
+                .toggleClass(INACTIVE_CLASS, !on);
         }
-    });
 
-    // ====== (Optional) Sinkron klik header hanya utk kolom yg diizinkan ======
-    const DT_SORT_MAP = {
-        4: 'donate_total', // kolom "Ads Campaign" (isi donasi total) -> allowed
-        // Jangan map kolom 0/3 karena controller tidak whitelist title/organization
-    };
-    $('#table-program').on('order.dt', function() {
-        const order = table.order();
-        if (order && order.length) {
-            const [colIdx, dir] = order[0];
-            if (DT_SORT_MAP[colIdx]) {
-                SORT_FIELD = DT_SORT_MAP[colIdx];
-                SORT_DIR   = (dir === 'asc' ? 'asc' : 'desc');
-                table.ajax.reload(null, false);
-            }
+        function toggleBtn($btn) {
+            setBtnState($btn, $btn.attr('data-val') !== '1');
         }
-    });
 
-    // ====== INIT ======
-    $(function() {
-        initButtons();
-        // default sort
-        SORT_FIELD = 'payout_sum';
-        SORT_DIR   = 'desc';
-        table.ajax.reload();
-    });
+        function initButtons() {
+            $(FILTER_BTN).each(function() {
+                setBtnState($(this), $(this).attr('data-val') === '1');
+            });
+        }
 
-    // ====== MODALS & ACTIONS (tetap sama, hanya minor perapihan) ======
-    function showDonate(id, title) {
-        $("#modalTitle").text(title);
-        $.get("{{ route('adm.program.show.donate') }}", { "_token": "{{ csrf_token() }}", id }, function(html){
-            $("#modalBody").html(html);
-            new bootstrap.Modal(document.getElementById('modal_show_donate')).show();
+        // Kumpulkan semua flag dari tombol 0/1
+        function getFlagFilters() {
+            const params = {};
+            $(FILTER_BTN).each(function() {
+                params[$(this).data('id')] = $(this).attr('data-val') || '0';
+            });
+            return params;
+        }
+
+        // Mapping dropdown status -> flag controller
+        function applyStatusSelection() {
+            const val = $('#filter_status').val(); // '', recommended, urgent, newest, search
+            // reset tiga flag dulu ke '0' (tanpa ngubah tombol lain)
+            const m = {
+                recom: 'filter-recom',
+                urgent: 'filter-urgent',
+                newest: 'filter-newest'
+            };
+            Object.entries(m).forEach(([flag, id]) => setBtnState($('#' + id), false));
+
+            if (val === 'recommended') setBtnState($('#filter-recom'), true);
+            if (val === 'urgent') setBtnState($('#filter-urgent'), true);
+            if (val === 'newest') setBtnState($('#filter-newest'), true);
+            // 'search' -> biarkan default; biasanya active=1 sudah ON dari tombol atas
+        }
+
+        // ====== DATA TABLE ======
+        const table = $('#table-program').DataTable({
+            processing: true,
+            searching: false,
+            serverSide: true,
+            responsive: true,
+            autoWidth: true,
+            columnDefs: [{
+                width: "22%",
+                targets: 0
+            }],
+            order: [
+                [4, 'desc']
+            ], // visual default; sorting "sesungguhnya" via sort/dir param
+            ajax: {
+                url: "{{ route('adm.program.datatables') }}",
+                data: function(d) {
+                    // Ambil flag boolean
+                    const flags = getFlagFilters();
+                    // Ambil filter teks
+                    const program_title = $('#program_title').val() || '';
+                    const organization_name = $('#organization_name').val() || '';
+
+                    Object.assign(d, flags, {
+                        program_title,
+                        organization_name,
+                        sort: SORT_FIELD,
+                        dir: SORT_DIR
+                    });
+                }
+            },
+            columns: [{
+                    data: 'title',
+                    name: 'program.title'
+                },
+                {
+                    data: 'nominal',
+                    name: 'nominal',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'status',
+                    name: 'status',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'organization',
+                    name: 'organization.name'
+                },
+                {
+                    data: 'donate',
+                    name: 'donate_total'
+                }, // sinkron alias
+                {
+                    data: 'stats',
+                    name: 'stats',
+                    orderable: false,
+                    searchable: false
+                },
+                {
+                    data: 'action',
+                    name: 'action',
+                    orderable: false,
+                    searchable: false
+                },
+            ]
         });
-    }
-    function showSummary(id, title) {
-        $("#modalTitleSummary").text(title);
-        $.get("{{ route('adm.program.show.summary') }}", { "_token": "{{ csrf_token() }}", id }, function(html){
-            $("#modalBodySummary").html(html);
-            new bootstrap.Modal(document.getElementById('modal_show_summary')).show();
+
+        // ====== FILTER TOGGLE BUTTONS ======
+        $(document).on('click', FILTER_BTN, function() {
+            toggleBtn($(this));
+            table.ajax.reload();
         });
-    }
-    function hideFunc(name) {
-        const el = document.querySelector(name);
-        const modal = bootstrap.Modal.getInstance(el);
-        modal?.hide();
-    }
-    $("#submit_spend").on("click", function() {
-        const payload = {
-            "_token": "{{ csrf_token() }}",
-            "id_program": $("#id_program").val(),
-            "title": $("#title").val(),
-            "date_time": $("#date_time").val(),
-            "nominal": $('#rupiah').val()
+
+        $('#refresh-datatable').on('click', function(e) {
+            e.preventDefault();
+            table.ajax.url("{{ route('adm.program.datatables') }}?refresh=true").load();
+        });
+
+        // ====== FILTER TEKS & STATUS (Cari) ======
+        $('#filter_search').on('click', function() {
+            applyStatusSelection(); // set flag dari dropdown status
+            table.ajax.reload();
+        });
+
+        // ====== URUTKAN (opsi #2) ======
+        $('#filter_sort_btn').on('click', function() {
+            const allowed = ['payout_sum', 'donate_total', 'spend_sum', 'spend_ads_campaign', 'approved_at',
+                'end_date'
+            ];
+            const picked = $('#filter_sort').val();
+            const dir = $('input[name="dir"]:checked').val();
+
+            if (allowed.includes(picked)) {
+                SORT_FIELD = picked;
+                SORT_DIR = (dir === 'asc' ? 'asc' : 'desc');
+                table.ajax.reload();
+            } else {
+                // kalau kosong, biarkan default
+                SORT_FIELD = 'payout_sum';
+                SORT_DIR = 'desc';
+                table.ajax.reload();
+            }
+        });
+
+        // ====== (Optional) Sinkron klik header hanya utk kolom yg diizinkan ======
+        const DT_SORT_MAP = {
+            4: 'donate_total', // kolom "Ads Campaign" (isi donasi total) -> allowed
+            // Jangan map kolom 0/3 karena controller tidak whitelist title/organization
         };
-        $.post("{{ route('adm.program.spend.submit') }}", payload, function(res){
-            if (res === 'success') {
-                table.ajax.reload(null, false);
-                hideFunc('#modal_inp_spend');
-                alert("Berhasil Disimpan");
+        $('#table-program').on('order.dt', function() {
+            const order = table.order();
+            if (order && order.length) {
+                const [colIdx, dir] = order[0];
+                if (DT_SORT_MAP[colIdx]) {
+                    SORT_FIELD = DT_SORT_MAP[colIdx];
+                    SORT_DIR = (dir === 'asc' ? 'asc' : 'desc');
+                    table.ajax.reload(null, false);
+                }
             }
         });
-    });
-    function inpSpend(id, title) {
-        $("#modalTitleSpend").text(title);
-        $("#id_program").val(id);
-        table_spent.ajax.url("{{ route('adm.program.spend.show') . '/?id=' }}"+id).load();
-        new bootstrap.Modal(document.getElementById('modal_inp_spend')).show();
-    }
 
-    const table_spent = $('#table-spent').DataTable({
-        processing: true,
-        serverSide: true,
-        responsive: true,
-        autoWidth: false,
-        pageLength: 10,
-        order: [[0, 'desc']],
-        ajax: "{{ route('adm.program.spend.show') . '/?id=1' }}",
-        columns: [
-            { data: 'date',   name: 'date' },
-            { data: 'title',  name: 'title' },
-            { data: 'nominal',name: 'nominal' },
-            { data: 'status', name: 'status' },
-            { data: 'desc',   name: 'desc' },
-        ]
-    });
-
-    // ====== +11% ======
-    $("#check11percent").on("click", function() {
-        let val = $('#rupiah').val().replaceAll(".", "");
-        val = Number(val) || 0;
-        const eleven = Math.ceil(val * 11 / 100);
-        const res = $(this).is(':checked') ? val + eleven : Math.max(val - eleven, 0);
-        $('#rupiah').val(formatRupiah(String(res), ""));
-    });
-
-    // ====== Format Rupiah ======
-    const rupiah = document.getElementById("rupiah");
-    if (rupiah) {
-        rupiah.addEventListener("keyup", function() {
-            this.value = formatRupiah(this.value, "");
+        // ====== INIT ======
+        $(function() {
+            initButtons();
+            // default sort
+            SORT_FIELD = 'payout_sum';
+            SORT_DIR = 'desc';
+            table.ajax.reload();
         });
-    }
-    function formatRupiah(angka, prefix) {
-        const number_string = (angka||'').replace(/[^,\d]/g, "");
-        const split = number_string.split(",");
-        const sisa = split[0].length % 3;
-        let rupiah = split[0].substr(0, sisa);
-        const ribuan = split[0].substr(sisa).match(/\d{3}/gi);
-        if (ribuan) {
-            const separator = sisa ? "." : "";
-            rupiah += separator + ribuan.join(".");
+
+        // ====== MODALS & ACTIONS (tetap sama, hanya minor perapihan) ======
+        function showDonate(id, title) {
+            $("#modalTitle").text(title);
+            $.get("{{ route('adm.program.show.donate') }}", {
+                "_token": "{{ csrf_token() }}",
+                id
+            }, function(html) {
+                $("#modalBody").html(html);
+                new bootstrap.Modal(document.getElementById('modal_show_donate')).show();
+            });
         }
-        rupiah = split[1] !== undefined ? rupiah + "," + split[1] : rupiah;
-        return prefix === undefined ? rupiah : (rupiah ? "" + rupiah : "");
-    }
 
-    // ====== SweetAlert (tanpa perubahan fungsional) ======
-    @if (session('success'))
-        Swal.fire({
-            title: 'Aksi: Berhasil',
-            icon: 'success',
-            text: "{{ session('success') }}",
-            position: 'bottom-end',
-            showConfirmButton: false,
-            timer: 7000,
-            timerProgressBar: true,
-            toast: true,
-            background: '#f8f9fa',
-            backdrop: false
-        }).then(() => {
-            if ($('#table-program').length) {
-                $('#table-program').DataTable().ajax.reload();
+        function showSummary(id, title) {
+            $("#modalTitleSummary").text(title);
+            $.get("{{ route('adm.program.show.summary') }}", {
+                "_token": "{{ csrf_token() }}",
+                id
+            }, function(html) {
+                $("#modalBodySummary").html(html);
+                new bootstrap.Modal(document.getElementById('modal_show_summary')).show();
+            });
+        }
+
+        function hideFunc(name) {
+            const el = document.querySelector(name);
+            const modal = bootstrap.Modal.getInstance(el);
+            modal?.hide();
+        }
+        $("#submit_spend").on("click", function() {
+            const payload = {
+                "_token": "{{ csrf_token() }}",
+                "id_program": $("#id_program").val(),
+                "title": $("#title").val(),
+                "date_time": $("#date_time").val(),
+                "nominal": $('#rupiah').val()
+            };
+            $.post("{{ route('adm.program.spend.submit') }}", payload, function(res) {
+                if (res === 'success') {
+                    table.ajax.reload(null, false);
+                    hideFunc('#modal_inp_spend');
+                    alert("Berhasil Disimpan");
+                }
+            });
+        });
+
+        function inpSpend(id, title) {
+            $("#modalTitleSpend").text(title);
+            $("#id_program").val(id);
+            table_spent.ajax.url("{{ route('adm.program.spend.show') . '/?id=' }}" + id).load();
+            new bootstrap.Modal(document.getElementById('modal_inp_spend')).show();
+        }
+
+        const table_spent = $('#table-spent').DataTable({
+            processing: true,
+            serverSide: true,
+            responsive: true,
+            autoWidth: false,
+            pageLength: 10,
+            order: [
+                [0, 'desc']
+            ],
+            ajax: "{{ route('adm.program.spend.show') . '/?id=1' }}",
+            columns: [{
+                    data: 'date',
+                    name: 'date'
+                },
+                {
+                    data: 'title',
+                    name: 'title'
+                },
+                {
+                    data: 'nominal',
+                    name: 'nominal'
+                },
+                {
+                    data: 'status',
+                    name: 'status'
+                },
+                {
+                    data: 'desc',
+                    name: 'desc'
+                },
+            ]
+        });
+
+        // ====== +11% ======
+        $("#check11percent").on("click", function() {
+            let val = $('#rupiah').val().replaceAll(".", "");
+            val = Number(val) || 0;
+            const eleven = Math.ceil(val * 11 / 100);
+            const res = $(this).is(':checked') ? val + eleven : Math.max(val - eleven, 0);
+            $('#rupiah').val(formatRupiah(String(res), ""));
+        });
+
+        // ====== Format Rupiah ======
+        const rupiah = document.getElementById("rupiah");
+        if (rupiah) {
+            rupiah.addEventListener("keyup", function() {
+                this.value = formatRupiah(this.value, "");
+            });
+        }
+
+        function formatRupiah(angka, prefix) {
+            const number_string = (angka || '').replace(/[^,\d]/g, "");
+            const split = number_string.split(",");
+            const sisa = split[0].length % 3;
+            let rupiah = split[0].substr(0, sisa);
+            const ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+            if (ribuan) {
+                const separator = sisa ? "." : "";
+                rupiah += separator + ribuan.join(".");
             }
-        });
-    @endif
+            rupiah = split[1] !== undefined ? rupiah + "," + split[1] : rupiah;
+            return prefix === undefined ? rupiah : (rupiah ? "" + rupiah : "");
+        }
 
-    @if (session('error'))
-        Swal.fire({
-            title: 'Aksi: Gagal',
-            icon: 'error',
-            text: "{{ session('error') }}",
-            position: 'bottom-end',
-            showConfirmButton: false,
-            timer: 5000,
-            timerProgressBar: true,
-            toast: true,
-            background: '#f8f9fa',
-            backdrop: false
-        });
-    @endif
-</script>
+        // ====== SweetAlert (tanpa perubahan fungsional) ======
+        @if (session('success'))
+            Swal.fire({
+                title: 'Aksi: Berhasil',
+                icon: 'success',
+                text: "{{ session('success') }}",
+                position: 'bottom-end',
+                showConfirmButton: false,
+                timer: 7000,
+                timerProgressBar: true,
+                toast: true,
+                background: '#f8f9fa',
+                backdrop: false
+            }).then(() => {
+                if ($('#table-program').length) {
+                    $('#table-program').DataTable().ajax.reload();
+                }
+            });
+        @endif
+
+        @if (session('error'))
+            Swal.fire({
+                title: 'Aksi: Gagal',
+                icon: 'error',
+                text: "{{ session('error') }}",
+                position: 'bottom-end',
+                showConfirmButton: false,
+                timer: 5000,
+                timerProgressBar: true,
+                toast: true,
+                background: '#f8f9fa',
+                backdrop: false
+            });
+        @endif
+    </script>
 @endsection
