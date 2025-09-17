@@ -868,7 +868,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                         $program = \App\Models\GrabProgram::where('grab_organization_id', $organization_id)->where('slug', $item->SLUG)->first();
 
                         if ($program === null) {
-                            $prog_url = 'https://raihmimpi.id/_next/data/gf2TnbYAL_Va85990GwEu/campaign/'.$item->SLUG.'.json?SLUG='.$item->SLUG;
+                            $prog_url = 'https://raihmimpi.id/_next/data/-w0CWr_8QgtGBYmQTqU9N/campaign/'.$item->SLUG.'.json?SLUG='.$item->SLUG;
 
                             $program_curl = curl_init();
                             curl_setopt($program_curl, CURLOPT_URL, $prog_url);
@@ -960,6 +960,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
 
                         if (!$org) {
                             $desc = isset($item->user->description) ? $this->removeEmoji($item->user->description) : '-';
+
                             $new_org = new GrabOrganization();
                             $new_org->user_id = $item->user->id;
                             $new_org->platform_id = $platform_id;
@@ -967,7 +968,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                             $new_org->avatar = $item->user->avatar;
                             $new_org->description = $desc;
 
-                            $new_org->is_affiliated = \App\Models\Organization::whereJsonContains('alias_names', $item->user->name)->where('name', $item->NAMA_LENGKAP)->exists() ? 1 : 0;
+                            $new_org->is_affiliated = \App\Models\Organization::whereJsonContains('alias_names', $item->user->name)->where('name', $item->user->name)->exists() ? 1 : 0;
 
                             $new_org->save();
 
@@ -1263,7 +1264,8 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                 curl_setopt($curl, CURLOPT_HTTPHEADER, [
                     'Accept: application/json',
                     'Referer: https://kitabisa.com/',
-                    'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    // 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                    'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36',
                     'X-ktbs-api-version: 1.0.0',
                     'X-ktbs-client-version: 1.0.0',
                     'X-ktbs-platform-name: pwa',
@@ -1284,10 +1286,12 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
 
                 $res = json_decode($response);
 
-                    return response()->json([
-                        'status' => 'astaga',
-                        'message' => $res,
-                    ]);
+                dd($res);
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $res,
+                ]);
                     //adasd
 
                 $count_inp_org = 0;
