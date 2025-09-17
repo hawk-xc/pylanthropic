@@ -332,49 +332,42 @@ class LeadsController extends Controller
             ])->orderBy('created_at', 'DESC')->get();
         });
 
-        if (isset($request->ada_wa)) {
-            if ($request->ada_wa == 1) {
-                $data = $data->whereNotNull('phone');
-            }
+        // Status filters
+        if ($request->ada_wa == 1) {
+            $data = $data->whereNotNull('phone');
         }
-
-        if (isset($request->ada_email)) {
-            if ($request->ada_email == 1) {
-                $data = $data->whereNotNull('email');
-            }
+        if ($request->ada_email == 1) {
+            $data = $data->whereNotNull('email');
         }
-
-        $order_column = $request->input('order.0.column');
-        $order_dir = $request->input('order.0.dir') ? $request->input('order.0.dir') : 'asc';
-
-        // Custom column search for 'informasi_program'
-        $columnSearch = $request->input('columns');
-        if (isset($columnSearch[3]['search']['value']) && is_numeric($columnSearch[3]['search']['value'])) {
-            $numSearch = (int) $columnSearch[3]['search']['value'];
-            $data = $data->filter(function ($item) use ($numSearch) {
-                return ($item->garap_count === $numSearch) || ($item->menarik_count === $numSearch);
-            });
+        if ($request->interest == 1) {
+            $data = $data->where('menarik_count', '>', 0);
         }
 
         $count_total = $data->count();
 
-        $search = $request->input('search.value');
+        // Global search
+        $search = $request->input('custom_search');
+        if (!empty($search)) {
+            $search_terms = array_filter(explode(' ', strtolower($search)));
 
-        $count_filter = $count_total;
-        if ($search != '') {
-            $data = $data->where(function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('address', 'like', '%' . $search . '%')
-                    ->orWhere('twitter', 'like', '%' . $search . '%')
-                    ->orWhere('instagram', 'like', '%' . $search . '%')
-                    ->orWhere('facebook', 'like', '%' . $search . '%')
-                    ->orWhere('youtube', 'like', '%' . $search . '%')
-                    ->orWhere('description', 'like', '%' . $search . '%')
-                    ->orWhere('email', 'like', '%' . $search . '%')
-                    ->orWhere('phone', 'like', '%' . $search . '%');
-            });
-            $count_filter = $data->count();
+            if (!empty($search_terms)) {
+                $data = $data->filter(function ($item) use ($search_terms) {
+                    foreach ($search_terms as $term) {
+                        $term_found = str_contains(strtolower($item->name ?? ''), $term) ||
+                                      str_contains(strtolower($item->address ?? ''), $term) ||
+                                      str_contains(strtolower($item->email ?? ''), $term) ||
+                                      str_contains(strtolower($item->phone ?? ''), $term);
+
+                        if (!$term_found) {
+                            return false;
+                        }
+                    }
+                    return true;
+                });
+            }
         }
+
+        $count_filter = $data->count();
 
         // Manual Sorting
         $order = $request->input('order');
@@ -401,9 +394,9 @@ class LeadsController extends Controller
         $pageSize = $request->length ? $request->length : 10;
         $start = $request->start ? $request->start : 0;
 
-        $data = $data->skip($start)->take($pageSize);
+        $dataForPage = $data->skip($start)->take($pageSize);
 
-        return Datatables::of($data)
+        return Datatables::of($dataForPage)
             ->with([
                 'recordsTotal' => $count_total,
                 'recordsFiltered' => $count_filter,
@@ -471,7 +464,7 @@ class LeadsController extends Controller
                 $menarikCount = $row->menarik_count ?? 0;
 
                 if ($garapCount == 0 && $menarikCount == 0) {
-                    return 'belum terdapat informasi';
+                    return 'belum ada potensi';
                 }
 
                 $garapBadge = '<span class="badge badge-sm badge-info">Garap: ' . $garapCount . '</span>';

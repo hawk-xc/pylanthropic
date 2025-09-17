@@ -9,7 +9,8 @@
 @section('css_plugins')
     <link href="{{ asset('admin/dataTables.bootstrap5.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
 @endsection
 
 
@@ -26,13 +27,57 @@
                     </nav>
                 </div>
                 <div class="col-7 fc-rtl">
-                    <button class="btn btn-outline-primary btn_filter" id="fil_interest"
-                        data-id="interest">Potensial</button>
-                    <button class="btn btn-outline-primary btn_filter" id="fil_wa" data-id="wa">Ada WA</button>
-                    <button class="btn btn-outline-primary btn_filter" id="fil_email" data-id="email">Ada Email</button>
-                    <button class="btn btn-outline-primary btn_filter" id="refresh_datatable">Refresh</button>
+                    <button class="btn btn-outline-primary leads-status-filter active" data-status-filter="">Semua</button>
+                    <button class="btn btn-outline-primary leads-status-filter"
+                        data-status-filter="interest">Potensial</button>
+                    <button class="btn btn-outline-primary leads-status-filter" data-status-filter="wa">Ada WA</button>
+                    <button class="btn btn-outline-primary leads-status-filter" data-status-filter="email">Ada
+                        Email</button>
+                    <button class="btn btn-outline-primary mr-1" id="refresh_datatable"><i class="fa fa-sync"></i>
+                        Refresh</button>
                     <a href="{{ route('adm.leads.org.add') }}" target="_blank" class="btn btn-outline-primary"><i
                             class="fa fa-plus mr-1"></i> Tambah</a>
+                </div>
+            </div>
+            <div class="divider"></div>
+            <div class="row">
+                <div class="col-12">
+                    <div class="row gx-3 align-items-center">
+                        <div class="col-auto"><span class="fw-bold">Filter :</span></div>
+                        <div class="col"><input type="text" id="name_filter" placeholder="Nama Lembaga"
+                                class="form-control form-control-sm"></div>
+                        <div class="col"><input type="text" id="contact_filter" placeholder="Kontak"
+                                class="form-control form-control-sm"></div>
+                        <div class="col"><input type="text" id="address_filter" placeholder="Alamat"
+                                class="form-control form-control-sm"></div>
+                        <div class="col-auto"><button class="btn btn-sm btn-primary" id="filter_search">Cari</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 mt-2">
+                    <div class="row gx-3 align-items-center">
+                        <div class="col-auto"><span class="fw-bold">Urutkan :</span></div>
+                        <div class="col">
+                            <select class="form-select form-select-sm" id="filter_sort">
+                                <option value="">-- Pilih --</option>
+                                <option value="informasi_program">Potensi</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <div class="form-check form-check-inline mb-0">
+                                <input class="form-check-input" type="radio" name="dir" id="dir_asc"
+                                    value="asc">
+                                <label class="form-check-label" for="dir_asc">Dari Terkecil</label>
+                            </div>
+                            <div class="form-check form-check-inline mb-0">
+                                <input class="form-check-input" type="radio" name="dir" id="dir_desc"
+                                    value="desc" checked>
+                                <label class="form-check-label" for="dir_desc">Dari Terbesar</label>
+                            </div>
+                        </div>
+                        <div class="col-auto"><button class="btn btn-sm btn-primary"
+                                id="filter_sort_btn">Urutkan</button></div>
+                    </div>
                 </div>
             </div>
             <div class="divider"></div>
@@ -42,7 +87,7 @@
                         <th>Nama Lembaga</th>
                         <th>Kontak</th>
                         <th>Alamat</th>
-                        <th>Informasi Program</th> 
+                        <th>Potensi</th>
                         <th>Sosial Media</th>
                         <th>Aksi</th>
                     </tr>
@@ -52,10 +97,6 @@
             </table>
         </div>
     </div>
-
-    <input type="hidden" id="interest_val" value="0">
-    <input type="hidden" id="wa_val" value="0">
-    <input type="hidden" id="email_val" value="0">
 @endsection
 
 @section('content_modal')
@@ -69,8 +110,10 @@
                     @method('post')
                     <input type="text" class="invisible" name="id" id="organization_id" style="display:none;" />
                     <div class="modal-header pt-2 pb-2">
-                        <h1 class="modal-title fs-5" id="modalTitle">Update No Telp <span id="modal-data-name"></span></h1>
-                        <button type="button" class="btn-close pt-4" data-bs-dismiss="modal" aria-label="Close"></button>
+                        <h1 class="modal-title fs-5" id="modalTitle">Update No Telp <span id="modal-data-name"></span>
+                        </h1>
+                        <button type="button" class="btn-close pt-4" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
                     </div>
                     <div class="modal-body text-start pt-4">
                         <div class="mb-3">
@@ -111,17 +154,20 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="crm_leads" class="form-label">Leads</label>
-                                <select class="form-control" name="lead_id" id="crm_leads" required style="width: 100%;"></select>
+                                <select class="form-control" name="lead_id" id="crm_leads" required
+                                    style="width: 100%;"></select>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="crm_pipeline" class="form-label">Pipeline</label>
-                                <select class="form-control" name="pipeline" id="crm_pipeline" required style="width: 100%;" disabled></select>
+                                <select class="form-control" name="pipeline" id="crm_pipeline" required
+                                    style="width: 100%;" disabled></select>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="crm_assign_to" class="form-label">Pilih PIC</label>
-                                <select class="form-control" name="assign_to" id="crm_assign_to" required style="width: 100%;"></select>
+                                <select class="form-control" name="assign_to" id="crm_assign_to" required
+                                    style="width: 100%;"></select>
                             </div>
                         </div>
                         <div class="mb-3">
@@ -129,7 +175,8 @@
                             <textarea class="form-control" id="crm_description" name="description" rows="4"></textarea>
                         </div>
                         <div class="ml-3 form-check form-switch">
-                            <input class="form-check-input" type="checkbox" name="is_potential" id="crm_is_potential" value="1" checked>
+                            <input class="form-check-input" type="checkbox" name="is_potential" id="crm_is_potential"
+                                value="1" checked>
                             <label class="form-check-label" for="crm_is_potential">Status Potensial</label>
                         </div>
                     </div>
@@ -233,22 +280,44 @@
 
 @section('js_inline')
     <script type="text/javascript">
-        $.fn.DataTable.ext.pager.numbers_length = 15;
+        var SORT_FIELD = 'informasi_program';
+        var SORT_DIR = 'desc';
+
         var table = $('#table-organization_list').DataTable({
-            orderCellsTop: true,
-            fixedHeader: true,
             processing: true,
             serverSide: true,
             responsive: true,
-            pageLength: 25,
+            searching: false,
             order: [],
+            dom: 'lrtip',
+            pageLength: 25,
             language: {
                 paginate: {
                     previous: "<",
                     next: ">"
                 }
             },
-            ajax: "{{ route('adm.leads.org.datatables') }}",
+            ajax: {
+                url: "{{ route('adm.leads.org.datatables') }}",
+                data: function(d) {
+                    var activeFilter = $('.leads-status-filter.active').data('status-filter');
+                    if (activeFilter === 'wa') {
+                        d.ada_wa = 1;
+                    }
+                    if (activeFilter === 'email') {
+                        d.ada_email = 1;
+                    }
+                    if (activeFilter === 'interest') {
+                        d.interest = 1;
+                    }
+
+                    // Add custom search parameter
+                    var name_search = $('#name_filter').val();
+                    var contact_search = $('#contact_filter').val();
+                    var address_search = $('#address_filter').val();
+                    d.custom_search = [name_search, contact_search, address_search].filter(Boolean).join(' ').trim();
+                }
+            },
             columns: [{
                     data: 'name',
                     name: 'name'
@@ -261,11 +330,9 @@
                     data: 'address',
                     name: 'address'
                 },
-                {
+                { 
                     data: 'informasi_program',
-                    name: 'informasi_program',
-                    orderable: true,
-                    searchable: true
+                    name: 'informasi_program'
                 },
                 {
                     data: 'socmed',
@@ -276,90 +343,37 @@
                     name: 'action',
                     orderable: false,
                     searchable: false
-                },
+                }
             ]
         });
-        $('#table-organization_list thead tr').clone(true).appendTo('#table-organization_list thead');
-        $('#table-organization_list tr:eq(1) th').each(function(i) {
-            var title = $(this).text();
-            if (!table.settings()[0].aoColumns[i].bSearchable) {
-                $(this).html('');
-                return;
-            }
 
-            var input = '<input type="text" class="form-control form-control-sm" placeholder="Search ' + title + '" />';
-            if (i === 3) { // "Informasi Program" column index
-                input = '<input type="number" class="form-control form-control-sm" placeholder="Search ' + title + '" />';
-            }
-            
-            $(this).html(input);
-
-            $('input', this).on('keyup change', function() {
-                if (table.column(i).search() !== this.value) {
-                    table
-                        .column(i)
-                        .search(this.value)
-                        .draw();
-                }
-            });
+        // Refresh button
+        $("#refresh_datatable").on("click", function() {
+            $('#name_filter, #contact_filter, #address_filter').val('');
+            table.search('').order([]).draw();
         });
 
-        $("#refresh_datatable").on("click", function() {
+        // Status filter buttons
+        $('.leads-status-filter').on('click', function() {
+            $('.leads-status-filter').removeClass('active');
+            $(this).addClass('active');
             table.ajax.reload();
         });
 
-        function donate_table() {
-            let interest_ar = $('#interest_val').val();
-            let wa_ar = $('#wa_val').val();
-            let email_ar = $('#email_val').val();
+        // Search button
+        $('#filter_search').on('click', function() {
+            table.draw();
+        });
 
-            table.ajax.url("{{ route('adm.leads.org.datatables') }}/?interest=" + interest_ar + "&ada_wa=" + wa_ar +
-                "&ada_email=" + email_ar).load();
-        }
+        // Sort button
+        $('#filter_sort_btn').on('click', function() {
+            var picked = $('#filter_sort').val();
+            var dir = $('input[name="dir"]:checked').val();
 
-        // Filter
-        $(".btn_filter").on("click", function() {
-            let fil_interest = $('#interest_val').val();
-            let fil_wa = $('#wa_val').val();
-            let fil_email = $('#email_val').val();
-            var fil_btn = $(this).attr("data-id");
-
-            if (fil_btn == 'interest') {
-                if (fil_interest == 0) {
-                    $('#fil_interest').removeClass('btn-outline-primary');
-                    $('#fil_interest').addClass('btn-primary');
-                    $('#interest_val').val(1);
-                    donate_table();
-                } else {
-                    $('#fil_interest').addClass('btn-outline-primary');
-                    $('#fil_interest').removeClass('btn-primary');
-                    $('#interest_val').val(0);
-                    donate_table();
-                }
-            } else if (fil_btn == 'wa') {
-                if (fil_wa == 0) {
-                    $('#fil_wa').removeClass('btn-outline-primary');
-                    $('#fil_wa').addClass('btn-primary');
-                    $('#wa_val').val(1);
-                    donate_table();
-                } else {
-                    $('#fil_wa').addClass('btn-outline-primary');
-                    $('#fil_wa').removeClass('btn-primary');
-                    $('#wa_val').val(0);
-                    donate_table();
-                }
-            } else if (fil_btn == 'email') {
-                if (fil_email == 0) {
-                    $('#fil_email').removeClass('btn-outline-primary');
-                    $('#fil_email').addClass('btn-primary');
-                    $('#email_val').val(1);
-                    donate_table();
-                } else {
-                    $('#fil_email').addClass('btn-outline-primary');
-                    $('#fil_email').removeClass('btn-primary');
-                    $('#email_val').val(0);
-                    donate_table();
-                }
+            if (picked === 'informasi_program') {
+                table.order([3, dir]).draw();
+            } else {
+                table.order([]).draw(); // Reset order
             }
         });
 
@@ -401,53 +415,36 @@
             $('#update-phone').submit(function(e) {
                 e.preventDefault();
 
-                // Disable buttons and change text
-                const submitBtn = $(this).find('button[type="submit"]');
-                const closeBtn = $(this).find('button[data-bs-dismiss="modal"]');
+                var submitBtn = $(this).find('button[type="submit"]');
+                var closeBtn = $(this).find('button[data-bs-dismiss="modal"]');
 
                 submitBtn.prop('disabled', true);
                 closeBtn.prop('disabled', true);
                 submitBtn.text('Tunggu bentar ya...');
 
-                // Get form data
-                const formData = $(this).serialize();
-                const url = $(this).attr('action');
+                var formData = $(this).serialize();
+                var url = $(this).attr('action');
 
-                // Send AJAX request
                 $.ajax({
                     url: url,
                     type: 'POST',
                     data: formData,
                     success: function(response) {
-                        // Show success toast
                         callToast('success', response.message);
-
-                        // Hide modal
                         $('#modal_updatePhone').modal('hide');
-
-                        // Reset form
                         $('#update-phone')[0].reset();
-
-                        // Reset buttons state
                         submitBtn.prop('disabled', false);
                         closeBtn.prop('disabled', false);
                         submitBtn.text('Update');
-
-                        // Reload datatable
                         table.ajax.reload(null, false);
                     },
                     error: function(xhr) {
-                        // Handle error if needed
                         console.error(xhr.responseText);
-
-                        // Show error toast
-                        let errorMessage = 'Terjadi kesalahan saat memproses data';
+                        var errorMessage = 'Terjadi kesalahan saat memproses data';
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMessage = xhr.responseJSON.message;
                         }
                         callToast('error', errorMessage);
-
-                        // Reset buttons state even on error
                         submitBtn.prop('disabled', false);
                         closeBtn.prop('disabled', false);
                         submitBtn.text('Update');
@@ -456,16 +453,14 @@
             });
 
             $('#modal_updatePhone').on('hidden.bs.modal', function() {
-                const submitBtn = $(this).find('button[type="submit"]');
-                const closeBtn = $(this).find('button[data-bs-dismiss="modal"]');
-
+                var submitBtn = $(this).find('button[type="submit"]');
+                var closeBtn = $(this).find('button[data-bs-dismiss="modal"]');
                 submitBtn.prop('disabled', false);
                 closeBtn.prop('disabled', false);
                 submitBtn.text('Update');
                 $('#update-phone')[0].reset();
             });
 
-            // Add to CRM Modal Logic
             var addToCrmModal = new bootstrap.Modal(document.getElementById('modal_add_to_crm'), {
                 keyboard: false
             });
@@ -473,15 +468,14 @@
             $('#table-organization_list').on('click', '.open-add-to-crm-modal', function() {
                 var orgId = $(this).data('id');
                 var orgName = $(this).data('name');
-
                 $('#crm_grab_organization_id').val(orgId);
                 $('#crm_name').val(orgName + ' Prospect');
                 $('#addToCrmModalLabel').text('Tambah Prospek untuk "' + orgName + '"');
-
                 addToCrmModal.show();
             });
 
-            function initializeSelect2(element, url, placeholder, textMapping, getDynamicData = null) {
+            function initializeSelect2(element, url, placeholder, textMapping, getDynamicData) {
+                if (getDynamicData === void 0) { getDynamicData = null; }
                 $(element).select2({
                     theme: 'bootstrap-5',
                     dropdownParent: $('#modal_add_to_crm'),
@@ -514,27 +508,29 @@
                 });
             }
 
-            initializeSelect2('#crm_leads', "{{ route('adm.crm-leads.select2.all') }}", 'Pilih Leads', function(item) {
-                return { id: item.id, text: item.name };
-            });
+            initializeSelect2('#crm_leads', "{{ route('adm.crm-leads.select2.all') }}", 'Pilih Leads',
+                function(item) {
+                    return { id: item.id, text: item.name };
+                });
 
-            initializeSelect2('#crm_pipeline', "{{ route('adm.crm-pipeline.select2.all') }}", 'Pilih Pipeline', function(item) {
-                return { id: item.id, text: item.name };
-            }, function() {
-                return { lead_id: $('#crm_leads').val() };
-            });
+            initializeSelect2('#crm_pipeline', "{{ route('adm.crm-pipeline.select2.all') }}",
+                'Pilih Pipeline',
+                function(item) {
+                    return { id: item.id, text: item.name };
+                },
+                function() {
+                    return { lead_id: $('#crm_leads').val() };
+                });
 
-            initializeSelect2('#crm_assign_to', "{{ route('adm.users.select2.all') }}", 'Pilih PIC', function(item) {
-                return { id: item.id, text: item.name };
-            });
+            initializeSelect2('#crm_assign_to', "{{ route('adm.users.select2.all') }}", 'Pilih PIC',
+                function(item) {
+                    return { id: item.id, text: item.name };
+                });
 
             $('#crm_leads').on('change', function() {
                 var leadId = $(this).val();
                 var $pipelineSelect = $('#crm_pipeline');
-
-                // Reset pipeline selection
                 $pipelineSelect.val(null).trigger('change');
-
                 if (leadId) {
                     $pipelineSelect.prop('disabled', false);
                 } else {
@@ -584,7 +580,7 @@
                 },
                 background: status === 'success' ? '#d1fae5' : '#fee2e2',
                 color: status === 'success' ? '#065f46' : '#b91c1c',
-                didOpen: (toast) => {
+                didOpen: function(toast) {
                     toast.addEventListener('mouseenter', Swal.stopTimer)
                     toast.addEventListener('mouseleave', Swal.resumeTimer)
                 }
@@ -592,3 +588,4 @@
         }
     </script>
 @endsection
+
