@@ -239,60 +239,57 @@
         }
 
         $(document).ready(function() {
-            // Konfigurasi modal agar tidak tertutup saat klik di luar
-            $('#modal_grabdo').modal({
-                backdrop: 'static',
-                keyboard: false
-            });
-
             $('#grabdo-platform').submit(function(e) {
                 e.preventDefault();
 
-                // Disable buttons and change text
-                const submitBtn = $(this).find('button[type="submit"]');
-                const closeBtn = $(this).find('button[data-bs-dismiss="modal"]');
+                $('#modal_grabdo').modal('hide');
 
-                submitBtn.prop('disabled', true);
-                closeBtn.prop('disabled', true);
-                submitBtn.text('Tunggu bentar ya...');
+                Swal.fire({
+                    title: 'Sedang mengambil data...',
+                    html: 'Mohon tunggu, proses ini mungkin memakan waktu beberapa saat. <br><br><b>Platform:</b> ' + $('#modal-data-name').text() + '<br><b>Halaman:</b> ' + $('#page_number').val() + '<br><b>Data per halaman:</b> ' + $('#data_count').val(),
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
 
-                // Get form data
                 const formData = $(this).serialize();
                 const url = $(this).attr('action');
 
-                // Send AJAX request
                 $.ajax({
                     url: url,
                     type: 'POST',
                     data: formData,
                     success: function(response) {
-                        callToast(response.status, response.message);
-                        // showToast('success', 'Sukses', 'Data berhasil diproses');
-
-                        // Close modal when success
-                        $('#modal_grabdo').modal('hide');
-
-                        // Reset buttons state (optional, if modal will be shown again)
-                        submitBtn.prop('disabled', false);
-                        closeBtn.prop('disabled', false);
-                        submitBtn.text('Grab');
+                        if (response.status === 'success') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Grab Data Selesai',
+                                html: 'Berhasil mengambil data dari platform.<br><br>' +
+                                    '<b>Organisasi Baru:</b> ' + (response.data.organisasi_baru || 0) + '<br>' +
+                                    '<b>Program Baru:</b> ' + (response.data.program_baru || 0),
+                                confirmButtonText: 'Luar Biasa!'
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Oops...',
+                                text: response.message || 'Terjadi kesalahan saat mengambil data.',
+                            });
+                        }
                         table.ajax.reload(null, false);
                     },
                     error: function(xhr) {
-                        // Handle error if needed
                         console.error(xhr.responseText);
-
-                        // Show error toast
-                        let errorMessage = 'Terjadi kesalahan saat memproses data';
+                        let errorMessage = 'Terjadi kesalahan saat memproses data.';
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMessage = xhr.responseJSON.message;
                         }
-                        showToast('danger', 'Error', errorMessage);
-
-                        // Reset buttons state even on error
-                        submitBtn.prop('disabled', false);
-                        closeBtn.prop('disabled', false);
-                        submitBtn.text('Grab');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: errorMessage,
+                        });
                     }
                 });
             });
