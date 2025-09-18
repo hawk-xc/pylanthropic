@@ -225,6 +225,8 @@ Route::group([
         Route::post('/list-leads-org-store', [Admin\LeadsController::class, 'orgStore'])->name('leads.org.store');
         Route::post('/grapdo-platform', [Admin\LeadsController::class, 'grabdoPlatform'])->name('leads.grabdo.platform-data');
         Route::post('/update-organization-phone', [Admin\LeadsController::class, 'updateOrgPhone'])->name('leads.org.phone.update');
+        Route::get('/leads/grabdo-platform/{id}/programs', [Admin\LeadsController::class, 'grabdoPlatformPrograms'])->name('leads.grabdo.platform-programs');
+        Route::get('/leads/grabdo-platform/{id}/programs/datatables', [Admin\LeadsController::class, 'grabdoPlatformProgramsDatatables'])->name('leads.grabdo.platform-programs.datatables');
 
         // LEADS CRM
         Route::get('/get-leads-info', [Admin\LeadsController::class, 'getLeadsInfo'])->name('get.leads.info');

@@ -1408,7 +1408,6 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
         }
     }
 
-
     public function grabdoPlatformLeads()
     {
         return view('admin.leads.grabdo_platform.index');
@@ -1433,7 +1432,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
             })
             ->addColumn('action', function ($row) {
                 if ($row->is_active) {
-                    $btn_edit = '<a href="" target="_blank" class="badge badge-sm badge-primary"><i class="fa fa-list"></i></a>';
+                    $btn_edit = '<a href="' . route('adm.leads.grabdo.platform-programs', $row->id) . '" target="_blank" class="badge badge-sm badge-primary"><i class="fa fa-list"></i></a>';
                     $btn_grab = '<a style="cursor: pointer;" onClick="openDonaturLoyalModal(`' . $row->name . '`)" class="badge badge-sm badge-success"><i class="fa fa-database"></i></button>';
 
                     return $btn_edit . ' ' . $btn_grab;
@@ -1443,6 +1442,137 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
             })
             ->addIndexColumn()
             ->rawColumns(['status', 'action'])
+            ->make(true);
+    }
+
+    public function grabdoPlatformPrograms(Request $request, $id)
+    {
+        $platform = \App\Models\LeadsPlatform::findOrFail($id);
+        return view('admin.leads.grabdo_platform.programs', compact('platform'));
+    }
+
+    public function grabdoPlatformProgramsDatatables(Request $request, $id)
+    {
+        $data = \App\Models\GrabProgram::with(['grab_organization', 'leads_platform'])
+            ->where('platform_id', $id)
+            ->whereNotNull('user_id')
+            ->orderBy('created_at', 'DESC');
+
+        if (isset($request->interest)) {
+            if ($request->interest == 1) {
+                $data = $data->where('grab_program.is_interest', 1);
+            }
+        }
+
+        if (isset($request->taken)) {
+            if ($request->taken == 1) {
+                $data = $data->where('grab_program.is_taken', 1);
+            }
+        }
+
+        if (isset($request->jt20_ar)) {
+            if ($request->jt20_ar == 1) {
+                $data = $data->where('grab_program.collect_amount', '<=', 20000000);
+            }
+        }
+
+        if (isset($request->jt50_ar)) {
+            if ($request->jt50_ar == 1) {
+                $data = $data->where('grab_program.collect_amount', '>=', 50000000);
+            }
+        }
+
+        $count_total = $data->count();
+
+        $search = $request->input('search.value');
+
+        $count_filter = $count_total;
+        if ($search != '') {
+            $data = $data->where(function ($q) use ($search) {
+                $q->where('grab_program.name', 'like', '%' . $search . '%')
+                    ->orWhere('slug', 'like', '%' . $search . '%')
+                    ->orWhere('headline', 'like', '%' . $search . '%')
+                    ->orWhere('status', 'like', '%' . $search . '%')
+                    ->orWhere('target_status', 'like', '%' . $search . '%')
+                    ->orWhere('target_type', 'like', '%' . $search . '%')
+                    ->orWhere('target_at', 'like', '%' . $search . '%')
+                    ->orWhere('target_amount', 'like', '%' . $search . '%');
+            });
+            $count_filter = $data->count();
+        }
+
+        $pageSize = $request->length ? $request->length : 10;
+        $start = $request->start ? $request->start : 0;
+
+        $data->skip($start)->take($pageSize);
+
+        $data = $data->get();
+
+        return Datatables::of($data)
+            ->with([
+                'recordsTotal' => $count_total,
+                'recordsFiltered' => $count_filter,
+            ])
+            ->setOffset($start)
+            ->addIndexColumn()
+            ->addColumn('name', function ($row) {
+                return '<a href="' . $row->permalink . '" target="_blank">' . $row->name . '</a>';
+            })
+            ->addColumn('images', function ($row) {
+                return '<img src="' . $row->image_url . '" style="width:280px; height:auto;">';
+            })
+            ->addColumn('nominal', function ($row) {
+                $target = $row->target_type == 'unlimited' && $row->target_amount == 0 ? 'Unlimited' : number_format($row->target_amount);
+                $collect = number_format($row->collect_amount);
+                $sc = 'style="cursor:pointer"';
+                $btn_edit = '<a href="' . route('adm.leads.org.edit', $row->user_id) . '" target="_blank" class="badge badge-sm badge-warning"><i class="fa fa-edit"></i></a>';
+
+                $lembaga = GrabOrganization::where('user_id', $row->user_id)->orWhere('id', $row->user_id)->first();
+
+                if (isset($lembaga->name)) {
+                    $org = '<a href="#" onclick="detailOrg(' . $row->user_id . ')">' . $lembaga->name . '</a>';
+                    $wa_param = "'" . $row->user_id . "','" . str_replace("'", '', $lembaga->name) . "'";
+                    $wa = 'onclick="firstChat(' . $wa_param . ')"';
+
+                    $i_mail = '<i class="fa fa-envelope"></i>';
+                    $i_telp = '<i class="fa fa-phone"></i>';
+                    $i_fb = 'FB';
+                    $i_tw = 'TW';
+                    $i_ig = 'IG';
+                    $i_yt = 'YT';
+
+                    $mail = is_null($lembaga->email) || $lembaga->email == '' ? '<span class="badge badge-sm badge-secondary">' . $i_mail . '</span>' : '<span class="badge badge-sm badge-success">' . $lembaga->email . '</span>';
+                    $fb = is_null($lembaga->facebook) || $lembaga->facebook == '' ? '<span class="badge badge-sm badge-secondary">' . $i_fb . '</span>' : '<a href="' . $lembaga->facebook . '" target="_blank" class="badge badge-sm badge-success">' . $i_fb . '</a>';
+                    $tw = is_null($lembaga->twitter) || $lembaga->twitter == '' ? '<span class="badge badge-sm badge-secondary">' . $i_tw . '</span>' : '<a href="' . $lembaga->twitter . '" target="_blank" class="badge badge-sm badge-success">' . $i_tw . '</a>';
+                    $ig = is_null($lembaga->instagram) || $lembaga->instagram == '' ? '<span class="badge badge-sm badge-secondary">' . $i_ig . '</span>' : '<a href="' . $lembaga->instagram . '" target="_blank" class="badge badge-sm badge-success">' . $i_ig . '</a>';
+                    $yt = is_null($lembaga->youtube) || $lembaga->youtube == '' ? '<span class="badge badge-sm badge-secondary">' . $i_yt . '</span>' : '<a href="' . $lembaga->youtube . '" target="_blank" class="badge badge-sm badge-success">' . $i_yt . '</a>';
+                    $telp = is_null($lembaga->phone) || $lembaga->phone == '' ? '<span class="badge badge-sm badge-secondary">' . $i_telp . '</span>' : '<span class="badge badge-sm badge-success" ' . $wa . ' ' . $sc . '>' . $lembaga->phone . '</span>';
+                    $last_wa = '<span class="badge badge-sm badge-warning">-</span>';
+                    $platform = '<span class="badge badge-sm badge-light">' . ($lembaga->platform ?? '-') . '</span>';
+
+                    return $org . '<br>' . $telp . ' ' . $last_wa . '<br>' . $mail . ' ' . $fb . ' ' . $tw . ' ' . $ig . ' ' . $yt . ' ' . $btn_edit . '<br>' . $target . '<br>' . $collect . '<br>' . $row->target_status . '<br>' . $platform;
+                } else {
+                    return 'Lembaga Tidak Ditemukan ' . $btn_edit . '<br>' . $target . '<br>' . $collect . '<br>' . $row->target_status;
+                }
+            })
+            ->addColumn('platform', function ($row) {
+                return $row->leads_platform ? $row->leads_platform->name : '-';
+            })
+            ->addColumn('date', function ($row) {
+                $sc = 'style="cursor:pointer"';
+                $start_date = '<i class="fa fa-play-circle"></i> ' . $row->program_created_at;
+                $end_date = is_null($row->target_at) && is_null($row->target_status) ? 'Unlimited' : date('Y-m-d', strtotime($row->target_at));
+                $end_date = '<i class="fa fa-stop-circle"></i> ' . $end_date;
+                $created = '<i class="fa fa-pencil-alt"></i> ' . date('Y-m-d', strtotime($row->created_at));
+
+                $interest = $row->is_interest == 1 ? '<span id="btninterest_' . $row->id . '"><span class="badge badge-sm badge-success" ' . $sc . ' onclick="setInterest(' . $row->id . ', 0)">Menarik</span></span>' : '<span id="btninterest_' . $row->id . '"><span class="badge badge-sm badge-info" ' . $sc . ' onclick="setInterest(' . $row->id . ',1)">Menarik?</span></span>';
+                $taken = $row->is_taken == 1 ? '<span id="btntaken_' . $row->id . '"><span class="badge badge-sm badge-success" ' . $sc . ' onclick="setTaken(' . $row->id . ', 0)">Tergarap</span></span>' : '<span id="btntaken_' . $row->id . '"><span class="badge badge-sm badge-info" ' . $sc . ' onclick="setTaken(' . $row->id . ', 1)">Garap?</span></span>';
+                return $start_date . '<br>' . $end_date . '<br>' . $interest . '<br>' . $taken . '<br>' . $created;
+            })
+            ->addColumn('headline', function ($row) {
+                return $row->headline ?? '-';
+            })
+            ->rawColumns(['name', 'images', 'nominal', 'date', 'headline'])
             ->make(true);
     }
 
