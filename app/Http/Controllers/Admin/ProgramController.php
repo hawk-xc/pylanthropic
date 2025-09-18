@@ -303,6 +303,8 @@ class ProgramController extends Controller
                 $data_categories->save();
             }
 
+            Cache::forget('program_public');
+
             return redirect(route('adm.program.index'))->with('success', 'Berhasil menambahkan program baru');
         } catch (Exception $e) {
             return redirect()
@@ -486,6 +488,8 @@ class ProgramController extends Controller
             $data->updated_by = Auth::user()->id;
             $data->updated_at = now();
             $data->save();
+
+            Cache::forget('program_public');
 
             return redirect(route('adm.program.index'))->with('success', 'Berhasil mengubah program');
         } catch (\Exception $e) {

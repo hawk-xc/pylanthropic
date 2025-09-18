@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Banner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\ImageManagerStatic as Image;
@@ -174,6 +175,8 @@ class BannerController extends Controller
                 'expire_date' => $request->boolean('is_forever') ? null : $request->expire_date,
             ]);
 
+            Cache::forget('banner_public');
+
             return redirect()
                 ->route('adm.banner.index')
                 ->with('message', ['type' => 'success', 'text' => 'Data berhasil ditambahkan.']);
@@ -278,6 +281,8 @@ class BannerController extends Controller
                 'expire_date' => $request->boolean('is_forever') ? null : $request->expire_date,
             ]);
 
+            Cache::forget('banner_public');
+
             return redirect()
                 ->route('adm.banner.index')
                 ->with('message', ['type' => 'success', 'text' => 'Data berhasil diupdate.']);
@@ -300,6 +305,7 @@ class BannerController extends Controller
                 Storage::disk('public_uploads')->delete($banner->image);
             }
             $banner->delete();
+            Cache::forget('banner_public');
             return redirect()
                 ->route('adm.banner.index')
                 ->with('message', ['type' => 'success', 'text' => 'Banner berhasil dihapus.']);
@@ -326,6 +332,7 @@ class BannerController extends Controller
             }
 
             $banner->update(['is_publish' => $newStatus]);
+            Cache::forget('banner_public');
             return response()->json(['success' => true, 'message' => 'Status berhasil diubah.']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Gagal mengubah status.'], 500);
