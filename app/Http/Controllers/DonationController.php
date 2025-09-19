@@ -13,14 +13,12 @@ use App\Http\Controllers\WaBlastController;
 
 class DonationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        
-    }
+    protected $rwa_token;
 
+    public function __construct()
+    {
+        $this->rwa_token = \App\Models\TokenConfig::first()->token ?? env('RWA_TOKEN');
+    }
 
     /**
      * Auto FU Donasi untuk pembayaran gopay, karena biasa gak lebih dari 3 menit sudah terbayar
@@ -256,7 +254,7 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
             curl_setopt($curl, CURLOPT_TIMEOUT,30);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, array(
-                'token'   => env('TOKEN_RWA'),
+                'token'   => $this->rwa_token,
                 'number'  => $telp
             ));
             $response = curl_exec($curl);
@@ -327,7 +325,7 @@ Kepedulian kita masih terus dinantikan, oleh mereka yang membutuhkan.';
             curl_setopt($curl, CURLOPT_TIMEOUT,30);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, array(
-                'token'   => env('TOKEN_RWA'),
+                'token'   => $this->rwa_token,
                 'number'  => $telp,
                 'message' => $chat,
                 'date'    => date('Y-m-d'),
@@ -348,7 +346,7 @@ Kepedulian kita masih terus dinantikan, oleh mereka yang membutuhkan.';
             \App\Models\Chat::create([
                 'no_telp'        => $telp,
                 'text'           => $chat,
-                'token'          => env('TOKEN_RWA'),
+                'token'          => $this->rwa_token,
                 'vendor'         => 'RuangWA',
                 'url'            => 'https://app.ruangwa.id/api/send_message',
                 'type'           => 'repeat_donate',
@@ -409,7 +407,7 @@ Terimakash';
             curl_setopt($curl, CURLOPT_TIMEOUT,30);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, array(
-                'token'   => env('TOKEN_RWA'),
+                'token'   => $this->rwa_token,
                 'number'  => $telp,
                 'message' => $chat,
                 'date'    => date('Y-m-d'),
@@ -430,7 +428,7 @@ Terimakash';
             \App\Models\Chat::create([
                 'no_telp'        => $telp,
                 'text'           => $chat,
-                'token'          => env('TOKEN_RWA'),
+                'token'          => $this->rwa_token,
                 'vendor'         => 'RuangWA',
                 'url'            => 'https://app.ruangwa.id/api/send_message',
                 'type'           => 'info',
@@ -501,7 +499,7 @@ https://bantubersama.com/bantupalestina';
             curl_setopt($curl, CURLOPT_TIMEOUT,30);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, array(
-                'token'   => env('TOKEN_RWA'),
+                'token'   => $this->rwa_token,
                 'number'  => $telp,
                 'message' => $chat,
                 'date'    => date('Y-m-d'),
@@ -524,7 +522,7 @@ https://bantubersama.com/bantupalestina';
             \App\Models\Chat::create([
                 'no_telp'        => $telp,
                 'text'           => $chat,
-                'token'          => env('TOKEN_RWA'),
+                'token'          => $this->rwa_token,
                 'vendor'         => 'RuangWA',
                 'url'            => 'https://app.ruangwa.id/api/send_message',
                 'type'           => 'info',
@@ -605,7 +603,7 @@ Jazakumullahu khairan, semoga berkah untuk kita semua. Aamiin✨';
             curl_setopt($curl, CURLOPT_TIMEOUT,30);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, array(
-                'token'   => env('TOKEN_RWA'),
+                'token'   => $this->rwa_token,
                 'number'  => $telp,
                 'message' => $chat,
                 'date'    => date('Y-m-d'),
@@ -628,7 +626,7 @@ Jazakumullahu khairan, semoga berkah untuk kita semua. Aamiin✨';
             \App\Models\Chat::create([
                 'no_telp'        => $telp,
                 'text'           => $this->removeEmoji($chat),
-                'token'          => env('TOKEN_RWA'),
+                'token'          => $this->rwa_token,
                 'vendor'         => 'RuangWA',
                 'url'            => 'https://app.ruangwa.id/api/send_message',
                 'type'           => 'info',

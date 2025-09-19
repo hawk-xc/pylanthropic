@@ -123,11 +123,16 @@ Route::group([
         Route::get('/program-in-detail-category-datatables', [Admin\ProgramCategoryController::class, 'datatableProgramCategoryDetail'])->name('program-in-detail-category.datatables');
         // Leads Platform
         Route::get('/leads-platform-datatables', [Admin\LeadsController::class, 'getLeadsPlatformDatatable'])->name('leads-platform.datatables');
-        
         // Banner
         Route::get('/banner-datatables', [Admin\BannerController::class, 'bannerDatatables'])->name('banner.datatables');
+        // Token
+        Route::get('/token-config-datatables', [Admin\TokenConfigController::class, 'tokenDatatables'])->name('token-config.datatables');
+        Route::put('/token-config/{id}', [Admin\TokenConfigController::class, 'update'])->name('token-config.update');
+        Route::get('/token-config/logs/{id}', [Admin\TokenConfigController::class, 'logs'])->name('token-config.logs');
+        
+        // Banner
         Route::post('/banner-change-status', [Admin\BannerController::class, 'changeStatus'])->name('banner.change-status');
-
+        
         // PROGRAM
         Route::get('/program-show-donate', [Admin\ProgramController::class, 'showDonate'])->name('program.show.donate');
         Route::get('/program-show-summary', [Admin\ProgramController::class, 'showSummary'])->name('program.show.summary');
@@ -307,7 +312,9 @@ Route::group([
             'crm-prospect-activity' => Admin\Pipeline\CRMProspectActivityController::class,
             'crm-prospect-logs' => Admin\Pipeline\CRMProspectLogsController::class,
             // Banner
-            'banner'            => Admin\BannerController::class
+            'banner'            => Admin\BannerController::class,
+            // Token Configuration
+            'token-config'      => Admin\TokenConfigController::class
         ]);
     });
 });

@@ -18,6 +18,13 @@ use Illuminate\Support\Facades\Http;
 
 class DonateController extends Controller
 {
+    protected $rwa_token;
+
+    public function __construct()
+    {
+        $this->rwa_token = \App\Models\TokenConfig::first()->token ?? env('RWA_TOKEN');
+    }
+    
     /**
      * Display a listing of the resource.
      */
@@ -1009,7 +1016,7 @@ Donasi Belum Dibayar : ".number_format($count_unpaid)." - Rp.".str_replace(',', 
         curl_setopt($curl, CURLOPT_TIMEOUT,30);
         curl_setopt($curl, CURLOPT_POST, 1);
         curl_setopt($curl, CURLOPT_POSTFIELDS, array(
-            'token'   => env('TOKEN_RWA'),
+            'token'   => $this->rwa_token,
             'number'  => $telp,
             'message' => $chat,
             'date'    => date('Y-m-d'),

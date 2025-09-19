@@ -13,13 +13,16 @@ class WaBlastController extends Controller
 {
     protected $token;
     protected $host;
+    protected $rwa_token;
+    
     public function __construct()
     {
         // $this->token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // 081-55555-849
         // $this->token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb';  // 0851-8338-8344
         $this->host  = 'https://app.ruangwa.id/api/send_message';
-
+        $this->rwa_token = \App\Models\TokenConfig::first()->token ?? env('RWA_TOKEN');
     }
+    
     public function sentWA($telp='', $chat='', $type='', $trans='', $donatur='', $program='')
     {
         $telp  = $this->formatTelp($telp);
@@ -28,7 +31,7 @@ class WaBlastController extends Controller
         \App\Models\Chat::create([
             'no_telp'        => $telp,
             'text'           => $chat,
-            'token'          => env('TOKEN_RWA'),
+            'token'          => $this->rwa_token,
             'vendor'         => 'RuangWA',
             'url'            => $this->host,
             'type'           => $type,
@@ -47,7 +50,7 @@ class WaBlastController extends Controller
         curl_setopt($curl, CURLOPT_TIMEOUT,30);
         curl_setopt($curl, CURLOPT_POST, 1);
         curl_setopt($curl, CURLOPT_POSTFIELDS, array(
-            'token'   => env('TOKEN_RWA'),
+            'token'   => $this->rwa_token,
             'number'  => $telp,
             'message' => $chat,
             'date'    => date('Y-m-d'),
@@ -71,7 +74,7 @@ class WaBlastController extends Controller
         curl_setopt($curl, CURLOPT_TIMEOUT,30);
         curl_setopt($curl, CURLOPT_POST, 1);
         curl_setopt($curl, CURLOPT_POSTFIELDS, array(
-            'token'   => env('TOKEN_RWA'),
+            'token'   => $this->rwa_token,
             'number'  => $this->formatTelp($telp),
             'message' => $chat,
             'date'    => date('Y-m-d'),
@@ -108,7 +111,7 @@ class WaBlastController extends Controller
             \App\Models\Chat::create([
                 'no_telp'        => $telp,
                 'text'           => strip_tags(trim($data->message)),
-                'token'          => env('TOKEN_RWA'),
+                'token'          => $this->rwa_token,
                 'vendor'         => 'RuangWA',
                 'url'            => 'callback',
                 'type'           => 'inbox',

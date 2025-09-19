@@ -21,14 +21,19 @@ class DonaturController extends Controller
     protected $transactionColumn;
     protected $donaturLoyalColumn;
 
+    protected $rwa_token;
+
     public function __construct()
     {
         $this->donaturColumn = ['donatur.id', 'donatur.name', 'donatur.telp', 'donatur.want_to_contact', 'donatur.wa_inactive_since', 'donatur.email', 'donatur.password', 'donatur.password_reset', 'donatur.created_at', 'donatur.wa_check', 'donatur.updated_at', 'donatur.last_donate_paid', 'donatur.count_donate_paid', 'donatur.sum_donate_paid', 'donatur.wa_campaign', 'donatur.ref_code', 'donatur.is_muslim', 'donatur.religion'];
-
+        
         $this->transactionColumn = ['transaction.program_id', 'transaction.donatur_id', 'transaction.payment_type_id', 'transaction.status', 'transaction.nominal', 'transaction.nominal_final', 'transaction.created_at'];
-
+        
         $this->donaturLoyalColumn = ['donatur_loyal.id', 'donatur_loyal.donatur_id', 'donatur_loyal.program_id', 'donatur_loyal.nominal', 'donatur_loyal.payment_type_id', 'donatur_loyal.desc', 'donatur_loyal.every_period', 'donatur_loyal.every_time', 'donatur_loyal.every_date_period', 'donatur_loyal.every_month_period', 'donatur_loyal.every_date', 'donatur_loyal.every_day', 'donatur_loyal.is_active', 'donatur_loyal.created_at', 'donatur_loyal.created_by', 'donatur_loyal.updated_at', 'donatur_loyal.updated_by'];
+        
+        $this->rwa_token = \App\Models\TokenConfig::first()->token ?? env('RWA_TOKEN');
     }
+    
     /**
      * Display a listing of the resource.
      */
@@ -1184,7 +1189,7 @@ Kepedulian kita masih terus dinantikan, oleh mereka yang membutuhkan.';
             curl_setopt($curl, CURLOPT_TIMEOUT, 30);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, [
-                'token' => env('TOKEN_RWA'),
+                'token' => $this->rwa_token,
                 'number' => $telp,
                 'message' => $chat,
                 'date' => date('Y-m-d'),
@@ -1205,7 +1210,7 @@ Kepedulian kita masih terus dinantikan, oleh mereka yang membutuhkan.';
             \App\Models\Chat::create([
                 'no_telp' => $telp,
                 'text' => $chat,
-                'token' => env('TOKEN_RWA'),
+                'token' => $this->rwa_token,
                 'vendor' => 'RuangWA',
                 'url' => 'https://app.ruangwa.id/api/send_message',
                 'type' => 'repeat_donate',
@@ -1266,7 +1271,7 @@ Terimakash';
             curl_setopt($curl, CURLOPT_TIMEOUT, 30);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, [
-                'token' => env('TOKEN_RWA'),
+                'token' => $this->rwa_token,
                 'number' => $telp,
                 'message' => $chat,
                 'date' => date('Y-m-d'),
@@ -1287,7 +1292,7 @@ Terimakash';
             \App\Models\Chat::create([
                 'no_telp' => $telp,
                 'text' => $chat,
-                'token' => env('TOKEN_RWA'),
+                'token' => $this->rwa_token,
                 'vendor' => 'RuangWA',
                 'url' => 'https://app.ruangwa.id/api/send_message',
                 'type' => 'info',
@@ -1366,7 +1371,7 @@ https://bantubersama.com/bantupalestina';
             curl_setopt($curl, CURLOPT_TIMEOUT, 30);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, [
-                'token' => env('TOKEN_RWA'),
+                'token' => $this->rwa_token,
                 'number' => $telp,
                 'message' => $chat,
                 'date' => date('Y-m-d'),
@@ -1391,7 +1396,7 @@ https://bantubersama.com/bantupalestina';
             \App\Models\Chat::create([
                 'no_telp' => $telp,
                 'text' => $chat,
-                'token' => env('TOKEN_RWA'),
+                'token' => $this->rwa_token,
                 'vendor' => 'RuangWA',
                 'url' => 'https://app.ruangwa.id/api/send_message',
                 'type' => 'info',
@@ -1431,7 +1436,7 @@ https://bantubersama.com/bantupalestina';
             curl_setopt($curl, CURLOPT_TIMEOUT, 30);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, [
-                'token' => env('TOKEN_RWA'),
+                'token' => $this->rwa_token,
                 'number' => $telp,
             ]);
             $response = curl_exec($curl);
