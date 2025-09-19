@@ -342,6 +342,9 @@ class LeadsController extends Controller
         if ($request->interest == 1) {
             $data = $data->where('menarik_count', '>', 0);
         }
+        if ($request->garap == 1) {
+            $data = $data->where('garap_count', '>', 0);
+        }
 
         $count_total = $data->count();
 
@@ -462,10 +465,6 @@ class LeadsController extends Controller
             ->addColumn('informasi_program', function ($row) {
                 $garapCount = $row->garap_count ?? 0;
                 $menarikCount = $row->menarik_count ?? 0;
-
-                if ($garapCount == 0 && $menarikCount == 0) {
-                    return 'belum ada potensi';
-                }
 
                 $garapBadge = '<span class="badge badge-sm badge-info">Garap: ' . $garapCount . '</span>';
                 $menarikBadge = '<span class="badge badge-sm badge-success">Menarik: ' . $menarikCount . '</span>';
