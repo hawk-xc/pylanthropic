@@ -349,6 +349,10 @@
                     <a href="{{ route('adm.banner.index') }}"> <i
                             class="metismenu-icon pe-7s-photo icon-gradient bg-arielle-smile"></i> Banner Halaman Utama </a>
                 </li>
+                <li class="{{ $sidebar_menu == 'token-config' ? 'mm-active' : '' }}">
+                    <a href="{{ route('adm.token-config.index') }}"> <i
+                            class="metismenu-icon pe-7s-key icon-gradient bg-arielle-smile"></i> Pengaturan Token </a>
+                </li>
             </ul>
         </div>
     </div>
