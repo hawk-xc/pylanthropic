@@ -503,6 +503,24 @@ class LeadsController extends Controller
             });
         }
 
+        $isGarap = (int)$request->garap === 1;
+        $isMenarik = (int)$request->menarik === 1;
+
+        if ($isGarap || $isMenarik) {
+            $query->where(function ($q) use ($isGarap, $isMenarik) {
+                if ($isGarap) {
+                    $q->orWhereHas('grab_programs', function ($subQ) {
+                        $subQ->where('is_taken', 1);
+                    });
+                }
+                if ($isMenarik) {
+                    $q->orWhereHas('grab_programs', function ($subQ) {
+                        $subQ->where('is_interest', 1);
+                    });
+                }
+            });
+        }
+
         // Global search (semua term harus match)
         if ($search = trim((string)$request->input('custom_search', ''))) {
             $terms = array_filter(explode(' ', mb_strtolower($search)));

@@ -28,6 +28,8 @@
                 </div>
                 <div class="col-7 fc-rtl">
                     <button class="btn btn-outline-primary leads-status-filter active" data-status-filter="">Semua</button>
+                    <button class="btn btn-outline-primary leads-parallel-filter" data-parallel-filter="garap">Garap</button>
+                    <button class="btn btn-outline-primary leads-parallel-filter" data-parallel-filter="menarik">Menarik</button>
                     <button class="btn btn-outline-primary leads-status-filter"
                         data-status-filter="interest">Potensial</button>
                     <button class="btn btn-outline-primary leads-status-filter" data-status-filter="wa">Ada WA</button>
@@ -311,6 +313,13 @@
                         d.interest = 1;
                     }
 
+                    if ($('.leads-parallel-filter[data-parallel-filter="garap"]').hasClass('active')) {
+                        d.garap = 1;
+                    }
+                    if ($('.leads-parallel-filter[data-parallel-filter="menarik"]').hasClass('active')) {
+                        d.menarik = 1;
+                    }
+
                     // Add custom search parameter
                     var name_search = $('#name_filter').val();
                     var contact_search = $('#contact_filter').val();
@@ -357,6 +366,12 @@
         $('.leads-status-filter').on('click', function() {
             $('.leads-status-filter').removeClass('active');
             $(this).addClass('active');
+            table.ajax.reload();
+        });
+
+        // Parallel filter buttons
+        $('.leads-parallel-filter').on('click', function() {
+            $(this).toggleClass('active');
             table.ajax.reload();
         });
 
