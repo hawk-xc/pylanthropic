@@ -332,19 +332,16 @@ class LeadsController extends Controller
     //         ])->orderBy('created_at', 'DESC')->get();
     //     });
 
-        // Status filters
-        // if ($request->ada_wa == 1) {
-        //     $data = $data->whereNotNull('phone');
-        // }
-        // if ($request->ada_email == 1) {
-        //     $data = $data->whereNotNull('email');
-        // }
-        // if ($request->interest == 1) {
-        //     $data = $data->where('menarik_count', '>', 0);
-        // }
-        // if ($request->garap == 1) {
-        //     $data = $data->where('garap_count', '>', 0);
-        // }
+    //     // Status filters
+    //     if ($request->ada_wa == 1) {
+    //         $data = $data->whereNotNull('phone');
+    //     }
+    //     if ($request->ada_email == 1) {
+    //         $data = $data->whereNotNull('email');
+    //     }
+    //     if ($request->interest == 1) {
+    //         $data = $data->where('menarik_count', '>', 0);
+    //     }
 
     //     $count_total = $data->count();
 
@@ -600,10 +597,10 @@ class LeadsController extends Controller
                 return $actions;
             })
             ->addColumn('informasi_program', function ($row) {
-                $garapCount = $row->garap_count ?? 0;
-                $menarikCount = $row->menarik_count ?? 0;
+                $garap = (int)($row->garap_count ?? 0);
+                $menarik = (int)($row->menarik_count ?? 0);
 
-                if ($garapCount == 0 && $menarikCount == 0) {
+                if ($garap === 0 && $menarik === 0) {
                     return 'belum ada potensi';
                 }
 
