@@ -319,129 +319,267 @@ class LeadsController extends Controller
     /**
      * Datatables Chat
      */
-    public function orgDatatables(Request $request)
-    {
-        $data = Cache::remember('grab_organization_data_with_programs_count', 60, function () {
-            return GrabOrganization::withCount([
-                'grab_programs as garap_count' => function ($query) {
-                    $query->where('is_taken', 1);
-                },
-                'grab_programs as menarik_count' => function ($query) {
-                    $query->where('is_interest', 1);
-                }
-            ])->orderBy('created_at', 'DESC')->get();
-        });
+    // public function orgDatatables(Request $request)
+    // {
+    //     $data = Cache::remember('grab_organization_data_with_programs_count', 60, function () {
+    //         return GrabOrganization::withCount([
+    //             'grab_programs as garap_count' => function ($query) {
+    //                 $query->where('is_taken', 1);
+    //             },
+    //             'grab_programs as menarik_count' => function ($query) {
+    //                 $query->where('is_interest', 1);
+    //             }
+    //         ])->orderBy('created_at', 'DESC')->get();
+    //     });
 
         // Status filters
-        if ($request->ada_wa == 1) {
-            $data = $data->whereNotNull('phone');
+        // if ($request->ada_wa == 1) {
+        //     $data = $data->whereNotNull('phone');
+        // }
+        // if ($request->ada_email == 1) {
+        //     $data = $data->whereNotNull('email');
+        // }
+        // if ($request->interest == 1) {
+        //     $data = $data->where('menarik_count', '>', 0);
+        // }
+        // if ($request->garap == 1) {
+        //     $data = $data->where('garap_count', '>', 0);
+        // }
+
+    //     $count_total = $data->count();
+
+    //     // Global search
+    //     $search = $request->input('custom_search');
+    //     if (!empty($search)) {
+    //         $search_terms = array_filter(explode(' ', strtolower($search)));
+
+    //         if (!empty($search_terms)) {
+    //             $data = $data->filter(function ($item) use ($search_terms) {
+    //                 foreach ($search_terms as $term) {
+    //                     $term_found = str_contains(strtolower($item->name ?? ''), $term) ||
+    //                                   str_contains(strtolower($item->address ?? ''), $term) ||
+    //                                   str_contains(strtolower($item->email ?? ''), $term) ||
+    //                                   str_contains(strtolower($item->phone ?? ''), $term);
+
+    //                     if (!$term_found) {
+    //                         return false;
+    //                     }
+    //                 }
+    //                 return true;
+    //             });
+    //         }
+    //     }
+
+    //     $count_filter = $data->count();
+
+    //     // Manual Sorting
+    //     $order = $request->input('order');
+    //     if (!empty($order)) {
+    //         $order_column_index = $order[0]['column'];
+    //         $order_dir = $order[0]['dir'];
+    //         $columns = $request->input('columns');
+    //         $column_def = $columns[$order_column_index];
+
+    //         if ($column_def['orderable'] === 'true') {
+    //             if ($order_column_index == 3) { // "Informasi Program" column
+    //                 $sortMethod = $order_dir === 'asc' ? 'sortBy' : 'sortByDesc';
+    //                 $data = $data->{$sortMethod}(function ($row) {
+    //                     return ($row->garap_count ?? 0) + ($row->menarik_count ?? 0);
+    //                 });
+    //             } else { // Default sorting for other columns
+    //                 $column_name = $column_def['data'];
+    //                 $sortMethod = $order_dir === 'asc' ? 'sortBy' : 'sortByDesc';
+    //                 $data = $data->{$sortMethod}($column_name);
+    //             }
+    //         }
+    //     }
+
+    //     $pageSize = $request->length ? $request->length : 10;
+    //     $start = $request->start ? $request->start : 0;
+
+    //     $dataForPage = $data->skip($start)->take($pageSize);
+
+    //     return Datatables::of($dataForPage)
+    //         ->with([
+    //             'recordsTotal' => $count_total,
+    //             'recordsFiltered' => $count_filter,
+    //         ])
+    //         ->order(function () {})
+    //         ->setOffset($start)
+    //         ->addIndexColumn()
+    //         ->addColumn('name', function ($row) {
+    //             return $row->is_affiliated ? '<a href="#" target="_blank"><i class="fas fa-handshake"></i> ' . $row->name . '</a>' : '<a href="#" target="_blank">' . $row->name . '</a>';
+    //         })
+    //         ->addColumn('contact', function ($row) {
+    //             $cursorStyle = 'style="cursor:pointer"';
+    //             $faPhone = '<i class="fa fa-phone"></i>';
+    //             $faMail = '<i class="fa fa-envelope"></i>';
+
+    //             $waParams = "'" . $row->user_id . "','" . str_replace("'", '', $row->name) . "'";
+
+    //             $waAttr = 'onclick="firstChat(' . $waParams . ')"';
+
+    //             $telp = is_null($row->phone) || $row->phone == ''
+    //                 ? '<a style="cursor: pointer;" onClick="openUpdateOrganizationPhoneModal(`' . $row->id . '`, `' . $row->name . '`)" class="badge badge-sm badge-primary">' . $faPhone . '</a>'
+    //                 : '<a style="cursor: pointer;" onClick="openUpdateOrganizationPhoneModal(`' . $row->id . '`, `' . $row->name . '`)" class="badge badge-sm badge-success" ' . $waAttr . ' ' . $cursorStyle . '>' . $faPhone . ' ' . $row->phone . '</a>';
+
+    //             $mail = is_null($row->email) || $row->email == ''
+    //                 ? '<span class="badge badge-sm badge-secondary">' . $faMail . '</span>'
+    //                 : '<span class="badge badge-sm badge-success">' . $row->email . '</span>';
+
+    //             $whatsapp =  '<a style="cursor: pointer;" onClick="openDonaturLoyalModal(`' . $row->name . '`)" class="badge badge-sm badge-success"><i class="fa fa-database"></i></button>';
+
+    //             return $telp . ' ' . $mail;
+    //         })
+    //         ->addColumn('socmed', function ($row) {
+    //             $sc = 'style="cursor:pointer"';
+    //             $i_fb = 'FB';
+    //             $i_tw = 'TW';
+    //             $i_ig = 'IG';
+    //             $i_yt = 'YT';
+
+    //             $fb = is_null($row->facebook) || $row->facebook == '' ? '<span class="badge badge-sm badge-secondary">' . $i_fb . '</span>' : '<a href="' . $row->facebook . '" target="_blank" class="badge badge-sm badge-success">' . $i_fb . '</a>';
+    //             $tw = is_null($row->twitter) || $row->twitter == '' ? '<span class="badge badge-sm badge-secondary">' . $i_tw . '</span>' : '<a href="' . $row->twitter . '" target="_blank" class="badge badge-sm badge-success">' . $i_tw . '</a>';
+    //             $ig = is_null($row->instagram) || $row->instagram == '' ? '<span class="badge badge-sm badge-secondary">' . $i_ig . '</span>' : '<a href="' . $row->instagram . '" target="_blank" class="badge badge-sm badge-success">' . $i_ig . '</a>';
+    //             $yt = is_null($row->youtube) || $row->youtube == '' ? '<span class="badge badge-sm badge-secondary">' . $i_yt . '</span>' : '<a href="' . $row->youtube . '" target="_blank" class="badge badge-sm badge-success">' . $i_yt . '</a>';
+
+    //             return $fb . ' ' . $tw . ' ' . $ig . ' ' . $yt;
+    //         })
+    //         ->addColumn('action', function ($row) {
+    //             $actions = '';
+    //             if ($row->user_id) {
+    //                 $btn_edit = '<a href="' . route('adm.leads.org.edit', $row->user_id) . '" target="_blank" class="badge badge-sm badge-warning badge-square"><i class="fa fa-edit"></i></a>';
+                    
+    //                 if ($row->add_leads === 1) {
+    //                     $add_leads_crm = '<a href="javascript:void(0)" class="badge badge-sm badge-success badge-square" title="Sudah ditambahkan ke CRM"><i class="fa fa-handshake"></i></a>';
+    //                 } else {
+    //                     $add_leads_crm = '<a href="javascript:void(0)" class="badge badge-sm badge-primary badge-square open-add-to-crm-modal" title="Tambahkan ke CRM" data-id="' . $row->id . '" data-name="' . e($row->name) . '"><i class="fa fa-handshake"></i></a>';
+    //                 }
+    //                 $actions = $btn_edit . ' ' . $add_leads_crm;
+    //             } else {
+    //                 $actions = '-';
+    //             }
+
+    //             return $actions;
+    //         })
+    //         ->addColumn('informasi_program', function ($row) {
+    //             $garapCount = $row->garap_count ?? 0;
+    //             $menarikCount = $row->menarik_count ?? 0;
+
+    //             if ($garapCount == 0 && $menarikCount == 0) {
+    //                 return 'belum ada potensi';
+    //             }
+
+    //             $garapBadge = '<span class="badge badge-sm badge-info">Garap: ' . $garapCount . '</span>';
+    //             $menarikBadge = '<span class="badge badge-sm badge-success">Menarik: ' . $menarikCount . '</span>';
+    //             return $garapBadge . ' ' . $menarikBadge;
+    //         })
+    //         ->rawColumns(['name', 'contact', 'socmed', 'action', 'informasi_program'])
+    //         ->make(true);
+    // }
+    public function orgDatatables(Request $request)
+    {
+        $query = GrabOrganization::query()
+            ->select(['grab_organization.*'])
+            ->withCount([
+                // gunakan NAMA METHOD relasi dari model GrabOrganization
+                'grab_programs as garap_count' => function ($q) {
+                    $q->where('is_taken', 1);
+                },
+                'grab_programs as menarik_count' => function ($q) {
+                    $q->where('is_interest', 1);
+                },
+            ])
+            ->addSelect(DB::raw('(0) as info_count')); // optional
+
+        // Quick filters -> dorong ke SQL
+        if ((int)$request->ada_wa === 1) {
+            $query->whereNotNull('phone')->where('phone', '<>', '');
         }
-        if ($request->ada_email == 1) {
-            $data = $data->whereNotNull('email');
+        if ((int)$request->ada_email === 1) {
+            $query->whereNotNull('email')->where('email', '<>', '');
         }
-        if ($request->interest == 1) {
-            $data = $data->where('menarik_count', '>', 0);
-        }
-        if ($request->garap == 1) {
-            $data = $data->where('garap_count', '>', 0);
+        if ((int)$request->interest === 1) {
+            // Jangan HAVING pada alias subselect; pakai whereHas supaya DB-side & aman
+            $query->whereHas('grab_programs', function ($q) {
+                $q->where('is_interest', 1);
+            });
         }
 
-        $count_total = $data->count();
-
-        // Global search
-        $search = $request->input('custom_search');
-        if (!empty($search)) {
-            $search_terms = array_filter(explode(' ', strtolower($search)));
-
-            if (!empty($search_terms)) {
-                $data = $data->filter(function ($item) use ($search_terms) {
-                    foreach ($search_terms as $term) {
-                        $term_found = str_contains(strtolower($item->name ?? ''), $term) ||
-                                      str_contains(strtolower($item->address ?? ''), $term) ||
-                                      str_contains(strtolower($item->email ?? ''), $term) ||
-                                      str_contains(strtolower($item->phone ?? ''), $term);
-
-                        if (!$term_found) {
-                            return false;
-                        }
-                    }
-                    return true;
+        // Global search (semua term harus match)
+        if ($search = trim((string)$request->input('custom_search', ''))) {
+            $terms = array_filter(explode(' ', mb_strtolower($search)));
+            foreach ($terms as $term) {
+                $like = "%{$term}%";
+                $query->where(function ($q) use ($like) {
+                    $q->whereRaw('LOWER(name) LIKE ?', [$like])
+                      ->orWhereRaw('LOWER(address) LIKE ?', [$like])
+                      ->orWhereRaw('LOWER(email) LIKE ?', [$like])
+                      ->orWhereRaw('LOWER(phone) LIKE ?', [$like]);
                 });
             }
         }
 
-        $count_filter = $data->count();
+        return DataTables::eloquent($query)
+            // Custom ORDER untuk kolom "informasi_program"
+            ->order(function ($q) use ($request) {
+                $order = $request->get('order')[0] ?? null;
+                if (!$order) return;
 
-        // Manual Sorting
-        $order = $request->input('order');
-        if (!empty($order)) {
-            $order_column_index = $order[0]['column'];
-            $order_dir = $order[0]['dir'];
-            $columns = $request->input('columns');
-            $column_def = $columns[$order_column_index];
+                $columns = $request->get('columns', []);
+                $colName = $columns[$order['column']]['data'] ?? null;
+                $dir = ($order['dir'] ?? 'asc') === 'asc' ? 'ASC' : 'DESC';
 
-            if ($column_def['orderable'] === 'true') {
-                if ($order_column_index == 3) { // "Informasi Program" column
-                    $sortMethod = $order_dir === 'asc' ? 'sortBy' : 'sortByDesc';
-                    $data = $data->{$sortMethod}(function ($row) {
-                        return ($row->garap_count ?? 0) + ($row->menarik_count ?? 0);
-                    });
-                } else { // Default sorting for other columns
-                    $column_name = $column_def['data'];
-                    $sortMethod = $order_dir === 'asc' ? 'sortBy' : 'sortByDesc';
-                    $data = $data->{$sortMethod}($column_name);
+                if ($colName === 'informasi_program') {
+                    // sort by total (garap + menarik)
+                    $q->orderByRaw('(garap_count + menarik_count) ' . $dir);
                 }
-            }
-        }
-
-        $pageSize = $request->length ? $request->length : 10;
-        $start = $request->start ? $request->start : 0;
-
-        $dataForPage = $data->skip($start)->take($pageSize);
-
-        return Datatables::of($dataForPage)
-            ->with([
-                'recordsTotal' => $count_total,
-                'recordsFiltered' => $count_filter,
-            ])
-            ->order(function () {})
-            ->setOffset($start)
-            ->addIndexColumn()
+                // Kolom lain: biarkan Yajra handle
+            })
+            // Kolom render
             ->addColumn('name', function ($row) {
-                return $row->is_affiliated ? '<a href="#" target="_blank"><i class="fas fa-handshake"></i> ' . $row->name . '</a>' : '<a href="#" target="_blank">' . $row->name . '</a>';
+                $name = e($row->name);
+                if ($row->is_affiliated) {
+                    return '<a href="#" target="_blank"><i class="fas fa-handshake"></i> ' . $name . '</a>';
+                }
+                return '<a href="#" target="_blank">' . $name . '</a>';
             })
             ->addColumn('contact', function ($row) {
                 $cursorStyle = 'style="cursor:pointer"';
                 $faPhone = '<i class="fa fa-phone"></i>';
                 $faMail = '<i class="fa fa-envelope"></i>';
 
-                $waParams = "'" . $row->user_id . "','" . str_replace("'", '', $row->name) . "'";
-
+                $waParams = "'" . $row->user_id . "','" . str_replace("'", '', (string)$row->name) . "'";
                 $waAttr = 'onclick="firstChat(' . $waParams . ')"';
 
-                $telp = is_null($row->phone) || $row->phone == ''
-                    ? '<a style="cursor: pointer;" onClick="openUpdateOrganizationPhoneModal(`' . $row->id . '`, `' . $row->name . '`)" class="badge badge-sm badge-primary">' . $faPhone . '</a>'
-                    : '<a style="cursor: pointer;" onClick="openUpdateOrganizationPhoneModal(`' . $row->id . '`, `' . $row->name . '`)" class="badge badge-sm badge-success" ' . $waAttr . ' ' . $cursorStyle . '>' . $faPhone . ' ' . $row->phone . '</a>';
+                $telp = (is_null($row->phone) || $row->phone === '')
+                    ? '<a style="cursor: pointer;" onClick="openUpdateOrganizationPhoneModal(`' . e($row->id) . '`, `' . e($row->name) . '`)" class="badge badge-sm badge-primary">' . $faPhone . '</a>'
+                    : '<a style="cursor: pointer;" onClick="openUpdateOrganizationPhoneModal(`' . e($row->id) . '`, `' . e($row->name) . '`)" class="badge badge-sm badge-success" ' . $waAttr . ' ' . $cursorStyle . '>' . $faPhone . ' ' . e($row->phone) . '</a>';
 
-                $mail = is_null($row->email) || $row->email == ''
+                $mail = (is_null($row->email) || $row->email === '')
                     ? '<span class="badge badge-sm badge-secondary">' . $faMail . '</span>'
-                    : '<span class="badge badge-sm badge-success">' . $row->email . '</span>';
-
-                $whatsapp =  '<a style="cursor: pointer;" onClick="openDonaturLoyalModal(`' . $row->name . '`)" class="badge badge-sm badge-success"><i class="fa fa-database"></i></button>';
+                    : '<span class="badge badge-sm badge-success">' . e($row->email) . '</span>';
 
                 return $telp . ' ' . $mail;
             })
             ->addColumn('socmed', function ($row) {
-                $sc = 'style="cursor:pointer"';
-                $i_fb = 'FB';
-                $i_tw = 'TW';
-                $i_ig = 'IG';
-                $i_yt = 'YT';
+                $i_fb = 'FB'; $i_tw = 'TW'; $i_ig = 'IG'; $i_yt = 'YT';
 
-                $fb = is_null($row->facebook) || $row->facebook == '' ? '<span class="badge badge-sm badge-secondary">' . $i_fb . '</span>' : '<a href="' . $row->facebook . '" target="_blank" class="badge badge-sm badge-success">' . $i_fb . '</a>';
-                $tw = is_null($row->twitter) || $row->twitter == '' ? '<span class="badge badge-sm badge-secondary">' . $i_tw . '</span>' : '<a href="' . $row->twitter . '" target="_blank" class="badge badge-sm badge-success">' . $i_tw . '</a>';
-                $ig = is_null($row->instagram) || $row->instagram == '' ? '<span class="badge badge-sm badge-secondary">' . $i_ig . '</span>' : '<a href="' . $row->instagram . '" target="_blank" class="badge badge-sm badge-success">' . $i_ig . '</a>';
-                $yt = is_null($row->youtube) || $row->youtube == '' ? '<span class="badge badge-sm badge-secondary">' . $i_yt . '</span>' : '<a href="' . $row->youtube . '" target="_blank" class="badge badge-sm badge-success">' . $i_yt . '</a>';
+                $fb = (is_null($row->facebook) || $row->facebook === '')
+                    ? '<span class="badge badge-sm badge-secondary">' . $i_fb . '</span>'
+                    : '<a href="' . e($row->facebook) . '" target="_blank" class="badge badge-sm badge-success">' . $i_fb . '</a>';
+
+                $tw = (is_null($row->twitter) || $row->twitter === '')
+                    ? '<span class="badge badge-sm badge-secondary">' . $i_tw . '</span>'
+                    : '<a href="' . e($row->twitter) . '" target="_blank" class="badge badge-sm badge-success">' . $i_tw . '</a>';
+
+                $ig = (is_null($row->instagram) || $row->instagram === '')
+                    ? '<span class="badge badge-sm badge-secondary">' . $i_ig . '</span>'
+                    : '<a href="' . e($row->instagram) . '" target="_blank" class="badge badge-sm badge-success">' . $i_ig . '</a>';
+
+                $yt = (is_null($row->youtube) || $row->youtube === '')
+                    ? '<span class="badge badge-sm badge-secondary">' . $i_yt . '</span>'
+                    : '<a href="' . e($row->youtube) . '" target="_blank" class="badge badge-sm badge-success">' . $i_yt . '</a>';
 
                 return $fb . ' ' . $tw . ' ' . $ig . ' ' . $yt;
             })
@@ -449,30 +587,34 @@ class LeadsController extends Controller
                 $actions = '';
                 if ($row->user_id) {
                     $btn_edit = '<a href="' . route('adm.leads.org.edit', $row->user_id) . '" target="_blank" class="badge badge-sm badge-warning badge-square"><i class="fa fa-edit"></i></a>';
-                    
-                    if ($row->add_leads === 1) {
+
+                    if ((int)$row->add_leads === 1) {
                         $add_leads_crm = '<a href="javascript:void(0)" class="badge badge-sm badge-success badge-square" title="Sudah ditambahkan ke CRM"><i class="fa fa-handshake"></i></a>';
                     } else {
-                        $add_leads_crm = '<a href="javascript:void(0)" class="badge badge-sm badge-primary badge-square open-add-to-crm-modal" title="Tambahkan ke CRM" data-id="' . $row->id . '" data-name="' . e($row->name) . '"><i class="fa fa-handshake"></i></a>';
+                        $add_leads_crm = '<a href="javascript:void(0)" class="badge badge-sm badge-primary badge-square open-add-to-crm-modal" title="Tambahkan ke CRM" data-id="' . e($row->id) . '" data-name="' . e($row->name) . '"><i class="fa fa-handshake"></i></a>';
                     }
                     $actions = $btn_edit . ' ' . $add_leads_crm;
                 } else {
                     $actions = '-';
                 }
-
                 return $actions;
             })
             ->addColumn('informasi_program', function ($row) {
                 $garapCount = $row->garap_count ?? 0;
                 $menarikCount = $row->menarik_count ?? 0;
 
-                $garapBadge = '<span class="badge badge-sm badge-info">Garap: ' . $garapCount . '</span>';
-                $menarikBadge = '<span class="badge badge-sm badge-success">Menarik: ' . $menarikCount . '</span>';
+                if ($garapCount == 0 && $menarikCount == 0) {
+                    return 'belum ada potensi';
+                }
+
+                $garapBadge = '<span class="badge badge-sm badge-info">Garap: ' . $garap . '</span>';
+                $menarikBadge = '<span class="badge badge-sm badge-success">Menarik: ' . $menarik . '</span>';
                 return $garapBadge . ' ' . $menarikBadge;
             })
             ->rawColumns(['name', 'contact', 'socmed', 'action', 'informasi_program'])
             ->make(true);
     }
+
 
     /**
      * Show the form for editing the specified resource.
