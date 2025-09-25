@@ -1158,9 +1158,15 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                                 $new_program->headline = $item->headline;
                                 $new_program->program_created_at = \Carbon\Carbon::createFromFormat('d M Y', $item->program_created_at)->format('Y-m-d') . ' 00:00:00';
 
-                                $new_program->save();
+                                try {
+                                    $new_program->save();
+                                } catch (Exception $e) {
+                                    dd($e->getMessage());
+                                }
+
                                 $count_inp_program++;
                             } catch (Exception $e) {
+                                dd($e->getMessage());
                                 return response()->json([
                                     'status' => 'failed',
                                     'message' => 'terjadi kesalahan saat mengembalikan data!',
