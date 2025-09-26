@@ -357,7 +357,26 @@
 
 
 @section('js_inline')
-<script type="text/javascript">    
+<script type="text/javascript">
+    function addCustomPagination(api) {
+        const tableId = api.table().node().id;
+        const wrapper = $(`#${tableId}_wrapper`);
+
+        // Remove if exists to prevent duplicates
+        wrapper.find('.custom-pagination').remove();
+
+        const customPagination = $(`
+            <div class="custom-pagination d-inline-flex align-items-center ms-3">
+                <input type="number" class="form-control form-control-sm" style="width: 70px;">
+                <button class="btn btn-sm btn-primary ms-1">Go</button>
+            </div>
+        `);
+        wrapper.find('.dataTables_paginate').append(customPagination);
+
+        const pageInfo = api.page.info();
+        wrapper.find('.custom-pagination input').attr('placeholder', `${pageInfo.page + 1}/${pageInfo.pages}`).val('');
+    }
+
     function editStatus(id, status, nominal) {
         $("#id_trans").val(id);
         $("#rupiah").val(nominal.replace('Rp. ', ''));
@@ -801,7 +820,23 @@
             {data: 'nominal_final', name: 'nominal_final'},
             {data: 'invoice', name: 'invoice'},
             {data: 'created_at', name: 'created_at'},
-        ]
+        ],
+        initComplete: function() {
+            const api = this.api();
+            const tableId = api.table().node().id;
+            $(`#${tableId}_wrapper`).on('click', '.custom-pagination button', function() {
+                const page = parseInt($(`#${tableId}_wrapper .custom-pagination input`).val(), 10);
+                const pageInfo = api.page.info();
+                if (page > 0 && page <= pageInfo.pages) {
+                    api.page(page - 1).draw(false);
+                } else {
+                    $(`#${tableId}_wrapper .custom-pagination input`).val('');
+                }
+            });
+        },
+        drawCallback: function() {
+            addCustomPagination(this.api());
+        }
     });
     $('#table-donatur thead tr').clone(true).appendTo( '#table-donatur thead' );
     $('#table-donatur tr:eq(1) th').each( function (i) {
@@ -854,7 +889,23 @@
         columns: [
             {data: 'nominal', name: 'nominal'},
             {data: 'date_desc', name: 'date_desc'}
-        ]
+        ],
+        initComplete: function() {
+            const api = this.api();
+            const tableId = api.table().node().id;
+            $(`#${tableId}_wrapper`).on('click', '.custom-pagination button', function() {
+                const page = parseInt($(`#${tableId}_wrapper .custom-pagination input`).val(), 10);
+                const pageInfo = api.page.info();
+                if (page > 0 && page <= pageInfo.pages) {
+                    api.page(page - 1).draw(false);
+                } else {
+                    $(`#${tableId}_wrapper .custom-pagination input`).val('');
+                }
+            });
+        },
+        drawCallback: function() {
+            addCustomPagination(this.api());
+        }
     });
 
 

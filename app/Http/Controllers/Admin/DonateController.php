@@ -1099,7 +1099,6 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
         $donate_yest3_unpaid_sum   = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-3 day')).'%')
                                     ->where('status', '<>', 'success')->sum('nominal_final');
 
-
         return view('admin.transaction.donate_mutation', compact('last_donate', 'donate_today_paid_count', 'donate_today_paid_sum',
             'donate_today_unpaid_count', 'donate_today_unpaid_sum', 'visit_lp', 'sum_paid_now', 'sum_paid',
             'donate_yest1_paid_count', 'donate_yest1_paid_sum', 'donate_yest1_unpaid_count', 'donate_yest1_unpaid_sum',
