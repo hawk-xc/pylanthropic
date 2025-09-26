@@ -449,6 +449,12 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
                 ])
                 ->setOffset($start)
                 ->addIndexColumn()
+                ->addColumn('checkbox', function($row){
+                    if ($row->status == 'cancel' || $row->status == 'draft') {
+                        return '<input type="checkbox" class="delete-checkbox" value="'.$row->id.'" data-name="'.e(ucwords($row->name)).'" data-nominal="Rp. '.number_format($row->nominal_final).'" data-invoice="'.$row->invoice_number.'">';
+                    }
+                    return '';
+                })
                 ->addColumn('invoice', function($row){
                     // $content = TrackingVisitor::where('program_id', $row->program_id)->where('ref_code', $row->ref_code)
                     //             ->where('created_at', 'like', date('Y-m-d H:i', strtotime($row->created_at)).'%')
@@ -513,9 +519,54 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
 
                     return $donaturBtn . ' ' . $deleteBtn;
                 })
-                ->rawColumns(['action', 'invoice', 'nominal_final', 'name', 'created_at'])
+                ->rawColumns(['checkbox', 'action', 'invoice', 'nominal_final', 'name', 'created_at'])
                 ->make(true);
         // }
+    }
+
+    /**
+     * Remove multiple specified resources from storage.
+     */
+    public function bulkDestroy(Request $request)
+    {
+        try {
+            $ids = $request->input('ids');
+            if (empty($ids)) {
+                return response()->json(['status' => 'error', 'message' => 'Tidak ada data yang dipilih.'], 400);
+            }
+
+            $transactions = Transaction::whereIn('id', $ids)->where(function ($query) {
+                $query->where('status', 'cancel')->orWhere('status', 'draft');
+            })->get();
+
+            if ($request->input('delete_type') === 'with_donatur') {
+                $donaturIdsToDelete = [];
+                foreach ($transactions as $transaction) {
+                    $donaturId = $transaction->donatur_id;
+                    // Count transactions for this donor that are NOT in the current bulk delete list
+                    $transactionCount = Transaction::where('donatur_id', $donaturId)
+                                                    ->whereNotIn('id', $ids)
+                                                    ->count();
+                    if ($transactionCount == 0) {
+                        // If the donor has no other transactions left, mark for deletion
+                        $donaturIdsToDelete[] = $donaturId;
+                    }
+                }
+                if (!empty($donaturIdsToDelete)) {
+                    Donatur::whereIn('id', array_unique($donaturIdsToDelete))->delete();
+                }
+            }
+
+            // Delete the transactions
+            if ($transactions->count() > 0) {
+                Transaction::whereIn('id', $ids)->delete();
+            }
+
+            return response()->json(['status' => 'success', 'message' => 'Data berhasil dihapus.']);
+
+        } catch (\Exception $e) {
+            return response()->json(['status' => 'error', 'message' => 'Gagal menghapus data: ' . $e->getMessage()], 500);
+        }
     }
 
     /**
