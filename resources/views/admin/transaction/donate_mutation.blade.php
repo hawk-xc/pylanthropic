@@ -1,8 +1,8 @@
 @extends('layouts.admin', [
-    'second_title'    => 'Transaksi x Mutasi',
-    'header_title'    => 'Transaksi Donasi x Mutasi',
-    'sidebar_menu'    => 'donate_mutation',
-    'sidebar_submenu' => 'donate_mutation'
+    'second_title' => 'Transaksi x Mutasi',
+    'header_title' => 'Transaksi Donasi x Mutasi',
+    'sidebar_menu' => 'donate_mutation',
+    'sidebar_submenu' => 'donate_mutation',
 ])
 
 @section('css_plugins')
