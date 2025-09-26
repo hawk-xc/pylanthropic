@@ -507,7 +507,7 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
                     $donaturBtn = '<a href="'.route('adm.donatur.show', $row->donatur_id).'" class="btn btn-info btn-sm mb-1" title="Lihat Donatur"><i class="fa fa-user"></i></a>';
                 
                     $deleteBtn = '';
-                    if ($row->status == 'cancel') {
+                    if ($row->status == 'cancel' || $row->status == 'draft') {
                         $deleteBtn = '<button class="btn btn-danger btn-sm mb-1" title="Hapus" onclick="openDeleteModal('.$row->id.')"><i class="fa fa-trash"></i></button>';
                     }
 
