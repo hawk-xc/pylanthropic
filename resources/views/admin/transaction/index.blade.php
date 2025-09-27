@@ -99,9 +99,11 @@
             </div>
 
             <div class="divider"></div>
+            <button class="btn btn-danger mb-2" id="bulk-delete-btn" style="display: none;"><i class="fa fa-trash"></i> Hapus Terpilih</button>
             <table id="table-donatur" class="table table-hover table-striped table-bordered">
                 <thead>
                     <tr>
+                        <th><input type="checkbox" id="select-all-checkbox"></th>
                         <th>Nama</th>
                         <th>Jml Donasi</th>
                         <th>Judul</th>
@@ -354,18 +356,20 @@
         processing: true,
         serverSide: true,
         responsive: true,
-        order: [[4, 'desc']],
+        order: [[5, 'desc']],
         ajax: "{{ route('adm.donate.datatables') }}/?need_fu="+need_fu+"&day1="+day1+"&day5="+day5,
         "columnDefs": [
-            { "width": "21%", "targets": 0 },
-            { "width": "14%", "targets": 1 },
-            { "width": "30%", "targets": 2 },
-            { "width": "16%", "targets": 3 },
-            { "width": "14%", "targets": 4 },
-            { "width": "5%", "targets": 5 },
-            { "orderable": false, "targets": [1, 2, 3, 5] },
+            { "width": "3%", "targets": 0 },
+            { "width": "21%", "targets": 1 },
+            { "width": "14%", "targets": 2 },
+            { "width": "30%", "targets": 3 },
+            { "width": "16%", "targets": 4 },
+            { "width": "14%", "targets": 5 },
+            { "width": "5%", "targets": 6 },
+            { "orderable": false, "targets": [0, 2, 3, 4, 6] },
         ],
         columns: [
+            {data: 'checkbox', name: 'checkbox', orderable: false, searchable: false},
             {data: 'name', name: 'name'},
             {data: 'nominal_final', name: 'nominal_final'},
             {data: 'title', name: 'title'},
@@ -631,6 +635,97 @@
                     return 'Searching...';
                 }
             }
+        });
+
+        // Bulk delete logic
+        $('#select-all-checkbox').on('click', function(){
+            $('.delete-checkbox').prop('checked', $(this).prop('checked'));
+            toggleBulkDeleteButton();
+        });
+
+        $('#table-donatur').on('change', '.delete-checkbox', function(){
+            if($('.delete-checkbox:checked').length == $('.delete-checkbox').length && $('.delete-checkbox').length > 0){
+                $('#select-all-checkbox').prop('checked', true);
+            } else {
+                $('#select-all-checkbox').prop('checked', false);
+            }
+            toggleBulkDeleteButton();
+        });
+
+        function toggleBulkDeleteButton() {
+            if($('.delete-checkbox:checked').length > 0){
+                $('#bulk-delete-btn').show();
+            } else {
+                $('#bulk-delete-btn').hide();
+            }
+        }
+
+        $('#bulk-delete-btn').on('click', function(){
+            let selectedIds = [];
+            let confirmationContent = '<p class="text-start">Pilih jenis penghapusan untuk data berikut:</p><ul class="text-start" style="max-height: 150px; overflow-y: auto; padding-left: 20px; list-style-position: inside;">';
+            $('.delete-checkbox:checked').each(function(){
+                selectedIds.push($(this).val());
+                confirmationContent += '<li>' + $(this).data('invoice') + ' - ' + $(this).data('name') + ' (' + $(this).data('nominal') + ')</li>';
+            });
+            confirmationContent += '</ul>';
+
+            if(selectedIds.length > 0) {
+                Swal.fire({
+                    title: 'Konfirmasi Hapus Massal',
+                    html: confirmationContent,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Hapus Transaksi Saja',
+                    showDenyButton: true,
+                    denyButtonColor: '#ffc107',
+                    denyButtonText: `Hapus Transaksi & Donatur`,
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        bulkDelete(selectedIds, 'transaction_only');
+                    } else if (result.isDenied) {
+                        bulkDelete(selectedIds, 'with_donatur');
+                    }
+                });
+            }
+        });
+
+        function bulkDelete(ids, deleteType) {
+            $.ajax({
+                url: '{{ route("adm.donate.bulk.destroy") }}',
+                type: 'POST',
+                data: {
+                    _token: "{{ csrf_token() }}",
+                    ids: ids,
+                    delete_type: deleteType
+                },
+                success: function(response) {
+                    if(response.status === 'success') {
+                        table.ajax.reload();
+                        $('#select-all-checkbox').prop('checked', false);
+                        toggleBulkDeleteButton();
+                        Swal.fire({
+                            title: 'Berhasil!',
+                            text: response.message,
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire('Gagal!', response.message, 'error');
+                    }
+                },
+                error: function(xhr) {
+                    Swal.fire('Error!', 'Terjadi kesalahan. Silakan coba lagi.', 'error');
+                }
+            });
+        }
+
+        table.on('draw', function() {
+            $('#select-all-checkbox').prop('checked', false);
+            toggleBulkDeleteButton();
         });
     });
 

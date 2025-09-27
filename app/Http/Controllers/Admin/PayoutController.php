@@ -46,10 +46,10 @@ class PayoutController extends Controller
             'file_submit'       => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:1024',
             'file_paid'         => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:1024',
             'file_accepted'     => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:1024',
-            'bank_fee'          => 'required|numeric',
-            'optimation_fee'    => 'required|numeric',
-            'ads_fee'           => 'required|numeric',
-            'platform_fee'      => 'required|numeric'
+            'bank_fee'          => 'required',
+            'optimation_fee'    => 'required',
+            'ads_fee'           => 'required',
+            'platform_fee'      => 'required'
         ], [
             'program_id.required'       => 'Program harus diisi',
             'desc_request.required'     => 'Deskripsi harus diisi',
@@ -62,10 +62,6 @@ class PayoutController extends Controller
             'file_submit.max'           => 'Ukuran file maksimal 1MB',
             'file_paid.max'             => 'Ukuran file maksimal 1MB',
             'file_accepted.max'         => 'Ukuran file maksimal 1MB',
-            'bank_fee.numeric'          => 'Format angka salah',
-            'optimation_fee.numeric'    => 'Format angka salah',
-            'ads_fee.numeric'           => 'Format angka salah',
-            'platform_fee.numeric'      => 'Format angka salah',
             'bank_fee.required'          => 'Bank Fee harus diisi',
             'optimation_fee.required'    => 'Optimation Fee harus diisi',
             'ads_fee.required'           => 'Ads Fee harus diisi',

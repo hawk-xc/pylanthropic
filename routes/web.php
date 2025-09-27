@@ -322,6 +322,9 @@ Route::group([
             'token-config'      => Admin\TokenConfigController::class
         ]);
     });
+
+    Route::post('/donate/bulk-destroy', [Admin\DonateController::class, 'bulkDestroy'])->name(
+     'donate.bulk.destroy');
 });
 
 Route::get('/programs', [Guest\ProgramController::class, 'list'])->name('program.list');

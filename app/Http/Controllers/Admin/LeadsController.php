@@ -332,16 +332,16 @@ class LeadsController extends Controller
     //         ])->orderBy('created_at', 'DESC')->get();
     //     });
 
-        // Status filters
-        if ($request->ada_wa == 1) {
-            $data = $data->whereNotNull('phone');
-        }
-        if ($request->ada_email == 1) {
-            $data = $data->whereNotNull('email');
-        }
-        if ($request->interest == 1) {
-            $data = $data->where('menarik_count', '>', 0);
-        }
+    //     // Status filters
+    //     if ($request->ada_wa == 1) {
+    //         $data = $data->whereNotNull('phone');
+    //     }
+    //     if ($request->ada_email == 1) {
+    //         $data = $data->whereNotNull('email');
+    //     }
+    //     if ($request->interest == 1) {
+    //         $data = $data->where('menarik_count', '>', 0);
+    //     }
 
     //     $count_total = $data->count();
 
@@ -503,6 +503,24 @@ class LeadsController extends Controller
             });
         }
 
+        $isGarap = (int)$request->garap === 1;
+        $isMenarik = (int)$request->menarik === 1;
+
+        if ($isGarap || $isMenarik) {
+            $query->where(function ($q) use ($isGarap, $isMenarik) {
+                if ($isGarap) {
+                    $q->orWhereHas('grab_programs', function ($subQ) {
+                        $subQ->where('is_taken', 1);
+                    });
+                }
+                if ($isMenarik) {
+                    $q->orWhereHas('grab_programs', function ($subQ) {
+                        $subQ->where('is_interest', 1);
+                    });
+                }
+            });
+        }
+
         // Global search (semua term harus match)
         if ($search = trim((string)$request->input('custom_search', ''))) {
             $terms = array_filter(explode(' ', mb_strtolower($search)));
@@ -597,10 +615,10 @@ class LeadsController extends Controller
                 return $actions;
             })
             ->addColumn('informasi_program', function ($row) {
-                $garapCount = $row->garap_count ?? 0;
-                $menarikCount = $row->menarik_count ?? 0;
+                $garap = (int)($row->garap_count ?? 0);
+                $menarik = (int)($row->menarik_count ?? 0);
 
-                if ($garapCount == 0 && $menarikCount == 0) {
+                if ($garap === 0 && $menarik === 0) {
                     return 'belum ada potensi';
                 }
 
@@ -1140,9 +1158,15 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                                 $new_program->headline = $item->headline;
                                 $new_program->program_created_at = \Carbon\Carbon::createFromFormat('d M Y', $item->program_created_at)->format('Y-m-d') . ' 00:00:00';
 
-                                $new_program->save();
+                                try {
+                                    $new_program->save();
+                                } catch (Exception $e) {
+                                    dd($e->getMessage());
+                                }
+
                                 $count_inp_program++;
                             } catch (Exception $e) {
+                                dd($e->getMessage());
                                 return response()->json([
                                     'status' => 'failed',
                                     'message' => 'terjadi kesalahan saat mengembalikan data!',

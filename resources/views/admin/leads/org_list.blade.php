@@ -28,10 +28,13 @@
                 </div>
                 <div class="col-7 fc-rtl">
                     <button class="btn btn-outline-primary leads-status-filter active" data-status-filter="">Semua</button>
-                    <button class="btn btn-outline-primary leads-status-filter" data-status-filter="garap">Garap</button>
-                    <button class="btn btn-outline-primary leads-status-filter" data-status-filter="menarik">Menarik</button>
+                    <button class="btn btn-outline-primary leads-parallel-filter" data-parallel-filter="garap">Garap</button>
+                    <button class="btn btn-outline-primary leads-parallel-filter" data-parallel-filter="menarik">Menarik</button>
+                    <button class="btn btn-outline-primary leads-status-filter"
+                        data-status-filter="interest">Potensial</button>
                     <button class="btn btn-outline-primary leads-status-filter" data-status-filter="wa">Ada WA</button>
-                    <button class="btn btn-outline-primary leads-status-filter" data-status-filter="email">Ada Email</button>
+                    <button class="btn btn-outline-primary leads-status-filter" data-status-filter="email">Ada
+                        Email</button>
                     <button class="btn btn-outline-primary mr-1" id="refresh_datatable"><i class="fa fa-sync"></i>
                         Refresh</button>
                     <a href="{{ route('adm.leads.org.add') }}" target="_blank" class="btn btn-outline-primary"><i
@@ -53,7 +56,31 @@
                         </div>
                     </div>
                 </div>
-
+                <div class="col-12 mt-2">
+                    <div class="row gx-3 align-items-center">
+                        <div class="col-auto"><span class="fw-bold">Urutkan :</span></div>
+                        <div class="col">
+                            <select class="form-select form-select-sm" id="filter_sort">
+                                <option value="">-- Pilih --</option>
+                                <option value="informasi_program">Potensi</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <div class="form-check form-check-inline mb-0">
+                                <input class="form-check-input" type="radio" name="dir" id="dir_asc"
+                                    value="asc">
+                                <label class="form-check-label" for="dir_asc">Dari Terkecil</label>
+                            </div>
+                            <div class="form-check form-check-inline mb-0">
+                                <input class="form-check-input" type="radio" name="dir" id="dir_desc"
+                                    value="desc" checked>
+                                <label class="form-check-label" for="dir_desc">Dari Terbesar</label>
+                            </div>
+                        </div>
+                        <div class="col-auto"><button class="btn btn-sm btn-primary"
+                                id="filter_sort_btn">Urutkan</button></div>
+                    </div>
+                </div>
             </div>
             <div class="divider"></div>
             <table id="table-organization_list" class="table table-hover table-striped table-bordered">
@@ -62,7 +89,7 @@
                         <th>Nama Lembaga</th>
                         <th>Kontak</th>
                         <th>Alamat</th>
-                        <th>Informasi Program</th>
+                        <th>Potensi</th>
                         <th>Sosial Media</th>
                         <th>Aksi</th>
                     </tr>
@@ -275,26 +302,23 @@
             ajax: {
                 url: "{{ route('adm.leads.org.datatables') }}",
                 data: function(d) {
-                    d.ada_wa = 0;
-                    d.ada_email = 0;
-                    d.interest = 0;
-                    d.garap = 0;
+                    var activeFilter = $('.leads-status-filter.active').data('status-filter');
+                    if (activeFilter === 'wa') {
+                        d.ada_wa = 1;
+                    }
+                    if (activeFilter === 'email') {
+                        d.ada_email = 1;
+                    }
+                    if (activeFilter === 'interest') {
+                        d.interest = 1;
+                    }
 
-                    $('.leads-status-filter.active').each(function() {
-                        var activeFilter = $(this).data('status-filter');
-                        if (activeFilter === 'wa') {
-                            d.ada_wa = 1;
-                        }
-                        if (activeFilter === 'email') {
-                            d.ada_email = 1;
-                        }
-                        if (activeFilter === 'menarik') {
-                            d.interest = 1;
-                        }
-                        if (activeFilter === 'garap') {
-                            d.garap = 1;
-                        }
-                    });
+                    if ($('.leads-parallel-filter[data-parallel-filter="garap"]').hasClass('active')) {
+                        d.garap = 1;
+                    }
+                    if ($('.leads-parallel-filter[data-parallel-filter="menarik"]').hasClass('active')) {
+                        d.menarik = 1;
+                    }
 
                     // Add custom search parameter
                     var name_search = $('#name_filter').val();
@@ -340,20 +364,14 @@
 
         // Status filter buttons
         $('.leads-status-filter').on('click', function() {
-            var filter = $(this).data('status-filter');
-            if (filter === '') { // "Semua" button
-                if (!$(this).hasClass('active')) {
-                    $('.leads-status-filter').removeClass('active');
-                    $(this).addClass('active');
-                }
-            } else {
-                $('.leads-status-filter[data-status-filter=""]').removeClass('active'); // De-select "Semua"
-                $(this).toggleClass('active');
-                // If no other filter is active, activate "Semua"
-                if ($('.leads-status-filter.active').length === 0) {
-                    $('.leads-status-filter[data-status-filter=""]').addClass('active');
-                }
-            }
+            $('.leads-status-filter').removeClass('active');
+            $(this).addClass('active');
+            table.ajax.reload();
+        });
+
+        // Parallel filter buttons
+        $('.leads-parallel-filter').on('click', function() {
+            $(this).toggleClass('active');
             table.ajax.reload();
         });
 
@@ -362,7 +380,17 @@
             table.draw();
         });
 
+        // Sort button
+        $('#filter_sort_btn').on('click', function() {
+            var picked = $('#filter_sort').val();
+            var dir = $('input[name="dir"]:checked').val();
 
+            if (picked === 'informasi_program') {
+                table.order([3, dir]).draw();
+            } else {
+                table.order([]).draw(); // Reset order
+            }
+        });
 
         function firstChat(id, org) {
             var result = confirm("Ingin Frist Chat ke " + org + "?");
@@ -575,4 +603,3 @@
         }
     </script>
 @endsection
-

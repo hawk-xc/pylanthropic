@@ -6,6 +6,45 @@
 
 
 @section('css_plugins')
+    <style>
+        .content-preview {
+            position: relative;
+            max-height: 200px;
+            overflow: hidden;
+            transition: max-height .5s ease-in-out;
+        }
+
+        .content-preview:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(to bottom, hsla(0, 0%, 100%, 0), #fff);
+            pointer-events: none;
+        }
+
+        .content-preview.no-after {
+            max-height: 9999px !important;
+        }
+
+        .content-preview.no-after:after {
+            display: none;
+        }
+
+        .btn-selengkapnya-about {
+            background-color: #01a7e1;
+            color: #fff;
+            font-weight: 600;
+            border: none;
+            border-radius: 9999px;
+            padding: 6px 16px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+    </style>
     <!-- Meta Pixel Code -->
     <script>
         ! function(f, b, e, v, n, t, s) {
@@ -24,7 +63,7 @@
             t.src = v;
             s = b.getElementsByTagName(e)[0];
             s.parentNode.insertBefore(t, s)
-        } (window, document, 'script',
+        }(window, document, 'script',
             'https://connect.facebook.net/en_US/fbevents.js');
         fbq.disablePushState = true;
 
@@ -271,8 +310,8 @@
         <div class="custom-container">
             <div class="fw-bold fs-15 mb-2 pb-1">Info Penggalang Dana</div>
             <a class="d-flex mt-2" href="#">
-                <img class="img img-fundraiser-detail me-2" src="{{ asset('public/images/fundraiser/' . $program->logo) }}"
-                    alt="{{ $program->name }}">
+                <img class="img img-fundraiser-detail me-2"
+                    src="{{ asset('public/images/fundraiser/' . $program->logo) }}" alt="{{ $program->name }}">
                 <div class="ms-2">
                     <h6 class="fs-14 lh-24 fw-semibold">{{ ucwords($program->name) }}</h6>
                     <div class="verified-fundraiser d-inline-block mt-1">
@@ -306,8 +345,8 @@
     <section class="py-20">
         <div class="custom-container">
             <div class="fw-bold fs-16 mb-2 pb-1">Tentang Program</div>
-            <div class="content-preview no-after" id="preview-about">
-                <div class="content-mini expanded fs-15 text-center">
+            <div class="content-preview" id="preview-about">
+                <div class="content-mini fs-15 text-center">
                     {!! $program->about !!}
                     <p class="mb-1 mt-3">
                         <strong>Legalitas</strong>
@@ -346,9 +385,9 @@
                     </table>
                 </div>
             </div>
-            <!-- <div class="text-center pt-2 pb-2">
-            <button class="btn-selengkapnya-about" id="about-more">Baca selengkapnya</button>
-          </div> -->
+            <div class="text-center pt-2 pb-2">
+                <button class="btn-selengkapnya-about" id="about-more">Baca Selengkapnya</button>
+            </div>
 
             <div class="alert alert-secondary disclaimer-detail mt-3 mb-2">
                 <strong class="">Disclaimer :</strong> Informasi, opini dan foto yang ada di halaman program ini
@@ -386,12 +425,12 @@
                 </div>
                 <div class="content-preview" id="preview-info">
                     <!-- <div class="">
-                <h5 class="fs-14 fw-semibold lh-20">{{ ucwords($info->title) }}</h5>
-                <div class="fs-14 mt-1">18 hari yang lalu</div>
-                <div class="fs-14 mt-3">
-                  {!! $info->content !!}
-                </div>
-              </div> -->
+                    <h5 class="fs-14 fw-semibold lh-20">{{ ucwords($info->title) }}</h5>
+                    <div class="fs-14 mt-1">18 hari yang lalu</div>
+                    <div class="fs-14 mt-3">
+                      {!! $info->content !!}
+                    </div>
+                  </div> -->
 
                     <ul class="info-timeline">
                         <li>
@@ -421,9 +460,9 @@
                 </div>
                 <!-- else -->
                 <!-- <div class="title mb-3 pb-1">
-              <div class="fw-bold fs-16" id="kabar-terbaru">Kabar Terbaru</div>
-            </div>
-            <div class="text-center fs-14 lh-20 text-muted">Belum ada data kabar</div> -->
+                  <div class="fw-bold fs-16" id="kabar-terbaru">Kabar Terbaru</div>
+                </div>
+                <div class="text-center fs-14 lh-20 text-muted">Belum ada data kabar</div> -->
             </div>
         </section>
         <!-- Kabar Terbaru section end -->
@@ -486,7 +525,8 @@
                     <div class="fw-bold fs-16" id="donasi">Donatur</div>
                 </div>
                 <div class="row mb-3">
-                    <div class="col-12 text-center h-100 p-5 d-flex flex-column justify-content-center align-items-center gap-3" style="min-height: 350px;">
+                    <div class="col-12 text-center h-100 p-5 d-flex flex-column justify-content-center align-items-center gap-3"
+                        style="min-height: 350px;">
                         <img src="{{ asset('give-love.png') }}" alt="..." class="img-fluid w-25 opacity-50">
                         <div class="text-center fs-14 lh-20 text-muted">Jadikan Anda sebagai pelopor orang baik untuk
                             program ini</div>
@@ -683,7 +723,7 @@
             } else if (name == 'linkedin') {
                 let url = encodeURI('https://www.linkedin.com/shareArticle?url=' + uri +
                     '&mini=true&title={{ $program->title }}&summary={{ $program->short_desc }}&source={{ url('/') }}'
-                    );
+                );
                 window.open(url, 'name', 'width=600,height=400');
             } else if (name == 'email') {
                 let url = encodeURI(
@@ -710,9 +750,7 @@
         // Baca selengkapnya About
         $("#about-more").on("click", function() {
             $('#preview-about').addClass('no-after');
-            $('#preview-about').css('height', '100%');
-            $('#preview-about').css('max-height', '100%');
-            $(this).remove();
+            $(this).parent().remove();
 
             $.ajax({
                 type: "POST",
@@ -732,9 +770,7 @@
         // Baca selengkapnya Info
         $("#info-more").on("click", function() {
             $('#preview-info').addClass('no-after');
-            $('#preview-info').css('height', '100%');
-            $('#preview-info').css('max-height', '100%');
-            $(this).remove();
+            $(this).parent().remove();
         });
     </script>
 @endsection
