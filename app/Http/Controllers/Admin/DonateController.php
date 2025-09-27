@@ -75,46 +75,6 @@ class DonateController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
      * Remove the specified resource from storage.
      */
     public function destroy(Request $request, string $id)
@@ -376,7 +336,7 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
 
             if(isset($request->ref_code)) {     // ref_code
                 if($request->ref_code!='') {
-                    $data = $data->where('transaction.ref_code', $request->ref_code);
+                    $data = $data->where('transaction.ref_code', 'like', '%'. $request->ref_code . '%');
                 }
             }
 
