@@ -248,6 +248,11 @@ Route::group([
         Route::get('/crm-prospect-list/{pipeline}', [Admin\Pipeline\CRMProspectController::class, 'listProspects'])->name('crm-prospect.list');
         Route::get('/crm-prospect-activity-list/{pipeline}', [Admin\Pipeline\CRMProspectActivityController::class, 'listProspectActivity'])->name('crm-prospect-activity.list');
 
+        // MutasiBank
+        Route::get('/mutasi-user', [Admin\MutasiBankController::class, 'index'])->name('mutasi.user');
+        Route::get('/mutasi-all-account', [Admin\MutasiBankController::class, 'allAccount'])->name('mutasi-all-account');
+        Route::get('/mutasi-statement-per-account', [Admin\MutasiBankController::class, 'accountStatement'])->name('mutasi.statement.account');
+
         // CRM Prospect
         Route::prefix('crm-prospect-activity')->group(function() {
             Route::get('/list/{pipeline}', [Admin\Pipeline\CRMProspectActivityController::class, 'listAllActivities'])

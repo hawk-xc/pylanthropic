@@ -222,6 +222,28 @@
                         </li>
                     </ul>
                 </li>
+                @if (Auth::user()->position === 'super_admin')
+                <li class="{{ $sidebar_menu == 'finance' ? 'mm-active' : '' }}">
+                    <a href="#">
+                        <i class="metismenu-icon pe-7s-users icon-gradient bg-arielle-smile"></i> Keuangan
+                        <i class="metismenu-state-icon pe-7s-angle-down caret-left"></i>
+                    </a>
+                    <ul class="{{ $sidebar_menu == 'finance' ? 'mm-show' : '' }}">
+                        <li>
+                            <a class="{{ $sidebar_submenu == 'finance_posisikas' ? 'mm-active' : '' }}"
+                                href="{{ route('adm.mutasi-all-account') }}">
+                                <i class="metismenu-icon"></i> Posisi Kas
+                            </a>
+                        </li>
+                        <li>
+                            <a class="{{ $sidebar_submenu == 'finance_psak' ? 'mm-active' : '' }}"
+                                href="{{ route('adm.mutasi.user') }}">
+                                <i class="metismenu-icon"></i> PSAK
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                @endif
                 <li class="{{ $sidebar_menu == 'report' ? 'mm-active' : '' }}">
                     <a href="#">
                         <i class="metismenu-icon pe-7s-news-paper icon-gradient bg-arielle-smile"></i>Laporan
