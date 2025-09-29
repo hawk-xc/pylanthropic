@@ -26,6 +26,7 @@
         .big-checkbox {
             min-height: auto !important;
         }
+        .btn-group-xs>.btn, .btn-xs { font-size: 9px; }
     </style>
 @endsection
 
@@ -58,6 +59,8 @@
                         <button class="btn btn-outline-primary filter_payment" id="filter-qris" data-id="qris">QRIS</button>
                         <button class="btn btn-outline-primary filter_payment" id="filter-gopay" data-id="gopay">Gopay</button>
                         <button class="btn btn-outline-primary filter_payment" id="filter-mandiri" data-id="mandiri">Mandiri</button>
+                        <button class="btn btn-outline-primary" id="filter-1jt"><i class="fa fa-filter mr-1" id="filter-1jt-icon"></i> >= 1 Juta</button>
+                        <button class="btn btn-outline-primary" id="filter-500k"><i class="fa fa-filter mr-1" id="filter-500k-icon"></i> >= 500 Ribu</button>
                         <button class="btn btn-outline-primary" id="filter-fu"><i class="fa fa-filter mr-1" id="filter-fu-icon"></i> Butuh FU</button>
                         <button class="btn btn-outline-primary" id="filter-1day"><i class="fa fa-filter mr-1" id="filter-1day-icon"></i> Show Kemarin</button>
                         <button class="btn btn-primary" id="filter-5day"><i class="fa fa-check mr-1" id="filter-5day-icon"></i> Show 5 Hari</button>
@@ -127,6 +130,10 @@
     <input type="hidden" id="qris_val" value="0">
     <input type="hidden" id="mandiri_val" value="0">
     <input type="hidden" id="gopay_val" value="0">
+    <input type="hidden" id="filter_1jt_val" value="0">
+    <input type="hidden" id="filter_500k_val" value="0">
+    <input type="hidden" id="filter_nominal_code" value="">
+
 @endsection
 
 
@@ -312,6 +319,54 @@
         }
     });
 
+    // QUICK FILTER NOMINAL (>=): 1jt & 500k
+    $("#filter-1jt").on("click", function(){
+        const active = $('#filter_1jt_val').val() === "1";
+        if (active) {
+            // OFF
+            $('#filter_1jt_val').val(0);
+            $('#filter_nominal_code').val('');
+            $('#filter-1jt-icon').removeClass('fa-check').addClass('fa-filter');
+            $('#filter-1jt').removeClass('btn-primary').addClass('btn-outline-primary');
+        } else {
+            // ON 1jt, OFF 500k
+            $('#filter_1jt_val').val(1);
+            $('#filter_500k_val').val(0);
+            $('#filter_nominal_code').val('1jt');
+
+            $('#filter-1jt-icon').removeClass('fa-filter').addClass('fa-check');
+            $('#filter-1jt').removeClass('btn-outline-primary').addClass('btn-primary');
+
+            $('#filter-500k-icon').removeClass('fa-check').addClass('fa-filter');
+            $('#filter-500k').removeClass('btn-primary').addClass('btn-outline-primary');
+        }
+        donate_table();
+    });
+
+    $("#filter-500k").on("click", function(){
+        const active = $('#filter_500k_val').val() === "1";
+        if (active) {
+            // OFF
+            $('#filter_500k_val').val(0);
+            $('#filter_nominal_code').val('');
+            $('#filter-500k-icon').removeClass('fa-check').addClass('fa-filter');
+            $('#filter-500k').removeClass('btn-primary').addClass('btn-outline-primary');
+        } else {
+            // ON 500k, OFF 1jt
+            $('#filter_500k_val').val(1);
+            $('#filter_1jt_val').val(0);
+            $('#filter_nominal_code').val('500k');
+
+            $('#filter-500k-icon').removeClass('fa-filter').addClass('fa-check');
+            $('#filter-500k').removeClass('btn-outline-primary').addClass('btn-primary');
+
+            $('#filter-1jt-icon').removeClass('fa-check').addClass('fa-filter');
+            $('#filter-1jt').removeClass('btn-primary').addClass('btn-outline-primary');
+        }
+        donate_table();
+    });
+
+
     $(".filter_payment").on("click", function(){
         var fil_payment = $(this).attr("data-id");
         var current_val = $('#'+fil_payment+'_val').val();
@@ -324,6 +379,21 @@
             $('#'+fil_payment+'_val').val(0);
         }
         donate_table();
+    });
+
+    // Jika user mengetik nominal manual, quick filter (>=) dimatikan
+    $('#filter_nominal').on('input', function() {
+        if ($(this).val() && $(this).val() !== '1jt' && $(this).val() !== '500k') {
+            $('#filter_1jt_val').val(0);
+            $('#filter_500k_val').val(0);
+            $('#filter_nominal_code').val('');
+
+            $('#filter-1jt-icon').addClass('fa-filter').removeClass('fa-check');
+            $('#filter-1jt').addClass('btn-outline-primary').removeClass('btn-primary');
+            $('#filter-500k-icon').addClass('fa-filter').removeClass('fa-check');
+            $('#filter-500k').addClass('btn-outline-primary').removeClass('btn-primary');
+            donate_table();
+        }
     });
 
     function hideFunc(name) {
@@ -345,7 +415,11 @@
 
         let donatur_name   = $('#donatur_name').val();
         let donatur_telp   = $('#donatur_telp').val();
-        let filter_nominal = $('#filter_nominal').val();
+        let filter_nominal = $('#filter_nominal').val(); // input manual (==)
+        const nominal_code = $('#filter_nominal_code').val(); // '1jt' atau '500k' (>=)
+        if (nominal_code) {
+            filter_nominal = nominal_code;  // override kirim kode untuk controller (>=)
+        }
         let program_id     = $('#program_id').val();
         let status         = $('#status_filter').val();
 
@@ -579,6 +653,16 @@
             $('#5day_val').val(1);
             $('#filter-5day-icon').addClass('fa-check').removeClass('fa-filter');
             $('#filter-5day').addClass('btn-primary').removeClass('btn-outline-primary');
+
+            $('#filter_1jt_val').val(0);
+            $('#filter_500k_val').val(0);
+            $('#filter_nominal_code').val('');
+
+            $('#filter-1jt-icon').addClass('fa-filter').removeClass('fa-check');
+            $('#filter-1jt').addClass('btn-outline-primary').removeClass('btn-primary');
+
+            $('#filter-500k-icon').addClass('fa-filter').removeClass('fa-check');
+            $('#filter-500k').addClass('btn-outline-primary').removeClass('btn-primary');
 
             $('.filter_payment').addClass('btn-outline-primary').removeClass('btn-primary');
             $('#bni_val').val(0);
