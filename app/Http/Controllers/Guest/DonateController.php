@@ -414,9 +414,11 @@ class DonateController extends Controller
                     $redirect_url   = 0;
                     $token_midtrans = 0;
                 }
-                
 
                 // insert table transaction
+                $ip        = $request->ip() ?? '-';
+                $userAgent = $request->header('User-Agent') ?? '-';
+
                 $transaction  = Transaction::create([
                     'program_id'      => $program->id,
                     'donatur_id'      => $donatur_id,
@@ -431,7 +433,7 @@ class DonateController extends Controller
                     'midtrans_token'  => $token_midtrans,
                     'midtrans_url'    => $redirect_url,
                     'link'            => $link,
-                    'user_agent'      => '',
+                    'user_agent'      => $ip.' | '.$userAgent,  // ✅ gabungan IP + User Agent
                     'ref_code'        => (isset($request->ref)) ? strip_tags($request->ref) : null
                 ]);
 
@@ -660,6 +662,9 @@ class DonateController extends Controller
 
 
             // insert table transaction
+            $ip        = $request->ip() ?? '-';
+            $userAgent = $request->header('User-Agent') ?? '-';
+
             $transaction  = Transaction::create([
                 'program_id'      => $program->id,
                 'donatur_id'      => $donatur_id,
@@ -671,7 +676,7 @@ class DonateController extends Controller
                 'message'         => $request->has('doa')?trim($request->doa):null,
                 'payment_type_id' => $payment->id,
                 'is_show_name'    => $request->has('anonim')?1:0,
-                'user_agent'      => ''
+                'user_agent'      => $ip.' | '.$userAgent,  // ✅ gabungan IP + User Agent
             ]);
 
             // if($payment->type=='transfer') {             // sementara ditambahkan 3 digit semua
@@ -879,6 +884,9 @@ echo "<br><br>";
                 $unique_number = $this->uniqueNumber();
 
                 // insert table transaction
+                $ip        = $request->ip() ?? '-';
+                $userAgent = $request->header('User-Agent') ?? '-';
+
                 $transaction  = Transaction::create([
                     'program_id'      => $program->id,
                     'donatur_id'      => $donatur_id,
@@ -890,7 +898,7 @@ echo "<br><br>";
                     'message'         => $request->has('doa')?trim($request->doa):null,
                     'payment_type_id' => $payment->id,
                     'is_show_name'    => $request->has('anonim')?1:0,
-                    'user_agent'      => ''
+                    'user_agent'      => $ip.' | '.$userAgent,  // ✅ gabungan IP + User Agent
                 ]);
 
                 // for auto WA
