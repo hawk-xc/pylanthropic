@@ -117,37 +117,38 @@
             <div class="card-body p-3">
                 <div class="row">
                     <div class="col-12 fc-rtl">
-                        <button class="btn btn-sm btn-outline-primary" id="playButton"><i class="fa fa-volume-mute mr-1"></i> OFF</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="playButton"><i class="fa fa-volume-mute mr-1"></i> OFF</button>
+                        <input type="hidden" id="playSound" value="0">
 
                         {{-- Filter Payment (exclusive group=payment) --}}
-                        <button class="btn btn-sm btn-outline-primary btn-toggle" data-group="payment" data-target="#bca_val" data-value="1" id="filter-bca">BCA</button>
-                        <button class="btn btn-sm btn-outline-primary btn-toggle" data-group="payment" data-target="#bni_val" data-value="1" id="filter-bni">BNI</button>
-                        <button class="btn btn-sm btn-outline-primary btn-toggle" data-group="payment" data-target="#bsi_val" data-value="1" id="filter-bsi">BSI</button>
-                        <button class="btn btn-sm btn-outline-primary btn-toggle" data-group="payment" data-target="#bri_val" data-value="1" id="filter-bri">BRI</button>
-                        <button class="btn btn-sm btn-outline-primary btn-toggle" data-group="payment" data-target="#qris_val" data-value="1" id="filter-qris">QRIS</button>
-                        <button class="btn btn-sm btn-outline-primary btn-toggle" data-group="payment" data-target="#gopay_val" data-value="1" id="filter-gopay">Gopay</button>
-                        <button class="btn btn-sm btn-outline-primary btn-toggle" data-group="payment" data-target="#mandiri_val" data-value="1" id="filter-mandiri">Mandiri</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-toggle" data-group="payment" data-target="#bca_val" data-value="1" id="filter-bca">BCA</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-toggle" data-group="payment" data-target="#bni_val" data-value="1" id="filter-bni">BNI</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-toggle" data-group="payment" data-target="#bsi_val" data-value="1" id="filter-bsi">BSI</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-toggle" data-group="payment" data-target="#bri_val" data-value="1" id="filter-bri">BRI</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-toggle" data-group="payment" data-target="#qris_val" data-value="1" id="filter-qris">QRIS</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-toggle" data-group="payment" data-target="#gopay_val" data-value="1" id="filter-gopay">Gopay</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-toggle" data-group="payment" data-target="#mandiri_val" data-value="1" id="filter-mandiri">Mandiri</button>
 
                         <div class="mt-1"></div>
 
                         {{-- Quick nominal (set #filter_nominal), exclusive within quick-nom group --}}
-                        <button class="btn btn-sm btn-outline-primary quick-nom" data-value="1jt" id="filter-1jt"><i class="fa fa-filter mr-1"></i>>= 1jt</button>
-                        <button class="btn btn-sm btn-outline-primary quick-nom" data-value="500k" id="filter-500k"><i class="fa fa-filter mr-1"></i>>= 500K</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary quick-nom" data-value="1jt" id="filter-1jt"><i class="fa fa-filter mr-1"></i>>= 1jt</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary quick-nom" data-value="500k" id="filter-500k"><i class="fa fa-filter mr-1"></i>>= 500K</button>
 
                         {{-- FU toggle --}}
-                        <button class="btn btn-sm btn-outline-primary btn-switch" data-target="#fu_val" data-toggle-value="1" id="filter-fu">
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-switch" data-target="#fu_val" data-toggle-value="1" id="filter-fu">
                             <i class="fa fa-filter mr-1" id="filter-fu-icon"></i> Butuh FU
                         </button>
 
                         {{-- Day range toggles (exclusive within range group) --}}
-                        <button class="btn btn-sm btn-outline-primary btn-range" data-target="#1day_val" data-other="#5day_val" id="filter-1day">
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-range" data-target="#day1_val" data-other="#day5_val" id="filter-1day">
                             <i class="fa fa-filter mr-1" id="filter-1day-icon"></i> Show Kemarin
                         </button>
-                        <button class="btn btn-sm btn-primary btn-range active" data-target="#5day_val" data-other="#1day_val" id="filter-5day">
+                        <button type="button" class="btn btn-sm btn-primary btn-range active" data-target="#day5_val" data-other="#day1_val" id="filter-5day">
                             <i class="fa fa-check mr-1" id="filter-5day-icon"></i> Show 5 Hari
                         </button>
 
-                        <button class="btn btn-sm btn-outline-primary" id="refresh_table_donate"><i class="fa fa-sync"></i> Refresh</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary" id="refresh_table_donate"><i class="fa fa-sync"></i> Refresh</button>
                     </div>
                 </div>
 
@@ -160,7 +161,7 @@
                         <input type="text" id="filter_nominal" placeholder="Nominal" class="form-control form-control-sm me-1" style="width:120px">
                         <input type="hidden" id="donatur_title" placeholder="Judul Program" class="form-control form-control-sm me-1">
                         <input type="text" id="ref_code" placeholder="Ref Code" class="form-control form-control-sm me-1" style="width:130px">
-                        <button class="btn btn-sm btn-primary" id="filter_search">Cari</button>
+                        <button type="button" class="btn btn-sm btn-primary" id="filter_search">Cari</button>
                     </div>
                 </div>
 
@@ -188,25 +189,25 @@
                 <div class="row">
                     <div class="col-12 fc-rtl">
                         {{-- Filter Mutasi (exclusive group=mutation) --}}
-                        <button class="btn btn-sm btn-outline-primary btn-toggle" data-group="mutation" data-target="#mut_bca" data-value="1" id="filter-bca-mutation">BCA</button>
-                        <button class="btn btn-sm btn-outline-primary btn-toggle" data-group="mutation" data-target="#mut_bni" data-value="1" id="filter-bni-mutation">BNI</button>
-                        <button class="btn btn-sm btn-outline-primary btn-toggle" data-group="mutation" data-target="#mut_bsi" data-value="1" id="filter-bsi-mutation">BSI</button>
-                        <button class="btn btn-sm btn-outline-primary btn-toggle" data-group="mutation" data-target="#mut_bri" data-value="1" id="filter-bri-mutation">BRI</button>
-                        <button class="btn btn-sm btn-outline-primary btn-toggle" data-group="mutation" data-target="#mut_mandiri" data-value="1" id="filter-mandiri-mutation">Mandiri</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-toggle" data-group="mutation" data-target="#mut_bca" data-value="1" id="filter-bca-mutation">BCA</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-toggle" data-group="mutation" data-target="#mut_bni" data-value="1" id="filter-bni-mutation">BNI</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-toggle" data-group="mutation" data-target="#mut_bsi" data-value="1" id="filter-bsi-mutation">BSI</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-toggle" data-group="mutation" data-target="#mut_bri" data-value="1" id="filter-bri-mutation">BRI</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-toggle" data-group="mutation" data-target="#mut_mandiri" data-value="1" id="filter-mandiri-mutation">Mandiri</button>
 
                         {{-- Not match toggle --}}
-                        <button class="btn btn-sm btn-outline-primary btn-switch" data-target="#mut_notmatch" data-toggle-value="1" id="filter-notmatch-mutation">
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-switch" data-target="#mut_notmatch" data-toggle-value="1" id="filter-notmatch-mutation">
                             <i class="fa fa-eye-slash"></i>
                         </button>
 
                         <div class="mt-1"></div>
 
                         {{-- Range Mutasi (exclusive group=mutrange) --}}
-                        <button class="btn btn-sm btn-outline-primary btn-mutr" data-target="#mut_today" data-other="#mut_day1,#mut_day2" id="filter-today-mutation"><i class="fa fa-filter mr-1"></i> Today</button>
-                        <button class="btn btn-sm btn-outline-primary btn-mutr" data-target="#mut_day1" data-other="#mut_today,#mut_day2" id="filter-1day-mutation"><i class="fa fa-filter mr-1"></i> Kemarin</button>
-                        <button class="btn btn-sm btn-primary btn-mutr active" data-target="#mut_day2" data-other="#mut_today,#mut_day1" id="filter-5day-mutation"><i class="fa fa-check mr-1"></i> 2 Hari</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-mutr" data-target="#mut_today" data-other="#mut_day1,#mut_day2" id="filter-today-mutation"><i class="fa fa-filter mr-1"></i> Today</button>
+                        <button type="button" class="btn btn-sm btn-outline-primary btn-mutr" data-target="#mut_day1" data-other="#mut_today,#mut_day2" id="filter-1day-mutation"><i class="fa fa-filter mr-1"></i> Kemarin</button>
+                        <button type="button" class="btn btn-sm btn-primary btn-mutr active" data-target="#mut_day2" data-other="#mut_today,#mut_day1" id="filter-5day-mutation"><i class="fa fa-check mr-1"></i> 2 Hari</button>
 
-                        <button class="btn btn-sm btn-outline-primary mr-1" id="refresh_table_donate_mutation"><i class="fa fa-sync"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-primary mr-1" id="refresh_table_donate_mutation"><i class="fa fa-sync"></i></button>
                     </div>
                 </div>
 
@@ -216,7 +217,7 @@
                     <div class="col-12 form-inline">
                         <span>Filter :</span>
                         <input type="text" id="filter_nominal_mutation" placeholder="Nominal" class="form-control form-control-sm me-1 ms-2">
-                        <button class="btn btn-sm btn-primary" id="filter_search_mutation">Cari</button>
+                        <button type="button" class="btn btn-sm btn-primary" id="filter_search_mutation">Cari</button>
                     </div>
                 </div>
 
@@ -236,11 +237,11 @@
         </div>
     </div>
 
-    {{-- Hidden states (tetap sama param & defaultnya) --}}
+    {{-- Hidden states (default) --}}
     <input type="hidden" id="last_donate" value="{{ $last_donate }}">
     <input type="hidden" id="fu_val" value="0">
-    <input type="hidden" id="1day_val" value="0">
-    <input type="hidden" id="5day_val" value="1">
+    <input type="hidden" id="day1_val" value="0">
+    <input type="hidden" id="day5_val" value="1">
     <input type="hidden" id="bca_val" value="0">
     <input type="hidden" id="bni_val" value="0">
     <input type="hidden" id="bsi_val" value="0">
@@ -299,6 +300,10 @@
                 <div class="form-check form-switch mt-2">
                     <input class="form-check-input" type="checkbox" name="sendwa" checked role="switch" id="checkboxwa">
                     <label class="form-check-label" for="checkboxwa">Kirim WA Terimakasih?</label>
+                </div>
+                <div class="form-check form-switch mt-2">
+                    <input class="form-check-input" type="checkbox" name="isspam" role="switch" id="checkboxspam">
+                    <label class="form-check-label" for="checkboxspam">Beri tanda SPAM?</label>
                 </div>
             </div>
             <div class="modal-footer pt-2 pb-2">
@@ -363,7 +368,7 @@ function addCustomPagination(api){
 }
 function hideFunc(sel){
     const m = bootstrap.Modal.getInstance(document.querySelector(sel));
-    m && m.hide();
+    if (m) m.hide();
 }
 
 /** =======================
@@ -372,8 +377,8 @@ function hideFunc(sel){
 function buildDonateUrl(){
     const params = {
         need_fu: $('#fu_val').val(),
-        day1:    $('#1day_val').val(),
-        day5:    $('#5day_val').val(),
+        day1:    $('#day1_val').val(),
+        day5:    $('#day5_val').val(),
         bca:     $('#bca_val').val(),
         bni:     $('#bni_val').val(),
         bsi:     $('#bsi_val').val(),
@@ -421,15 +426,13 @@ function clearGroup(group){
     });
 }
 $(document).on('click','.btn-toggle',function(){
-    const group = $(this).data('group');     // 'payment' | 'mutation'
-    const target = $(this).data('target');   // hidden input selector
-    const value = $(this).data('value')||1;  // usually 1
+    const group  = $(this).data('group');
+    const target = $(this).data('target');
+    const value  = $(this).data('value')||1;
     if($(this).hasClass('active')){
-        // toggle off
         $(target).val(0);
         $(this).removeClass('btn-primary active').addClass('btn-outline-primary');
     }else{
-        // exclusive on
         clearGroup(group);
         $(target).val(value);
         $(this).removeClass('btn-outline-primary').addClass('btn-primary active');
@@ -437,36 +440,48 @@ $(document).on('click','.btn-toggle',function(){
     (group==='mutation') ? mutation_table() : donate_table();
 });
 
-// 2) Simple switch (0 <-> toggleValue) for single hidden input
+// 2) Simple switch (0 <-> toggleValue)
 $(document).on('click','.btn-switch',function(){
     const target = $(this).data('target');
     const togVal = Number($(this).data('toggle-value')||1);
-    const cur = Number($(target).val()||0);
-    const next = cur===togVal ? 0 : togVal;
+    const cur    = Number($(target).val()||0);
+    const next   = (cur===togVal ? 0 : togVal);
     $(target).val(next);
     $(this).toggleClass('btn-primary btn-outline-primary');
     donate_table();
 });
 
-// 3) Exclusive range for donate (1day vs 5day)
+// 3) Range tri-state (day1 / day5 / none)
+// - Klik tombol aktif  -> OFF semua range (day1=0, day5=0)
+// - Klik tombol non-aktif -> ON tombol tsb, OFF yang lain
 $(document).on('click','.btn-range',function(){
-    const target = $(this).data('target'); // e.g. #1day_val or #5day_val
-    const others = ($(this).data('other')||'').split(',');
-    // activate this
-    $(target).val(1);
-    $(this).removeClass('btn-outline-primary').addClass('btn-primary active');
-    $(this).find('i').removeClass('fa-filter').addClass('fa-check');
-    // deactivate others
-    others.forEach(sel=>{
-        if(sel){
-            $(sel.trim()).val(0);
-        }
-    });
-    // UI off others in same visual group
-    $('.btn-range').not(this).each(function(){
-        $(this).removeClass('btn-primary active').addClass('btn-outline-primary');
-        $(this).find('i').removeClass('fa-check').addClass('fa-filter');
-    });
+    const $btn      = $(this);
+    const targetSel = $btn.data('target');                 // "#day1_val" or "#day5_val"
+    const otherSel  = ($btn.data('other')||'').split(',').map(s=>s.trim()).filter(Boolean);
+    const $target   = $(targetSel);
+    const isActive  = $btn.hasClass('active') && $target.val()==='1';
+
+    if (isActive){
+        // OFF semua
+        $target.val(0);
+        otherSel.forEach(sel=>$(sel).val(0));
+        // UI kedua button jadi OFF
+        $('.btn-range')
+            .removeClass('btn-primary active').addClass('btn-outline-primary')
+            .find('i').removeClass('fa-check').addClass('fa-filter');
+    } else {
+        // ON yang ini; OFF yang lain
+        $target.val(1);
+        $btn.removeClass('btn-outline-primary').addClass('btn-primary active')
+            .find('i').removeClass('fa-filter').addClass('fa-check');
+
+        $('.btn-range').not($btn).each(function(){
+            const otherTarget = $(this).data('target');
+            $(otherTarget).val(0);
+            $(this).removeClass('btn-primary active').addClass('btn-outline-primary')
+                   .find('i').removeClass('fa-check').addClass('fa-filter');
+        });
+    }
     donate_table();
 });
 
@@ -485,7 +500,7 @@ $(document).on('click','.btn-mutr',function(){
     mutation_table();
 });
 
-// 5) Quick nominal (1jt/500k) -> set #filter_nominal, exclusive within quick-nom group
+// 5) Quick nominal (1jt/500k)
 $(document).on('click','.quick-nom',function(){
     const isActive = $(this).hasClass('active');
     $('.quick-nom').removeClass('btn-primary active').addClass('btn-outline-primary');
@@ -497,7 +512,6 @@ $(document).on('click','.quick-nom',function(){
     }
     donate_table();
 });
-// ketik manual -> matikan quick-nom highlight
 $('#filter_nominal').on('input',()=>$('.quick-nom').removeClass('btn-primary active').addClass('btn-outline-primary'));
 
 /** =======================
@@ -510,6 +524,7 @@ function editStatus(id,status,nominal){
     Object.keys(map).forEach(k=>{$('#'+map[k][0]).prop('disabled',false).prop('checked',false);});
     $('#'+map[status][0]).prop('disabled',true).prop('checked',true);
     $("#checkgenap").prop('checked',false);
+    $("#checkboxspam").prop('checked', false);
     $("#modalTitle").html(nominal+' - '+map[status][1]);
     new bootstrap.Modal(document.getElementById('modal_status')).show();
 }
@@ -526,6 +541,7 @@ $("#save_status").on("click",function(){
         _token:"{{ csrf_token() }}",
         id_trans: $("#id_trans").val(),
         sendwa: $("#checkboxwa").is(':checked')?1:0,
+        isspam: $("#checkboxspam").is(':checked')?1:0,
         status: $('input[name="status"]:checked').val(),
         nominal: $('#rupiah').val(),
         mutation_id: $('#mutation_id').val()
@@ -551,28 +567,43 @@ $("#save_fu").on("click",function(){
         if(d==='success'){ hideFunc('#modal_fu'); alert("Sudah dikirim"); }
     });
 });
-$('#playButton').on('click',()=>{
-    new Audio("{{ asset('public/audio/1.mp3') }}").play();
+
+
+let playsound = $('#playSound').val();
+$('#playButton').on('click', function () {
+  const isOff = $('#playSound').val() === '0';
+  if (isOff) {
+    $('#playSound').val('1'); 
+    playsound = '1';
     $('#playButton').html('<i class="fa fa-volume-up mr-1"></i> ON');
+    new Audio("{{ asset('audio/1.mp3') }}").play(); // <-- tanpa 'public/'
+  } else {
+    $('#playSound').val('0');
+    playsound = '0';
+    $('#playButton').html('<i class="fa fa-volume-mute mr-1"></i> OFF');
+  }
 });
 function alarmNewDonate(){
-    $.post("{{ route('adm.donate.check.alarm') }}",{_token:"{{ csrf_token() }}",last_donate:$('#last_donate').val()},function(d){
-        if(d.status==='ON'){
-            $('#last_donate').val(d.last_donate);
-            const audio = new Audio("{{ asset('public/audio/1.mp3') }}");
-            document.getElementById('playButton').addEventListener('click',()=>audio.play());
-            document.getElementById('playButton').click();
+    $.post("{{ route('adm.donate.check.alarm') }}",
+        {_token:"{{ csrf_token() }}", last_donate: $('#last_donate').val()},
+        function(d){
+            if (d.status === 'ON' && $('#playSound').val() === '1') {
+                $('#last_donate').val(d.last_donate);
+                const audio = new Audio("{{ asset('public/audio/1.mp3') }}");
+                document.getElementById('playButton').addEventListener('click',()=>audio.play());
+                document.getElementById('playButton').click();
+            }
+            $('#donate_paid_rp').html(d.paid_sum);
+            $('#donate_paid_count').html(d.paid_count);
+            $('#donate_unpaid_rp').html(d.unpaid_sum);
+            $('#donate_unpaid_count').html(d.unpaid_count);
+            $('#avg_paid_now').html(d.avg_paid_now);
+            $('#paid_now').html(d.paid_now);
+            $('#all_paid').html(d.all_paid);
+            $('#sum_today').html(d.sum_today);
+            $('#count_today').html(d.count_today);
         }
-        $('#donate_paid_rp').html(d.paid_sum);
-        $('#donate_paid_count').html(d.paid_count);
-        $('#donate_unpaid_rp').html(d.unpaid_sum);
-        $('#donate_unpaid_count').html(d.unpaid_count);
-        $('#avg_paid_now').html(d.avg_paid_now);
-        $('#paid_now').html(d.paid_now);
-        $('#all_paid').html(d.all_paid);
-        $('#sum_today').html(d.sum_today);
-        $('#count_today').html(d.count_today);
-    });
+    );
 }
 $("#checkgenap").on("click",function(){
     let v=$('#rupiah').val();
@@ -591,29 +622,24 @@ function formatRupiah(angka,prefix){
 /** =======================
  *  DataTables Init
  *  ======================= */
-let need_fu=$('#fu_val').val(), day5=$('#5day_val').val(), day1=$('#1day_val').val();
-let mut_today=$('#mut_today').val(), mut_day1=$('#mut_day1').val(), mut_day2=$('#mut_day2').val(), mut_notmatch=$('#mut_notmatch').val();
-let mut_bca=$('#mut_bca').val(), mut_bni=$('#mut_bni').val(), mut_bsi=$('#mut_bsi').val(), mut_bri=$('#mut_bri').val(), mut_mandiri=$('#mut_mandiri').val();
-let mut_nominal=$('#filter_nominal_mutation').val();
-
 var table = $('#table-donatur').DataTable({
     orderCellsTop:true,fixedHeader:true,processing:true,serverSide:true,responsive:true,autoWidth:true,
     order:[[3,'desc']],
     language:{paginate:{previous:"<",next:">"}},
-    ajax:"{{ route('adm.donate.datatables') }}/?need_fu="+need_fu+"&day1="+day1+"&day5="+day5,
+    ajax: buildDonateUrl(),
     columnDefs:[
         {"width":"33%","targets":0},
         {"width":"20%","targets":1},
         {"width":"24%","targets":2},
         {"width":"23%","targets":3},
         {"orderable":false,"targets":1},
-        {"orderable":false,"targets":2},
+        {"orderable":false,"targets":2}
     ],
     columns:[
         {data:'name',name:'name'},
         {data:'nominal_final',name:'nominal_final'},
         {data:'invoice',name:'invoice'},
-        {data:'created_at',name:'created_at'},
+        {data:'created_at',name:'created_at'}
     ],
     initComplete:function(){
         const api=this.api(), tableId=api.table().node().id;
@@ -643,7 +669,7 @@ var table_mutation=$('#table-donatur-mutation').DataTable({
     dom:'ftipr',
     language:{paginate:{previous:"<",next:">"}},
     autoWidth:false,
-    ajax:"{{ route('adm.donate.mutation.datatables') }}/?/?today="+mut_today+"&day1="+mut_day1+"&day2="+mut_day2+"&notmatch="+mut_notmatch+"&bca="+mut_bca+"&bni="+mut_bni+"&bsi="+mut_bsi+"&bri="+mut_bri+"&mandiri="+mut_mandiri+"&filter_nominal="+mut_nominal,
+    ajax: buildMutationUrl(),
     columnDefs:[
         {"width":"30%","targets":0},
         {"width":"70%","targets":1},

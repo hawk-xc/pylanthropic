@@ -2,19 +2,18 @@
 
 namespace App\Helpers;
 
+namespace App\Helpers;
+
 class UserAgentHelper
 {
     public static function parse($userAgentString)
     {
-        // Pisahkan IP dan User Agent
         [$ip, $ua] = array_pad(explode(' | ', $userAgentString, 2), 2, '-');
 
-        // Default values
         $device  = 'Unknown';
         $os      = 'Unknown';
         $browser = 'Unknown';
 
-        // --- Device Detection ---
         if (preg_match('/Mobile|Android|iPhone|BlackBerry|Opera Mini/i', $ua)) {
             $device = 'Mobile';
         } elseif (preg_match('/Tablet|iPad/i', $ua)) {
@@ -23,7 +22,6 @@ class UserAgentHelper
             $device = 'Desktop';
         }
 
-        // --- OS Detection ---
         if (preg_match('/Android/i', $ua)) {
             $os = 'Android';
         } elseif (preg_match('/iPhone|iPad|iPod/i', $ua)) {
@@ -36,7 +34,6 @@ class UserAgentHelper
             $os = 'Linux';
         }
 
-        // --- Browser Detection ---
         if (preg_match('/Chrome/i', $ua)) {
             $browser = 'Chrome';
         } elseif (preg_match('/Safari/i', $ua) && !preg_match('/Chrome/i', $ua)) {
@@ -57,4 +54,35 @@ class UserAgentHelper
             'raw'     => $ua
         ];
     }
+
+    public static function parseCore(string $ua): string
+    {
+        $ua = strtolower($ua);
+
+        $os = 'unknown';
+        if (preg_match('/android\s([\d\.]+)/', $ua, $m)) {
+            $os = 'android' . (int)$m[1];
+        } elseif (preg_match('/iphone os\s([\d_]+)/', $ua, $m)) {
+            $os = 'ios' . str_replace('_','.', $m[1]);
+        }
+
+        $model = 'unknown';
+        if (preg_match('/;\s?([a-z0-9\- ]+)\sbuild/', $ua, $m)) {
+            $model = strtoupper(str_replace(' ', '', $m[1]));
+        } elseif (str_contains($ua, 'iphone')) {
+            $model = 'IPHONE';
+        }
+
+        $app = 'web';
+        if (str_contains($ua, 'fb_iab')) {
+            $app = 'fb';
+        } elseif (str_contains($ua, 'instagram')) {
+            $app = 'ig';
+        } elseif (str_contains($ua, 'wv')) {
+            $app = 'wv';
+        }
+
+        return "{$os}_{$model}_{$app}";
+    }
 }
+

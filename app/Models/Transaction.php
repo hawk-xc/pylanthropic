@@ -35,6 +35,10 @@ class Transaction extends Model
         'created_at',
         'updated_at',
         'user_agent',
+        'device_id',
+        'ua_core',
+        'ip_address',
+        'is_suspect',
         'ref_code'
     ];
 

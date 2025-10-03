@@ -9,10 +9,12 @@ use App\Models\Transaction;
 use App\Models\PaymentType;
 use App\Models\Donatur;
 use App\Models\TrackingVisitor;
+use App\Models\SpamLog;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Http\Controllers\PaymentController;
+use Carbon\Carbon;
 
 use Illuminate\Support\Facades\Http;
 
@@ -156,8 +158,8 @@ class DonateController extends Controller
         $is_trans = Transaction::where('invoice_number', $request->inv)->first();
         if(isset($is_trans->status)) {
             $nominal        = $is_trans->nominal_final;
-            $nominal_show   = str_replace(',', '.', $nominal);
-            $nominal_show   = 'Rp '.substr($nominal, 0, strlen($nominal)-3).'.';
+            $nominal_show   =  number_format(substr($nominal, 0, strlen($nominal)-3), 0, ',', '.');
+            $nominal_show   = 'Rp '.$nominal_show.'.';
             $nominal_show2  = substr($nominal, strlen($nominal)-3, strlen($nominal));
             $token_midtrans = $is_trans->midtrans_token;
             $redirect_url   = $is_trans->midtrans_url;
@@ -173,6 +175,93 @@ class DonateController extends Controller
             return view('public.not_found');
         }
     }
+
+    private function checkSuspect($nominal, $deviceId, $uaCore, $ipAddress)
+    {
+        $limitNominal        = 10000;  // ambang donasi besar
+        $cancelFreshMinutes  = 5;       // cancel baru dihitung duplikat
+        $dayWindow           = 1;       // 1 hari
+        $recentWindowMinutes = 60;      // window 1 jam
+
+        // --- RULE 1: Jika device/uaCore pernah suspect dalam 24 jam,
+        //     maka sehari hanya boleh 1 transaksi.
+        $hasRecentSuspect = Transaction::where(function($q) use ($deviceId, $uaCore) {
+                $q->where('device_id', $deviceId)
+                ->orWhere('ua_core', $uaCore);
+            })
+            ->where('is_suspect', 1)
+            ->where('created_at', '>=', now()->subDay($dayWindow))
+            ->exists();
+
+        if ($hasRecentSuspect) {
+            $todayStart = now()->startOfDay();
+            $todayTx = Transaction::where(function($q) use ($deviceId, $uaCore) {
+                            $q->where('device_id', $deviceId)
+                            ->orWhere('ua_core', $uaCore);
+                        })
+                        ->where('created_at', '>=', $todayStart)
+                        ->latest('id')
+                        ->first();
+
+            if ($todayTx) {
+                SpamLog::create([
+                    'transaction_id' => $todayTx->id,
+                    'device_id'      => $deviceId,
+                    'ua_core'        => $uaCore,
+                    'ip_address'     => $ipAddress,
+                    'reason'         => 'daily limit after suspect',
+                ]);
+
+                return [
+                    'is_suspect'     => 1,
+                    'invoice_number' => $todayTx->invoice_number,
+                ];
+            }
+        }
+
+        // --- RULE 2: Donasi besar duplikat (draft / cancel baru)
+        if ($nominal >= $limitNominal) {
+            $recentBig = Transaction::where(function($q) use ($deviceId, $uaCore) {
+                                $q->where('device_id', $deviceId)
+                                ->orWhere('ua_core', $uaCore);
+                            })
+                            ->where(function($q) use ($cancelFreshMinutes) {
+                                $q->where('status', 'draft')
+                                ->orWhere(function($q2) use ($cancelFreshMinutes) {
+                                    $q2->where('status', 'cancel')
+                                        ->where('updated_at', '>=', now()->subMinutes($cancelFreshMinutes));
+                                });
+                            })
+                            ->where('nominal', '>=', $limitNominal)
+                            ->where('created_at', '>=', now()->subMinutes($recentWindowMinutes))
+                            ->latest('id')
+                            ->first();
+
+            if ($recentBig) {
+                $recentBig->update(['is_suspect' => 1]);
+
+                SpamLog::create([
+                    'transaction_id' => $recentBig->id,
+                    'device_id'      => $deviceId,
+                    'ua_core'        => $uaCore,
+                    'ip_address'     => $ipAddress,
+                    'reason'         => 'duplicate big donation (draft/cancel fresh)',
+                ]);
+
+                return [
+                    'is_suspect'     => 1,
+                    'invoice_number' => $recentBig->invoice_number,
+                ];
+            }
+        }
+
+        // --- Default (aman)
+        return [
+            'is_suspect'     => 0,
+            'invoice_number' => '',
+        ];
+    }
+
 
 
     public function paymentInfo(Request $request)
@@ -206,6 +295,19 @@ class DonateController extends Controller
                     'want_to_contact' => $request->has('want_to_contact')?1:0  ]
                 );
                 $donatur_name = trim($request->fullname);
+            }
+
+            // Filter Spammer
+            $deviceId  = $request->attributes->get('bb_did') ?? $request->cookie('bb_did');
+            $uaRaw     = $request->header('User-Agent') ?? null;
+            $uaCore    = \App\Helpers\UserAgentHelper::parseCore($uaRaw);
+            $ipAddress = $request->ip() ?? null;
+
+            $check = $this->checkSuspect($nominal, $deviceId, $uaCore, $ipAddress);
+
+            if ($check['is_suspect'] == 1) {
+                return redirect()->route('donate.status', ['inv' => $check['invoice_number']])
+                    ->with('warning', 'Anda sudah membuat donasi berulang kali namun belum dibayar.');
             }
             
             // check any transaction
@@ -416,9 +518,6 @@ class DonateController extends Controller
             }
 
             // insert table transaction
-            $ip        = $request->ip() ?? '-';
-            $userAgent = $request->header('User-Agent') ?? '-';
-
             $transaction  = Transaction::create([
                 'program_id'      => $program->id,
                 'donatur_id'      => $donatur_id,
@@ -429,11 +528,14 @@ class DonateController extends Controller
                 'nominal_final'   => $final_nominal,
                 'message'         => $request->has('doa')?trim(strip_tags($request->doa)):null,
                 'payment_type_id' => $payment->id,
-                'is_show_name'    => $request->has('anonim')?1:0,
+                'is_show_name'    => $request->boolean('anonim')?0:1,
                 'midtrans_token'  => $token_midtrans,
                 'midtrans_url'    => $redirect_url,
                 'link'            => $link,
-                'user_agent'      => $ip.' | '.$userAgent,  // ✅ gabungan IP + User Agent
+                'user_agent'      => $uaRaw,
+                'ua_core'         => $uaCore,
+                'device_id'       => $deviceId,
+                'ip_address'      => $ipAddress,
                 'ref_code'        => (isset($request->ref)) ? strip_tags($request->ref) : null
             ]);
 

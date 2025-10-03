@@ -151,6 +151,29 @@ class DonateController extends Controller
         $nominal  = str_replace('.', '', $request->nominal);
 
         $trans = Transaction::where('id', $id_trans)->first();
+
+        if($request->isspam==1) {
+            $trans->update([
+                'status'        => 'cancel',
+                'is_suspect'    => 1,
+                'nominal_final' => 1000 + (substr($nominal, strlen($nominal)-3, strlen($nominal)))
+            ]);
+
+            $alreadyLogged = \App\Models\SpamLog::where('transaction_id', $trans->id)->exists();
+
+            if (!$alreadyLogged) {
+                \App\Models\SpamLog::create([
+                    'transaction_id' => $trans->id,
+                    'device_id'      => $trans->device_id,
+                    'ua_core'        => $trans->ua_core,
+                    'ip_address'     => $trans->ip_address,
+                    'reason'         => 'Ditandai SPAM oleh admin',
+                ]);
+            }
+
+            return array('status'=>'success', 'nominal'=>'Rp. '.number_format($nominal));
+        }
+
         $trans->update([
             'status'        => $status,
             'nominal_final' => $nominal
