@@ -66,11 +66,24 @@ class DonateController extends Controller
      */
     public function payment(Request $request)
     {
-        // $request->validate([
-        //     'nominal' => 'required|numeric',
-        // ]);
+        // 1) Ambil nominal baik dari input/body, query, atau route param
+        $rawNominal = $request->input('nominal', $request->route('nominal'));
 
-        $nominal = $request->nominal;
+        // 2) Sanitasi: buang semua karakter non-digit -> jadikan integer
+        $sanitizedNominal = (int) preg_replace('/[^\d]/', '', (string) $rawNominal);
+
+        // 3) Merge kembali ke request biar validator pakai nilai bersih
+        $request->merge(['nominal' => $sanitizedNominal]);
+
+        // 4) Validasi (pakai integer agar pasti bilangan bulat)
+        $validated = $request->validate([
+            'nominal' => ['required','integer','min:20000','max:500000000'],
+        ], [
+            'nominal.min' => 'Nominal minimal 20 ribu.',
+            'nominal.max' => 'Nominal maksimal 500 juta.',
+        ]);
+
+        $nominal = (int) $validated['nominal'];
         $program = Program::where('is_publish', 1)->select('slug', 'id')
                     ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
 

@@ -236,8 +236,11 @@
                     <span class="ph-rp fs-18 fw-bold">Rp</span>
                     <input class="form-nominal-other fs-18 fw-bold" id="rupiah" name="amount" placeholder="0" type="text" value=""/>
                   </div>
-                  <div class="invalid-feedback">
+                  <div class="invalid-feedback invalid-feedback-min" style="display:none;">
                     Input nominal minimal 20.000
+                  </div>
+                  <div class="invalid-feedback invalid-feedback-max" style="display:none;">
+                    Input nominal maksimal 500 juta
                   </div>
                   <h5 class=" fs-12 mb-2">Min. donasi sebesar Rp 20.000</h5>
                 </div>
@@ -281,70 +284,108 @@
 
 @section('js_inline')
   <script type="text/javascript">
+    const MAX_NOMINAL = 500_000_000;
+    const MIN_NOMINAL = 20_000;
+
+    function showMin() {
+      $('.invalid-feedback-max').hide();
+      $('.invalid-feedback, .invalid-feedback-min').hide(); // sembunyikan yg lama jika masih ada
+      $('.invalid-feedback-min').show();
+    }
+    function showMax() {
+      $('.invalid-feedback-min').hide();
+      $('.invalid-feedback, .invalid-feedback-max').hide(); // sembunyikan yg lama jika masih ada
+      $('.invalid-feedback-max').show();
+    }
+    function hideWarnings() {
+      $('.invalid-feedback, .invalid-feedback-min, .invalid-feedback-max').hide();
+    }
+
     var rupiah = document.getElementById("rupiah");
-    rupiah.addEventListener("keyup", function(e) {
-      // tambahkan 'Rp.' pada saat form di ketik
-      // gunakan fungsi formatRupiah() untuk mengubah angka yang di ketik menjadi format angka
-      rupiah.value = formatRupiah(this.value, "");
+    rupiah.addEventListener("keyup", function() {
+      this.value = formatRupiah(this.value, "");
+      const raw = (this.value || "0").replaceAll('.', '');
+      const val = parseInt(raw || "0");
+
+      // Saat ketik: cuma cek batas MAX (kalau lewat -> reset & tampilkan MAX)
+      if (val > MAX_NOMINAL) {
+        this.value = "0";
+        showMax();
+      } else {
+        $('.invalid-feedback-max').hide();
+        // biarkan notif minimal dicek saat klik tombol agar tidak spam
+      }
     });
 
     /* Fungsi formatRupiah */
     function formatRupiah(angka, prefix) {
-      var number_string = angka.replace(/[^,\d]/g, "").toString(),
+      var number_string = (angka || '').replace(/[^,\d]/g, "").toString(),
         split = number_string.split(","),
         sisa = split[0].length % 3,
         rupiah = split[0].substr(0, sisa),
         ribuan = split[0].substr(sisa).match(/\d{3}/gi);
 
-      // tambahkan titik jika yang di input sudah menjadi angka ribuan
       if (ribuan) {
         separator = sisa ? "." : "";
         rupiah += separator + ribuan.join(".");
       }
-
       rupiah = split[1] != undefined ? rupiah + "," + split[1] : rupiah;
       return prefix == undefined ? rupiah : rupiah ? "" + rupiah : "";
     }
 
     // validation nominal
     $(".donate-btn").on("click", function(){
-      let nominal  = $("#rupiah").val();
-      let nominal2 = nominal.replaceAll('.','');
-      if(nominal2 <= 1000) {
-        $("#rupiah").focus();
-        $(".invalid-feedback").show();
-      } else {
-        gopayment(nominal2);
+      let nominalStr = $("#rupiah").val();
+      let nominalVal = parseInt((nominalStr || "0").replaceAll('.','') || "0");
+
+      if (nominalVal > MAX_NOMINAL) { // tampilkan hanya MAX
+        $("#rupiah").val("0");
+        showMax();
+        return;
       }
+      if (nominalVal < MIN_NOMINAL) { // tampilkan hanya MIN
+        showMin();
+        $("#rupiah").focus();
+        return;
+      }
+      hideWarnings();
+      gopayment(nominalVal);
     });
 
     $(".sub_amount").on("click", function() {
-      nominal = $(this).attr("data-nominal");
+      let nominal = parseInt($(this).attr("data-nominal") || "0");
       gopayment(nominal);
     });
 
     function gopayment(nominal) {
-      if(nominal >= 20000){
-        // nominal = nominal;
-      } else if(nominal == 0) {
-        nominal2 = $("#rupiah").val();
-        nominal2 = parseInt(nominal2.replaceAll('.', ''));
-        if(nominal2 < 20000) {
-          nominal = 0;
-        } else {
-          nominal = nominal2;
-        }
-      } else {
-        nominal = 0;
+      nominal = parseInt(nominal || 0);
+
+      // guard MAX (hanya tampilkan MAX)
+      if (nominal > MAX_NOMINAL) {
+        $("#rupiah").val("0");
+        showMax();
+        return;
       }
 
-      if(nominal==0) {
-        alert('Tidak boleh dbawah Rp. 20.000');
-      } else {
-        // $("#nominal").val(nominal);
-        // $("#frm-payment").trigger('submit');
-        window.location.href = "{{ url('/').'/'.$program->slug.'/payment' }}/"+nominal+$('#uri').val();
+      // jika user belum isi manual & klik tombol (nominal==0), ambil dari input
+      if (nominal === 0) {
+        let nominal2 = parseInt(($("#rupiah").val() || "0").replaceAll('.', '') || "0");
+        if (nominal2 > MAX_NOMINAL) {
+          $("#rupiah").val("0");
+          showMax();
+          return;
+        }
+        nominal = nominal2;
       }
+
+      if (nominal < MIN_NOMINAL) {
+        showMin(); // hanya MIN
+        return alert('Tidak boleh dbawah Rp. 20.000');
+      }
+
+      // lolos semua validasi
+      hideWarnings();
+      window.location.href = "{{ url('/').'/'.$program->slug.'/payment' }}/"+nominal+$('#uri').val();
     }
   </script>
 @endsection

@@ -187,19 +187,19 @@ class MutasiController extends Controller
                 if($check->count()<1) {
                     if(strtolower($request->module=='new_ibbiz_bri')) {
                         $bank_type    = 'bri';
-                        $payment_type = 4;
+                        $payment_type = 24;
                     } elseif(strtolower($request->module=='mandiri_mcm_2')) {
                         $bank_type    = 'mandiri';
-                        $payment_type = 3;
-                    } elseif(strtolower($request->module=='bsm')) {
+                        $payment_type = 23;
+                    } elseif(strtolower($request->module=='bsi_cuz')) {
                         $bank_type    = 'bsi';
-                        $payment_type = 2;
+                        $payment_type = 22;
                     }  elseif(strtolower($request->module=='bni_giro')) {
                         $bank_type    = 'bni';
-                        $payment_type = 19;
+                        $payment_type = 25;
                     }  elseif(strtolower($request->module=='bca_giro')) {
                         $bank_type    = 'bca';
-                        $payment_type = 1;
+                        $payment_type = 21;
                     } else {
                         $bank_type    = 'others';
                         $payment_type = null;
@@ -225,7 +225,7 @@ class MutasiController extends Controller
                         $in->mutation_date  = $mutasi[$i]['transaction_date'];
                         $in->mutation_type  = strtolower($mutasi[$i]['type']);
                         $in->amount         = $mutasi[$i]['amount'];
-                        $in->description    = $mutasi[$i]['description'];
+                        $in->description    = $this->cleanWebhookString($mutasi[$i]['description']);
                         $in->transaction_id = $id_trans;
                         $in->save();
 
@@ -249,18 +249,18 @@ class MutasiController extends Controller
                             $in->mutation_date  = $mutasi[$i]['transaction_date'];
                             $in->mutation_type  = strtolower($mutasi[$i]['type']);
                             $in->amount         = $mutasi[$i]['amount'];
-                            $in->description    = $mutasi[$i]['description'];
+                            $in->description    = $this->cleanWebhookString($mutasi[$i]['description']);
                             $in->transaction_id = $id_trans;
                             $in->save();
 
                             $this->sendThanksWA($id_trans, $trans->program_id, $trans->donatur_id, $trans->nominal_final);
-                        } 
+                        }
                         // elseif($trans==0) {       // jika ternyata tidak ketemu, maka cek di tanggal sebelumnya tapi maksimal 3 hari terakhir
                         //     $trans = Transaction::where('nominal_final', $mutasi[$i]['amount'])->where('payment_type_id', '<>', $payment_type)
                         //                 ->where('created_at', '<=', $date_mutation_where)
                         //                 ->where('created_at', '>=', $date_3ago)->where('status', 'draft')->count();
 
-                        // } 
+                        // }
                         else {                    // jika ternyata lebih dari 1 data, maka cek manual saja
                             $id_trans           = null;
                             $in                 = new CheckMutation;
@@ -269,7 +269,7 @@ class MutasiController extends Controller
                             $in->mutation_date  = $mutasi[$i]['transaction_date'];
                             $in->mutation_type  = strtolower($mutasi[$i]['type']);
                             $in->amount         = $mutasi[$i]['amount'];
-                            $in->description    = $mutasi[$i]['description'];
+                            $in->description    = '0ELSE - '.$this->cleanWebhookString($mutasi[$i]['description']);
                             $in->transaction_id = $id_trans;
                             $in->save();
                         }
@@ -282,7 +282,7 @@ class MutasiController extends Controller
                         $in->mutation_date  = $mutasi[$i]['transaction_date'];
                         $in->mutation_type  = strtolower($mutasi[$i]['type']);
                         $in->amount         = $mutasi[$i]['amount'];
-                        $in->description    = $mutasi[$i]['description'];
+                        $in->description    = '3ELSE - '.$this->cleanWebhookString($mutasi[$i]['description']);
                         $in->transaction_id = $id_trans;
                         $in->save();
                     }
@@ -314,6 +314,38 @@ class MutasiController extends Controller
             'message' => 'success',
             'status'  => 'success'
         ], 200);
+    }
+
+    /**
+     * FUntuk mengubah string webhook dari bank yang mengandung kata-kata tertentu menjadi string bersih.
+     */
+    function cleanWebhookString($text) {
+        $phrases = [
+            'NBMB',
+            'TO YAYASAN BANTU BER',
+            'TO YAYASAN BANTU BERSAMA',
+            'MCM InhouseTrf DARI',
+            'MCM InhouseTrf CS-CS DARI',
+            'MCM InhouseTrf',
+            'TRANSFER DARI',
+            '|',
+            '-',
+            'Sdr',
+            'Sdri',
+            'TRF Dari - ',
+            'AIRPAY INTERNATIONAL INDONESIA',
+            'SHOPEE',
+            'INTERNET BANKING',
+            'Ibu',
+            'Yayasan',
+            'DARI',
+            'ATM Dr Trf',
+            'TRSF E-BANKING CR',
+            'TRF Dari',
+            'ATM-MP Cr',
+            'CSCS',
+        ];
+        return str_replace($phrases, '', $text);
     }
 
     /**
