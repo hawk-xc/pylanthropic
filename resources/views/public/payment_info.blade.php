@@ -6,6 +6,7 @@
 
 
 @section('css_plugins')
+  @if(!session('warning') && $transaction->is_suspect==0)
     <!-- Meta Pixel Code -->
     <script>
       !function(f,b,e,v,n,t,s)
@@ -49,8 +50,9 @@
     </script>
     <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{$pixel_id}}&ev=Donate&noscript=1" /></noscript>
     <!-- End Meta Pixel Code -->
+  @endif
   
-    @if(true)
+  @if(false)
     <!-- Tiktok Analytic Code -->
     <script>
         !function (w, d, t) {
@@ -112,7 +114,12 @@
 
 
 @section('css_inline')
-    
+    <style>
+        .warning-spam {
+            font-size: 14px;
+            line-height: 14px;
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -131,6 +138,24 @@
   <!-- payment method section start -->
   <section class="payment method section-lg-b-space pt-0">
     <div class="custom-container">
+      @if(session('warning'))
+        <div class="alert alert-warning disclaimer-detail mt-2 mb-1 warning-spam">
+          <strong class="mb-1">Peringatan!</strong> {{ session('warning') }}
+          <div class="mb-1"></div>
+          <span>
+              Perlu diingat, platform ini dibuat khusus untuk membantu orang-orang yang sedang
+              membutuhkan uluran tangan. Tindakan mengisi donasi palsu atau berulang tanpa niat membayar
+              sama saja dengan <strong>menghalangi bantuan sampai ke mereka</strong>. 🙏
+          </span>
+          <div class="mb-1"></div>
+          <span>
+              Kalau Anda benar-benar berniat berdonasi, silakan selesaikan pembayaran pada invoice yang sudah ada. 
+              Setiap rupiah yang sampai ke tangan kami, insyaAllah kami teruskan ke mereka yang membutuhkan. 
+              Jika ada kendala atau pertanyaan, tim kami siap membantu.
+          </span>
+        </div>
+      @endif
+
       @if( $transaction->status=='success' )
         <h5 class="fw-medium fs-15 mt-4" id="desc_title">Terimakasih atas donasi Anda</h5>
       @else

@@ -9,12 +9,10 @@ use App\Models\Transaction;
 use App\Models\PaymentType;
 use App\Models\Donatur;
 use App\Models\TrackingVisitor;
-use App\Models\SpamLog;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use App\Http\Controllers\PaymentController;
-use Carbon\Carbon;
 
 use Illuminate\Support\Facades\Http;
 
@@ -66,24 +64,11 @@ class DonateController extends Controller
      */
     public function payment(Request $request)
     {
-        // 1) Ambil nominal baik dari input/body, query, atau route param
-        $rawNominal = $request->input('nominal', $request->route('nominal'));
+        // $request->validate([
+        //     'nominal' => 'required|numeric',
+        // ]);
 
-        // 2) Sanitasi: buang semua karakter non-digit -> jadikan integer
-        $sanitizedNominal = (int) preg_replace('/[^\d]/', '', (string) $rawNominal);
-
-        // 3) Merge kembali ke request biar validator pakai nilai bersih
-        $request->merge(['nominal' => $sanitizedNominal]);
-
-        // 4) Validasi (pakai integer agar pasti bilangan bulat)
-        $validated = $request->validate([
-            'nominal' => ['required','integer','min:20000','max:500000000'],
-        ], [
-            'nominal.min' => 'Nominal minimal 20 ribu.',
-            'nominal.max' => 'Nominal maksimal 500 juta.',
-        ]);
-
-        $nominal = (int) $validated['nominal'];
+        $nominal = $request->nominal;
         $program = Program::where('is_publish', 1)->select('slug', 'id')
                     ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
 
@@ -165,14 +150,17 @@ class DonateController extends Controller
         }
     }
 
+
+
+
     public function paymentStatus(Request $request)
     {
         // check any transaction
         $is_trans = Transaction::where('invoice_number', $request->inv)->first();
         if(isset($is_trans->status)) {
             $nominal        = $is_trans->nominal_final;
-            $nominal_show   =  number_format(substr($nominal, 0, strlen($nominal)-3), 0, ',', '.');
-            $nominal_show   = 'Rp '.$nominal_show.'.';
+            $nominal_show   = str_replace(',', '.', $nominal);
+            $nominal_show   = 'Rp '.substr($nominal, 0, strlen($nominal)-3).'.';
             $nominal_show2  = substr($nominal, strlen($nominal)-3, strlen($nominal));
             $token_midtrans = $is_trans->midtrans_token;
             $redirect_url   = $is_trans->midtrans_url;
@@ -188,93 +176,6 @@ class DonateController extends Controller
             return view('public.not_found');
         }
     }
-
-    private function checkSuspect($nominal, $deviceId, $uaCore, $ipAddress)
-    {
-        $limitNominal        = 10000;  // ambang donasi besar
-        $cancelFreshMinutes  = 5;       // cancel baru dihitung duplikat
-        $dayWindow           = 1;       // 1 hari
-        $recentWindowMinutes = 60;      // window 1 jam
-
-        // --- RULE 1: Jika device/uaCore pernah suspect dalam 24 jam,
-        //     maka sehari hanya boleh 1 transaksi.
-        $hasRecentSuspect = Transaction::where(function($q) use ($deviceId, $uaCore) {
-                $q->where('device_id', $deviceId)
-                ->orWhere('ua_core', $uaCore);
-            })
-            ->where('is_suspect', 1)
-            ->where('created_at', '>=', now()->subDay($dayWindow))
-            ->exists();
-
-        if ($hasRecentSuspect) {
-            $todayStart = now()->startOfDay();
-            $todayTx = Transaction::where(function($q) use ($deviceId, $uaCore) {
-                            $q->where('device_id', $deviceId)
-                            ->orWhere('ua_core', $uaCore);
-                        })
-                        ->where('created_at', '>=', $todayStart)
-                        ->latest('id')
-                        ->first();
-
-            if ($todayTx) {
-                SpamLog::create([
-                    'transaction_id' => $todayTx->id,
-                    'device_id'      => $deviceId,
-                    'ua_core'        => $uaCore,
-                    'ip_address'     => $ipAddress,
-                    'reason'         => 'daily limit after suspect',
-                ]);
-
-                return [
-                    'is_suspect'     => 1,
-                    'invoice_number' => $todayTx->invoice_number,
-                ];
-            }
-        }
-
-        // --- RULE 2: Donasi besar duplikat (draft / cancel baru)
-        if ($nominal >= $limitNominal) {
-            $recentBig = Transaction::where(function($q) use ($deviceId, $uaCore) {
-                                $q->where('device_id', $deviceId)
-                                ->orWhere('ua_core', $uaCore);
-                            })
-                            ->where(function($q) use ($cancelFreshMinutes) {
-                                $q->where('status', 'draft')
-                                ->orWhere(function($q2) use ($cancelFreshMinutes) {
-                                    $q2->where('status', 'cancel')
-                                        ->where('updated_at', '>=', now()->subMinutes($cancelFreshMinutes));
-                                });
-                            })
-                            ->where('nominal', '>=', $limitNominal)
-                            ->where('created_at', '>=', now()->subMinutes($recentWindowMinutes))
-                            ->latest('id')
-                            ->first();
-
-            if ($recentBig) {
-                $recentBig->update(['is_suspect' => 1]);
-
-                SpamLog::create([
-                    'transaction_id' => $recentBig->id,
-                    'device_id'      => $deviceId,
-                    'ua_core'        => $uaCore,
-                    'ip_address'     => $ipAddress,
-                    'reason'         => 'duplicate big donation (draft/cancel fresh)',
-                ]);
-
-                return [
-                    'is_suspect'     => 1,
-                    'invoice_number' => $recentBig->invoice_number,
-                ];
-            }
-        }
-
-        // --- Default (aman)
-        return [
-            'is_suspect'     => 0,
-            'invoice_number' => '',
-        ];
-    }
-
 
 
     public function paymentInfo(Request $request)
@@ -309,19 +210,6 @@ class DonateController extends Controller
                 );
                 $donatur_name = trim($request->fullname);
             }
-
-            // Filter Spammer
-            $deviceId  = $request->attributes->get('bb_did') ?? $request->cookie('bb_did');
-            $uaRaw     = $request->header('User-Agent') ?? null;
-            $uaCore    = \App\Helpers\UserAgentHelper::parseCore($uaRaw);
-            $ipAddress = $request->ip() ?? null;
-
-            $check = $this->checkSuspect($nominal, $deviceId, $uaCore, $ipAddress);
-
-            if ($check['is_suspect'] == 1) {
-                return redirect()->route('donate.status', ['inv' => $check['invoice_number']])
-                    ->with('warning', 'Anda sudah membuat donasi berulang kali namun belum dibayar.');
-            }
             
             // check any transaction
             $is_trans = Transaction::where('donatur_id', $donatur_id)
@@ -337,241 +225,249 @@ class DonateController extends Controller
                 return redirect()->route('donate.status', ['inv' => $is_trans->invoice_number]);
             }
 
-            $id_increment = Transaction::select('id')->orderBy('id', 'DESC')->first();
-            $invoice      = 'INV-'.date('Ymd').(isset($id_increment->id)?$id_increment->id+1:1);
+            // if(isset($is_trans->status)) {
+            //     $transaction    = $is_trans;
+            //     $final_nominal  = $is_trans->nominal_final;
+            //     $redirect_url   = $is_trans->midtrans_url;
+            //     $token_midtrans = $is_trans->midtrans_token;
+            //     $link           = $is_trans->link;
+            // } else {
+                $id_increment = Transaction::select('id')->orderBy('id', 'DESC')->first();
+                $invoice      = 'INV-'.date('Ymd').(isset($id_increment->id)?$id_increment->id+1:1);
 
-            // get unique number for add nominal transaction
-            $unique_number = $this->uniqueNumber();
-            $final_nominal = $nominal+$unique_number;
+                // get unique number for add nominal transaction
+                $unique_number = $this->uniqueNumber();
+                $final_nominal = $nominal+$unique_number;
 
-            // Payment Gateway
-            if($payment->key=='qris') {
-                $requestBody = array(
-                    'payment_type' => 'qris',    // gopay / shopeepay
-                    'transaction_details' => array(
-                        'order_id'     => $invoice,
-                        'gross_amount' => $final_nominal,
-                    ),
-                    'item_details' => array(
-                        'id'       => $invoice,
-                        'price'    => $final_nominal,
-                        'quantity' => 1,
-                        'name'     => $invoice,
-                    ),
-                    'customer_details' => array(
-                        'first_name' => $donatur_name,
-                        'phone'      => $telp,
-                    ),
-                    'qris' => array(
-                        'acquirer' => 'gopay'
-                    )
-                );
+                // Payment Gateway
+                if($payment->key=='qris') {
+                    $requestBody = array(
+                        'payment_type' => 'qris',    // gopay / shopeepay
+                        'transaction_details' => array(
+                            'order_id'     => $invoice,
+                            'gross_amount' => $final_nominal,
+                        ),
+                        'item_details' => array(
+                            'id'       => $invoice,
+                            'price'    => $final_nominal,
+                            'quantity' => 1,
+                            'name'     => $invoice,
+                        ),
+                        'customer_details' => array(
+                            'first_name' => $donatur_name,
+                            'phone'      => $telp,
+                        ),
+                        'qris' => array(
+                            'acquirer' => 'gopay'
+                        )
+                    );
 
-                $ch = curl_init(env('GOPAY_URL'));
-                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                    'Accept:application/json',
-                    'Content-Type:application/json',
-                    'Authorization:Basic '.base64_encode(env('MID_SERVER_KEY')),
-                ));
-                $responseJson = curl_exec($ch);
-                $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                curl_close($ch);
-                $res          = json_decode($responseJson, true);
+                    $ch = curl_init(env('GOPAY_URL'));
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                        'Accept:application/json',
+                        'Content-Type:application/json',
+                        'Authorization:Basic '.base64_encode(env('MID_SERVER_KEY')),
+                    ));
+                    $responseJson = curl_exec($ch);
+                    $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    curl_close($ch);
+                    $res          = json_decode($responseJson, true);
 
-                if(isset($res['actions'][0]['url'])) {
-                    $redirect_url   = $res['actions'][0]['url'];
-                    $token_midtrans = 0;
-                } else {
-                    // QRIS Manual
-                    $redirect_url   = asset('public/images/payment/QRIS.png');
-                    $token_midtrans = 0;
-                }
-
-            } elseif($payment->key=='gopay') {
-                $requestBody = array(
-                    'payment_type' => 'gopay',    // gopay / shopeepay
-                    'transaction_details' => array(
-                        'order_id'     => $invoice,
-                        'gross_amount' => $final_nominal,
-                    ),
-                    'item_details' => array(
-                        'id'       => $invoice,
-                        'price'    => $final_nominal,
-                        'quantity' => 1,
-                        'name'     => $invoice,
-                    ),
-                    'customer_details' => array(
-                        'first_name' => $donatur_name,
-                        'phone'      => $telp,
-                    ),
-                    'gopay' => array(
-                        'enable_callback' => false
-                        // 'callback_url'    => route('')
-                    )
-                );
-
-                $ch = curl_init(env('GOPAY_URL'));
-                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                    'Accept:application/json',
-                    'Content-Type:application/json',
-                    'Authorization:Basic '.base64_encode(env('MID_SERVER_KEY')),
-                ));
-                $responseJson = curl_exec($ch);
-                $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                curl_close($ch);
-                $res          = json_decode($responseJson, true);
-
-                if(isset($res['actions'][0]['url']) && isset($res['actions'][1]['url'])) {
-                    $redirect_url   = $res['actions'][0]['url']; // deeplink
-                    $token_midtrans = 0;
-                    $link           = $res['actions'][1]['url']; // QRIS
-
-                    foreach ($res['actions'] as $action) {
-                        if ($action['name'] === 'deeplink-redirect') {
-                            $redirect_url = $action['url'];
-                        }
-
-                        if ($action['name'] === 'generate-qr-code') {
-                            $link   = $action['url'];
-                        }
+                    if(isset($res['actions'][0]['url'])) {
+                        $redirect_url   = $res['actions'][0]['url'];
+                        $token_midtrans = 0;
+                    } else {
+                        // QRIS Manual
+                        $redirect_url   = asset('public/images/payment/QRIS.png');
+                        $token_midtrans = 0;
                     }
-                } else {
-                    // QRIS Manual
-                    $redirect_url   = asset('public/images/payment/QRIS.png');
+
+                } elseif($payment->key=='gopay') {
+                    $requestBody = array(
+                        'payment_type' => 'gopay',    // gopay / shopeepay
+                        'transaction_details' => array(
+                            'order_id'     => $invoice,
+                            'gross_amount' => $final_nominal,
+                        ),
+                        'item_details' => array(
+                            'id'       => $invoice,
+                            'price'    => $final_nominal,
+                            'quantity' => 1,
+                            'name'     => $invoice,
+                        ),
+                        'customer_details' => array(
+                            'first_name' => $donatur_name,
+                            'phone'      => $telp,
+                        ),
+                        'gopay' => array(
+                            'enable_callback' => false
+                            // 'callback_url'    => route('')
+                        )
+                    );
+
+                    $ch = curl_init(env('GOPAY_URL'));
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                        'Accept:application/json',
+                        'Content-Type:application/json',
+                        'Authorization:Basic '.base64_encode(env('MID_SERVER_KEY')),
+                    ));
+                    $responseJson = curl_exec($ch);
+                    $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    curl_close($ch);
+                    $res          = json_decode($responseJson, true);
+
+                    if(isset($res['actions'][0]['url']) && isset($res['actions'][1]['url'])) {
+                        $redirect_url   = $res['actions'][0]['url']; // deeplink
+                        $token_midtrans = 0;
+                        $link           = $res['actions'][1]['url']; // QRIS
+
+                        foreach ($res['actions'] as $action) {
+                            if ($action['name'] === 'deeplink-redirect') {
+                                $redirect_url = $action['url'];
+                            }
+
+                            if ($action['name'] === 'generate-qr-code') {
+                                $link   = $action['url'];
+                            }
+                        }
+                    } else {
+                        // QRIS Manual
+                        $redirect_url   = asset('public/images/payment/QRIS.png');
+                        $token_midtrans = 0;
+                        $link           = asset('public/images/payment/QRIS.png');
+                    }
+
+                }  elseif($payment->key=='shopeepay') {
+                    $requestBody = array(
+                        'payment_type' => 'shopeepay',    // gopay / shopeepay
+                        'transaction_details' => array(
+                            'order_id'     => $invoice,
+                            'gross_amount' => $final_nominal,
+                        ),
+                        'item_details' => array(
+                            'id'       => $invoice,
+                            'price'    => $final_nominal,
+                            'quantity' => 1,
+                            'name'     => $invoice,
+                        ),
+                        'customer_details' => array(
+                            'first_name' => $donatur_name,
+                            'phone'      => $telp,
+                        ),
+                        'shopeepay' => array(
+                            'callback_url'    => route('program.index', $program->slug)
+                        )
+                    );
+
+                    $ch = curl_init(env('GOPAY_URL'));
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                        'Accept:application/json',
+                        'Content-Type:application/json',
+                        'Authorization:Basic '.base64_encode(env('MID_SERVER_KEY')),
+                    ));
+                    $responseJson = curl_exec($ch);
+                    $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    curl_close($ch);
+                    $res          = json_decode($responseJson, true);
+
+                    if(isset($res['actions'][0]['url'])) {
+                        $redirect_url   = $res['actions'][0]['url'];
+                        $token_midtrans = 0;
+                    } else {
+                        // QRIS Manual
+                        
+                        $redirect_url   = asset('public/images/payment/QRIS.png');
+                        $token_midtrans = 0;
+                    }
+
+                } elseif( ($payment->type=='virtual_account' || $payment->type=='instant') && $payment->key!='qris' ){ // belum aktif
+                    $requestBody = array(
+                        'transaction_details' => array(
+                            'order_id'     => $invoice,
+                            'gross_amount' => $final_nominal,
+                        ),
+                        'credit_card' => array(
+                            'secure' => true
+                        ),
+                        'customer_details' => array(
+                            'first_name' => $donatur_name,
+                            'phone'      => $telp,
+                        )
+                    );
+
+                    $ch = curl_init(env('MID_URL'));  // https://app.midtrans.com/snap/v1/transactions
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                        'Accept:application/json',
+                        'Content-Type:application/json',
+                        'Authorization:Basic '.base64_encode(env('MID_SERVER_KEY')),
+                    ));
+                    $responseJson = curl_exec($ch);
+                    $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    curl_close($ch);
+                    $res          = json_decode($responseJson, true);
+
+                    if(isset($res['redirect_url'])) {
+                        $redirect_url   = $res['redirect_url'];
+                        $token_midtrans = $res['token'];
+                    } else {
+                        return view('public.not_found');    // ada problem payment gateway
+                    }
+                } else {        // TRANSFER MANUAL
+                    $redirect_url   = 0;
                     $token_midtrans = 0;
-                    $link           = asset('public/images/payment/QRIS.png');
                 }
 
-            }  elseif($payment->key=='shopeepay') {
-                $requestBody = array(
-                    'payment_type' => 'shopeepay',    // gopay / shopeepay
-                    'transaction_details' => array(
-                        'order_id'     => $invoice,
-                        'gross_amount' => $final_nominal,
-                    ),
-                    'item_details' => array(
-                        'id'       => $invoice,
-                        'price'    => $final_nominal,
-                        'quantity' => 1,
-                        'name'     => $invoice,
-                    ),
-                    'customer_details' => array(
-                        'first_name' => $donatur_name,
-                        'phone'      => $telp,
-                    ),
-                    'shopeepay' => array(
-                        'callback_url'    => route('program.index', $program->slug)
-                    )
-                );
+                // insert table transaction
+                $ip        = $request->ip() ?? '-';
+                $userAgent = $request->header('User-Agent') ?? '-';
 
-                $ch = curl_init(env('GOPAY_URL'));
-                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                    'Accept:application/json',
-                    'Content-Type:application/json',
-                    'Authorization:Basic '.base64_encode(env('MID_SERVER_KEY')),
-                ));
-                $responseJson = curl_exec($ch);
-                $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                curl_close($ch);
-                $res          = json_decode($responseJson, true);
+                $transaction  = Transaction::create([
+                    'program_id'      => $program->id,
+                    'donatur_id'      => $donatur_id,
+                    'invoice_number'  => $invoice,
+                    'nominal'         => $nominal,
+                    'status'          => 'draft',
+                    'nominal_code'    => $unique_number,
+                    'nominal_final'   => $final_nominal,
+                    'message'         => $request->has('doa')?trim(strip_tags($request->doa)):null,
+                    'payment_type_id' => $payment->id,
+                    'is_show_name'    => $request->has('anonim')?1:0,
+                    'midtrans_token'  => $token_midtrans,
+                    'midtrans_url'    => $redirect_url,
+                    'link'            => $link,
+                    'user_agent'      => $ip.' | '.$userAgent,  // ✅ gabungan IP + User Agent
+                    'ref_code'        => (isset($request->ref)) ? strip_tags($request->ref) : null
+                ]);
 
-                if(isset($res['actions'][0]['url'])) {
-                    $redirect_url   = $res['actions'][0]['url'];
-                    $token_midtrans = 0;
-                } else {
-                    // QRIS Manual
-                    
-                    $redirect_url   = asset('public/images/payment/QRIS.png');
-                    $token_midtrans = 0;
-                }
-
-            } elseif( ($payment->type=='virtual_account' || $payment->type=='instant') && $payment->key!='qris' ){ // belum aktif
-                $requestBody = array(
-                    'transaction_details' => array(
-                        'order_id'     => $invoice,
-                        'gross_amount' => $final_nominal,
-                    ),
-                    'credit_card' => array(
-                        'secure' => true
-                    ),
-                    'customer_details' => array(
-                        'first_name' => $donatur_name,
-                        'phone'      => $telp,
-                    )
-                );
-
-                $ch = curl_init(env('MID_URL'));  // https://app.midtrans.com/snap/v1/transactions
-                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                    'Accept:application/json',
-                    'Content-Type:application/json',
-                    'Authorization:Basic '.base64_encode(env('MID_SERVER_KEY')),
-                ));
-                $responseJson = curl_exec($ch);
-                $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                curl_close($ch);
-                $res          = json_decode($responseJson, true);
-
-                if(isset($res['redirect_url'])) {
-                    $redirect_url   = $res['redirect_url'];
-                    $token_midtrans = $res['token'];
-                } else {
-                    return view('public.not_found');    // ada problem payment gateway
-                }
-            } else {        // TRANSFER MANUAL
-                $redirect_url   = 0;
-                $token_midtrans = 0;
-            }
-
-            // insert table transaction
-            $transaction  = Transaction::create([
-                'program_id'      => $program->id,
-                'donatur_id'      => $donatur_id,
-                'invoice_number'  => $invoice,
-                'nominal'         => $nominal,
-                'status'          => 'draft',
-                'nominal_code'    => $unique_number,
-                'nominal_final'   => $final_nominal,
-                'message'         => $request->has('doa')?trim(strip_tags($request->doa)):null,
-                'payment_type_id' => $payment->id,
-                'is_show_name'    => $request->boolean('anonim')?0:1,
-                'midtrans_token'  => $token_midtrans,
-                'midtrans_url'    => $redirect_url,
-                'link'            => $link,
-                'user_agent'      => $uaRaw,
-                'ua_core'         => $uaCore,
-                'device_id'       => $deviceId,
-                'ip_address'      => $ipAddress,
-                'ref_code'        => (isset($request->ref)) ? strip_tags($request->ref) : null
-            ]);
-
-            // CAPI - Convertion API for META Ads
-            // Http::post('https://graph.facebook.com/v18.0/1278491429470122/events', [
-            //     'data' => [
-            //         [
-            //             'event_name' => 'Donate',
-            //             'event_time' => time(),
-            //             'event_id'   => $invoice,
-            //             'user_data'  => [
-            //                   'ph'   => $telp,
-            //             ],
-            //             'custom_data'   => [
-            //                 'currency'      => 'IDR',
-            //                 'value'         => $nominal,
-            //             ],
-            //             'action_source' => 'website',
-            //         ],
-            //     ],
-            //     'access_token' => env('FACEBOOK_CAPI_TOKEN'),
-            // ]);
-            // \Log::info('Facebook CAPI response:', [$response->json()]);
+                // CAPI - Convertion API for META Ads
+                // Http::post('https://graph.facebook.com/v18.0/1278491429470122/events', [
+                //     'data' => [
+                //         [
+                //             'event_name' => 'Donate',
+                //             'event_time' => time(),
+                //             'event_id'   => $invoice,
+                //             'user_data'  => [
+                //                   'ph'   => $telp,
+                //             ],
+                //             'custom_data'   => [
+                //                 'currency'      => 'IDR',
+                //                 'value'         => $nominal,
+                //             ],
+                //             'action_source' => 'website',
+                //         ],
+                //     ],
+                //     'access_token' => env('FACEBOOK_CAPI_TOKEN'),
+                // ]);
+                // \Log::info('Facebook CAPI response:', [$response->json()]);
+            // }
 
 
             // insert tracking visitor
@@ -587,12 +483,28 @@ class DonateController extends Controller
                 'utm_campaign'    => null,
                 'utm_content'     => (isset($request->k)) ? strip_tags($request->k) : null
             ]);
+            
 
-            return redirect()->route('donate.status', ['inv' => $invoice]);
+            // if($payment->type=='transfer') {             // sementara ditambahkan 3 digit semua
+                // $nominal       = $final_nominal;
+                // $nominal_show  = str_replace(',', '.', $nominal);
+                // $nominal_show  = 'Rp '.substr($nominal, 0, strlen($nominal)-3).'.';
+                // $nominal_show2 = substr($nominal, strlen($nominal)-3, strlen($nominal));
+            // } else {
+            //     $nominal_show  = 'Rp '.str_replace(',', '.', number_format($nominal));
+            //     $nominal_show2 = '';
+            // }
+
+            $paid_before     = date('d F Y H:i', strtotime('23 hour')).' WIB';
+
+            // return view('public.payment_info', compact('nominal', 'nominal_show', 'nominal_show2', 'paid_before', 'payment', 'va_number', 'transaction', 'program', 'token_midtrans', 'redirect_url', 'link'));
+            return redirect()->route('donate.status', ['inv' => $is_trans->invoice_number]);
         } else {
             return view('public.not_found');
         }
     }
+
+
 
     public function paymentInfoMidtransCoreAPI(Request $request)
     {
@@ -810,6 +722,247 @@ class DonateController extends Controller
             }
         } else {
             return 'no';
+        }
+    }
+
+
+
+
+
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function paymentInfo1(Request $request)
+    {
+        $request->validate([
+            'type'     => 'required|string',
+            'nominal'  => 'required',
+            'type'     => 'required|string',
+            'slug'     => 'required|string',
+            'fullname' => 'required|string',
+            'telp'     => 'required|numeric',
+        ]);
+
+        $nominal       = str_replace(',', '', preg_replace("/[^0-9]/", "",$request->nominal));
+        $program       = Program::where('is_publish', 1)->select('slug', 'id', 'title')
+                        ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
+        $payment       = PaymentType::where('key', $request->type)->first();
+        $va_number     = '0';
+        if(isset($program->slug) && $nominal>=10000 && isset($payment->name)) {
+            // insert donatur
+            $telp    = $this->formatTelp($request->telp);
+            $donatur = Donatur::where('telp', $telp)->select('id', 'name')->first();
+            if(isset($donatur->id)) {
+                $donatur_id   = $donatur->id;
+                $donatur_name = $donatur->name;
+            } else {
+                $donatur_id = Donatur::insertGetId([
+                    'telp'            => $telp,
+                    'name'            => trim($request->fullname), 
+                    'want_to_contact' => $request->has('want_to_contact')?1:0  ]
+                );
+                $donatur_name = trim($request->fullname);
+            }
+            
+            // check any transaction
+            $is_trans = Transaction::where('donatur_id', $donatur_id)->where('nominal', $nominal)
+                        ->whereDate('created_at', date('Y-m-d'))->where('status', '!=', 'cancel')
+                        ->where('payment_type_id', $payment->id)->first();
+            if(isset($is_trans->status)) {
+                $transaction = $is_trans;
+            } else {
+                $id_increment = Transaction::select('id')->orderBy('id', 'DESC')->first();
+                $invoice      = 'INV-'.date('Ymd').(isset($id_increment->id)?$id_increment->id+1:1);
+
+                // Payment Gateway
+                $requestBody = array(
+                    'order' => array(
+                        'amount'              => $nominal,
+                        'invoice_number'      => $invoice,
+                        'currency'            => 'IDR',
+                        'callback_url'        => env('DOKU_NOTIFY_URL'),
+                        'callback_url_cancel' => env('DOKU_NOTIFY_URL')
+                    ),
+                    // 'payment' => array(
+                    //     'payment_due_date' => 1440,
+                    //     'payment_method_types' => ['doku-virtual-account']
+                    //     // 'payment_method_types' => [$payment->payment_code]
+                    // ),
+                    'virtual_account_info' => array(
+                        'expired_time'    => 1440,
+                        'reusable_status' => false,
+                        'info1'           => 'Merchant Demo Store',
+                    ),
+                    'customer' => array(
+                        'name'  => $donatur_name,
+                        'email' => 'bantuberamalbersama@gmail.com',
+                        'phone' => $telp
+                    ),
+                );
+
+
+
+                $requestId     = Str::random(20); // Change to UUID or anything that can generate unique value
+                $dateTime      = gmdate("Y-m-d H:i:s");
+                $isoDateTime   = date(DATE_ISO8601, strtotime($dateTime));
+                $dateTimeFinal = substr($isoDateTime, 0, 19) . "Z";
+
+                // Generate digest
+                $digestValue = base64_encode(hash('sha256', json_encode($requestBody), true));
+
+                // Generate Digest
+                $digestValue = base64_encode(hash('sha256', json_encode($requestBody), true));
+                echo "Digest: " . $digestValue;
+                echo "<br><br>";
+
+                // Prepare signature component
+                $componentSignature = "Client-Id:" . env('DOKU_PROD_CLIENT_ID') . "\n" .
+                    "Request-Id:" . $requestId . "\n" .
+                    "Request-Timestamp:" . $dateTimeFinal . "\n" .
+                    "Request-Target:bca-virtual-account/v2/payment-code\n" .
+                    // "Request-Target:" . env('DOKU_PROD_TARGET') . "\n" .
+                    "Digest:" . $digestValue;
+
+                echo "Component Signature: \n" . $componentSignature;
+                echo "<br><br>";
+
+
+                // Generate signature
+                $signature = base64_encode(hash_hmac('sha256', $componentSignature, env('DOKU_PROD_SECRET_KEY'), true));
+
+                echo "Signature: " . $signature;
+                echo "<br><br>";
+
+
+                $headerSignature =  "Client-Id:" . env('DOKU_PROD_CLIENT_ID') ."\n". 
+                            "Request-Id:" . $requestId . "\n".
+                            "Request-Timestamp:" . $dateTimeFinal ."\n".
+                            "Signature:" . "HMACSHA256=" . $signature;
+
+
+echo 'CURLOPT_HTTPHEADER : <br>';
+print_r(array(
+            // $headerSignature
+            'Client-Id:' . env('DOKU_PROD_CLIENT_ID'),
+            'Request-Id:' . $requestId,
+            'Request-Timestamp:' . $dateTimeFinal,
+            'Signature:' . "HMACSHA256=" . $signature,
+        ));
+echo '<br><br>';
+
+
+        // Execute request
+        // $ch = curl_init(env('DOKU_PROD_URL').env('DOKU_PROD_TARGET'));
+        $ch = curl_init("https://api-sandbox.doku.com/bca-virtual-account/v2/payment-code");
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        // curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+            // $headerSignature
+            'Client-Id:' . env('DOKU_PROD_CLIENT_ID'),
+            'Request-Id:' . $requestId,
+            'Request-Timestamp:' . $dateTimeFinal,
+            'Signature:' . "HMACSHA256=" . $signature,
+        ));
+
+echo 'requestBody : <br>';
+print_r(json_encode($requestBody));
+echo "<br><br><br>------------------------------------------------------------<br><br><br>";
+        // Set response json
+        $responseJson = curl_exec($ch);
+        print_r($responseJson);
+echo "<br><br>";
+        $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        $res          = json_decode($responseJson, true);
+        print_r($res);
+        // yg akan digunakan jika VA 
+        // $link         = $res['response']['payment']['url'];
+        // return $link;
+        // return $res;
+
+
+
+                // generate payment gateway
+                // $link = (new PaymentController)->generate($requestBody);
+                // print_r($link);
+                die();
+
+
+                // get unique number for add nominal transaction
+                $unique_number = $this->uniqueNumber();
+
+                // insert table transaction
+                $ip        = $request->ip() ?? '-';
+                $userAgent = $request->header('User-Agent') ?? '-';
+
+                $transaction  = Transaction::create([
+                    'program_id'      => $program->id,
+                    'donatur_id'      => $donatur_id,
+                    'invoice_number'  => $invoice,
+                    'nominal'         => $nominal,
+                    'status'          => 'draft',
+                    'nominal_code'    => $unique_number,
+                    'nominal_final'   => $nominal+$unique_number,
+                    'message'         => $request->has('doa')?trim($request->doa):null,
+                    'payment_type_id' => $payment->id,
+                    'is_show_name'    => $request->has('anonim')?1:0,
+                    'user_agent'      => $ip.' | '.$userAgent,  // ✅ gabungan IP + User Agent
+                ]);
+
+                // for auto WA
+                $chat1 = 'Terimakasih orang baik *'.ucwords(trim($request->fullname)).'*.
+Selangkah lagi kebaikan donasi Anda berhasil dengan menyelesaikan pembayaran berikut :
+Sebesar : Rp '.str_replace(',', '.', number_format($nominal+$unique_number)).'
+Nomor Invoice : '.$invoice.' 
+';
+                if($payment->type=='transfer') {
+                    $chat2 = 'Metode : *'.$payment->name.'* 
+*'.$payment->target_number.'*
+a/n '.$payment->target_desc.'
+
+';
+                } elseif($payment->type=='instant') {
+                    $chat2 = 'Metode : *'.$payment->name.'* 
+
+';
+                } elseif($payment->type=='virtual_account') {
+                    $chat2 = 'Metode : *'.$payment->name.'* 
+*0123424345897911*
+
+';
+                } else {
+                    $chat2 = 'Metode : *'.$payment->name.'* 
+
+';
+                }
+                
+                $chat = $chat1.$chat2.'untuk program kebaikan 
+*'.ucwords($program->title).'*
+
+Terimakasih';
+                // $this->sentWA($telp, $chat);
+            }
+
+            // hanya dummy saja, nanti kalau payment gateway sudah jadi maka ini akan dihapus
+            if($payment->type=='virtual_account'){
+                $va_number = '0123424345897911';
+            }
+            $paid_before     = date('d F Y H:i').' WIB';
+            if($payment->type=='transfer') {
+                $nominal       = $nominal+137;
+                $nominal_show  = str_replace(',', '.', $nominal);
+                $nominal_show  = 'Rp '.substr($nominal, 0, strlen($nominal)-3).'.';
+                $nominal_show2 = substr($nominal, strlen($nominal)-3, strlen($nominal));
+            } else {
+                $nominal_show  = 'Rp '.str_replace(',', '.', number_format($nominal));
+                $nominal_show2 = '';
+            }
+
+            return view('public.payment_info', compact('nominal', 'nominal_show', 'nominal_show2', 'paid_before', 'payment', 'va_number', 'transaction', 'program'));
+        } else {
+            return view('public.not_found');
         }
     }
 

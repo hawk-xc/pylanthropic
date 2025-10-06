@@ -496,8 +496,13 @@
                             <div class="mb-3">
                                 <div class="d-flex">
                                     <div class="me-3 rounded-full bg-coal relative" style="width: 50px; height: 50px;">
-                                        <img alt="Orang Baik"
+                                        <!-- <img alt="Orang Baik"
                                             data-original="{{ asset('public') }}/images/icons/user-anonim.png"
+                                            width="50" height="50" decoding="async" data-nimg="1"
+                                            class="w-full h-full rounded-full object-cover object-center lazyload"
+                                            loading="lazy" style="color: transparent;" /> -->
+                                        <img alt="Orang Baik"
+                                            src="{{ asset('public') }}/images/icons/user-anonim.png"
                                             width="50" height="50" decoding="async" data-nimg="1"
                                             class="w-full h-full rounded-full object-cover object-center lazyload"
                                             loading="lazy" style="color: transparent;" />

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Helpers\UserAgentHelper;
 
 use App\Models\Transaction;
 use App\Models\Program;
@@ -110,6 +111,29 @@ class DonateController extends Controller
         $nominal  = str_replace('.', '', $request->nominal);
 
         $trans = Transaction::where('id', $id_trans)->first();
+
+        if($request->isspam==1) {
+            $trans->update([
+                'status'        => 'cancel',
+                'is_suspect'    => 1,
+                'nominal_final' => 1000 + (substr($nominal, strlen($nominal)-3, strlen($nominal)))
+            ]);
+
+            $alreadyLogged = \App\Models\SpamLog::where('transaction_id', $trans->id)->exists();
+
+            if (!$alreadyLogged) {
+                \App\Models\SpamLog::create([
+                    'transaction_id' => $trans->id,
+                    'device_id'      => $trans->device_id,
+                    'ua_core'        => $trans->ua_core,
+                    'ip_address'     => $trans->ip_address,
+                    'reason'         => 'Ditandai SPAM oleh admin',
+                ]);
+            }
+
+            return array('status'=>'success', 'nominal'=>'Rp. '.number_format($nominal));
+        }
+
         $trans->update([
             'status'        => $status,
             'nominal_final' => $nominal
@@ -353,7 +377,11 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
             }
 
             if(isset($request->filter_nominal)) {     // transaction nominal
-                if($request->filter_nominal!='') {
+                if ($request->filter_nominal=='500k') {
+                    $data = $data->where('transaction.nominal_final', '>=', 500000);
+                } elseif($request->filter_nominal=='1jt') {
+                    $data = $data->where('transaction.nominal_final', '>=', 1000000);
+                } elseif($request->filter_nominal!='') {
                     $data = $data->where('transaction.nominal_final', 'like', '%'.str_replace([',', '.'], '', $request->filter_nominal).'%');
                 }
             }
@@ -470,11 +498,11 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
                     return $date.$chat_history;
                 })
                 ->addColumn('action', function($row){
-                    $donaturBtn = '<a href="'.route('adm.donatur.show', $row->donatur_id).'" class="btn btn-info btn-sm mb-1" title="Lihat Donatur"><i class="fa fa-user"></i></a>';
+                    $donaturBtn = '<a href="'.route('adm.donatur.show', $row->donatur_id).'" class="btn btn-info btn-xs mb-1" title="Lihat Donatur"><i class="fa fa-user"></i></a>';
                 
                     $deleteBtn = '';
                     if ($row->status == 'cancel' || $row->status == 'draft') {
-                        $deleteBtn = '<button class="btn btn-danger btn-sm mb-1" title="Hapus" onclick="openDeleteModal('.$row->id.')"><i class="fa fa-trash"></i></button>';
+                        $deleteBtn = '<button class="btn btn-danger btn-xs" title="Hapus" onclick="openDeleteModal('.$row->id.')"><i class="fa fa-trash"></i></button>';
                     }
 
                     return $donaturBtn . ' ' . $deleteBtn;
