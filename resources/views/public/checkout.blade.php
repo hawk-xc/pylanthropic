@@ -134,6 +134,7 @@
           <input type="hidden" name="type" value="{{ $payment->key }}" required>
           <input type="hidden" name="slug" value="{{ $program->slug }}" required>
         </div>
+        <input type="text" name="payment_method_check" style="display:none !important" tabindex="-1" autocomplete="off">
         <ul class="payment-list mb-4">
           <li class="cart-add-box payment-card-box gap-0 mt-2">
             <div class="w-100">
@@ -177,9 +178,19 @@
           <label class="fw-medium fs-15 mb-1 pb-1">Tulis pesan dan do'a <span class="text-muted">(opsional)</span></label>
           <textarea name="doa" rows="5" class="form-control fs-14 lh-20 form-payment" placeholder="Tulis pesan dan do'a  untuk diri sendiri atau penggalang dana agar dilihat dan diamini oleh orang baik lainnya"></textarea>
         </div>
+        <div class="mt-4 w-screen -mx-[calc((100vw-100%)/2)] flex justify-center">
+          <div class="flex flex-col items-center w-full max-w-md">
+            <div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.v2_site') }}"></div>
+
+            <div class="alert alert-warning disclaimer-detail mt-2 mb-1 text-center w-full">
+              <strong>Penting!</strong> Pastikan untuk mengisi reCAPTCHA
+            </div>
+          </div>
+        </div>
         <div class="alert alert-secondary disclaimer-detail mt-4">
           Nominal di atas sudah termasuk 5% donasi operasional Bantubersama. Jika nominal donasi tidak sesuai dengan angka unik yang tertera maka kami catat sebagai akad infak umum.
         </div>
+        <input type="hidden" name="recaptcha_v3_token" id="recaptchaV3Token">
       </div>
     </section>
     <!-- payment method section end -->
@@ -206,6 +217,12 @@
 @section('js_inline')
 <script>
 (function () {
+    grecaptcha.ready(function() {
+      grecaptcha.execute('{{ config("services.recaptcha.v3_site") }}', {action: 'donate'}).then(function(token) {
+          document.getElementById('recaptchaV3Token').value = token;
+      });
+    });
+
     // elemen yang penting
     const donateBtn = document.getElementById("donateBtn");
     const fingerprintInput = document.getElementById("fingerprint");

@@ -199,6 +199,36 @@ class DonateController extends Controller
             'telp'     => 'required|numeric',
         ]);
 
+        $captcha = $request->input('g-recaptcha-response');
+        $captchav3 = $request->input('recaptcha_v3_token');
+
+        $verify = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => config('services.recaptcha.v2_secret'),
+            'response' => $captcha,
+            'remoteip' => $request->ip(),
+        ]);
+
+        $verifyV3 = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
+            'secret' => config('services.recaptcha.v3_secret'),
+            'response' => $captchav3,
+            'remoteip' => $request->ip(),
+        ]);
+
+        $result = $verify->json();
+        $resultV3 = $verifyV3->json();
+
+        if (empty($result['success']) || !$result['success']) {
+            return back()->withErrors(['captcha' => 'reCAPTCHA gagal, silakan coba lagi.']);
+        }
+
+        if (empty($resultV3['success']) || $resultV3['score'] < 0.5) {
+            return back()->withErrors(['captcha' => 'reCAPTCHA score rendah, aktivitas mencurigakan terdeteksi.']);
+        }
+
+        if (!empty($request->input('payment_method_check'))) {
+            abort(403, 'not fulled');
+        }
+
         $nominal       = str_replace(',', '', preg_replace("/[^0-9]/", "",$request->nominal));
         $program       = Program::where('is_publish', 1)->select('slug', 'id', 'title')
                         ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();

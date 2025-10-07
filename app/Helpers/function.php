@@ -75,7 +75,26 @@ if (!function_exists('checkSuspect')) {
         $limitNominal        = 10000;
         $cancelFreshMinutes  = 5;
         $dayWindow           = 1;   // 1 hari (untuk rule suspect)
-        $recentWindowMinutes = 60;  // 1 jam (untuk duplicate big)
+        $recentWindowMinutes = 320;  // 1 jam (untuk duplicate big)
+
+        if ($uaCore === 'android10_unknown_web' || $uaCore === 'unknown_unknown_web') {
+
+            // Catat ke log atau tabel SpamLog
+            App\Models\SpamLog::create([
+                'reason'         => 'blocked ua_core: android10_unknown_web',
+                'device_id'      => $deviceId,
+                'ua_core'        => $uaCore,
+                'user_agent'     => $userAgent,
+                'ip_address'     => $ipAddress,
+                'session_id'     => $sessionId,
+                'fingerprint_id' => $fingerprintId,
+            ]);
+
+            return [
+                'is_suspect'     => 1,
+                'invoice_number' => '',
+            ];
+        }
 
         /*
         |--------------------------------------------------------------------------

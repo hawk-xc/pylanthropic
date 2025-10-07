@@ -71,6 +71,9 @@
     <!-- Theme css -->
     <link rel="stylesheet" id="change-link" type="text/css" href="{{ asset('public') }}/css/style.css?v=1234567" />
 
+    {{-- Captcha --}}
+    <script src="https://www.google.com/recaptcha/api.js?render={{ config('services.recaptcha.v3_site') }}"></script>
+
     @if (true)
         <!-- Google Tag Manager -->
         <script>
@@ -128,6 +131,8 @@
     @yield('js_plugins')
 
     @yield('js_inline')
+
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
     <script>
         (function() {
