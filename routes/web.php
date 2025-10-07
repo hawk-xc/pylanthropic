@@ -331,20 +331,22 @@ Route::get('/programs', [Guest\ProgramController::class, 'list'])->name('program
 
 Route::post('/programs/load-more', [Guest\ProgramController::class, 'loadMore'])->name('programs.loadMore');
 
-Route::get('/donasi/status/{inv}', [Guest\DonateController::class, 'paymentStatus'])->name('donate.status');
-Route::post('/donasi/status-check/{inv}', [Guest\DonateController::class, 'paymentStatusCheck'])->name('donate.status.check');
-Route::get('/{slug}', [Guest\ProgramController::class, 'index'])->name('program.index');
-// Penyaluran
-Route::get('/{slug}/penyaluran', [Guest\ProgramController::class, 'payout'])->name('program.payout');
-// Donatur
-Route::get('/{slug}/donatur', [Guest\ProgramController::class, 'donor'])->name('program.donor');
-Route::get('/{slug}/info', [Guest\ProgramController::class, 'info'])->name('program.info');
-Route::get('/{slug}/donate', [Guest\DonateController::class, 'amount'])->name('donate.amount');
-Route::get('/{slug}/payment/{nominal}', [Guest\DonateController::class, 'payment'])->name('donate.payment');
-Route::get('/{slug}/checkout/{nominal}/{type}', [Guest\DonateController::class, 'checkout'])->name('donate.checkout');
-Route::post('/{slug}/checkout-do', [Guest\DonateController::class, 'checkoutDo'])->name('donate.checkout.do');
-Route::post('/{slug}/payment-info', [Guest\DonateController::class, 'paymentInfo'])->name('donate.payment_info');
-Route::post('/{slug}/program-read-more-count', [Guest\ProgramController::class, 'countReadMore'])->name('program.count.read_more');
+Route::middleware(['filter.ip'])->group(function () {
+    Route::get('/donasi/status/{inv}', [Guest\DonateController::class, 'paymentStatus'])->name('donate.status');
+    Route::post('/donasi/status-check/{inv}', [Guest\DonateController::class, 'paymentStatusCheck'])->name('donate.status.check');
+    Route::get('/{slug}', [Guest\ProgramController::class, 'index'])->name('program.index');
+    // Penyaluran
+    Route::get('/{slug}/penyaluran', [Guest\ProgramController::class, 'payout'])->name('program.payout');
+    // Donatur
+    Route::get('/{slug}/donatur', [Guest\ProgramController::class, 'donor'])->name('program.donor');
+    Route::get('/{slug}/info', [Guest\ProgramController::class, 'info'])->name('program.info');
+    Route::get('/{slug}/donate', [Guest\DonateController::class, 'amount'])->name('donate.amount');
+    Route::get('/{slug}/payment/{nominal}', [Guest\DonateController::class, 'payment'])->name('donate.payment');
+    Route::get('/{slug}/checkout/{nominal}/{type}', [Guest\DonateController::class, 'checkout'])->name('donate.checkout');
+    Route::post('/{slug}/checkout-do', [Guest\DonateController::class, 'checkoutDo'])->name('donate.checkout.do');
+    Route::post('/{slug}/payment-info', [Guest\DonateController::class, 'paymentInfo'])->name('donate.payment_info');
+    Route::post('/{slug}/program-read-more-count', [Guest\ProgramController::class, 'countReadMore'])->name('program.count.read_more');
+});
 
 // PROGRAM CONTENT IMAGE UPLOAD
 Route::post('/program-submit-image-content', [Admin\ProgramController::class, 'uploadImageContent'])
