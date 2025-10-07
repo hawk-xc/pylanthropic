@@ -59,3 +59,182 @@ if (!function_exists('importProspectDonatur')) {
         }
     }
 }
+
+if (!function_exists('checkSuspect')) {
+    function checkSuspect($nominal, $deviceId, $uaCore, $ipAddress, $sessionId, $fingerprintId)
+    {
+        // Normalisasi input (hindari empty string)
+        $deviceId     = trim((string) ($deviceId ?? '')) ?: null;
+        $sessionId    = trim((string) ($sessionId ?? '')) ?: null;
+        $uaCore       = trim((string) ($uaCore ?? '')) ?: null;
+        $ipAddress    = trim((string) ($ipAddress ?? '')) ?: null;
+        $fingerprintId = trim((string) ($fingerprintId ?? '')) ?: null;
+
+        $limitNominal        = 10000;
+        $cancelFreshMinutes  = 5;
+        $dayWindow           = 1;   // 1 hari (untuk rule suspect)
+        $recentWindowMinutes = 60;  // 1 jam (untuk duplicate big)
+
+        /*
+        |--------------------------------------------------------------------------
+        | RULE 1: Cek fingerprintId lebih dulu
+        |--------------------------------------------------------------------------
+        */
+        if (!empty($fingerprintId)) {
+            $suspectTxForFp = App\Models\Transaction::where('fingerprint_id', $fingerprintId)
+                ->where('is_suspect', 1)
+                ->where('created_at', '>=', now()->subDay($dayWindow))
+                ->get();
+
+            if ($suspectTxForFp->isNotEmpty()) {
+                $matching = $suspectTxForFp->first();
+
+                App\Models\SpamLog::updateOrCreate(
+                    [
+                        'transaction_id' => $matching->id,
+                        'reason'         => 'fingerprint previously suspect',
+                    ],
+                    [
+                        'device_id'     => $deviceId,
+                        'ua_core'       => $uaCore,
+                        'ip_address'    => $ipAddress,
+                        'session_id'    => $sessionId,
+                        'fingerprint_id'=> $fingerprintId,
+                    ]
+                );
+
+                return [
+                    'is_suspect'     => 1,
+                    'invoice_number' => $matching->invoice_number,
+                ];
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | RULE 2: Cek IP sebagai fallback (jika fingerprint belum pernah tersimpan)
+        |--------------------------------------------------------------------------
+        */
+        if (!empty($ipAddress)) {
+            $suspectTxForIp = App\Models\Transaction::where('ip_address', $ipAddress)
+                ->where('is_suspect', 1)
+                ->where('created_at', '>=', now()->subDay($dayWindow))
+                ->get();
+
+            if ($suspectTxForIp->isNotEmpty()) {
+                $matching = $suspectTxForIp->first(function ($t) use ($deviceId, $sessionId, $uaCore, $fingerprintId) {
+                    if ($fingerprintId && $t->fingerprint_id === $fingerprintId) return true;
+                    if ($deviceId && $t->device_id === $deviceId) return true;
+                    if ($sessionId && $t->session_id === $sessionId) return true;
+                    if ($uaCore && $t->ua_core === $uaCore) return true;
+                    return false;
+                });
+
+                if ($matching) {
+                    App\Models\SpamLog::updateOrCreate(
+                        ['transaction_id' => $matching->id, 'reason' => 'daily limit after suspect (ip fallback)'],
+                        [
+                            'device_id'     => $deviceId,
+                            'ua_core'       => $uaCore,
+                            'ip_address'    => $ipAddress,
+                            'session_id'    => $sessionId,
+                            'fingerprint_id'=> $fingerprintId,
+                        ]
+                    );
+
+                    return [
+                        'is_suspect'     => 1,
+                        'invoice_number' => $matching->invoice_number,
+                    ];
+                }
+            }
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | RULE 3: Duplicate big donation (cek fingerprint dulu)
+        |--------------------------------------------------------------------------
+        */
+        if ($nominal >= $limitNominal) {
+            // 3a. Cek fingerprint
+            if ($fingerprintId) {
+                $recentByFp = App\Models\Transaction::where('fingerprint_id', $fingerprintId)
+                    ->where(function ($q) use ($cancelFreshMinutes) {
+                        $q->where('status', 'draft')
+                          ->orWhere(function ($q2) use ($cancelFreshMinutes) {
+                              $q2->where('status', 'cancel')
+                                 ->where('updated_at', '>=', now()->subMinutes($cancelFreshMinutes));
+                          });
+                    })
+                    ->where('nominal', $nominal)
+                    ->where('created_at', '>=', now()->subMinutes($recentWindowMinutes))
+                    ->latest('id')
+                    ->first();
+
+                if ($recentByFp) {
+                    if (!$recentByFp->is_suspect) {
+                        $recentByFp->update(['is_suspect' => 1]);
+                    }
+
+                    App\Models\SpamLog::updateOrCreate(
+                        ['transaction_id' => $recentByFp->id, 'reason' => 'duplicate big donation (fingerprint)'],
+                        [
+                            'device_id'     => $deviceId,
+                            'ua_core'       => $uaCore,
+                            'ip_address'    => $ipAddress,
+                            'session_id'    => $sessionId,
+                            'fingerprint_id'=> $fingerprintId,
+                        ]
+                    );
+
+                    return [
+                        'is_suspect'     => 1,
+                        'invoice_number' => $recentByFp->invoice_number,
+                    ];
+                }
+            }
+
+            // 3b. Jika fingerprint tidak ada, pakai IP fallback
+            if ($ipAddress) {
+                $recentByIp = App\Models\Transaction::where('ip_address', $ipAddress)
+                    ->where(function ($q) use ($cancelFreshMinutes) {
+                        $q->where('status', 'draft')
+                          ->orWhere(function ($q2) use ($cancelFreshMinutes) {
+                              $q2->where('status', 'cancel')
+                                 ->where('updated_at', '>=', now()->subMinutes($cancelFreshMinutes));
+                          });
+                    })
+                    ->where('nominal', $nominal)
+                    ->where('created_at', '>=', now()->subMinutes($recentWindowMinutes))
+                    ->latest('id')
+                    ->first();
+
+                if ($recentByIp) {
+                    if (!$recentByIp->is_suspect) {
+                        $recentByIp->update(['is_suspect' => 1]);
+                    }
+
+                    App\Models\SpamLog::updateOrCreate(
+                        ['transaction_id' => $recentByIp->id, 'reason' => 'duplicate big donation (ip fallback)'],
+                        [
+                            'device_id'     => $deviceId,
+                            'ua_core'       => $uaCore,
+                            'ip_address'    => $ipAddress,
+                            'session_id'    => $sessionId,
+                            'fingerprint_id'=> $fingerprintId,
+                        ]
+                    );
+
+                    return [
+                        'is_suspect'     => 1,
+                        'invoice_number' => $recentByIp->invoice_number,
+                    ];
+                }
+            }
+        }
+
+        // Default aman
+        return ['is_suspect' => 0, 'invoice_number' => ''];
+    }
+}
+

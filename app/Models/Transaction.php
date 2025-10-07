@@ -39,7 +39,9 @@ class Transaction extends Model
         'ua_core',
         'ip_address',
         'is_suspect',
-        'ref_code'
+        'ref_code',
+        'session_id',
+        'fingerprint_id'
     ];
 
     // update model relation method

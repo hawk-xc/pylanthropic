@@ -12,5 +12,7 @@ class SpamLog extends Model
         'ua_core',
         'ip_address',
         'reason',
+        'session_id',
+        'fingerprint_id'
     ];
 }

@@ -189,94 +189,6 @@ class DonateController extends Controller
         }
     }
 
-    private function checkSuspect($nominal, $deviceId, $uaCore, $ipAddress)
-    {
-        $limitNominal        = 10000;  // ambang donasi besar
-        $cancelFreshMinutes  = 5;       // cancel baru dihitung duplikat
-        $dayWindow           = 1;       // 1 hari
-        $recentWindowMinutes = 60;      // window 1 jam
-
-        // --- RULE 1: Jika device/uaCore pernah suspect dalam 24 jam,
-        //     maka sehari hanya boleh 1 transaksi.
-        $hasRecentSuspect = Transaction::where(function($q) use ($deviceId, $uaCore) {
-                $q->where('device_id', $deviceId)
-                ->orWhere('ua_core', $uaCore);
-            })
-            ->where('is_suspect', 1)
-            ->where('created_at', '>=', now()->subDay($dayWindow))
-            ->exists();
-
-        if ($hasRecentSuspect) {
-            $todayStart = now()->startOfDay();
-            $todayTx = Transaction::where(function($q) use ($deviceId, $uaCore) {
-                            $q->where('device_id', $deviceId)
-                            ->orWhere('ua_core', $uaCore);
-                        })
-                        ->where('created_at', '>=', $todayStart)
-                        ->latest('id')
-                        ->first();
-
-            if ($todayTx) {
-                SpamLog::create([
-                    'transaction_id' => $todayTx->id,
-                    'device_id'      => $deviceId,
-                    'ua_core'        => $uaCore,
-                    'ip_address'     => $ipAddress,
-                    'reason'         => 'daily limit after suspect',
-                ]);
-
-                return [
-                    'is_suspect'     => 1,
-                    'invoice_number' => $todayTx->invoice_number,
-                ];
-            }
-        }
-
-        // --- RULE 2: Donasi besar duplikat (draft / cancel baru)
-        if ($nominal >= $limitNominal) {
-            $recentBig = Transaction::where(function($q) use ($deviceId, $uaCore) {
-                                $q->where('device_id', $deviceId)
-                                ->orWhere('ua_core', $uaCore);
-                            })
-                            ->where(function($q) use ($cancelFreshMinutes) {
-                                $q->where('status', 'draft')
-                                ->orWhere(function($q2) use ($cancelFreshMinutes) {
-                                    $q2->where('status', 'cancel')
-                                        ->where('updated_at', '>=', now()->subMinutes($cancelFreshMinutes));
-                                });
-                            })
-                            ->where('nominal', '>=', $limitNominal)
-                            ->where('created_at', '>=', now()->subMinutes($recentWindowMinutes))
-                            ->latest('id')
-                            ->first();
-
-            if ($recentBig) {
-                $recentBig->update(['is_suspect' => 1]);
-
-                SpamLog::create([
-                    'transaction_id' => $recentBig->id,
-                    'device_id'      => $deviceId,
-                    'ua_core'        => $uaCore,
-                    'ip_address'     => $ipAddress,
-                    'reason'         => 'duplicate big donation (draft/cancel fresh)',
-                ]);
-
-                return [
-                    'is_suspect'     => 1,
-                    'invoice_number' => $recentBig->invoice_number,
-                ];
-            }
-        }
-
-        // --- Default (aman)
-        return [
-            'is_suspect'     => 0,
-            'invoice_number' => '',
-        ];
-    }
-
-
-
     public function paymentInfo(Request $request)
     {
         $request->validate([
@@ -315,8 +227,10 @@ class DonateController extends Controller
             $uaRaw     = $request->header('User-Agent') ?? null;
             $uaCore    = \App\Helpers\UserAgentHelper::parseCore($uaRaw);
             $ipAddress = $request->ip() ?? null;
+            $sessionId = $request->session()->getId();
+            $fingerprintId = $request->fingerprint;
 
-            $check = $this->checkSuspect($nominal, $deviceId, $uaCore, $ipAddress);
+            $check = checkSuspect($nominal, $deviceId, $uaCore, $ipAddress, $sessionId, $fingerprintId);
 
             if ($check['is_suspect'] == 1) {
                 return redirect()->route('donate.status', ['inv' => $check['invoice_number']])

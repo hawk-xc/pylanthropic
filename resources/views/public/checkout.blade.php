@@ -123,6 +123,7 @@
 
   <form method="post" action="{{ route('donate.payment_info', $program->slug).$uri_param }}">
     @csrf
+    <input type="hidden" name="fingerprint" id="fingerprint">
     <!-- payment method section start -->
     <section class="payment method section-lg-b-space pt-0">
       <div class="custom-container">
@@ -185,7 +186,7 @@
 
     <!-- cart popup start -->
     <div class="cart-popup">
-      <button type="submit" class="btn donate-btn">Lanjut Pembayaran</button>
+      <button type="submit" id="donateBtn" class="btn donate-btn">Lanjut Pembayaran</button>
     </div>
     <!-- cart popup end -->
   </form>
@@ -203,5 +204,103 @@
 
 
 @section('js_inline')
+<script>
+(function () {
+    // elemen yang penting
+    const donateBtn = document.getElementById("donateBtn");
+    const fingerprintInput = document.getElementById("fingerprint");
 
+    if (!donateBtn || !fingerprintInput) {
+        return;
+    }
+
+    // disable tombol sampai fingerprint siap (atau gagal)
+    donateBtn.disabled = true;
+
+    // callback untuk menjalankan fingerprint setelah library tersedia
+    function runFingerprint() {
+        try {
+            // FingerprintJS API sama untuk v3/v4: FingerprintJS.load().then(fp => fp.get())
+            FingerprintJS.load()
+                .then(fp => fp.get())
+                .then(result => {
+                    fingerprintInput.value = result.visitorId || "";
+                    console.log("Fingerprint berhasil diambil:", result.visitorId);
+                    donateBtn.disabled = false;
+                })
+                .catch(err => {
+                    console.error("Fingerprint gagal diambil (runtime):", err);
+                    donateBtn.disabled = false;
+                });
+        } catch (err) {
+            console.error("FingerprintJS tersedia tapi error saat eksekusi:", err);
+            donateBtn.disabled = false;
+        }
+    }
+
+    // fungsi untuk memuat library secara dinamis (fallback ke jsDelivr v3)
+    function loadFingerprintLibAndRun() {
+        // jika sudah ada, langsung jalankan
+        if (typeof FingerprintJS !== "undefined") {
+            return runFingerprint();
+        }
+
+        // coba load IIFE v4 global (resmi)
+        const urls = [
+            "https://openfpcdn.io/fingerprintjs/v4/iife.min.js",                         // official v4 iife
+            "https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js" // fallback v3
+        ];
+
+        // sequential load: coba url[0], kalau gagal coba url[1]
+        const head = document.getElementsByTagName('head')[0];
+
+        function tryLoad(index) {
+            if (index >= urls.length) {
+                donateBtn.disabled = false;
+                return;
+            }
+
+            const s = document.createElement('script');
+            s.src = urls[index];
+            s.async = true;
+            s.onload = function () {
+                // delay microtask untuk memastikan global didefinisikan
+                setTimeout(() => {
+                    if (typeof FingerprintJS !== "undefined") {
+                        runFingerprint();
+                    } else {
+                        // kalau tetap undefined, coba next CDN
+                        tryLoad(index + 1);
+                    }
+                }, 0);
+            };
+            s.onerror = function () {
+                tryLoad(index + 1);
+            };
+            head.appendChild(s);
+        }
+
+        tryLoad(0);
+    }
+
+    // Jalankan hanya setelah DOM siap
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", loadFingerprintLibAndRun);
+    } else {
+        loadFingerprintLibAndRun();
+    }
+
+    // juga tangani submit: jika fingerprint belum terisi, cegah submit
+    const form = donateBtn.closest('form');
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            if (!fingerprintInput.value) {
+                e.preventDefault();
+                alert('Sedang memverifikasi perangkat Anda. Tunggu sebentar lalu coba lagi.');
+            }
+        });
+    }
+})();
+</script>
 @endsection
+
