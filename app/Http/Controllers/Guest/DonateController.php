@@ -263,11 +263,13 @@ class DonateController extends Controller
             $deviceId  = $request->attributes->get('bb_did') ?? $request->cookie('bb_did');
             $uaRaw     = $request->header('User-Agent') ?? null;
             $uaCore    = \App\Helpers\UserAgentHelper::parseCore($uaRaw);
-            $ipAddress = $request->ip() ?? null;
+            $ipAddress = $request->header('CF-Connecting-IP') ?? $request->ip() ?? null;
             $sessionId = $request->session()->getId();
             $fingerprintId = $request->fingerprint;
+            $donaturName = $request->fullname;
+            dd($donaturName);
 
-            $check = checkSuspect($nominal, $deviceId, $uaCore, $ipAddress, $sessionId, $fingerprintId);
+            $check = checkSuspect($nominal, $deviceId, $uaCore, $ipAddress, $sessionId, $fingerprintId, $donaturName);
 
             if ($check['is_suspect'] == 1) {
                 return redirect()->route('donate.status', ['inv' => $check['invoice_number']])
