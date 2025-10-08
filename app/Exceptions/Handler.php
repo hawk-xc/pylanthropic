@@ -30,11 +30,7 @@ class Handler extends ExceptionHandler
      *
      * @var array<int, string>
      */
-    protected $dontFlash = [
-        'current_password',
-        'password',
-        'password_confirmation',
-    ];
+    protected $dontFlash = ['current_password', 'password', 'password_confirmation'];
 
     /**
      * Register the exception handling callbacks for the application.
@@ -44,5 +40,41 @@ class Handler extends ExceptionHandler
         $this->reportable(function (Throwable $e) {
             //
         });
+    }
+
+    public function render($request, Throwable $exception)
+    {
+        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\HttpException) {
+            $statusCode = $exception->getStatusCode();
+            $message = $exception->getMessage() ?: $this->getDefaultMessage($statusCode);
+
+            return response()->view(
+                'errors.error',
+                [
+                    'code' => $statusCode,
+                    'message' => $message,
+                ],
+                $statusCode,
+            );
+        }
+
+        return response()->view(
+            'errors.error',
+            [
+                'code' => 500,
+                'message' => $exception->getMessage() ?: 'Terjadi kesalahan pada server.',
+            ],
+            500,
+        );
+    }
+
+    protected function getDefaultMessage($code)
+    {
+        return match ($code) {
+            403 => 'Akses ditolak. Kamu tidak memiliki izin untuk halaman ini.',
+            404 => 'Halaman yang kamu cari tidak ditemukan.',
+            500 => 'Terjadi kesalahan pada server.',
+            default => 'Terjadi kesalahan yang tidak diketahui.',
+        };
     }
 }
