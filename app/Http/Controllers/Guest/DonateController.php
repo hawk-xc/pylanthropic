@@ -196,7 +196,14 @@ class DonateController extends Controller
             'nominal'  => 'required',
             'slug'     => 'required|string',
             'fullname' => 'required|string',
-            'telp'     => 'required|numeric',
+            'telp'     => 'required|numeric|regex:/^08[0-9]{8,11}$/',
+        ], [
+            'type.required'     => 'Kolom Metode Pembayaran wajib diisi.',
+            'nominal.required'  => 'Kolom Nominal wajib diisi.',
+            'slug.required'     => 'Kolom Program wajib diisi.',
+            'fullname.required' => 'Kolom Nama wajib diisi.',
+            'telp.required'     => 'Kolom No. Telepon wajib diisi.',
+            'telp.regex'        => 'No. Telepon tidak valid.',
         ]);
 
         $captcha = $request->input('g-recaptcha-response');

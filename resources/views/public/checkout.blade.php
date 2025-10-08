@@ -157,16 +157,29 @@
         <hr>
         <div class="form-input mt-4">
           <input type="text" name="fullname" class="form-control fs-14 form-payment" value="{{ request('name') ?? '' }}" placeholder="Nama Lengkap" required />
+          @error('fullname')
+            <div class="alert alert-secodary disclaimer-detail mb-1" style="color: #c91616ff;">
+              <strong class="">Perhatikan!</strong> {{ $message }}
+            </div> 
+          @enderror
         </div>
         <div class="form-input mt-2">
           <input type="text" name="telp" class="form-control fs-14 form-payment" value="{{ request('telp') ?? '' }}" placeholder="Nomor Telpon : 08....." required />
+          @error('telp')
+            <div class="alert alert-secodary disclaimer-detail mb-1" style="color: #c91616ff;">
+              <strong class="">Perhatikan!</strong> {{ $message }}
+            </div> 
+          @enderror
+        </div>
+        <div class="alert alert-secodary disclaimer-detail mt-2 mb-1">
+          <strong class="">Penting!</strong> Pastikan format nomor telpon sudah benar
         </div>
         <label class="alert alert-avail-contact disclaimer-detail mt-2">
           <input type="checkbox" name="want_to_contact" class="me-2" checked>
           Saya bersedia dihubungi melalui Whatsapp 
         </label>
         <div class="hide-name-form">
-          <div class="fw-medium fs-15">
+          <div class="fw-medium fs-15"> 
             Sembunyikan nama saya
             <!-- <br><span class="text-secondary">(<em>Orang Baik</em>)</span> -->
           </div>
