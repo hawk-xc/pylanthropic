@@ -41,7 +41,9 @@ class Transaction extends Model
         'is_suspect',
         'ref_code',
         'session_id',
-        'fingerprint_id'
+        'fingerprint_id',
+        'fbp',
+        'fbc'
     ];
 
     // update model relation method

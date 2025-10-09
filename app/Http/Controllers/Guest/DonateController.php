@@ -391,12 +391,12 @@ class DonateController extends Controller
             $fingerprintId = $request->fingerprint ?? null;
             $donaturName   = $donatur_name ?? null;
 
-            $check = checkSuspect($nominal, $deviceId, $uaCore, $ipAddress, $sessionId, $fingerprintId, $donaturName);
-            
-            if ($check['is_suspect'] == 1) {
-                return redirect()->route('donate.status', ['inv' => $check['invoice_number']])
-                ->with('warning', 'Anda sudah membuat donasi berulang kali namun belum dibayar.');
-            }
+            // $check = checkSuspect($nominal, $deviceId, $uaCore, $ipAddress, $sessionId, $fingerprintId);
+
+            // if ($check['is_suspect'] == 1) {
+            //     return redirect()->route('donate.status', ['inv' => $check['invoice_number']])
+            //         ->with('warning', 'Anda sudah membuat donasi berulang kali namun belum dibayar.');
+            // }
             
             // check any transaction
             $is_trans = Transaction::where('donatur_id', $donatur_id)
@@ -605,6 +605,13 @@ class DonateController extends Controller
                 $token_midtrans = 0;
             }
 
+            $fbp = $request->input('fbp') ?: $request->cookie('_fbp'); // fallback aman
+            $fbc = $request->input('fbc') ?: $request->cookie('_fbc');
+
+            // optional: validasi pola dasar biar gak keisi sembarang
+            $validFbp = $fbp && str_starts_with($fbp, 'fb.1.');
+            $validFbc = !$fbc || str_starts_with($fbc, 'fb.1.'); // fbc bisa kosong kalau bukan dari iklan
+
             // insert table transaction
             $transaction  = Transaction::create([
                 'program_id'      => $program->id,
@@ -626,7 +633,9 @@ class DonateController extends Controller
                 'ip_address'      => $ipAddress,
                 'session_id'      => $sessionId,
                 'fingerprint_id'  => $fingerprintId,
-                'ref_code'        => (isset($request->ref)) ? strip_tags($request->ref) : null
+                'ref_code'        => (isset($request->ref)) ? strip_tags($request->ref) : null,
+                'fbp'             => $validFbp ? $fbp : null,
+                'fbc'             => $validFbc ? $fbc : null
             ]);
 
             // CAPI - Convertion API for META Ads

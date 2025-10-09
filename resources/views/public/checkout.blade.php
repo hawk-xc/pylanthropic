@@ -330,12 +330,15 @@
         </section>
         <!-- payment method section end -->
 
-        <!-- cart popup start -->
-        <div class="cart-popup">
-            <button type="submit" id="donateBtn" class="btn donate-btn">Lanjut Pembayaran</button>
-        </div>
-        <!-- cart popup end -->
-    </form>
+    <input type="hidden" name="fbp" id="fbp">
+    <input type="hidden" name="fbc" id="fbc">
+
+    <!-- cart popup start -->
+    <div class="cart-popup">
+      <button type="submit" id="donateBtn" class="btn donate-btn">Lanjut Pembayaran</button>
+    </div>
+    <!-- cart popup end -->
+  </form>
 @endsection
 
 
@@ -348,13 +351,58 @@
 
 
 @section('js_inline')
-    <script>
-        (function() {
-            grecaptcha.ready(function() {
-                grecaptcha.execute('{{ config('services.recaptcha.v3_site') }}', {
-                    action: 'donate'
-                }).then(function(token) {
-                    document.getElementById('recaptchaV3Token').value = token;
+<script>
+function getCookie(name){
+  const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  return m ? m.pop() : '';
+}
+
+// set di DOM ready (biar kelihatan di devtools)
+document.addEventListener('DOMContentLoaded', function () {
+  document.getElementById('fbp').value = getCookie('_fbp') || '';
+  document.getElementById('fbc').value = getCookie('_fbc') || '';
+});
+
+// refresh lagi persis sebelum submit (pastikan yang paling baru kepasang)
+document.getElementById('txnForm').addEventListener('submit', function () {
+  document.getElementById('fbp').value = getCookie('_fbp') || '';
+  document.getElementById('fbc').value = getCookie('_fbc') || '';
+});
+</script>
+
+<script>
+(function () {
+    grecaptcha.ready(function() {
+      grecaptcha.execute('{{ config("services.recaptcha.v3_site") }}', {action: 'donate'}).then(function(token) {
+          document.getElementById('recaptchaV3Token').value = token;
+      });
+    });
+
+    // elemen yang penting
+    const donateBtn = document.getElementById("donateBtn");
+    const fingerprintInput = document.getElementById("fingerprint");
+
+    if (!donateBtn || !fingerprintInput) {
+        return;
+    }
+
+    // disable tombol sampai fingerprint siap (atau gagal)
+    donateBtn.disabled = true;
+
+    // callback untuk menjalankan fingerprint setelah library tersedia
+    function runFingerprint() {
+        try {
+            // FingerprintJS API sama untuk v3/v4: FingerprintJS.load().then(fp => fp.get())
+            FingerprintJS.load()
+                .then(fp => fp.get())
+                .then(result => {
+                    fingerprintInput.value = result.visitorId || "";
+                    console.log("Fingerprint berhasil diambil:", result.visitorId);
+                    donateBtn.disabled = false;
+                })
+                .catch(err => {
+                    console.error("Fingerprint gagal diambil (runtime):", err);
+                    donateBtn.disabled = false;
                 });
             });
 

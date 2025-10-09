@@ -12,6 +12,9 @@ use App\Models\Donatur;
 use App\Models\TrackingVisitor;
 use DataTables;
 use App\Http\Controllers\WaBlastController;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Str;
 
 class DonateController extends Controller
 {
@@ -127,6 +130,8 @@ class DonateController extends Controller
                     'device_id'      => $trans->device_id,
                     'ua_core'        => $trans->ua_core,
                     'ip_address'     => $trans->ip_address,
+                    'session_id'     => $trans->session_id,
+                    'fingerprint_id' => $trans->fingerprint_id,
                     'reason'         => 'Ditandai SPAM oleh admin',
                 ]);
             }
@@ -155,6 +160,69 @@ Sebesar : *Rp '.str_replace(',', '.', number_format($trans->nominal_final)).'*';
 
             // (new WaBlastController)->sentWA($donatur->telp, $chat);
             (new WaBlastController)->sentWA($donatur->telp, $chat, 'thanks_trans', $trans->id, $donatur->id, $program->id);
+        }
+
+        // Kirim CAPI Facebook Success / PAID - CAPI - Convertion API for META Ads
+        if($status=='success') {
+            $ph = !empty($trans->phone_e164) ? hash('sha256', $trans->phone_e164) : null;
+
+            // fbp/fbc hanya kirim format valid
+            $fbp = ($trans->fbp && str_starts_with($trans->fbp, 'fb.1.')) ? $trans->fbp : null;
+            $fbc = ($trans->fbc && str_starts_with($trans->fbc, 'fb.1.')) ? $trans->fbc : null;
+
+            $eventUrl = route('donate.status', [ 'inv' => $trans->invoice_number ]);
+
+            $payload = [
+                'data' => [[
+                    'event_name'       => 'Donate',
+                    'event_time'       => (int) now()->timestamp,
+                    'event_id'         => (string) $trans->invoice_number,     // untuk dedup
+                    'action_source'    => 'website',
+                    'event_source_url' => $eventUrl,
+
+                    'user_data' => array_filter([
+                        'ph'                  => $ph,
+                        // 'em'                  => $em,
+                        'client_ip_address'   => $trans->ip_address,
+                        'client_user_agent'   => $trans->user_agent,
+                        'fbc'                 => $fbc,
+                        'fbp'                 => $fbp,
+                        'external_id'         => hash('sha256', (string) $donatur->id),
+                    ]),
+
+                    'custom_data' => [
+                        'currency'     => 'IDR',
+                        'value'        => $trans->nominal_final,
+                        'content_name' => $program->title ?? null,
+                    ],
+                ]],
+
+                'access_token'   => env('TOKEN_FB_CAPI')
+            ];
+
+            try {
+                $response = Http::asJson()
+                    ->acceptJson()
+                    ->timeout(8)
+                    ->retry(2, 200) // tahan network hiccup kecil
+                    ->post('https://graph.facebook.com/v20.0/1278491429470122/events', $payload)
+                    ->throw();
+
+                Log::info('Facebook CAPI response', [
+                    'invoice' => $trans->invoice_number,
+                    'status'  => $response->status(),
+                    'body'    => $response->json(),
+                ]);
+
+                // tandai agar tidak terkirim dua kali
+                $trans->paid_at = now();
+                $trans->save();
+            } catch (\Throwable $e) {
+                Log::error('Facebook CAPI error', [
+                    'invoice' => $trans->invoice_number,
+                    'message' => $e->getMessage(),
+                ]);
+            }
         }
 
         return array('status'=>'success', 'nominal'=>'Rp. '.number_format($nominal));
