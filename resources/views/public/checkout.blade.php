@@ -208,6 +208,9 @@
     </section>
     <!-- payment method section end -->
 
+    <input type="hidden" name="fbp" id="fbp">
+    <input type="hidden" name="fbc" id="fbc">
+
     <!-- cart popup start -->
     <div class="cart-popup">
       <button type="submit" id="donateBtn" class="btn donate-btn">Lanjut Pembayaran</button>
@@ -228,6 +231,25 @@
 
 
 @section('js_inline')
+<script>
+function getCookie(name){
+  const m = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  return m ? m.pop() : '';
+}
+
+// set di DOM ready (biar kelihatan di devtools)
+document.addEventListener('DOMContentLoaded', function () {
+  document.getElementById('fbp').value = getCookie('_fbp') || '';
+  document.getElementById('fbc').value = getCookie('_fbc') || '';
+});
+
+// refresh lagi persis sebelum submit (pastikan yang paling baru kepasang)
+document.getElementById('txnForm').addEventListener('submit', function () {
+  document.getElementById('fbp').value = getCookie('_fbp') || '';
+  document.getElementById('fbc').value = getCookie('_fbc') || '';
+});
+</script>
+
 <script>
 (function () {
     grecaptcha.ready(function() {

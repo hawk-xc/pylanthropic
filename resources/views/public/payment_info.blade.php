@@ -6,7 +6,7 @@
 
 
 @section('css_plugins')
-  @if(!session('warning') && $transaction->is_suspect==0)
+  @if(true)
     <!-- Meta Pixel Code -->
     <script>
       !function(f,b,e,v,n,t,s)
@@ -40,7 +40,7 @@
       }
       ?>
       
-      fbq('track', 'Donate', {
+      fbq('track', 'SubmitApplication', {
         value : {{ (float) $nominal }},
         currency: 'IDR'
       }, {
@@ -48,7 +48,7 @@
       });
       window.loadedPixel = []
     </script>
-    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{$pixel_id}}&ev=Donate&noscript=1" /></noscript>
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id={{$pixel_id}}&ev=SubmitApplication&noscript=1" /></noscript>
     <!-- End Meta Pixel Code -->
   @endif
   

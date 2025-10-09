@@ -134,6 +134,7 @@
 
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
+    @if (false)
     <script>
         (function() {
             const ua = navigator.userAgent || navigator.vendor || window.opera;
@@ -220,6 +221,7 @@
             }
         })();
     </script>
+    @endif
 
 </body>
 

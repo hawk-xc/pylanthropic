@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 use App\Http\Controllers\WaBlastController;
 
@@ -219,6 +221,8 @@ class MutasiController extends Controller
                         $trans->save();
                         $id_trans         = $trans->id;
 
+                        $this->sendCAPI($trans);
+
                         $in                 = new CheckMutation;
                         $in->bank_type      = $bank_type;
                         $in->apps_from      = 'MutasiBank';
@@ -242,6 +246,8 @@ class MutasiController extends Controller
                             $trans->updated_at = date('Y-m-d H:i:s');
                             $trans->save();
                             $id_trans         = $trans->id;
+
+                            $this->sendCAPI($trans);
 
                             $in                 = new CheckMutation;
                             $in->bank_type      = $bank_type;
@@ -346,6 +352,74 @@ class MutasiController extends Controller
             'CSCS',
         ];
         return str_replace($phrases, '', $text);
+    }
+
+    public function sendCAPI(\App\Models\Transaction $trans): void
+    {
+        // ⛔ guard dasar
+        if (!$trans || !$trans->invoice_number) return;
+
+        $ph = !empty($trans->phone_e164) ? hash('sha256', $trans->phone_e164) : null;
+
+        // fbp/fbc hanya kirim format valid
+        $fbp = ($trans->fbp && str_starts_with($trans->fbp, 'fb.1.')) ? $trans->fbp : null;
+        $fbc = ($trans->fbc && str_starts_with($trans->fbc, 'fb.1.')) ? $trans->fbc : null;
+
+        $eventUrl = route('donate.status', [ 'inv' => $trans->invoice_number ]);
+
+        $program = Program::select('title')->where('id', $trans->program_id)->first();
+
+        $payload = [
+            'data' => [[
+                'event_name'       => 'Donate',
+                'event_time'       => (int) now()->timestamp,
+                'event_id'         => (string) $trans->invoice_number,     // untuk dedup
+                'action_source'    => 'website',
+                'event_source_url' => $eventUrl,
+
+                'user_data' => array_filter([
+                    'ph'                  => $ph,
+                    // 'em'                  => $em,
+                    'client_ip_address'   => $trans->ip_address,
+                    'client_user_agent'   => $trans->user_agent,
+                    'fbc'                 => $fbc,
+                    'fbp'                 => $fbp,
+                    'external_id'         => hash('sha256', (string) $trans->donatur_id),
+                ]),
+
+                'custom_data' => [
+                    'currency'     => 'IDR',
+                    'value'        => $trans->nominal_final,
+                    'content_name' => $program->title ?? null,
+                ],
+            ]],
+
+            'access_token'   => env('TOKEN_FB_CAPI')
+        ];
+
+        try {
+            $response = Http::asJson()
+                ->acceptJson()
+                ->timeout(8)
+                ->retry(2, 200) // tahan network hiccup kecil
+                ->post('https://graph.facebook.com/v20.0/1278491429470122/events', $payload)
+                ->throw();
+
+            Log::info('Facebook CAPI response', [
+                'invoice' => $trans->invoice_number,
+                'status'  => $response->status(),
+                'body'    => $response->json(),
+            ]);
+
+            // tandai agar tidak terkirim dua kali
+            $trans->paid_at = now();
+            $trans->save();
+        } catch (\Throwable $e) {
+            Log::error('Facebook CAPI error', [
+                'invoice' => $trans->invoice_number,
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
