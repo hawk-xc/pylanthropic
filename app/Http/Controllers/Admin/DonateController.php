@@ -172,50 +172,25 @@ Sebesar : *Rp '.str_replace(',', '.', number_format($trans->nominal_final)).'*';
 
             $eventUrl = route('donate.status', [ 'inv' => $trans->invoice_number ]);
 
-            $payload = [
-                'data' => [[
-                    'event_name'       => 'Donate',
-                    'event_time'       => (int) now()->timestamp,
-                    'event_id'         => (string) $trans->invoice_number,     // untuk dedup
-                    'action_source'    => 'website',
-                    'event_source_url' => $eventUrl,
-
-                    'user_data' => array_filter([
-                        'ph'                  => $ph,
-                        // 'em'                  => $em,
-                        'client_ip_address'   => $trans->ip_address,
-                        'client_user_agent'   => $trans->user_agent,
-                        'fbc'                 => $fbc,
-                        'fbp'                 => $fbp,
-                        'external_id'         => hash('sha256', (string) $donatur->id),
-                    ]),
-
-                    'custom_data' => [
-                        'currency'     => 'IDR',
-                        'value'        => $trans->nominal_final,
-                        'content_name' => $program->title ?? null,
-                    ],
-                ]],
-
-                'access_token'   => env('TOKEN_FB_CAPI')
-            ];
-
             try {
-                $response = Http::asJson()
-                    ->acceptJson()
-                    ->timeout(8)
-                    ->retry(2, 200) // tahan network hiccup kecil
-                    ->post('https://graph.facebook.com/v20.0/1278491429470122/events', $payload)
-                    ->throw();
+                $ok = sendMetaCAPI(
+                    $trans->invoice_number,
+                    $eventUrl,
+                    $ph,
+                    $trans->ip_address,
+                    $trans->user_agent,
+                    $fbc,
+                    $fbp,
+                    (string) $donatur->id,
+                    $trans->nominal_final,
+                    $program->title ?? null
+                );
 
-                Log::info('Facebook CAPI response', [
-                    'invoice' => $trans->invoice_number,
-                    'status'  => $response->status(),
-                    'body'    => $response->json(),
-                ]);
-
-                // tandai agar tidak terkirim dua kali
-                $trans->paid_at = now();
+                if ($ok) {
+                    // tandai agar tidak terkirim dua kali
+                    $trans->capi_sent_at = now();
+                }
+                
                 $trans->save();
             } catch (\Throwable $e) {
                 Log::error('Facebook CAPI error', [

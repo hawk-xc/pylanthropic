@@ -43,7 +43,8 @@ class Transaction extends Model
         'session_id',
         'fingerprint_id',
         'fbp',
-        'fbc'
+        'fbc',
+        'capi_sent_at',
     ];
 
     // update model relation method

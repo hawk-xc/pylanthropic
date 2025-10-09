@@ -12,12 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('transaction', function (Blueprint $table) {
-            if (!Schema::hasColumn('transaction', 'fbp')) {
-                $table->string('fbp')->nullable(true)->after('fingerprint_id');
-            }
-
-            if (!Schema::hasColumn('transaction', 'fbc')) {
-                $table->string('fbc')->nullable(true)->after('fbp');
+            if (!Schema::hasColumn('transaction', 'capi_sent_at')) {
+                $table->dateTime('capi_sent_at')->nullable(true)->after('fbc');
             }
         });
     }
@@ -28,12 +24,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('transaction', function (Blueprint $table) {
-            if (Schema::hasColumn('transaction', 'fbp')) {
-                $table->dropColumn('fbp');
-            }
-
-            if (Schema::hasColumn('transaction', 'fbc')) {
-                $table->dropColumn('fbc');
+            if (Schema::hasColumn('transaction', 'capi_sent_at')) {
+                $table->dropColumn('capi_sent_at');
             }
         });
     }
