@@ -70,14 +70,15 @@ if (!function_exists('checkSuspect')) {
         $uaCore = trim((string) ($uaCore ?? '')) ?: null;
         $ipAddress = trim((string) ($ipAddress ?? '')) ?: null;
         $fingerprintId = trim((string) ($fingerprintId ?? '')) ?: null;
-        $userAgent = trim((string) ($userAgent ?? '')) ?: null;
-        $donaturName = trim((string) ($donaturName ?? '')) ?: null;
+        
+        $userAgent     = trim((string) ($userAgent ?? '')) ?: null;
+        $donaturName   = trim((string) ($donaturName ?? '')) ?: null;
 
         Log::info('new donation record: ' . $nominal . ' - ' . $deviceId . ' - ' . $uaCore . ' - ' . $ipAddress . ' - ' . $sessionId . ' - ' . $fingerprintId . ' - ' . $userAgent . ' - ' . $donaturName);
 
-        $limitNominal = 10000;
-        $cancelFreshMinutes = 5;
-        $dayWindow = 5; // 5 days
+        $limitNominal        = 10000;
+        $cancelFreshMinutes  = 5;
+        $dayWindow           = 5;      // 5 days
         $recentWindowMinutes = 320;
 
         /*

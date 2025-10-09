@@ -188,6 +188,127 @@ class DonateController extends Controller
             return view('public.not_found');
         }
     }
+  
+    function getClientIpPreferV4(?Request $request = null): string {
+        $request = $request ?? request();
+
+        // urutan header: CDN/proxy dulu, lalu default
+        $candidates = [
+            $request->header('CF-Connecting-IP'),
+            $request->header('X-Forwarded-For'),
+            $request->header('X-Real-IP'),
+            $request->ip(),
+        ];
+
+        // expand list: X-Forwarded-For bisa berisi banyak IP dipisah koma
+        $ips = [];
+        foreach ($candidates as $c) {
+            if (!$c) continue;
+            foreach (explode(',', $c) as $p) {
+                $ips[] = trim($p);
+            }
+        }
+
+        // 1) cari IPv4 dulu
+        foreach ($ips as $ip) {
+            // handle IPv4-embedded in IPv6 ::ffff:W.X.Y.Z
+            if (stripos($ip, '::ffff:') === 0) {
+                $ip4 = substr($ip, 7);
+                if (filter_var($ip4, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                    return $ip4;
+                }
+            }
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                return $ip;
+            }
+        }
+
+        // 2) kalau gak ada IPv4, pakai IPv6 valid
+        foreach ($ips as $ip) {
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+                return $ip;
+            }
+        }
+
+        // 3) terakhir, kasih apapun yang ada
+        return $ips[0] ?? '0.0.0.0';
+    }
+
+    function clientIpExact(?Request $request = null): string
+    {
+        $request ??= request();
+
+        // Kumpulkan kandidat IP dari header yang umum dipakai proxy/CDN
+        $raw = [];
+        $hForwarded = $request->header('Forwarded'); // RFC 7239: for=...
+        if ($hForwarded) {
+            // Ambil for=... (bisa quoted / ada port)
+            if (preg_match_all('/for=([^;,\s]+)/i', $hForwarded, $m)) {
+                foreach ($m[1] as $v) {
+                    $v = trim($v, "\"'[]"); // bersihkan quote/bracket
+                    // handle IPv6 "[::1]" atau "::ffff:1.2.3.4"
+                    $raw[] = preg_replace('/^\[|\]$/', '', $v);
+                }
+            }
+        }
+
+        $candidates = [
+            $request->header('CF-Connecting-IP'),
+            $request->header('X-Client-IP'),
+            $request->header('X-Real-IP'),
+            $request->header('X-Forwarded-For'),
+        ];
+
+        foreach ($candidates as $c) {
+            if (!$c) continue;
+            foreach (explode(',', $c) as $p) {
+                $raw[] = trim($p);
+            }
+        }
+
+        // Terakhir: REMOTE_ADDR sebagai fallback
+        $raw[] = (string) $request->server('REMOTE_ADDR');
+
+        // Normalisasi: dedupe + trim + convert IPv4-mapped (::ffff:W.X.Y.Z)
+        $ips = [];
+        foreach (array_filter(array_unique($raw)) as $ip) {
+            if (stripos($ip, '::ffff:') === 0) {
+                $ip = substr($ip, 7);
+            }
+            // buang port jika ada (x.x.x.x:port)
+            if (strpos($ip, ':') !== false && substr_count($ip, ':') === 1 && substr_count($ip, '.') === 3) {
+                // bentuk "ipv4:port"
+                [$maybeIp, $maybePort] = explode(':', $ip, 2);
+                if (ctype_digit($maybePort)) $ip = $maybeIp;
+            }
+            $ips[] = $ip;
+        }
+
+        // Filter hanya IP publik (bukan private/reserved)
+        $isPublic = function (string $ip): bool {
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                return (bool) filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
+            }
+            if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+                return (bool) filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6 | FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE);
+            }
+            return false;
+        };
+
+        $pubV4 = [];
+        $pubV6 = [];
+        foreach ($ips as $ip) {
+            if ($isPublic($ip)) {
+                if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) $pubV4[] = $ip;
+                elseif (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) $pubV6[] = $ip;
+            }
+        }
+
+        // Prefer IPv4 publik, lalu IPv6 publik, terakhir apapun yang ada
+        if (!empty($pubV4)) return $pubV4[0];
+        if (!empty($pubV6)) return $pubV6[0];
+        return $ips[0] ?? '0.0.0.0';
+    }
 
     public function paymentInfo(Request $request)
     {
@@ -260,14 +381,15 @@ class DonateController extends Controller
             }
 
             // Filter Spammer
-            $deviceId  = $request->attributes->get('bb_did') ?? $request->cookie('bb_did');
-            $uaRaw     = $request->header('User-Agent') ?? null;
-            $uaCore    = \App\Helpers\UserAgentHelper::parseCore($uaRaw);
-            $ipAddress = $request->header('CF-Connecting-IP') ?? $request->ip() ?? null;
-            $sessionId = $request->session()->getId();
-            $fingerprintId = $request->fingerprint;
-            $donaturName = $request->fullname;
-            dd($donaturName);
+
+            $deviceId      = $request->attributes->get('bb_did') ?? $request->cookie('bb_did');
+            $uaRaw         = $request->header('User-Agent') ?? null;
+            $uaCore        = \App\Helpers\UserAgentHelper::parseCore($uaRaw);
+            $ipAddress     = $this->clientIpExact($request) ?? null;
+            // $ipAddress     = $this->getClientIpPreferV4($request) ?? null;
+            //$ipAddress = $request->ip() ?? null;
+            $sessionId     = $request->session()->getId() ?? null;
+            $fingerprintId = $request->fingerprint ?? null;
 
             $check = checkSuspect($nominal, $deviceId, $uaCore, $ipAddress, $sessionId, $fingerprintId, $donaturName);
 
@@ -502,6 +624,8 @@ class DonateController extends Controller
                 'ua_core'         => $uaCore,
                 'device_id'       => $deviceId,
                 'ip_address'      => $ipAddress,
+                'session_id'      => $sessionId,
+                'fingerprint_id'  => $fingerprintId,
                 'ref_code'        => (isset($request->ref)) ? strip_tags($request->ref) : null
             ]);
 
