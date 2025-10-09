@@ -171,91 +171,85 @@ class MutasiController extends Controller
     //     return response()->json(['message' => 'success', 'status' => 'success'], 200);
     // }
 
-
     public function index(Request $request)
     {
-        if($request->api_key=='cTN6Unh0NzJmY1FrR0p3Rms2bWJrSnVrVVRVZm1ndWVoUW9pMzZkYzhnRWM0ZXZYYjBYa1VuNkdHa0ZM659c11584f804') {
-            $mutasi    = $request->data_mutasi;
-            $date_3ago = date('Y-m-d', strtotime(date('Y-m-d').'-3 days')).' 00:00:00';
-            for($i=0; $i<count($mutasi); $i++) {
-                $time_mutation = date('His', strtotime($mutasi[$i]['transaction_date']));
-                if($time_mutation=='000000' || $time_mutation<1) {
-                    $date_mutation_where = date('Y-m-d', strtotime($mutasi[$i]['transaction_date'])).' '.date('H:i:s');
-                } else {
-                    $date_mutation_where = $mutasi[$i]['transaction_date'];
-                }
+        if ($request->api_key == 'cTN6Unh0NzJmY1FrR0p3Rms2bWJrSnVrVVRVZm1ndWVoUW9pMzZkYzhnRWM0ZXZYYjBYa1VuNkdHa0ZM659c11584f804') {
+            $mutasi = $request->data_mutasi;
 
-                $check = CheckMutation::where('amount', $mutasi[$i]['amount'])->where('mutation_date', $mutasi[$i]['transaction_date'])->select('id');
-                if($check->count()<1) {
-                    if(strtolower($request->module=='new_ibbiz_bri')) {
-                        $bank_type    = 'bri';
+            $date_24Hago = date('Y-m-d H:i:s', strtotime('-24 hours'));
+            $date_3ago = date('Y-m-d', strtotime(date('Y-m-d') . '-3 days')) . ' 00:00:00';
+
+            for ($i = 0; $i < count($mutasi); $i++) {
+                $time_mutation = date('His', strtotime($mutasi[$i]['transaction_date']));
+                $date_mutation_where = $time_mutation == '000000' || $time_mutation < 1 ? date('Y-m-d', strtotime($mutasi[$i]['transaction_date'])) . ' ' . date('H:i:s') : $mutasi[$i]['transaction_date'];
+
+                // Check transaction exists in 24h
+                $checkRecentTrans = Transaction::where('nominal_final', $mutasi[$i]['amount'])->where('created_at', '>=', $date_24Hago)->where('status', 'draft')->count();
+
+                if ($checkRecentTrans > 0) {
+                    // Lanjutkan logic lama: cek transaksi berdasarkan bank
+                    if (strtolower($request->module == 'new_ibbiz_bri')) {
+                        $bank_type = 'bri';
                         $payment_type = 24;
-                    } elseif(strtolower($request->module=='mandiri_mcm_2')) {
-                        $bank_type    = 'mandiri';
+                    } elseif (strtolower($request->module == 'mandiri_mcm_2')) {
+                        $bank_type = 'mandiri';
                         $payment_type = 23;
-                    } elseif(strtolower($request->module=='bsi_cuz')) {
-                        $bank_type    = 'bsi';
+                    } elseif (strtolower($request->module == 'bsi_cuz')) {
+                        $bank_type = 'bsi';
                         $payment_type = 22;
-                    }  elseif(strtolower($request->module=='bni_giro')) {
-                        $bank_type    = 'bni';
+                    } elseif (strtolower($request->module == 'bni_giro')) {
+                        $bank_type = 'bni';
                         $payment_type = 25;
-                    }  elseif(strtolower($request->module=='bca_giro')) {
-                        $bank_type    = 'bca';
+                    } elseif (strtolower($request->module == 'bca_giro')) {
+                        $bank_type = 'bca';
                         $payment_type = 21;
                     } else {
-                        $bank_type    = 'others';
+                        $bank_type = 'others';
                         $payment_type = null;
                     }
 
-                    $trans_same_bank = Transaction::where('nominal_final', $mutasi[$i]['amount'])->where('payment_type_id', $payment_type)
-                                        ->where('created_at', '<', $date_mutation_where)
-                                        ->where('created_at', '>', $date_3ago)
-                                        ->where('status', 'draft')->count();
+                    $trans_same_bank = Transaction::where('nominal_final', $mutasi[$i]['amount'])->where('payment_type_id', $payment_type)->where('created_at', '<', $date_mutation_where)->where('created_at', '>', $date_3ago)->where('status', 'draft')->count();
 
-                    if($trans_same_bank==1) {        // jika ketemu 1 data
-                        $trans = Transaction::where('nominal_final', $mutasi[$i]['amount'])->where('payment_type_id', $payment_type)
-                                            ->where('created_at', '<=', $date_mutation_where)
-                                            ->where('created_at', '>=', $date_3ago)->where('status', 'draft')->first();
-                        $trans->status     ='success';
+                    if ($trans_same_bank == 1) {
+                        // jika ketemu 1 data
+                        $trans = Transaction::where('nominal_final', $mutasi[$i]['amount'])->where('payment_type_id', $payment_type)->where('created_at', '<=', $date_mutation_where)->where('created_at', '>=', $date_3ago)->where('status', 'draft')->first();
+                        $trans->status = 'success';
                         $trans->updated_at = date('Y-m-d H:i:s');
                         $trans->save();
-                        $id_trans         = $trans->id;
+                        $id_trans = $trans->id;
 
                         $this->sendCAPI($trans);
 
-                        $in                 = new CheckMutation;
-                        $in->bank_type      = $bank_type;
-                        $in->apps_from      = 'MutasiBank';
-                        $in->mutation_date  = $mutasi[$i]['transaction_date'];
-                        $in->mutation_type  = strtolower($mutasi[$i]['type']);
-                        $in->amount         = $mutasi[$i]['amount'];
-                        $in->description    = $this->cleanWebhookString($mutasi[$i]['description']);
+                        $in = new CheckMutation();
+                        $in->bank_type = $bank_type;
+                        $in->apps_from = 'MutasiBank';
+                        $in->mutation_date = $mutasi[$i]['transaction_date'];
+                        $in->mutation_type = strtolower($mutasi[$i]['type']);
+                        $in->amount = $mutasi[$i]['amount'];
+                        $in->description = $this->cleanWebhookString($mutasi[$i]['description']);
                         $in->transaction_id = $id_trans;
                         $in->save();
 
                         $this->sendThanksWA($id_trans, $trans->program_id, $trans->donatur_id, $trans->nominal_final);
-
-                    } elseif($trans_same_bank==0) { // Jika tidak ketemu, maka cari di payment lain
-                        $trans = Transaction::where('nominal_final', $mutasi[$i]['amount'])->where('payment_type_id', '<>', $payment_type)
-                                            ->where('created_at', '<=', $date_mutation_where)
-                                            ->where('created_at', '>=', $date_3ago)->where('status', 'draft')->count();
-                        if($trans==1) {
-                            $trans = Transaction::where('nominal_final', $mutasi[$i]['amount'])->where('payment_type_id', '<>', $payment_type)
-                                            ->where('created_at', '<', $date_mutation_where )->where('status', 'draft')->first();
-                            $trans->status     ='success';
+                    } elseif ($trans_same_bank == 0) {
+                        // Jika tidak ketemu, maka cari di payment lain
+                        $trans = Transaction::where('nominal_final', $mutasi[$i]['amount'])->where('payment_type_id', '<>', $payment_type)->where('created_at', '<=', $date_mutation_where)->where('created_at', '>=', $date_3ago)->where('status', 'draft')->count();
+                        if ($trans == 1) {
+                            $trans = Transaction::where('nominal_final', $mutasi[$i]['amount'])->where('payment_type_id', '<>', $payment_type)->where('created_at', '<', $date_mutation_where)->where('status', 'draft')->first();
+                            $trans->status = 'success';
                             $trans->updated_at = date('Y-m-d H:i:s');
                             $trans->save();
-                            $id_trans         = $trans->id;
+                            $id_trans = $trans->id;
 
                             $this->sendCAPI($trans);
 
-                            $in                 = new CheckMutation;
-                            $in->bank_type      = $bank_type;
-                            $in->apps_from      = 'MutasiBank';
-                            $in->mutation_date  = $mutasi[$i]['transaction_date'];
-                            $in->mutation_type  = strtolower($mutasi[$i]['type']);
-                            $in->amount         = $mutasi[$i]['amount'];
-                            $in->description    = $this->cleanWebhookString($mutasi[$i]['description']);
+                            $in = new CheckMutation();
+                            $in->bank_type = $bank_type;
+                            $in->apps_from = 'MutasiBank';
+                            $in->mutation_date = $mutasi[$i]['transaction_date'];
+                            $in->mutation_type = strtolower($mutasi[$i]['type']);
+                            $in->amount = $mutasi[$i]['amount'];
+                            $in->description = $this->cleanWebhookString($mutasi[$i]['description']);
                             $in->transaction_id = $id_trans;
                             $in->save();
 
@@ -265,34 +259,34 @@ class MutasiController extends Controller
                         //     $trans = Transaction::where('nominal_final', $mutasi[$i]['amount'])->where('payment_type_id', '<>', $payment_type)
                         //                 ->where('created_at', '<=', $date_mutation_where)
                         //                 ->where('created_at', '>=', $date_3ago)->where('status', 'draft')->count();
-
                         // }
-                        else {                    // jika ternyata lebih dari 1 data, maka cek manual saja
-                            $id_trans           = null;
-                            $in                 = new CheckMutation;
-                            $in->bank_type      = $bank_type;
-                            $in->apps_from      = 'MutasiBank';
-                            $in->mutation_date  = $mutasi[$i]['transaction_date'];
-                            $in->mutation_type  = strtolower($mutasi[$i]['type']);
-                            $in->amount         = $mutasi[$i]['amount'];
-                            $in->description    = '0ELSE - '.$this->cleanWebhookString($mutasi[$i]['description']);
+                        else {
+                            // jika ternyata lebih dari 1 data, maka cek manual saja
+                            $id_trans = null;
+                            $in = new CheckMutation();
+                            $in->bank_type = $bank_type;
+                            $in->apps_from = 'MutasiBank';
+                            $in->mutation_date = $mutasi[$i]['transaction_date'];
+                            $in->mutation_type = strtolower($mutasi[$i]['type']);
+                            $in->amount = $mutasi[$i]['amount'];
+                            $in->description = '0ELSE - ' . $this->cleanWebhookString($mutasi[$i]['description']);
                             $in->transaction_id = $id_trans;
                             $in->save();
                         }
-                        
-                    } else {                        // Jika ketemua lebih dari 1 data, sementara cek manual saja                          
-                        $id_trans           = null;
-                        $in                 = new CheckMutation;
-                        $in->bank_type      = $bank_type;
-                        $in->apps_from      = 'MutasiBank';
-                        $in->mutation_date  = $mutasi[$i]['transaction_date'];
-                        $in->mutation_type  = strtolower($mutasi[$i]['type']);
-                        $in->amount         = $mutasi[$i]['amount'];
-                        $in->description    = '3ELSE - '.$this->cleanWebhookString($mutasi[$i]['description']);
+                    } else {
+                        // Jika ketemua lebih dari 1 data, sementara cek manual saja
+                        $id_trans = null;
+                        $in = new CheckMutation();
+                        $in->bank_type = $bank_type;
+                        $in->apps_from = 'MutasiBank';
+                        $in->mutation_date = $mutasi[$i]['transaction_date'];
+                        $in->mutation_type = strtolower($mutasi[$i]['type']);
+                        $in->amount = $mutasi[$i]['amount'];
+                        $in->description = '3ELSE - ' . $this->cleanWebhookString($mutasi[$i]['description']);
                         $in->transaction_id = $id_trans;
                         $in->save();
                     }
-                    
+
                     // $in                 = new CheckMutation;
                     // $in->bank_type      = $bank_type;
                     // $in->apps_from      = 'MutasiBank';
@@ -305,96 +299,80 @@ class MutasiController extends Controller
                 }
             }
         } else {
-            $in                 = new CheckMutation;
-            $in->bank_type      = 'bni';
-            $in->apps_from      = 'MutasiBank';
-            $in->mutation_date  = date('Y-m-d H:i:s');
-            $in->mutation_type  = 'cr';
-            $in->amount         = 1;
-            $in->description    = 'kalau api key tidak sesuai';
+            $in = new CheckMutation();
+            $in->bank_type = 'bni';
+            $in->apps_from = 'MutasiBank';
+            $in->mutation_date = date('Y-m-d H:i:s');
+            $in->mutation_type = 'cr';
+            $in->amount = 1;
+            $in->description = 'kalau api key tidak sesuai';
             $in->transaction_id = null;
             $in->save();
         }
 
-        return \Response::json([
-            'message' => 'success',
-            'status'  => 'success'
-        ], 200);
+        return \Response::json(
+            [
+                'message' => 'success',
+                'status' => 'success',
+            ],
+            200,
+        );
     }
 
     /**
      * FUntuk mengubah string webhook dari bank yang mengandung kata-kata tertentu menjadi string bersih.
      */
-    function cleanWebhookString($text) {
-        $phrases = [
-            'NBMB',
-            'TO YAYASAN BANTU BER',
-            'TO YAYASAN BANTU BERSAMA',
-            'MCM InhouseTrf DARI',
-            'MCM InhouseTrf CS-CS DARI',
-            'MCM InhouseTrf',
-            'TRANSFER DARI',
-            '|',
-            '-',
-            'Sdr',
-            'Sdri',
-            'TRF Dari - ',
-            'AIRPAY INTERNATIONAL INDONESIA',
-            'SHOPEE',
-            'INTERNET BANKING',
-            'Ibu',
-            'Yayasan',
-            'DARI',
-            'ATM Dr Trf',
-            'TRSF E-BANKING CR',
-            'TRF Dari',
-            'ATM-MP Cr',
-            'CSCS',
-        ];
+    function cleanWebhookString($text)
+    {
+        $phrases = ['NBMB', 'TO YAYASAN BANTU BER', 'TO YAYASAN BANTU BERSAMA', 'MCM InhouseTrf DARI', 'MCM InhouseTrf CS-CS DARI', 'MCM InhouseTrf', 'TRANSFER DARI', '|', '-', 'Sdr', 'Sdri', 'TRF Dari - ', 'AIRPAY INTERNATIONAL INDONESIA', 'SHOPEE', 'INTERNET BANKING', 'Ibu', 'Yayasan', 'DARI', 'ATM Dr Trf', 'TRSF E-BANKING CR', 'TRF Dari', 'ATM-MP Cr', 'CSCS'];
         return str_replace($phrases, '', $text);
     }
 
     public function sendCAPI(\App\Models\Transaction $trans): void
     {
         // ⛔ guard dasar
-        if (!$trans || !$trans->invoice_number) return;
+        if (!$trans || !$trans->invoice_number) {
+            return;
+        }
 
         $ph = !empty($trans->phone_e164) ? hash('sha256', $trans->phone_e164) : null;
 
         // fbp/fbc hanya kirim format valid
-        $fbp = ($trans->fbp && str_starts_with($trans->fbp, 'fb.1.')) ? $trans->fbp : null;
-        $fbc = ($trans->fbc && str_starts_with($trans->fbc, 'fb.1.')) ? $trans->fbc : null;
+        $fbp = $trans->fbp && str_starts_with($trans->fbp, 'fb.1.') ? $trans->fbp : null;
+        $fbc = $trans->fbc && str_starts_with($trans->fbc, 'fb.1.') ? $trans->fbc : null;
 
-        $eventUrl = route('donate.status', [ 'inv' => $trans->invoice_number ]);
+        $eventUrl = route('donate.status', ['inv' => $trans->invoice_number]);
 
         $program = Program::select('title')->where('id', $trans->program_id)->first();
 
         $payload = [
-            'data' => [[
-                'event_name'       => 'Donate',
-                'event_time'       => (int) now()->timestamp,
-                'event_id'         => (string) $trans->invoice_number,     // untuk dedup
-                'action_source'    => 'website',
-                'event_source_url' => $eventUrl,
+            'data' => [
+                [
+                    'event_name' => 'Donate',
+                    'event_time' => (int) now()->timestamp,
+                    'event_id' => (string) $trans->invoice_number, // untuk dedup
+                    'action_source' => 'website',
+                    'event_source_url' => $eventUrl,
 
-                'user_data' => array_filter([
-                    'ph'                  => $ph,
-                    // 'em'                  => $em,
-                    'client_ip_address'   => $trans->ip_address,
-                    'client_user_agent'   => $trans->user_agent,
-                    'fbc'                 => $fbc,
-                    'fbp'                 => $fbp,
-                    'external_id'         => hash('sha256', (string) $trans->donatur_id),
-                ]),
+                    'user_data' => array_filter([
+                        'ph' => $ph,
+                        // 'em'                  => $em,
+                        'client_ip_address' => $trans->ip_address,
+                        'client_user_agent' => $trans->user_agent,
+                        'fbc' => $fbc,
+                        'fbp' => $fbp,
+                        'external_id' => hash('sha256', (string) $trans->donatur_id),
+                    ]),
 
-                'custom_data' => [
-                    'currency'     => 'IDR',
-                    'value'        => $trans->nominal_final,
-                    'content_name' => $program->title ?? null,
+                    'custom_data' => [
+                        'currency' => 'IDR',
+                        'value' => $trans->nominal_final,
+                        'content_name' => $program->title ?? null,
+                    ],
                 ],
-            ]],
+            ],
 
-            'access_token'   => env('TOKEN_FB_CAPI')
+            'access_token' => env('TOKEN_FB_CAPI'),
         ];
 
         try {
@@ -407,8 +385,8 @@ class MutasiController extends Controller
 
             Log::info('Facebook CAPI response', [
                 'invoice' => $trans->invoice_number,
-                'status'  => $response->status(),
-                'body'    => $response->json(),
+                'status' => $response->status(),
+                'body' => $response->json(),
             ]);
 
             // tandai agar tidak terkirim dua kali
@@ -425,17 +403,23 @@ class MutasiController extends Controller
     /**
      * Format phone number of the resource.
      */
-    public function sendThanksWA($trans_id='', $program_id='', $donatur_id='', $nominal_final='')
+    public function sendThanksWA($trans_id = '', $program_id = '', $donatur_id = '', $nominal_final = '')
     {
         $program = Program::where('id', $program_id)->first();
         $donatur = Donatur::where('id', $donatur_id)->first();
-        $chat    = 'Terimakasih dermawan *'.ucwords(trim($donatur->name)).'*.
+        $chat =
+            'Terimakasih dermawan *' .
+            ucwords(trim($donatur->name)) .
+            '*.
 Kebaikan Anda sangat berarti bagi kami yang membutuhkan, semoga mendapat balasan yang lebih berarti. Aamiin.
 Atas Donasi :
-*'.ucwords($program->title).'*
-Sebesar : *Rp '.str_replace(',', '.', number_format($nominal_final)).'*';
+*' .
+            ucwords($program->title) .
+            '*
+Sebesar : *Rp ' .
+            str_replace(',', '.', number_format($nominal_final)) .
+            '*';
 
-            (new WaBlastController)->sentWA($donatur->telp, $chat, 'thanks_trans', $trans_id, $donatur->id, $program->id);
+        new WaBlastController()->sentWA($donatur->telp, $chat, 'thanks_trans', $trans_id, $donatur->id, $program->id);
     }
-
 }
