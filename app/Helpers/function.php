@@ -70,20 +70,20 @@ if (!function_exists('checkSuspect')) {
         $uaCore = trim((string) ($uaCore ?? '')) ?: null;
         $ipAddress = trim((string) ($ipAddress ?? '')) ?: null;
         $fingerprintId = trim((string) ($fingerprintId ?? '')) ?: null;
-        
-        $userAgent     = trim((string) ($userAgent ?? '')) ?: null;
-        $donaturName   = trim((string) ($donaturName ?? '')) ?: null;
+
+        $userAgent = trim((string) ($userAgent ?? '')) ?: null;
+        $donaturName = trim((string) ($donaturName ?? '')) ?: null;
 
         Log::info('new donation record: ' . $nominal . ' - ' . $deviceId . ' - ' . $uaCore . ' - ' . $ipAddress . ' - ' . $sessionId . ' - ' . $fingerprintId . ' - ' . $userAgent . ' - ' . $donaturName);
 
-        $limitNominal        = 10000;
-        $cancelFreshMinutes  = 5;
-        $dayWindow           = 5;      // 5 days
+        $limitNominal = 10000;
+        $cancelFreshMinutes = 5;
+        $dayWindow = 2; // 5 days
         $recentWindowMinutes = 320;
 
         /*
         |--------------------------------------------------------------------------
-        | RULE 0: Terlalu sering transaksi dalam 5 hari (device/session/fingerprint)
+        | RULE 0: Terlalu sering transaksi dalam 2 hari (device/session/fingerprint)
         |--------------------------------------------------------------------------
         */
         $window = now()->subDays($dayWindow);
@@ -146,6 +146,8 @@ if (!function_exists('checkSuspect')) {
                     ],
                 );
 
+                Log::info('to many transaction in 5 days: ' . $nominal . ' - ' . $deviceId . ' - ' . $uaCore . ' - ' . $ipAddress . ' - ' . $sessionId . ' - ' . $fingerprintId . ' - ' . $userAgent . ' - ' . $donaturName . ' - ' . $recentTx->invoice_number);
+
                 return [
                     'is_suspect' => 1,
                     'invoice_number' => $recentTx->invoice_number,
@@ -183,6 +185,8 @@ if (!function_exists('checkSuspect')) {
                     ],
                 );
 
+                Log::info('fingerprint exist: ' . $nominal . ' - ' . $deviceId . ' - ' . $uaCore . ' - ' . $ipAddress . ' - ' . $sessionId . ' - ' . $fingerprintId . ' - ' . $userAgent . ' - ' . $donaturName . ' - ' . $recentTx->invoice_number);
+
                 return [
                     'is_suspect' => 1,
                     'invoice_number' => $matching->invoice_number,
@@ -196,6 +200,20 @@ if (!function_exists('checkSuspect')) {
         |--------------------------------------------------------------------------
         */
         if (!empty($ipAddress)) {
+            // Cek apakah IP ini sudah muncul lebih dari 2x di spam_logs dalam 1 hari terakhir
+            $spamCountToday = App\Models\SpamLog::where('ip_address', $ipAddress)
+                ->whereDate('created_at', now()->toDateString())
+                ->count();
+
+            if ($spamCountToday > 2) {
+                return [
+                    'is_suspect' => 1,
+                    'invoice_number' => null,
+                    'reason' => 'daily spam limit exceeded',
+                ];
+            }
+
+            // Cek transaksi mencurigakan berdasarkan IP
             $suspectTxForIp = App\Models\Transaction::where('ip_address', $ipAddress)
                 ->where('status', '!=', 'success')
                 ->where('is_suspect', 1)
@@ -224,7 +242,10 @@ if (!function_exists('checkSuspect')) {
 
                 if ($matching) {
                     App\Models\SpamLog::updateOrCreate(
-                        ['transaction_id' => $matching->id, 'reason' => 'daily limit after suspect (ip fallback)'],
+                        [
+                            'transaction_id' => $matching->id,
+                            'reason' => 'daily limit after suspect (ip fallback)',
+                        ],
                         [
                             'device_id' => $deviceId,
                             'ua_core' => $uaCore,
@@ -234,6 +255,8 @@ if (!function_exists('checkSuspect')) {
                             'fingerprint_id' => $fingerprintId,
                         ],
                     );
+
+                    Log::info('IP exist: ' . $nominal . ' - ' . $deviceId . ' - ' . $uaCore . ' - ' . $ipAddress . ' - ' . $sessionId . ' - ' . $fingerprintId . ' - ' . $userAgent . ' - ' . $donaturName . ' - ' . $matching->invoice_number);
 
                     return [
                         'is_suspect' => 1,
@@ -280,6 +303,8 @@ if (!function_exists('checkSuspect')) {
                         ],
                     );
 
+                    Log::info('duplicate big donation: ' . $nominal . ' - ' . $deviceId . ' - ' . $uaCore . ' - ' . $ipAddress . ' - ' . $sessionId . ' - ' . $fingerprintId . ' - ' . $userAgent . ' - ' . $donaturName . ' - ' . $recentByFp->invoice_number);
+
                     return [
                         'is_suspect' => 1,
                         'invoice_number' => $recentByFp->invoice_number,
@@ -317,6 +342,8 @@ if (!function_exists('checkSuspect')) {
                             'fingerprint_id' => $fingerprintId,
                         ],
                     );
+
+                    Log::info('IP Fallback exist: ' . $nominal . ' - ' . $deviceId . ' - ' . $uaCore . ' - ' . $ipAddress . ' - ' . $sessionId . ' - ' . $fingerprintId . ' - ' . $userAgent . ' - ' . $donaturName . ' - ' . $recentTx->invoice_number);
 
                     return [
                         'is_suspect' => 1,

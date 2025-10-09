@@ -380,22 +380,22 @@ class DonateController extends Controller
                 $donatur_name = trim($request->fullname);
             }
 
-            // Filter Spammer
-
             $deviceId      = $request->attributes->get('bb_did') ?? $request->cookie('bb_did');
             $uaRaw         = $request->header('User-Agent') ?? null;
             $uaCore        = \App\Helpers\UserAgentHelper::parseCore($uaRaw);
-            $ipAddress     = $this->clientIpExact($request) ?? null;
+            // $ipAddress     = $this->clientIpExact($request) ?? null;
             // $ipAddress     = $this->getClientIpPreferV4($request) ?? null;
             //$ipAddress = $request->ip() ?? null;
+            $ipAddress     = $request->public_ip ?? $this->clientIpExact($request);
             $sessionId     = $request->session()->getId() ?? null;
             $fingerprintId = $request->fingerprint ?? null;
+            $donaturName   = $donatur_name ?? null;
 
             $check = checkSuspect($nominal, $deviceId, $uaCore, $ipAddress, $sessionId, $fingerprintId, $donaturName);
-
+            
             if ($check['is_suspect'] == 1) {
                 return redirect()->route('donate.status', ['inv' => $check['invoice_number']])
-                    ->with('warning', 'Anda sudah membuat donasi berulang kali namun belum dibayar.');
+                ->with('warning', 'Anda sudah membuat donasi berulang kali namun belum dibayar.');
             }
             
             // check any transaction
