@@ -327,30 +327,19 @@ class DonateController extends Controller
             'telp.regex'        => 'No. Telepon tidak valid.',
         ]);
 
-        $captcha = $request->input('g-recaptcha-response');
         $captchav3 = $request->input('recaptcha_v3_token');
-
-        $verify = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
-            'secret' => config('services.recaptcha.v2_secret'),
-            'response' => $captcha,
-            'remoteip' => $request->ip(),
-        ]);
-
+        
         $verifyV3 = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
             'secret' => config('services.recaptcha.v3_secret'),
             'response' => $captchav3,
             'remoteip' => $request->ip(),
         ]);
 
-        $result = $verify->json();
         $resultV3 = $verifyV3->json();
 
-        if (empty($result['success']) || !$result['success']) {
-            return back()->withErrors(['captcha' => 'reCAPTCHA gagal, silakan coba lagi.']);
-        }
-
-        if (empty($resultV3['success']) || $resultV3['score'] < 0.5) {
-            return back()->withErrors(['captcha' => 'reCAPTCHA score rendah, aktivitas mencurigakan terdeteksi.']);
+        if (!is_array($resultV3) || empty($resultV3['success']) || !isset($resultV3['score']) || $resultV3['score'] < 0.5) {
+            // dd('error');
+            return back()->withErrors(['captcha' => 'reCAPTCHA score rendah atau gagal diverifikasi.']);
         }
 
         if (!empty($request->input('payment_method_check'))) {

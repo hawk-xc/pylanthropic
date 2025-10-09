@@ -44,6 +44,14 @@ class Handler extends ExceptionHandler
 
     public function render($request, Throwable $exception)
     {
+        if ($exception instanceof \Illuminate\Auth\AuthenticationException) {
+            return $this->unauthenticated($request, $exception);
+        }
+
+        if ($exception instanceof \Illuminate\Validation\ValidationException) {
+            return $this->convertValidationExceptionToResponse($exception, $request);
+        }
+
         if ($exception instanceof \Symfony\Component\HttpKernel\Exception\HttpException) {
             $statusCode = $exception->getStatusCode();
             $message = $exception->getMessage() ?: $this->getDefaultMessage($statusCode);
