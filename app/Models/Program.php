@@ -107,4 +107,9 @@ class Program extends Model
     {
         return $this->hasMany(DonaturShortLink::class, 'program_id', 'id');
     }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class, 'program_id', 'id');
+    }
 }

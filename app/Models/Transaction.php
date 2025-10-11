@@ -53,4 +53,9 @@ class Transaction extends Model
     {
         return $this->belongsTo(Donatur::class, 'donatur_id');
     }
+
+    public function program()
+    {
+        return $this->belongsTo(Program::class, 'program_id');
+    }
 }

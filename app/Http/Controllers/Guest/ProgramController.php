@@ -77,50 +77,53 @@ class ProgramController extends Controller
      */
     public function list(Request $request)
     {
-        $program = Program::where('is_publish', 1)->select('program.*', 'organization.name', 'organization.status')
-                    ->join('organization', 'program.organization_id', 'organization.id')
-                    ->whereNotNull('program.approved_at')
-                    ->where('end_date', '>', date('Y-m-d'));
+        $program = Program::query()
+            ->select('program.*', 'organization.name', 'organization.status')
+            ->join('organization', 'program.organization_id', '=', 'organization.id')
+            ->where('is_publish', 1)
+            ->whereNotNull('program.approved_at')
+            ->where('end_date', '>', now());
 
-        if($request->has('kategori')) {
-            if($request->kategori!='semua') {
-                $program->join('program_categories', 'program.id', 'program_categories.program_id');
-                $program->join('program_category', 'program_category.id', 'program_categories.program_category_id');
-                $program->where('program_category.slug', $request->kategori);
-            }
-            // else = semua kategori jadi tidak perlu di filter
+        if ($request->filled('kategori') && $request->kategori !== 'semua') {
+            $program->join('program_categories', 'program.id', '=', 'program_categories.program_id')
+                    ->join('program_category', 'program_category.id', '=', 'program_categories.program_category_id')
+                    ->where('program_category.slug', $request->kategori);
         }
 
-        if($request->has('key')) {
-            $program->where('program.title', 'like', '%'.trim($request->key).'%');
+        if ($request->filled('key')) {
+            $program->where('program.title', 'like', '%' . trim($request->key) . '%');
         }
 
-        if($request->has('sort')) {
-            if($request->sort=='terbaru') {
-                $program = $program->orderBy('program.approved_at', 'DESC');
-            } elseif($request->sort=='segera_berakhir') {
-                $program = $program->orderBy('program.end_date', 'ASC');
-            } elseif($request->sort=='terbanyak') {
-                $program = $program->orderBy('program.end_date', 'DESC');
-            } elseif($request->sort=='sedikit') {
-                $program = $program->orderBy('program.end_date', 'DESC');
-            }
-        } else {
-            // Secara default = TERBARU
-            $program = $program->orderBy('program.approved_at', 'DESC');
+        switch ($request->sort) {
+            case 'terbaru':
+                $program->orderBy('program.approved_at', 'DESC');
+                break;
+            case 'segera_berakhir':
+                $program->orderBy('program.end_date', 'ASC');
+                break;
+            case 'terbanyak':
+            case 'sedikit':
+                $program->orderBy('program.end_date', 'DESC');
+                break;
+            default:
+                $program->orderBy('program.approved_at', 'DESC');
+                break;
         }
 
-        $program = $program->paginate(8);
+        $program = $program->withSum(['transactions as total_success' => function($query) {
+            $query->where('status', 'success');
+        }], 'nominal_final')
+        ->paginate(8);
 
-        $program->map(function($program, $key) {
-            $sum_amount = Models\Transaction::where('program_id', $program->id)->where('status', 'success')
-                ->sum('nominal_final');
-            if($program->show_minus>0 && !is_null($program->show_minus) && $sum_amount>0) {
-                return $program->sum_amount = $sum_amount-($sum_amount*$program->show_minus/100);
+        $program->getCollection()->transform(function ($item) {
+            if ($item->show_minus > 0 && $item->total_success > 0) {
+                $item->sum_amount = $item->total_success - ($item->total_success * $item->show_minus / 100);
             } else {
-                return $program->sum_amount = $sum_amount;
+                $item->sum_amount = $item->total_success;
             }
+            return $item;
         });
+
         return view('public.program_list', compact('program'));
     }
 
@@ -128,23 +131,25 @@ class ProgramController extends Controller
     {
         $page = $request->get('page', 1);
 
-        $program = Program::where('is_publish', 1)
+        $program = Program::query()
             ->select('program.*', 'organization.name', 'organization.status')
-            ->join('organization', 'program.organization_id', 'organization.id')
+            ->join('organization', 'program.organization_id', '=', 'organization.id')
+            ->where('is_publish', 1)
             ->whereNotNull('program.approved_at')
-            ->where('end_date', '>', date('Y-m-d'))
+            ->where('end_date', '>', now())
+            ->withSum(['transactions as total_success' => function ($query) {
+                $query->where('status', 'success');
+            }], 'nominal_final')
             ->orderBy('program.approved_at', 'DESC')
             ->paginate(8, ['*'], 'page', $page);
 
-        // hitung sum_amount
-        $program->getCollection()->transform(function ($program) {
-            $sum_amount = Models\Transaction::where('program_id', $program->id)
-                ->where('status', 'success')
-                ->sum('nominal_final');
-            $program->sum_amount = ($program->show_minus > 0 && $sum_amount > 0)
-                ? $sum_amount - ($sum_amount * $program->show_minus / 100)
-                : $sum_amount;
-            return $program;
+        $program->getCollection()->transform(function ($item) {
+            if ($item->show_minus > 0 && $item->total_success > 0) {
+                $item->sum_amount = $item->total_success - ($item->total_success * $item->show_minus / 100);
+            } else {
+                $item->sum_amount = $item->total_success;
+            }
+            return $item;
         });
 
         return response()->json($program);
