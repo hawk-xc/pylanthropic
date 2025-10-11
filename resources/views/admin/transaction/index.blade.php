@@ -53,6 +53,7 @@
             <div class="col-12">
                 <div class="row">
                     <div class="col-12 text-end">
+                        <h6 class="mt-1 mb-1 fw-bold d-inline-block float-start">Filter Cepat</h6>
                         <button class="btn btn-outline-primary filter_payment" id="filter-bni" data-id="bni">BNI</button>
                         <button class="btn btn-outline-primary filter_payment" id="filter-bsi" data-id="bsi">BSI</button>
                         <button class="btn btn-outline-primary filter_payment" id="filter-bri" data-id="bri">BRI</button>
@@ -73,26 +74,38 @@
                     </div>
                 </div>
 
+                <h6 class="mt-3">Filter Umum</h6>
                 <div class="row mt-2">
                     <div class="col-md-3">
-                        <input type="text" id="donatur_name" placeholder="Nama Donatur" class="form-control form-control filter-input">
+                        <input type="text" id="donatur_name" placeholder="Nama Donatur" class="form-control form-control-sm filter-input">
                     </div>
                     <div class="col-md-3">
-                        <input type="text" id="donatur_telp" placeholder="Telp Donatur ex: 8574..." class="form-control form-control filter-input">
+                        <input type="text" id="donatur_telp" placeholder="Telp Donatur ex: 8574..." class="form-control form-control-sm filter-input">
                     </div>
                     <div class="col-md-2">
-                        <input type="text" id="filter_nominal" placeholder="Nominal" class="form-control form-control filter-input">
+                        <input type="text" id="filter_nominal" placeholder="Nominal" class="form-control form-control-sm filter-input">
                     </div>
                     <div class="col-md-2">
-                        <input type="text" id="ref_code" placeholder="Ref Code" class="form-control form-control filter-input">
+                        <input type="text" id="ref_code" placeholder="Ref Code" class="form-control form-control-sm filter-input">
                     </div>
                     <div class="col-md-2">
-                        <select id="status_filter" class="form-select form-select">
+                        <select id="status_filter" class="form-select form-select-sm">
                             <option value="">Semua Status</option>
                             <option value="success">Success</option>
                             <option value="draft">Draft</option>
                             <option value="cancel">Cancel</option>
                         </select>
+                    </div>
+                </div>
+
+                <h6 class="mt-3">Filter Rentang Tanggal</h6>
+                <div class="row mt-2">
+                    <div class="col-md-4">
+                        <div class="input-group input-group-sm">
+                            <input type="date" id="start_date" class="form-control filter-input-date">
+                            <span class="input-group-text">-</span>
+                            <input type="date" id="end_date" class="form-control filter-input-date">
+                        </div>
                     </div>
                 </div>
 
@@ -106,7 +119,7 @@
 
             <div class="divider"></div>
             <button class="btn btn-danger mb-2" id="bulk-delete-btn" style="display: none;"><i class="fa fa-trash"></i> Hapus Terpilih</button>
-            <table id="table-donatur" class="table table-hover table-striped table-bordered">
+            <table id="table-donate" class="table table-hover table-striped table-bordered">
                 <thead>
                     <tr>
                         <th><input type="checkbox" id="select-all-checkbox"></th>
@@ -426,11 +439,13 @@
         let program_id     = $('#program_id').val();
         let status         = $('#status_filter').val();
         let ref_code       = $('#ref_code').val();
+        let start_date     = $('#start_date').val();
+        let end_date       = $('#end_date').val();
 
-        table.ajax.url("{{ route('adm.donate.datatables') }}/?need_fu="+need_fu_ar+"&day1="+day1_ar+"&day5="+day5_ar+"&bni="+bni_ar+"&bsi="+bsi_ar+"&bri="+bri_ar+"&qris="+qris_ar+"&gopay="+gopay_ar+"&mandiri="+mandiri_ar+"&donatur_name="+encodeURI(donatur_name)+"&donatur_telp="+donatur_telp+"&filter_nominal="+filter_nominal+"&program_id="+(program_id ? program_id : '')+"&status="+status+"&ref_code="+ref_code).load();
+        table.ajax.url("{{ route('adm.donate.datatables') }}/?need_fu="+need_fu_ar+"&day1="+day1_ar+"&day5="+day5_ar+"&bni="+bni_ar+"&bsi="+bsi_ar+"&bri="+bri_ar+"&qris="+qris_ar+"&gopay="+gopay_ar+"&mandiri="+mandiri_ar+"&donatur_name="+encodeURI(donatur_name)+"&donatur_telp="+donatur_telp+"&filter_nominal="+filter_nominal+"&program_id="+(program_id ? program_id : '')+"&status="+status+"&ref_code="+ref_code+"&start_date="+start_date+"&end_date="+end_date).load();
     }
     
-    var table = $('#table-donatur').DataTable({
+    var table = $('#table-donate').DataTable({
         processing: true,
         serverSide: true,
         responsive: true,
@@ -637,12 +652,17 @@
             donate_table();
         });
 
+        $('.filter-input-date').on('change', function() {
+            donate_table();
+        });
+
         $('.filter-input').on('keyup', debounce(function() {
             donate_table();
         }, 500));
 
         $("#reset_filter").on("click", function(){
             $('.filter-input').val('');
+            $('.filter-input-date').val('');
             $('#program_id').val(null).trigger('change.select2');
             $('#status_filter').val('');
 
@@ -731,7 +751,7 @@
             toggleBulkDeleteButton();
         });
 
-        $('#table-donatur').on('change', '.delete-checkbox', function(){
+        $('#table-donate').on('change', '.delete-checkbox', function(){
             if($('.delete-checkbox:checked').length == $('.delete-checkbox').length && $('.delete-checkbox').length > 0){
                 $('#select-all-checkbox').prop('checked', true);
             } else {

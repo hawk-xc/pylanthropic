@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Helpers\UserAgentHelper;
+use DataTables;
+use App\Models\Donatur;
+use App\Models\Program;
 
 use App\Models\Transaction;
-use App\Models\Program;
-use App\Models\Donatur;
-use App\Models\TrackingVisitor;
-use DataTables;
-use App\Http\Controllers\WaBlastController;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use App\Models\TrackingVisitor;
+use App\Helpers\UserAgentHelper;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Http;
+use App\Http\Controllers\WaBlastController;
 
 class DonateController extends Controller
 {
@@ -328,232 +329,205 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
      * Datatables Donate
      */
     public function datatablesDonate(Request $request)
-    {
-        // if ($request->ajax()) {
-            $data = Transaction::select('transaction.*', 'donatur.name as name', 'donatur.telp', 'program.title', 'payment_type.name as payment_name')
-                    ->join('program', 'program.id', 'transaction.program_id')
-                    ->join('donatur', 'donatur.id', 'transaction.donatur_id')
-                    ->join('payment_type', 'payment_type.id', 'transaction.payment_type_id')
-                    ->orderBy('transaction.created_at', 'DESC');
+{
+    // Subquery: hitung jumlah chat dan tanggal chat terakhir per transaction (tipe fu_trans)
+    $chatSub = DB::table('chat')
+        ->select('transaction_id', DB::raw('COUNT(id) as chat_count'), DB::raw('MAX(created_at) as last_chat_at'))
+        ->where('type', 'fu_trans')
+        ->groupBy('transaction_id');
 
-            if(isset($request->need_fu)) {
-                if($request->need_fu==1) {
-                    $data = $data->where('transaction.status', '<>', 'success');
-                }
-            }
+    // Base query: ambil transaksi + data relasi + hasil agregat chat dari subquery
+    $data = Transaction::select(
+            'transaction.*',
+            'donatur.name as name',
+            'donatur.telp',
+            'program.title',
+            'payment_type.name as payment_name',
+            'chat_agg.chat_count',
+            'chat_agg.last_chat_at'
+        )
+        ->join('program', 'program.id', '=', 'transaction.program_id')
+        ->join('donatur', 'donatur.id', '=', 'transaction.donatur_id')
+        ->join('payment_type', 'payment_type.id', '=', 'transaction.payment_type_id')
+        ->leftJoinSub($chatSub, 'chat_agg', function ($join) {
+            $join->on('chat_agg.transaction_id', '=', 'transaction.id');
+        })
+        ->orderBy('transaction.created_at', 'DESC');
 
-            if(isset($request->day5)) {     // show max 5 day ago
-                if($request->day5==1) {
-                    $data = $data->where('transaction.created_at', '>', date('Y-m-d H:i:s', strtotime(date('Y-m-d').'-5 day')));
-                }
-            }
-
-            if(isset($request->day1)) {     // just yesterday, today not include
-                if($request->day1==1) {
-                    $data = $data->where('transaction.created_at', 'like', date('Y-m-d', strtotime(date('Y-m-d').'-1 day')).'%');
-                }
-            }
-
-            if(isset($request->bca)) {     // bca
-                if($request->bca==1) {
-                    // $data = $data->where('transaction.payment_type_id', 1);
-                    $data = $data->where('payment_type.key', 'like', 'tf_bca%');
-                }
-            }
-
-            if(isset($request->bni)) {     // bni
-                if($request->bni==1) {
-                    // $data = $data->where('transaction.payment_type_id', 19);
-                    $data = $data->where('payment_type.key', 'like', 'tf_bni%');
-                }
-            }
-
-            if(isset($request->bsi)) {     // bsi
-                if($request->bsi==1) {
-                    // $data = $data->where('transaction.payment_type_id', 2);
-                    $data = $data->where('payment_type.key', 'like', 'tf_bsi%');
-                }
-            }
-
-            if(isset($request->bri)) {     // bri
-                if($request->bri==1) {
-                    // $data = $data->where('transaction.payment_type_id', 4);
-                    $data = $data->where('payment_type.key', 'like', 'tf_bri%');
-                }
-            }
-
-            if(isset($request->qris)) {     // qris
-                if($request->qris==1) {
-                    $data = $data->where('transaction.payment_type_id', 5);
-                }
-            }
-
-            if(isset($request->gopay)) {     // gopay
-                if($request->gopay==1) {
-                    $data = $data->where('transaction.payment_type_id', 6);
-                }
-            }
-
-            if(isset($request->mandiri)) {     // mandiri
-                if($request->mandiri==1) {
-                    // $data = $data->where('transaction.payment_type_id', 3);
-                    $data = $data->where('payment_type.key', 'like', 'tf_mandiri%');
-                }
-            }
-
-            if(isset($request->ref_code)) {     // ref_code
-                if($request->ref_code!='') {
-                    $data = $data->where('transaction.ref_code', 'like', '%'. $request->ref_code . '%');
-                }
-            }
-
-            if(isset($request->donatur_name)) {     // donatur name
-                if($request->donatur_name!='') {
-                    $data = $data->where('donatur.name', 'like', '%'.urldecode($request->donatur_name).'%');
-                }
-            }
-
-            if(isset($request->donatur_telp)) {     // donatur telp
-                if($request->donatur_telp!='') {
-                    $data = $data->where('donatur.telp', 'like', '%'.$request->donatur_telp.'%');
-                }
-            }
-
-            if(isset($request->filter_nominal)) {     // transaction nominal
-                if ($request->filter_nominal=='500k') {
-                    $data = $data->where('transaction.nominal_final', '>=', 500000);
-                } elseif($request->filter_nominal=='1jt') {
-                    $data = $data->where('transaction.nominal_final', '>=', 1000000);
-                } elseif($request->filter_nominal!='') {
-                    $data = $data->where('transaction.nominal_final', 'like', '%'.str_replace([',', '.'], '', $request->filter_nominal).'%');
-                }
-            }
-
-            if(isset($request->program_id)) {     // program id
-                if($request->program_id!='') {
-                    $data = $data->where('transaction.program_id', $request->program_id);
-                }
-            }
-
-            if(isset($request->donatur_id)) {     // Donatur ID
-                if($request->donatur_id!='') {
-                    $data = $data->where('donatur.id', $request->donatur_id);
-                }
-            }
-
-            if(isset($request->status) && $request->status != '') {
-                $data = $data->where('transaction.status', $request->status);
-            }
-
-            $order_column = $request->input('order.0.column');
-            $order_dir    = ($request->input('order.0.dir')) ? $request->input('order.0.dir') : 'asc';
-
-            $count_total  = $data->count();
-
-            $search       = $request->input('search.value');
-
-            $count_filter = $count_total;
-            if($search != ''){
-                $data     = $data->where(function ($q) use ($search){
-                            $q->where('transaction.created_at', 'like', '%'.$search.'%')
-                                ->orWhere('transaction.invoice_number', 'like', '%'.$search.'%')
-                                ->orWhere('transaction.nominal_final', 'like', '%'.str_replace([',', '.'], '', $search).'%')
-                                ->orWhere('transaction.ref_code', 'like', '%'.$search.'%')
-                                ->orWhere('program.title', 'like', '%'.$search.'%')
-                                ->orWhere('payment_type.name', 'like', '%'.$search.'%')
-                                ->orWhere('donatur.name', 'like', '%'.$search.'%')
-                                ->orWhere('donatur.telp', 'like', '%'.$search.'%');
-                            });
-                $count_filter = $data->count();
-            }
-
-            $pageSize     = ($request->length) ? $request->length : 10;
-            $start        = ($request->start) ? $request->start : 0;
-
-            $data->skip($start)->take($pageSize);
-
-            $data         = $data->get();
-            return Datatables::of($data)
-                ->with([
-                    "recordsTotal"    => $count_total,
-                    "recordsFiltered" => $count_filter,
-                ])
-                ->setOffset($start)
-                ->addIndexColumn()
-                ->addColumn('checkbox', function($row){
-                    if ($row->status == 'cancel' || $row->status == 'draft') {
-                        return '<input type="checkbox" class="delete-checkbox" value="'.$row->id.'" data-name="'.e(ucwords($row->name)).'" data-nominal="Rp. '.number_format($row->nominal_final).'" data-invoice="'.$row->invoice_number.'">';
-                    }
-                    return '';
-                })
-                ->addColumn('invoice', function($row){
-                    // $content = TrackingVisitor::where('program_id', $row->program_id)->where('ref_code', $row->ref_code)
-                    //             ->where('created_at', 'like', date('Y-m-d H:i', strtotime($row->created_at)).'%')
-                    //             ->where('payment_type_id', $row->payment_type_id)->where('nominal', $row->nominal)
-                    //             ->where('page_view', 'invoice')->whereNotNull('utm_content')->first();
-                    if(isset($content->utm_content)) {
-                        $content = ' - '.$content->utm_content;
-                    } else {
-                        $content = '';
-                    }
-
-                    if(!is_null($row->ref_code) && $row->ref_code!='') {
-                        $ref_code = ' <span class="badge badge-info">'.$row->ref_code.$content.'</span>';
-                    } else {
-                        $ref_code = '';
-                    }
-                    return $row->invoice_number.'<br>'.$row->payment_name.$ref_code;
-                })
-                ->addColumn('name', function($row){
-                    if($row->status=='draft' || $row->status=='cancel'){
-                        $param = $row->id.", '".str_replace("'", "", ucwords($row->name))."', 'Rp. ".str_replace(',', '.', number_format($row->nominal_final))."'";
-                        $telp  = '<span class="badge badge-warning" title="Followup" style="cursor:pointer" onclick="fuPaid('.$param.')">'.$row->telp.'</span>';
-                    } else {
-                        $telp = $row->telp;
-                    }
-                    return ucwords($row->name).'<br>'.$telp;
-                })
-                ->addColumn('nominal_final', function($row){
-                    if($row->status=='draft'){
-                        $param  = $row->id.", '".$row->status."', 'Rp. ".str_replace(',', '.', number_format($row->nominal_final))."'";
-                        $status = '<div id="status_'.$row->id.'">Rp. '.number_format($row->nominal_final).'<br><span class="badge badge-warning modal_status" style="cursor:pointer" onclick="editStatus('.$param.')">Belum Dibayar</span></div>';
-                    } elseif ($row->status=='success') {
-                        $param  = $row->id.", '".$row->status."', 'Rp. ".str_replace(',', '.', number_format($row->nominal_final))."'";
-                        $status = '<div id="status_'.$row->id.'">Rp. '.number_format($row->nominal_final).'<br><span class="badge badge-success modal_status" style="cursor:pointer" onclick="editStatus('.$param.')">Sudah Dibayar</span></div>';
-                    } else {
-                        $param  = $row->id.", '".$row->status."', 'Rp. ".str_replace(',', '.', number_format($row->nominal_final))."'";
-                        // $status = '<div id="status_'.$row->id.'"><span class="badge badge-secondary">Dibatalkan</span></div>';
-                        $status = '<div id="status_'.$row->id.'">Rp. '.number_format($row->nominal_final).'<br><span class="badge badge-secondary modal_status" style="cursor:pointer" onclick="editStatus('.$param.')">Dibatalkan</span></div>';
-                    }
-                    return $status;
-                    // return 'Rp. '.number_format($row->nominal_final).'<br>'.$status;
-                })
-                ->addColumn('created_at', function($row){
-                    $chat_history = \App\Models\Chat::select('created_at')->where('type', 'fu_trans')->where('transaction_id', $row->id);
-                    if($chat_history->count()>0){
-                        $chat_history = '<br><span class="badge badge-warning">('.$chat_history->count().') '.date('d-m-Y H:i', strtotime($chat_history->first()->created_at)).'</span>';
-                    } else {
-                        $chat_history = '';
-                    }
-
-                    // $date         = date('d-m-Y H:i', strtotime($row->created_at));
-                    $date         = date('Y-m-d H:i', strtotime($row->created_at));
-                    return $date.$chat_history;
-                })
-                ->addColumn('action', function($row){
-                    $donaturBtn = '<a href="'.route('adm.donatur.show', $row->donatur_id).'" class="btn btn-info btn-xs mb-1" title="Lihat Donatur"><i class="fa fa-user"></i></a>';
-                
-                    $deleteBtn = '';
-                    if ($row->status == 'cancel' || $row->status == 'draft') {
-                        $deleteBtn = '<button class="btn btn-danger btn-xs" title="Hapus" onclick="openDeleteModal('.$row->id.')"><i class="fa fa-trash"></i></button>';
-                    }
-
-                    return $donaturBtn . ' ' . $deleteBtn;
-                })
-                ->rawColumns(['checkbox', 'action', 'invoice', 'nominal_final', 'name', 'created_at'])
-                ->make(true);
-        // }
+    // --- FILTERS (sama seperti versi lama) ---
+    if ($request->filled('need_fu') && $request->need_fu == 1) {
+        $data->where('transaction.status', '<>', 'success');
     }
+
+    if ($request->filled('day5') && $request->day5 == 1) {
+        $data->where('transaction.created_at', '>', date('Y-m-d H:i:s', strtotime(date('Y-m-d') . '-5 day')));
+    }
+
+    if ($request->filled('day1') && $request->day1 == 1) {
+        $data->where('transaction.created_at', 'like', date('Y-m-d', strtotime(date('Y-m-d') . '-1 day')) . '%');
+    }
+
+    // payment type filters using payment_type.key or id
+    if ($request->filled('bca') && $request->bca == 1) {
+        $data->where('payment_type.key', 'like', 'tf_bca%');
+    }
+    if ($request->filled('bni') && $request->bni == 1) {
+        $data->where('payment_type.key', 'like', 'tf_bni%');
+    }
+    if ($request->filled('bsi') && $request->bsi == 1) {
+        $data->where('payment_type.key', 'like', 'tf_bsi%');
+    }
+    if ($request->filled('bri') && $request->bri == 1) {
+        $data->where('payment_type.key', 'like', 'tf_bri%');
+    }
+    if ($request->filled('qris') && $request->qris == 1) {
+        $data->where('transaction.payment_type_id', 5);
+    }
+    if ($request->filled('gopay') && $request->gopay == 1) {
+        $data->where('transaction.payment_type_id', 6);
+    }
+    if ($request->filled('mandiri') && $request->mandiri == 1) {
+        $data->where('payment_type.key', 'like', 'tf_mandiri%');
+    }
+
+    if ($request->filled('ref_code')) {
+        $data->where('transaction.ref_code', 'like', '%' . $request->ref_code . '%');
+    }
+
+    if ($request->filled('donatur_name')) {
+        $data->where('donatur.name', 'like', '%' . urldecode($request->donatur_name) . '%');
+    }
+
+    if ($request->filled('donatur_telp')) {
+        $data->where('donatur.telp', 'like', '%' . $request->donatur_telp . '%');
+    }
+
+    if ($request->filled('filter_nominal')) {
+        $fn = $request->filter_nominal;
+        if ($fn == '500k') {
+            $data->where('transaction.nominal_final', '>=', 500000);
+        } elseif ($fn == '1jt') {
+            $data->where('transaction.nominal_final', '>=', 1000000);
+        } elseif ($fn != '') {
+            $data->where('transaction.nominal_final', 'like', '%' . str_replace([',', '.'], '', $fn) . '%');
+        }
+    }
+
+    if ($request->filled('program_id')) {
+        $data->where('transaction.program_id', $request->program_id);
+    }
+
+    if ($request->filled('donatur_id')) {
+        $data->where('donatur.id', $request->donatur_id);
+    }
+
+    if ($request->filled('status') && $request->status != '') {
+        $data->where('transaction.status', $request->status);
+    }
+
+    if ($request->filled('start_date') && $request->filled('end_date')) {
+        $data->whereBetween('transaction.created_at', [$request->start_date . ' 00:00:00', $request->end_date . ' 23:59:59']);
+    }
+
+    // --- HITUNG TOTALS untuk datatables (tanpa pagination) ---
+    $count_total = (clone $data)->count();
+
+    // SEARCH filter
+    $search = $request->input('search.value');
+    if ($search != '') {
+        $data->where(function ($q) use ($search) {
+            $q->where('transaction.created_at', 'like', '%' . $search . '%')
+                ->orWhere('transaction.invoice_number', 'like', '%' . $search . '%')
+                ->orWhere('transaction.nominal_final', 'like', '%' . str_replace([',', '.'], '', $search) . '%')
+                ->orWhere('transaction.ref_code', 'like', '%' . $search . '%')
+                ->orWhere('program.title', 'like', '%' . $search . '%')
+                ->orWhere('payment_type.name', 'like', '%' . $search . '%')
+                ->orWhere('donatur.name', 'like', '%' . $search . '%')
+                ->orWhere('donatur.telp', 'like', '%' . $search . '%');
+        });
+    }
+
+    $count_filter = (clone $data)->count();
+
+    // pagination & ordering
+    $pageSize = ($request->length) ? intval($request->length) : 10;
+    $start = ($request->start) ? intval($request->start) : 0;
+
+    // you may want to map order column index to actual column name here.
+    $order_column = $request->input('order.0.column');
+    $order_dir = ($request->input('order.0.dir')) ? $request->input('order.0.dir') : 'asc';
+
+    // default order if not provided
+    if ($order_column === null) {
+        $data->orderBy('transaction.created_at', 'DESC');
+    } else {
+        // optional: map column index to real column names to prevent SQL injection
+        // for simplicity keep ordering on created_at
+        $data->orderBy('transaction.created_at', $order_dir);
+    }
+
+    $data->skip($start)->take($pageSize);
+
+    $rows = $data->get();
+
+    return Datatables::of($rows)
+        ->with([
+            "recordsTotal"    => $count_total,
+            "recordsFiltered" => $count_filter,
+        ])
+        ->setOffset($start)
+        ->addIndexColumn()
+        ->addColumn('checkbox', function ($row) {
+            if ($row->status == 'cancel' || $row->status == 'draft') {
+                return '<input type="checkbox" class="delete-checkbox" value="' . $row->id . '" data-name="' . e(ucwords($row->name)) . '" data-nominal="Rp. ' . number_format($row->nominal_final) . '" data-invoice="' . $row->invoice_number . '">';
+            }
+            return '';
+        })
+        ->addColumn('invoice', function ($row) {
+            // note: jika masih butuh tracking_visitor lookup, lebih baik preload via subquery juga
+            $content = ''; // keep empty to avoid extra queries
+            $ref_code = (!is_null($row->ref_code) && $row->ref_code != '') ? ' <span class="badge badge-info">' . $row->ref_code . $content . '</span>' : '';
+            return $row->invoice_number . '<br>' . $row->payment_name . $ref_code;
+        })
+        ->addColumn('name', function ($row) {
+            if ($row->status == 'draft' || $row->status == 'cancel') {
+                $param = $row->id . ", '" . str_replace("'", "", ucwords($row->name)) . "', 'Rp. " . str_replace(',', '.', number_format($row->nominal_final)) . "'";
+                $telp = '<span class="badge badge-warning" title="Followup" style="cursor:pointer" onclick="fuPaid(' . $param . ')">' . $row->telp . '</span>';
+            } else {
+                $telp = $row->telp;
+            }
+            return ucwords($row->name) . '<br>' . $telp;
+        })
+        ->addColumn('nominal_final', function ($row) {
+            $param = $row->id . ", '" . $row->status . "', 'Rp. " . str_replace(',', '.', number_format($row->nominal_final)) . "'";
+            if ($row->status == 'draft') {
+                $status = '<div id="status_' . $row->id . '">Rp. ' . number_format($row->nominal_final) . '<br><span class="badge badge-warning modal_status" style="cursor:pointer" onclick="editStatus(' . $param . ')">Belum Dibayar</span></div>';
+            } elseif ($row->status == 'success') {
+                $status = '<div id="status_' . $row->id . '">Rp. ' . number_format($row->nominal_final) . '<br><span class="badge badge-success modal_status" style="cursor:pointer" onclick="editStatus(' . $param . ')">Sudah Dibayar</span></div>';
+            } else {
+                $status = '<div id="status_' . $row->id . '">Rp. ' . number_format($row->nominal_final) . '<br><span class="badge badge-secondary modal_status" style="cursor:pointer" onclick="editStatus(' . $param . ')">Dibatalkan</span></div>';
+            }
+            return $status;
+        })
+        ->addColumn('created_at', function ($row) {
+            $chat_history = '';
+            if (!empty($row->chat_count) && $row->chat_count > 0) {
+                $chat_history = '<br><span class="badge badge-warning">(' . $row->chat_count . ') ' . date('d-m-Y H:i', strtotime($row->last_chat_at)) . '</span>';
+            }
+            $date = date('Y-m-d H:i', strtotime($row->created_at));
+            return $date . $chat_history;
+        })
+        ->addColumn('action', function ($row) {
+            $donaturBtn = '<a href="' . route('adm.donatur.show', $row->donatur_id) . '" class="btn btn-info btn-xs mb-1" title="Lihat Donatur"><i class="fa fa-user"></i></a>';
+            $deleteBtn = '';
+            if ($row->status == 'cancel' || $row->status == 'draft') {
+                $deleteBtn = '<button class="btn btn-danger btn-xs" title="Hapus" onclick="openDeleteModal(' . $row->id . ')"><i class="fa fa-trash"></i></button>';
+            }
+            return $donaturBtn . ' ' . $deleteBtn;
+        })
+        ->rawColumns(['checkbox', 'action', 'invoice', 'nominal_final', 'name', 'created_at'])
+        ->make(true);
+}
 
     /**
      * Remove multiple specified resources from storage.
