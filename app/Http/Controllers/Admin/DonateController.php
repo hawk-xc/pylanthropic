@@ -1092,50 +1092,75 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
      */
     public function donateMutation()
     {
-        $last_donate               = Transaction::select('created_at')->orderBy('created_at', 'desc')->first()->created_at;
-        $donate_today_paid_count   = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d').'%')->where('status', 'success')
-                                    ->count();
-        $donate_today_paid_sum     = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d').'%')->where('status', 'success')
-                                    ->sum('nominal_final');
-        $donate_today_unpaid_count = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d').'%')
-                                    ->where('status', '<>', 'success')->count();
-        $donate_today_unpaid_sum   = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d').'%')
-                                    ->where('status', '<>', 'success')->sum('nominal_final');
-        $visit_lp                  = TrackingVisitor::where('created_at', 'like', date('Y-m-d').'%')->where('page_view', 'landing_page')->count();
-        $sum_paid_now              = Transaction::where('status', 'success')->where('created_at', 'like', date('Y-m').'%')->sum('nominal_final');
-        $sum_paid                  = Transaction::where('status', 'success')->sum('nominal_final');
-        $dn                        = date('Y-m-d');
-        $donate_yest1_paid_count   = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-1 day')).'%')
-                                    ->where('status', 'success')->count();
-        $donate_yest1_paid_sum     = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-1 day')).'%')
-                                    ->where('status', 'success')->sum('nominal_final');
-        $donate_yest1_unpaid_count = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-1 day')).'%')
-                                    ->where('status', '<>', 'success')->count();
-        $donate_yest1_unpaid_sum   = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-1 day')).'%')
-                                    ->where('status', '<>', 'success')->sum('nominal_final');
-        $donate_yest2_paid_count   = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-2 day')).'%')
-                                    ->where('status', 'success')->count();
-        $donate_yest2_paid_sum     = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-2 day')).'%')
-                                    ->where('status', 'success')->sum('nominal_final');
-        $donate_yest2_unpaid_count = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-2 day')).'%')
-                                    ->where('status', '<>', 'success')->count();
-        $donate_yest2_unpaid_sum   = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-2 day')).'%')
-                                    ->where('status', '<>', 'success')->sum('nominal_final');
-        $donate_yest3_paid_count   = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-3 day')).'%')
-                                    ->where('status', 'success')->count();
-        $donate_yest3_paid_sum     = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-3 day')).'%')
-                                    ->where('status', 'success')->sum('nominal_final');
-        $donate_yest3_unpaid_count = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-3 day')).'%')
-                                    ->where('status', '<>', 'success')->count();
-        $donate_yest3_unpaid_sum   = Transaction::select('created_at')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-3 day')).'%')
-                                    ->where('status', '<>', 'success')->sum('nominal_final');
+        $dn = now(); // pakai Carbon
+        $today = $dn->toDateString();
 
+        // === 1. Ambil data utama ===
+        $last_donate = Transaction::latest('created_at')->value('created_at');
 
-        return view('admin.transaction.donate_mutation', compact('last_donate', 'donate_today_paid_count', 'donate_today_paid_sum',
-            'donate_today_unpaid_count', 'donate_today_unpaid_sum', 'visit_lp', 'sum_paid_now', 'sum_paid',
-            'donate_yest1_paid_count', 'donate_yest1_paid_sum', 'donate_yest1_unpaid_count', 'donate_yest1_unpaid_sum',
-            'donate_yest2_paid_count', 'donate_yest2_paid_sum', 'donate_yest2_unpaid_count', 'donate_yest2_unpaid_sum',
-            'donate_yest3_paid_count', 'donate_yest3_paid_sum', 'donate_yest3_unpaid_count', 'donate_yest3_unpaid_sum'));
+        // === 2. Ambil semua data 4 hari terakhir dalam 1 query ===
+        $dates = [
+            $today,
+            $dn->copy()->subDay(1)->toDateString(),
+            $dn->copy()->subDays(2)->toDateString(),
+            $dn->copy()->subDays(3)->toDateString(),
+        ];
+
+        $transactions = Transaction::selectRaw('DATE(created_at) as date, status, COUNT(*) as total, SUM(nominal_final) as amount')
+            ->whereBetween('created_at', [$dn->copy()->subDays(3)->startOfDay(), $dn->endOfDay()])
+            ->groupBy('date', 'status')
+            ->get()
+            ->groupBy('date');
+
+        // === 3. Ambil visitor hari ini ===
+        $visit_lp = TrackingVisitor::whereDate('created_at', $today)
+            ->where('page_view', 'landing_page')
+            ->count();
+
+        // === 4. Ambil sum bulan ini & total semua ===
+        $sum_paid_now = Transaction::where('status', 'success')
+            ->whereBetween('created_at', [$dn->copy()->startOfMonth(), $dn->endOfMonth()])
+            ->sum('nominal_final');
+
+        $sum_paid = Transaction::where('status', 'success')->sum('nominal_final');
+
+        // === 5. Mapping hasil agar kompatibel dengan variabel lama ===
+        $summary = [];
+        foreach ($dates as $i => $date) {
+            $dayData = $transactions[$date] ?? collect([]);
+
+            $paid = $dayData->firstWhere('status', 'success');
+            $unpaid = $dayData->firstWhere('status', '<>', 'success');
+
+            $summary["yest{$i}_paid_count"]   = $paid->total ?? 0;
+            $summary["yest{$i}_paid_sum"]     = $paid->amount ?? 0;
+            $summary["yest{$i}_unpaid_count"] = $unpaid->total ?? 0;
+            $summary["yest{$i}_unpaid_sum"]   = $unpaid->amount ?? 0;
+        }
+
+        // === 6. Return ke view ===
+        return view('admin.transaction.donate_mutation', [
+            'last_donate'               => $last_donate,
+            'donate_today_paid_count'   => $summary['yest0_paid_count'],
+            'donate_today_paid_sum'     => $summary['yest0_paid_sum'],
+            'donate_today_unpaid_count' => $summary['yest0_unpaid_count'],
+            'donate_today_unpaid_sum'   => $summary['yest0_unpaid_sum'],
+            'visit_lp'                  => $visit_lp,
+            'sum_paid_now'              => $sum_paid_now,
+            'sum_paid'                  => $sum_paid,
+            'donate_yest1_paid_count'   => $summary['yest1_paid_count'],
+            'donate_yest1_paid_sum'     => $summary['yest1_paid_sum'],
+            'donate_yest1_unpaid_count' => $summary['yest1_unpaid_count'],
+            'donate_yest1_unpaid_sum'   => $summary['yest1_unpaid_sum'],
+            'donate_yest2_paid_count'   => $summary['yest2_paid_count'],
+            'donate_yest2_paid_sum'     => $summary['yest2_paid_sum'],
+            'donate_yest2_unpaid_count' => $summary['yest2_unpaid_count'],
+            'donate_yest2_unpaid_sum'   => $summary['yest2_unpaid_sum'],
+            'donate_yest3_paid_count'   => $summary['yest3_paid_count'],
+            'donate_yest3_paid_sum'     => $summary['yest3_paid_sum'],
+            'donate_yest3_unpaid_count' => $summary['yest3_unpaid_count'],
+            'donate_yest3_unpaid_sum'   => $summary['yest3_unpaid_sum'],
+        ]);
     }
 
     /**

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Transaction;
 use App\Models\Program;
-use App\Models\TrackingVisitor;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -17,83 +17,34 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        $dn              = date('Y-m-d');
-        $sum_donate      = Transaction::where('status', 'success')->count('id');
-        $sum_paid        = Transaction::where('status', 'success')->sum('nominal_final');
-        $sum_paid_now    = Transaction::where('status', 'success')
-                            ->where('created_at', 'like', date('Y-m').'%')->sum('nominal_final');
-        $sum_transaction = Transaction::count('id');
+        $dn = Carbon::today();
+
+        $sum_donate = Transaction::where('status', 'success')->count();
+        $sum_paid = Transaction::where('status', 'success')->sum('nominal_final');
+        $sum_paid_now = Transaction::where('status', 'success')
+            ->whereBetween('created_at', [Carbon::now()->startOfMonth(), Carbon::now()->endOfMonth()])
+            ->sum('nominal_final');
+        $sum_transaction = Transaction::count();
         $sum_page_viewed = Program::sum('count_view');
 
-        $donate_success  = array(
-            0 => Transaction::select('id')->where('status', 'success')->where('created_at', 'like', $dn.'%')->count(),
-            1 => Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-1 day')).'%')->count(),
-            2 => Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-2 day')).'%')->count(),
-            3 => Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-3 day')).'%')->count(),
-            4 => Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-4 day')).'%')->count(),
-            5 => Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-5 day')).'%')->count(),
-            6 => Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-6 day')).'%')->count()
-        );
-        $donate_success_rp = array(
-            0 => Transaction::select('id')->where('status', 'success')->where('created_at', 'like', $dn.'%')->sum('nominal_final'),
-            1 => Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-1 day')).'%')->sum('nominal_final'),
-            2 => Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-2 day')).'%')->sum('nominal_final'),
-            3 => Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-3 day')).'%')->sum('nominal_final'),
-            4 => Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-4 day')).'%')->sum('nominal_final'),
-            5 => Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-5 day')).'%')->sum('nominal_final'),
-            6 => Transaction::select('id')->where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-6 day')).'%')->sum('nominal_final')
-        );
-        $donate_draft    = array(
-            0 => Transaction::select('id')->where('status', '!=', 'success')->where('created_at', 'like', $dn.'%')->count(),
-            1 => Transaction::select('id')->where('status', '!=', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-1 day')).'%')->count(),
-            2 => Transaction::select('id')->where('status', '!=', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-2 day')).'%')->count(),
-            3 => Transaction::select('id')->where('status', '!=', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-3 day')).'%')->count(),
-            4 => Transaction::select('id')->where('status', '!=', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-4 day')).'%')->count(),
-            5 => Transaction::select('id')->where('status', '!=', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-5 day')).'%')->count(),
-            6 => Transaction::select('id')->where('status', '!=', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-6 day')).'%')->count()
-        );
-        $donate_draft_rp = array(
-            0 => Transaction::select('id')->where('status', '!=', 'success')->where('created_at', 'like', $dn.'%')->sum('nominal_final'),
-            1 => Transaction::select('id')->where('status', '!=', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-1 day')).'%')->sum('nominal_final'),
-            2 => Transaction::select('id')->where('status', '!=', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-2 day')).'%')->sum('nominal_final'),
-            3 => Transaction::select('id')->where('status', '!=', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-3 day')).'%')->sum('nominal_final'),
-            4 => Transaction::select('id')->where('status', '!=', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-4 day')).'%')->sum('nominal_final'),
-            5 => Transaction::select('id')->where('status', '!=', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-5 day')).'%')->sum('nominal_final'),
-            6 => Transaction::select('id')->where('status', '!=', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-6 day')).'%')->sum('nominal_final')
-        );
+        $startDate = Carbon::today()->subDays(6);
+        $transactions = Transaction::select(DB::raw('DATE(created_at) as date'), DB::raw("SUM(CASE WHEN status = 'success' THEN nominal_final ELSE 0 END) as success_amount"), DB::raw("COUNT(CASE WHEN status = 'success' THEN 1 END) as success_count"), DB::raw("SUM(CASE WHEN status != 'success' THEN nominal_final ELSE 0 END) as draft_amount"), DB::raw("COUNT(CASE WHEN status != 'success' THEN 1 END) as draft_count"))->whereDate('created_at', '>=', $startDate)->groupBy(DB::raw('DATE(created_at)'))->orderBy('date', 'desc')->get()->keyBy('date');
 
-        // Visitor landing page
-        // for($i=0; $i<30; $i++) {
-        //     $visitor_analytic[] = TrackingVisitor::where('page_view', 'landing_page')
-        //                         ->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-'.$i.' day')).'%')
-        //                         ->count();
-        // }
+        $donate_success = [];
+        $donate_success_rp = [];
+        $donate_draft = [];
+        $donate_draft_rp = [];
 
-        // $a                      = array_filter($visitor_analytic);
-        // if( count($a) ) {
-        //     $visitor_analytic_avg = array_sum($a)/count($a);
-        // } else {
-        //     $visitor_analytic_avg = 0;
-        // }
+        for ($i = 0; $i < 7; $i++) {
+            $date = $dn->copy()->subDays($i)->toDateString();
+            $dayData = $transactions->get($date);
 
-        // // Visitor count klik tombol donasi
-        // for($i=0; $i<30; $i++) {
-        //     $click_donate[] = TrackingVisitor::where('page_view', 'amount')
-        //                     ->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-'.$i.' day')).'%')->count();
-        // }
-
-        // // Visitor count donate / transaction
-        // for($i=0; $i<30; $i++) {
-        //     $donate_count[] = Transaction::where('created_at', 'like', date('Y-m-d', strtotime($dn.'-'.$i.' day')).'%')->count();
-        // }
-
-        // // Visitor count donate paid / success
-        // for($i=0; $i<30; $i++) {
-        //     $donate_paid[] = Transaction::where('status', 'success')->where('created_at', 'like', date('Y-m-d', strtotime($dn.'-'.$i.' day')).'%')
-        //                     ->count();
-        // }
+            $donate_success[$i] = $dayData->success_count ?? 0;
+            $donate_success_rp[$i] = $dayData->success_amount ?? 0;
+            $donate_draft[$i] = $dayData->draft_count ?? 0;
+            $donate_draft_rp[$i] = $dayData->draft_amount ?? 0;
+        }
 
         return view('admin.dashboard', compact('sum_donate', 'sum_paid', 'sum_paid_now', 'sum_transaction', 'sum_page_viewed', 'donate_success', 'donate_success_rp', 'donate_draft', 'donate_draft_rp'));
     }
-
 }

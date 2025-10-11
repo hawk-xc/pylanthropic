@@ -84,7 +84,7 @@ class Program extends Model
         return $this->hasMany(ProgramInfo::class, 'program_id', 'id');
     }
 
-    public function payout()
+    public function payouts()
     {
         return $this->hasMany(Payout::class, 'program_id', 'id');
     }
