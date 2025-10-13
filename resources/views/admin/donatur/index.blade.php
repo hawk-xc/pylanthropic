@@ -25,7 +25,7 @@
                         </ol>
                     </nav>
                 </div>
-                <div class="col-7 fc-rtl">
+                <div id="filter-button" class="fc-rtl">
                     <button class="btn btn-outline-primary filter_donatur" id="filter-wa-aktif" data-id="wa-aktif"
                         data-val="0" title="Donatur yang memiliki no WhatsApp Aktif">WA Aktif</button>
                     <button class="btn btn-outline-primary filter_donatur" id="filter-wa-mau" data-id="wa-mau"
@@ -46,8 +46,9 @@
                         data-val="0" title="Donatur Muslim">Muslim</button>
                     <button class="btn btn-outline-primary filter_donatur" id="filter-dorman" data-id="dorman"
                         data-val="0" title="Donatur tidak aktif/dorman">Dorman</button>
-                    {{-- <a href="{{ route('refresh.donatur.donate') }}" target="_blank"
-                        class="btn btn-outline-primary">Refresh</a> --}}
+                    <button class="btn btn-outline-primary filter_donatur_days" data-days="7" data-val="0" title="Donatur dibuat dalam 7 hari terakhir">7 Hari</button>
+                    <button class="btn btn-outline-primary filter_donatur_days" data-days="10" data-val="0" title="Donatur dibuat dalam 10 hari terakhir">10 Hari</button>
+                    <button class="btn btn-outline-primary filter_donatur_days" data-days="14" data-val="0" title="Donatur dibuat dalam 14 hari terakhir">14 Hari</button>
                     <a href="{{ route('adm.donatur.create') }}" class="btn btn-outline-primary"><i
                             class="fa fa-plus mr-1"></i> Tambah</a>
                     <a href="{{ route('adm.donatur.reset-cache') }}" class="btn btn-outline-info"><i
@@ -58,7 +59,7 @@
             <table id="table-donatur" class="table table-hover table-striped table-bordered">
                 <thead>
                     <tr>
-                        <th>Nama</th>
+                        <th>Nama</th>   
                         <th>Terakhir Donasi</th>
                         <th>Rangkuman Donasi</th>
                         <th>Riwayat Chat</th>
@@ -206,6 +207,24 @@
             }
         });
 
+        $(".filter_donatur_days").on("click", function() {
+            var fil_val = $(this).attr("data-val");
+            
+            // Unselect other day filters
+            $(".filter_donatur_days").not(this).addClass('btn-outline-primary').removeClass('btn-primary').attr("data-val", "0");
+
+            if (fil_val == 0) {
+                $(this).removeClass('btn-outline-primary');
+                $(this).addClass('btn-primary');
+                $(this).attr("data-val", "1");
+            } else {
+                $(this).addClass('btn-outline-primary');
+                $(this).removeClass('btn-primary');
+                $(this).attr("data-val", "0");
+            }
+            donatur_table();
+        });
+
         function donatur_table() {
             let wa_aktif = $('#filter-wa-aktif').attr("data-val");
             let wa_mau = $('#filter-wa-mau').attr("data-val");
@@ -214,9 +233,14 @@
             let rutin = $('#filter-rutin').attr("data-val");
             let muslim = $('#filter-muslim').attr("data-val");
             let dorman = $('#filter-dorman').attr("data-val");
+            let days = 0;
+            let active_days_filter = $(".filter_donatur_days[data-val='1']");
+            if (active_days_filter.length > 0) {
+                days = active_days_filter.data('days');
+            }
 
             table.ajax.url("{{ route('adm.donatur.datatables') }}/?wa_aktif=" + wa_aktif + "&wa_mau=" + wa_mau +
-                    "&sultan=" + sultan + "&setia=" + setia + "&rutin=" + rutin + "&muslim=" + muslim + "&dorman=" + dorman)
+                    "&sultan=" + sultan + "&setia=" + setia + "&rutin=" + rutin + "&muslim=" + muslim + "&dorman=" + dorman + "&days=" + days)
                 .load();
         }
 
