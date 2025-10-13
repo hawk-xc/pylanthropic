@@ -215,6 +215,10 @@
                 var submitButton = form.find('[type="submit"]');
                 var originalButtonText = submitButton.val();
 
+                // Clear previous errors
+                form.find('.is-invalid').removeClass('is-invalid');
+                form.find('.invalid-feedback').remove();
+
                 // Show loading state
                 submitButton.prop('disabled', true);
                 submitButton.val('Processing...');
@@ -229,24 +233,50 @@
                             // Show result container
                             $('#result-container').show();
                             $('#short-url').val(response.short_url);
-                            $('#original-url').text('https://bantubersama.com/' + response.data
-                                .direct_link);
+                            $('#original-url').text(response.data.direct_link);
                             $('#action-button').hide();
 
                             // Reset form
                             form[0].reset();
-                        } else {
-                            // Swal.fire({
-                            //     icon: 'error',
-                            //     title: 'Error',
-                            //     text: response.message
-                            // });
+                            $('#program-select2').val(null).trigger('change');
+                            $('#payment_type').val($('#payment_type option:first').val()).trigger('change');
                         }
                     },
                     error: function(xhr) {
-                        var errorMessage = 'An error occurred';
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            errorMessage = xhr.responseJSON.message;
+                        if (xhr.status === 422) { // Validation error
+                            var errors = xhr.responseJSON.errors;
+                            $.each(errors, function(key, value) {
+                                var field = $('[name="' + key + '"]');
+                                field.addClass('is-invalid');
+                                
+                                var errorHtml = '<div class="invalid-feedback d-block">' + value[0] + '</div>';
+
+                                if (field.is('select') && field.next().hasClass('select2-container')) {
+                                    // For Select2
+                                    field.next('.select2-container').after(errorHtml);
+                                } else if (field.closest('.input-group').length) {
+                                    // For inputs in an input group
+                                    field.closest('.input-group').after(errorHtml);
+                                } else {
+                                    // For other fields
+                                    field.after(errorHtml);
+                                }
+                            });
+                        } else {
+                            var errorMessage = 'An error occurred';
+                            if (xhr.responseJSON && xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            }
+                            // Using Swal for general errors if available, or alert as fallback
+                            if (typeof Swal !== 'undefined') {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: errorMessage
+                                });
+                            } else {
+                                alert(errorMessage);
+                            }
                         }
                     },
                     complete: function() {

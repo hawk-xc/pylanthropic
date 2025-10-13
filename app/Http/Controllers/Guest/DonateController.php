@@ -117,53 +117,57 @@ class DonateController extends Controller
      */
     public function checkout(Request $request)
     {
-        // $request->validate([
-        //     'type'    => 'required|string',
-        //     'nominal' => 'required|numeric',
-        // ]);
-
-        $nominal      = $request->nominal;
+        $nominal = (int) str_replace('.', '', $request->nominal ?? 0);
         $payment_type = $request->type;
-        $program      = Program::where('is_publish', 1)->select('slug', 'id', 'count_pra_checkout')
-                        ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
-        if(isset($program->slug) && $nominal>=10000) {
-            // update count pra checkout
+        $program = Program::where('is_publish', 1)
+            ->where('slug', $request->slug)
+            ->whereNotNull('approved_at')
+            ->select('slug', 'id', 'count_pra_checkout')
+            ->first();
+
+        // default minimal nominal
+        $minNominal = 10000;
+
+        if ($request->linktype === 'shortlink' && $request->filled('code')) {
+            $shortLink = \App\Models\DonaturShortLink::where('code', $request->code)->first();
+
+            if ($shortLink) {
+                $minNominal = 5000;
+            }
+        }
+
+        if (isset($program->slug) && $nominal >= $minNominal) {
+
             Program::where('id', $program->id)->update([
-                'count_pra_checkout' => $program->count_pra_checkout+1,
-                'updated_at'         => date('Y-m-d H:i:s')
+                'count_pra_checkout' => $program->count_pra_checkout + 1,
+                'updated_at' => now(),
             ]);
 
-            $payment  = PaymentType::where('key', $payment_type)->first();
+            $payment = PaymentType::where('key', $payment_type)->first();
 
-            // insert tracking visitor
             TrackingVisitor::create([
                 'program_id'      => $program->id,
                 'visitor_code'    => 1,
                 'page_view'       => 'form',
                 'nominal'         => $nominal,
-                'payment_type_id' => $payment->id,
-                'ref_code'        => (isset($request->ref)) ? strip_tags($request->ref) : null,
-                'utm_source'      => (isset($request->a)) ? strip_tags($request->a) : null,
-                'utm_medium'      => (isset($request->as)) ? strip_tags($request->as) : null,
+                'payment_type_id' => $payment->id ?? null,
+                'ref_code'        => $request->ref ?? null,
+                'utm_source'      => $request->a ?? null,
+                'utm_medium'      => $request->as ?? null,
                 'utm_campaign'    => null,
-                'utm_content'     => (isset($request->k)) ? strip_tags($request->k) : null
+                'utm_content'     => $request->k ?? null,
             ]);
 
-            $telp = '';
-            $name = '';
-            if(isset($request->telp)) {
-                $telp = urldecode($request->telp);
-            }
-
-            if(isset($request->name)) {
-                $name = urldecode($request->name);
-            }
+            $telp = urldecode($request->telp ?? '');
+            $name = urldecode($request->name ?? '');
 
             return view('public.checkout', compact('program', 'nominal', 'payment', 'telp', 'name'));
-        } else {
-            return view('public.not_found');
         }
+
+        // jika tidak memenuhi syarat
+        return view('public.not_found');
     }
+
 
     public function paymentStatus(Request $request)
     {

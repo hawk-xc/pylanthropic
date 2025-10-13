@@ -1375,14 +1375,18 @@ https://bantubersama.com/bantupalestina';
 
     public function storeDonaturShortLink(Request $request)
     {
+        $request->merge([
+            'amount' => (int) str_replace('.', '', $request->amount)
+        ]);
+
         $request->validate(
             [
                 'donatur_id' => 'required|numeric',
                 'name' => 'required|string',
                 'program' => 'required|numeric',
                 'payment_type' => 'required|string',
-                'amount' => 'required|string',
-                'description' => 'string',
+                'amount' => 'required|numeric|min:5000',
+                'description' => 'string|nullable',
                 'is_active' => 'string|in:on,off',
             ],
             [
@@ -1393,7 +1397,7 @@ https://bantubersama.com/bantupalestina';
                 'payment_type.required' => 'Kolom Metode Pembayaran wajib diisi.',
                 'payment_type.string' => 'Kolom Metode Pembayaran harus berupa teks.',
                 'amount.required' => 'Kolom Jumlah wajib diisi.',
-                'amount.string' => 'Kolom Jumlah harus berupa teks.',
+                'amount.numeric' => 'Kolom Jumlah harus berupa angka.',
                 'is_active.string' => 'Kolom Status harus berupa teks.',
                 'is_active.in' => 'Kolom Status harus salah satu dari: on, off.',
             ],
@@ -1421,7 +1425,7 @@ https://bantubersama.com/bantupalestina';
 
             Cache::forget('donatur-cache-data');
 
-            $donaturShortLink->direct_link = 'https://bantubersama.com/' . $program->slug . '/checkout/' . $amount . '/' . $request->payment_type . '?name=' . urlencode($donatur->name) . '&telp=' . urlencode($donatur->telp);
+            $donaturShortLink->direct_link = env('APP_URL') . '/' . $program->slug . '/checkout/' . $amount . '/' . $request->payment_type . '?name=' . urlencode($donatur->name) . '&telp=' . urlencode($donatur->telp) . '&linktype=shortlink&code=' . $donaturShortLink->code;
 
             $donaturShortLink->save();
 
