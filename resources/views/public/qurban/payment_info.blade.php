@@ -1,6 +1,6 @@
 @extends('layouts.public', [
-    'second_title' => 'Invoice Qurban - Bantubersama',
-    'meta_desc'    => 'Qurban Bantubersama adalah platform pembelian qurban secara online',
+    'second_title' => 'Invoice Qurban - Bantusesama',
+    'meta_desc'    => 'Qurban Bantusesama adalah platform pembelian qurban secara online',
     'image'        => 'promo-qurban-bantubersama.png',
 ])
 
@@ -485,7 +485,7 @@
         let url = encodeURI('https://www.linkedin.com/shareArticle?url='+uri+'&mini=true&title={{ $title }}&summary={{ $desc }}&source={{ url("/") }}');
         window.open(url, 'name', 'width=600,height=400');
       } else if(name=='email') {
-        let url = encodeURI('mailto:Bantubersama.com<contact@bantubersama.com>?subject={{ $title }}&body='+txt2+' '+uri);
+        let url = encodeURI('mailto:Bantusesama.com<contact@bantubersama.com>?subject={{ $title }}&body='+txt2+' '+uri);
         window.open(url);
       } else {
         let link_share = $(this).attr('data-clipboard-text');

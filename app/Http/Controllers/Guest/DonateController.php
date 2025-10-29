@@ -26,18 +26,18 @@ class DonateController extends Controller
     {
         $this->rwa_token = \App\Models\TokenConfig::first()->token ?? env('RWA_TOKEN');
     }
-    
+
     /**
      * Display a listing of the resource.
      */
     public function amount(Request $request)
     {
         $program = Program::where('is_publish', 1)->select('slug', 'id', 'count_amount_page')
-                    ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
-        if(isset($program->slug)) {
+            ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
+        if (isset($program->slug)) {
             // update count_amount_page
             Program::where('id', $program->id)->update([
-                'count_amount_page' => $program->count_amount_page+1,
+                'count_amount_page' => $program->count_amount_page + 1,
                 'updated_at'        => date('Y-m-d H:i:s')
             ]);
 
@@ -77,7 +77,7 @@ class DonateController extends Controller
 
         // 4) Validasi (pakai integer agar pasti bilangan bulat)
         $validated = $request->validate([
-            'nominal' => ['required','integer','min:20000','max:500000000'],
+            'nominal' => ['required', 'integer', 'min:20000', 'max:500000000'],
         ], [
             'nominal.min' => 'Nominal minimal 20 ribu.',
             'nominal.max' => 'Nominal maksimal 500 juta.',
@@ -85,9 +85,9 @@ class DonateController extends Controller
 
         $nominal = (int) $validated['nominal'];
         $program = Program::where('is_publish', 1)->select('slug', 'id')
-                    ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
+            ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
 
-        if(isset($program->slug) && $nominal>=10000) {
+        if (isset($program->slug) && $nominal >= 10000) {
             $payment_transfer = PaymentType::where('type', 'transfer')->where('is_active', 1)->orderBy('sort_number')->get();
             $payment_instant  = PaymentType::where('type', 'instant')->where('is_active', 1)->orderBy('sort_number')->get();
             $payment_va       = PaymentType::where('type', 'virtual_account')->where('is_active', 1)->orderBy('sort_number')->get();
@@ -173,11 +173,11 @@ class DonateController extends Controller
     {
         // check any transaction
         $is_trans = Transaction::where('invoice_number', $request->inv)->first();
-        if(isset($is_trans->status)) {
+        if (isset($is_trans->status)) {
             $nominal        = $is_trans->nominal_final;
-            $nominal_show   =  number_format(substr($nominal, 0, strlen($nominal)-3), 0, ',', '.');
-            $nominal_show   = 'Rp '.$nominal_show.'.';
-            $nominal_show2  = substr($nominal, strlen($nominal)-3, strlen($nominal));
+            $nominal_show   =  number_format(substr($nominal, 0, strlen($nominal) - 3), 0, ',', '.');
+            $nominal_show   = 'Rp ' . $nominal_show . '.';
+            $nominal_show2  = substr($nominal, strlen($nominal) - 3, strlen($nominal));
             $token_midtrans = $is_trans->midtrans_token;
             $redirect_url   = $is_trans->midtrans_url;
             $va_number      = 0;
@@ -192,8 +192,9 @@ class DonateController extends Controller
             return view('public.not_found');
         }
     }
-  
-    function getClientIpPreferV4(?Request $request = null): string {
+
+    function getClientIpPreferV4(?Request $request = null): string
+    {
         $request = $request ?? request();
 
         // urutan header: CDN/proxy dulu, lalu default
@@ -332,7 +333,7 @@ class DonateController extends Controller
         ]);
 
         $captchav3 = $request->input('recaptcha_v3_token');
-        
+
         $verifyV3 = Http::asForm()->post('https://www.google.com/recaptcha/api/siteverify', [
             'secret' => config('services.recaptcha.v3_secret'),
             'response' => $captchav3,
@@ -350,25 +351,27 @@ class DonateController extends Controller
             abort(403, 'not fulled');
         }
 
-        $nominal       = str_replace(',', '', preg_replace("/[^0-9]/", "",$request->nominal));
+        $nominal       = str_replace(',', '', preg_replace("/[^0-9]/", "", $request->nominal));
         $program       = Program::where('is_publish', 1)->select('slug', 'id', 'title')
-                        ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
+            ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
         $payment       = PaymentType::where('key', $request->type)->first();
         $va_number     = '0';
         $link          = null;
 
-        if(isset($program->slug) && $nominal>=10000 && isset($payment->name)) {
+        if (isset($program->slug) && $nominal >= 10000 && isset($payment->name)) {
             // insert donatur
             $telp    = $this->formatTelp($request->telp);
             $donatur = Donatur::where('telp', $telp)->select('id', 'name')->first();
-            if(isset($donatur->id)) {
+            if (isset($donatur->id)) {
                 $donatur_id   = $donatur->id;
                 $donatur_name = $donatur->name;
             } else {
-                $donatur_id = Donatur::insertGetId([
-                    'telp'            => $telp,
-                    'name'            => trim($request->fullname), 
-                    'want_to_contact' => $request->has('want_to_contact')?1:0  ]
+                $donatur_id = Donatur::insertGetId(
+                    [
+                        'telp'            => $telp,
+                        'name'            => trim($request->fullname),
+                        'want_to_contact' => $request->has('want_to_contact') ? 1 : 0
+                    ]
                 );
                 $donatur_name = trim($request->fullname);
             }
@@ -390,30 +393,30 @@ class DonateController extends Controller
             //     return redirect()->route('donate.status', ['inv' => $check['invoice_number']])
             //         ->with('warning', 'Anda sudah membuat donasi berulang kali namun belum dibayar.');
             // }
-            
+
             // check any transaction
             $is_trans = Transaction::where('donatur_id', $donatur_id)
-                        ->where('nominal', $nominal)
-                        ->where('program_id', $program->id)
-                        ->where('payment_type_id', $payment->id)
-                        ->where('status', '!=', 'cancel')
-                        // ->where('created_at', 'like', date('Y-m-d H').'%')
-                        ->whereBetween('created_at', [now()->subMinutes(3), now()->addMinute()])
-                        ->latest('id')->first();
+                ->where('nominal', $nominal)
+                ->where('program_id', $program->id)
+                ->where('payment_type_id', $payment->id)
+                ->where('status', '!=', 'cancel')
+                // ->where('created_at', 'like', date('Y-m-d H').'%')
+                ->whereBetween('created_at', [now()->subMinutes(3), now()->addMinute()])
+                ->latest('id')->first();
 
-            if(isset($is_trans->status)) {
+            if (isset($is_trans->status)) {
                 return redirect()->route('donate.status', ['inv' => $is_trans->invoice_number]);
             }
 
             $id_increment = Transaction::select('id')->orderBy('id', 'DESC')->first();
-            $invoice      = 'INV-'.date('Ymd').(isset($id_increment->id)?$id_increment->id+1:1);
+            $invoice      = 'INV-' . date('Ymd') . (isset($id_increment->id) ? $id_increment->id + 1 : 1);
 
             // get unique number for add nominal transaction
             $unique_number = $this->uniqueNumber();
-            $final_nominal = $nominal+$unique_number;
+            $final_nominal = $nominal + $unique_number;
 
             // Payment Gateway
-            if($payment->key=='qris') {
+            if ($payment->key == 'qris') {
                 $requestBody = array(
                     'payment_type' => 'qris',    // gopay / shopeepay
                     'transaction_details' => array(
@@ -441,14 +444,14 @@ class DonateController extends Controller
                 curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                     'Accept:application/json',
                     'Content-Type:application/json',
-                    'Authorization:Basic '.base64_encode(env('MID_SERVER_KEY')),
+                    'Authorization:Basic ' . base64_encode(env('MID_SERVER_KEY')),
                 ));
                 $responseJson = curl_exec($ch);
                 $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
                 $res          = json_decode($responseJson, true);
 
-                if(isset($res['actions'][0]['url'])) {
+                if (isset($res['actions'][0]['url'])) {
                     $redirect_url   = $res['actions'][0]['url'];
                     $token_midtrans = 0;
                 } else {
@@ -456,8 +459,7 @@ class DonateController extends Controller
                     $redirect_url   = asset('public/images/payment/QRIS.png');
                     $token_midtrans = 0;
                 }
-
-            } elseif($payment->key=='gopay') {
+            } elseif ($payment->key == 'gopay') {
                 $requestBody = array(
                     'payment_type' => 'gopay',    // gopay / shopeepay
                     'transaction_details' => array(
@@ -486,14 +488,14 @@ class DonateController extends Controller
                 curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                     'Accept:application/json',
                     'Content-Type:application/json',
-                    'Authorization:Basic '.base64_encode(env('MID_SERVER_KEY')),
+                    'Authorization:Basic ' . base64_encode(env('MID_SERVER_KEY')),
                 ));
                 $responseJson = curl_exec($ch);
                 $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
                 $res          = json_decode($responseJson, true);
 
-                if(isset($res['actions'][0]['url']) && isset($res['actions'][1]['url'])) {
+                if (isset($res['actions'][0]['url']) && isset($res['actions'][1]['url'])) {
                     $redirect_url   = $res['actions'][0]['url']; // deeplink
                     $token_midtrans = 0;
                     $link           = $res['actions'][1]['url']; // QRIS
@@ -513,8 +515,7 @@ class DonateController extends Controller
                     $token_midtrans = 0;
                     $link           = asset('public/images/payment/QRIS.png');
                 }
-
-            }  elseif($payment->key=='shopeepay') {
+            } elseif ($payment->key == 'shopeepay') {
                 $requestBody = array(
                     'payment_type' => 'shopeepay',    // gopay / shopeepay
                     'transaction_details' => array(
@@ -542,24 +543,23 @@ class DonateController extends Controller
                 curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                     'Accept:application/json',
                     'Content-Type:application/json',
-                    'Authorization:Basic '.base64_encode(env('MID_SERVER_KEY')),
+                    'Authorization:Basic ' . base64_encode(env('MID_SERVER_KEY')),
                 ));
                 $responseJson = curl_exec($ch);
                 $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
                 $res          = json_decode($responseJson, true);
 
-                if(isset($res['actions'][0]['url'])) {
+                if (isset($res['actions'][0]['url'])) {
                     $redirect_url   = $res['actions'][0]['url'];
                     $token_midtrans = 0;
                 } else {
                     // QRIS Manual
-                    
+
                     $redirect_url   = asset('public/images/payment/QRIS.png');
                     $token_midtrans = 0;
                 }
-
-            } elseif( ($payment->type=='virtual_account' || $payment->type=='instant') && $payment->key!='qris' ){ // belum aktif
+            } elseif (($payment->type == 'virtual_account' || $payment->type == 'instant') && $payment->key != 'qris') { // belum aktif
                 $requestBody = array(
                     'transaction_details' => array(
                         'order_id'     => $invoice,
@@ -580,14 +580,14 @@ class DonateController extends Controller
                 curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                     'Accept:application/json',
                     'Content-Type:application/json',
-                    'Authorization:Basic '.base64_encode(env('MID_SERVER_KEY')),
+                    'Authorization:Basic ' . base64_encode(env('MID_SERVER_KEY')),
                 ));
                 $responseJson = curl_exec($ch);
                 $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
                 $res          = json_decode($responseJson, true);
 
-                if(isset($res['redirect_url'])) {
+                if (isset($res['redirect_url'])) {
                     $redirect_url   = $res['redirect_url'];
                     $token_midtrans = $res['token'];
                 } else {
@@ -614,9 +614,9 @@ class DonateController extends Controller
                 'status'          => 'draft',
                 'nominal_code'    => $unique_number,
                 'nominal_final'   => $final_nominal,
-                'message'         => $request->has('doa')?trim(strip_tags($request->doa)):null,
+                'message'         => $request->has('doa') ? trim(strip_tags($request->doa)) : null,
                 'payment_type_id' => $payment->id,
-                'is_show_name'    => $request->boolean('anonim')?0:1,
+                'is_show_name'    => $request->boolean('anonim') ? 0 : 1,
                 'midtrans_token'  => $token_midtrans,
                 'midtrans_url'    => $redirect_url,
                 'link'            => $link,
@@ -684,46 +684,48 @@ class DonateController extends Controller
             'telp'     => 'required|numeric',
         ]);
 
-        $nominal       = str_replace(',', '', preg_replace("/[^0-9]/", "",$request->nominal));
+        $nominal       = str_replace(',', '', preg_replace("/[^0-9]/", "", $request->nominal));
         $program       = Program::where('is_publish', 1)->select('slug', 'id', 'title')
-                        ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
+            ->where('slug', $request->slug)->whereNotNull('program.approved_at')->first();
         $payment       = PaymentType::where('key', $request->type)->first();
         $va_number     = '0';
 
-        if(isset($program->slug) && $nominal>=10000 && isset($payment->name)) {
+        if (isset($program->slug) && $nominal >= 10000 && isset($payment->name)) {
             // insert donatur
             $telp    = $this->formatTelp($request->telp);
             $donatur = Donatur::where('telp', $telp)->select('id', 'name')->first();
-            if(isset($donatur->id)) {
+            if (isset($donatur->id)) {
                 $donatur_id   = $donatur->id;
                 $donatur_name = $donatur->name;
             } else {
-                $donatur_id = Donatur::insertGetId([
-                    'telp'            => $telp,
-                    'name'            => trim($request->fullname), 
-                    'want_to_contact' => $request->has('want_to_contact')?1:0  ]
+                $donatur_id = Donatur::insertGetId(
+                    [
+                        'telp'            => $telp,
+                        'name'            => trim($request->fullname),
+                        'want_to_contact' => $request->has('want_to_contact') ? 1 : 0
+                    ]
                 );
                 $donatur_name = trim($request->fullname);
             }
-            
+
             // check any transaction
             $is_trans = Transaction::where('donatur_id', $donatur_id)->where('nominal', $nominal)
-                        ->whereDate('created_at', date('Y-m-d'))->where('status', '!=', 'cancel')
-                        ->where('payment_type_id', $payment->id)->first();
-            if(isset($is_trans->status)) {
+                ->whereDate('created_at', date('Y-m-d'))->where('status', '!=', 'cancel')
+                ->where('payment_type_id', $payment->id)->first();
+            if (isset($is_trans->status)) {
                 $transaction   = $is_trans;
                 $final_nominal = $is_trans->nominal_final;
             } else {
                 $id_increment = Transaction::select('id')->first();
-                $invoice      = 'INV-'.date('Ymd').(isset($id_increment->id)?$id_increment->id+1:1);
+                $invoice      = 'INV-' . date('Ymd') . (isset($id_increment->id) ? $id_increment->id + 1 : 1);
 
                 // get unique number for add nominal transaction
                 $unique_number = $this->uniqueNumber();
-                $final_nominal = $nominal+$unique_number;
+                $final_nominal = $nominal + $unique_number;
 
                 // Payment Gateway
-                if($payment->type=='virtual_account'){
-                    if($payment->key=='va_bca'){
+                if ($payment->type == 'virtual_account') {
+                    if ($payment->key == 'va_bca') {
                         $requestBody = array(
                             'payment_type' => 'bank_transfer',
                             'bank_transfer' => array(
@@ -738,7 +740,7 @@ class DonateController extends Controller
                                 'phone' => $telp,
                             )
                         );
-                    } elseif($payment->key=='va_bni') {
+                    } elseif ($payment->key == 'va_bni') {
                         $requestBody = array(
                             'payment_type' => 'bank_transfer',
                             'bank_transfer' => array(
@@ -753,7 +755,7 @@ class DonateController extends Controller
                                 'phone' => $telp,
                             )
                         );
-                    } elseif($payment->key=='va_bri') {
+                    } elseif ($payment->key == 'va_bri') {
                         $requestBody = array(
                             'payment_type' => 'bank_transfer',
                             'bank_transfer' => array(
@@ -768,7 +770,7 @@ class DonateController extends Controller
                                 'phone' => $telp,
                             )
                         );
-                    } elseif($payment->key=='va_permata') {
+                    } elseif ($payment->key == 'va_permata') {
                         $requestBody = array(
                             'payment_type' => 'permata',
                             'transaction_details' => array(
@@ -780,7 +782,7 @@ class DonateController extends Controller
                                 'phone' => $telp,
                             )
                         );
-                    } elseif($payment->key=='va_mandiri') {
+                    } elseif ($payment->key == 'va_mandiri') {
                         $requestBody = array(
                             'payment_type' => 'echannel',
                             'echannel' => array(
@@ -796,7 +798,7 @@ class DonateController extends Controller
                                 'phone' => $telp,
                             )
                         );
-                    } elseif($payment->key=='gopay') {
+                    } elseif ($payment->key == 'gopay') {
                         $requestBody = array(
                             'payment_type' => 'gopay',
                             'transaction_details' => array(
@@ -807,7 +809,7 @@ class DonateController extends Controller
                     }
                     // Danamon, CIMB, BSI belum
                 }
-                
+
 
                 $ch = curl_init("https://api.sandbox.midtrans.com/v2/charge");
                 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($requestBody));
@@ -815,21 +817,21 @@ class DonateController extends Controller
                 curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                     'Accept:application/json',
                     'Content-Type:application/json',
-                    'Authorization:Basic '.base64_encode('SB-Mid-server-smxoK3uKAUYyJ3lx15qe-ktj:'),
+                    'Authorization:Basic ' . base64_encode('SB-Mid-server-smxoK3uKAUYyJ3lx15qe-ktj:'),
                 ));
                 $responseJson = curl_exec($ch);
                 $httpCode     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
                 curl_close($ch);
                 $res          = json_decode($responseJson, true);
 
-                if(isset($res['va_numbers'][0]['va_number'])) {         // VA for BCA, BNI, BRI
+                if (isset($res['va_numbers'][0]['va_number'])) {         // VA for BCA, BNI, BRI
                     $va_number = $res['va_numbers'][0]['va_number'];
-                } elseif(isset($res['permata_va_number'])) {            // VA for Permata
+                } elseif (isset($res['permata_va_number'])) {            // VA for Permata
                     $va_number = $res['permata_va_number'];
-                } elseif(isset($res['bill_key'])) {                     // VA for Mandiri
+                } elseif (isset($res['bill_key'])) {                     // VA for Mandiri
                     $va_number = $res['bill_key'];
-                } elseif(isset($res['actions'])) {                     // VA for Mandiri
-                    
+                } elseif (isset($res['actions'])) {                     // VA for Mandiri
+
                 } else {
                     // print_r($res);
                     // echo $res['va_numbers'][0]['va_number'];
@@ -850,26 +852,25 @@ class DonateController extends Controller
                 'status'          => 'draft',
                 'nominal_code'    => $unique_number,
                 'nominal_final'   => $final_nominal,
-                'message'         => $request->has('doa')?trim($request->doa):null,
+                'message'         => $request->has('doa') ? trim($request->doa) : null,
                 'payment_type_id' => $payment->id,
-                'is_show_name'    => $request->has('anonim')?1:0,
-                'user_agent'      => $ip.' | '.$userAgent,  // ✅ gabungan IP + User Agent
+                'is_show_name'    => $request->has('anonim') ? 1 : 0,
+                'user_agent'      => $ip . ' | ' . $userAgent,  // ✅ gabungan IP + User Agent
             ]);
 
             // if($payment->type=='transfer') {             // sementara ditambahkan 3 digit semua
-                $nominal       = $final_nominal;
-                $nominal_show  = str_replace(',', '.', $nominal);
-                $nominal_show  = 'Rp '.substr($nominal, 0, strlen($nominal)-3).'.';
-                $nominal_show2 = substr($nominal, strlen($nominal)-3, strlen($nominal));
+            $nominal       = $final_nominal;
+            $nominal_show  = str_replace(',', '.', $nominal);
+            $nominal_show  = 'Rp ' . substr($nominal, 0, strlen($nominal) - 3) . '.';
+            $nominal_show2 = substr($nominal, strlen($nominal) - 3, strlen($nominal));
             // } else {
             //     $nominal_show  = 'Rp '.str_replace(',', '.', number_format($nominal));
             //     $nominal_show2 = '';
             // }
 
-            $paid_before     = date('d F Y H:i').' WIB';
+            $paid_before     = date('d F Y H:i') . ' WIB';
 
             return view('public.payment_info', compact('nominal', 'nominal_show', 'nominal_show2', 'paid_before', 'payment', 'va_number', 'transaction', 'program'));
-
         } else {
             return view('public.not_found');
         }
@@ -879,10 +880,10 @@ class DonateController extends Controller
     {
         $inv         = $request->inv;
         $transaction = Transaction::select('status')->where('invoice_number', trim($inv))->first();
-        if(isset($transaction->status)) {
-            if($transaction->status=='draft') {
+        if (isset($transaction->status)) {
+            if ($transaction->status == 'draft') {
                 return 'Belum Diterima';
-            } elseif($transaction->status=='success') {
+            } elseif ($transaction->status == 'success') {
                 return 'Sudah Dibayar';
             } else {
                 return 'Dibatalkan';
@@ -893,51 +894,50 @@ class DonateController extends Controller
     }
 
     /**
-     * Send Notification to Telegram Group "Donate - Bantubersama"
+     * Send Notification to Telegram Group "Donate - Bantusesama"
      */
-    public function sendNotifTelegram($invoice='')
+    public function sendNotifTelegram($invoice = '')
     {
         $data = Transaction::select('transaction.*', 'donatur.name as name', 'donatur.telp', 'program.title', 'payment_type.name as payment_name')
-                    ->join('program', 'program.id', 'transaction.program_id')
-                    ->join('donatur', 'donatur.id', 'transaction.donatur_id')
-                    ->join('payment_type', 'payment_type.id', 'transaction.payment_type_id')
-                    ->where('invoice_number', $invoice)->first();
-        if(isset($data->telp)) {
-            $chat1     = "Donasi baru *Rp.".str_replace(',', '.', number_format($data->nominal_final))."* (*".$data->payment_name."*)
-a/n *".$data->name." - ".$data->telp."* 
-untuk program *".$data->title."*";
+            ->join('program', 'program.id', 'transaction.program_id')
+            ->join('donatur', 'donatur.id', 'transaction.donatur_id')
+            ->join('payment_type', 'payment_type.id', 'transaction.payment_type_id')
+            ->where('invoice_number', $invoice)->first();
+        if (isset($data->telp)) {
+            $chat1     = "Donasi baru *Rp." . str_replace(',', '.', number_format($data->nominal_final)) . "* (*" . $data->payment_name . "*)
+a/n *" . $data->name . " - " . $data->telp . "* 
+untuk program *" . $data->title . "*";
 
-            $count_all    = Transaction::select('id')->where('created_at', 'like', date('Y-m-d').'%')->count();
-            $sum_all      = Transaction::select('id')->where('created_at', 'like', date('Y-m-d').'%')->sum('nominal_final');
-            $count_paid   = Transaction::select('id')->where('created_at', 'like', date('Y-m-d').'%')->where('status', 'success')->count();
-            $sum_paid     = Transaction::select('id')->where('created_at', 'like', date('Y-m-d').'%')->where('status', 'success')->sum('nominal_final');
-            $count_unpaid = Transaction::select('id')->where('created_at', 'like', date('Y-m-d').'%')->where('status', '<>', 'success')->count();
-            $sum_unpaid   = Transaction::select('id')->where('created_at', 'like', date('Y-m-d').'%')->where('status', '<>', 'success')->sum('nominal_final');
+            $count_all    = Transaction::select('id')->where('created_at', 'like', date('Y-m-d') . '%')->count();
+            $sum_all      = Transaction::select('id')->where('created_at', 'like', date('Y-m-d') . '%')->sum('nominal_final');
+            $count_paid   = Transaction::select('id')->where('created_at', 'like', date('Y-m-d') . '%')->where('status', 'success')->count();
+            $sum_paid     = Transaction::select('id')->where('created_at', 'like', date('Y-m-d') . '%')->where('status', 'success')->sum('nominal_final');
+            $count_unpaid = Transaction::select('id')->where('created_at', 'like', date('Y-m-d') . '%')->where('status', '<>', 'success')->count();
+            $sum_unpaid   = Transaction::select('id')->where('created_at', 'like', date('Y-m-d') . '%')->where('status', '<>', 'success')->sum('nominal_final');
 
             $chat2     = "
 
-*Today Report ".date('d-m-Y')."*
-Total Donasi : ".number_format($count_all)." - Rp.".str_replace(',', '.', number_format($sum_all))."
-Donasi Dibayar : ".number_format($count_paid)." - Rp.".str_replace(',', '.', number_format($sum_paid))."
-Donasi Belum Dibayar : ".number_format($count_unpaid)." - Rp.".str_replace(',', '.', number_format($sum_unpaid));
+*Today Report " . date('d-m-Y') . "*
+Total Donasi : " . number_format($count_all) . " - Rp." . str_replace(',', '.', number_format($sum_all)) . "
+Donasi Dibayar : " . number_format($count_paid) . " - Rp." . str_replace(',', '.', number_format($sum_paid)) . "
+Donasi Belum Dibayar : " . number_format($count_unpaid) . " - Rp." . str_replace(',', '.', number_format($sum_unpaid));
 
-            // ID GROUP Telegram "Donate - Bantubersama"    = -4062835663
-            (new \App\Http\Controllers\TelegramController)->sendMessage('-4062835663', $chat1.$chat2);
+            // ID GROUP Telegram "Donate - Bantusesama"    = -4062835663
+            (new \App\Http\Controllers\TelegramController)->sendMessage('-4062835663', $chat1 . $chat2);
         }
-        
     }
 
 
     /**
      * Format phone number of the resource.
      */
-    public function formatTelp($number='')
+    public function formatTelp($number = '')
     {
         $number = str_replace(['-', ' ', '(', ')', '+', '.'], '', $number);
-        if(substr($number, 0, 2) == '62') {
-            $number = '0'.substr($number, 2, 20);
-        } elseif(substr($number, 0, 1) != '0') {
-            $number = '0'.substr($number, 0, 20);
+        if (substr($number, 0, 2) == '62') {
+            $number = '0' . substr($number, 2, 20);
+        } elseif (substr($number, 0, 1) != '0') {
+            $number = '0' . substr($number, 0, 20);
         }
 
         return $number;
@@ -946,7 +946,7 @@ Donasi Belum Dibayar : ".number_format($count_unpaid)." - Rp.".str_replace(',', 
     /**
      * Format phone number of the resource.
      */
-    public function sentWA($telp='', $chat='')
+    public function sentWA($telp = '', $chat = '')
     {
         // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
         // $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
@@ -957,7 +957,7 @@ Donasi Belum Dibayar : ".number_format($count_unpaid)." - Rp.".str_replace(',', 
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($curl, CURLOPT_TIMEOUT,30);
+        curl_setopt($curl, CURLOPT_TIMEOUT, 30);
         curl_setopt($curl, CURLOPT_POST, 1);
         curl_setopt($curl, CURLOPT_POSTFIELDS, array(
             'token'   => $this->rwa_token,
@@ -973,19 +973,18 @@ Donasi Belum Dibayar : ".number_format($count_unpaid)." - Rp.".str_replace(',', 
     /**
      * Get unique number payment.
      */
-    public function uniqueNumber($nominal='', $payment_type='')
+    public function uniqueNumber($nominal = '', $payment_type = '')
     {
         $i = 1;
         do {
             $unique_number = rand(11, 499);
             $check         = Transaction::select('id')->where('status', 'draft')->where('nominal', $nominal)
-                            ->where('payment_type_id', $payment_type)->where('nominal_code', $unique_number)->first();
-            if(isset($check->id)) {
+                ->where('payment_type_id', $payment_type)->where('nominal_code', $unique_number)->first();
+            if (isset($check->id)) {
                 $i = 2;
             }
         } while ($i > 1);
 
         return $unique_number;
     }
-
 }

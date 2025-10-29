@@ -1,6 +1,6 @@
 @extends('layouts.public', [
     'second_title' => 'Form Pengajuan Program - LAZISNU SLEMAN x BANTUBERSAMA',
-    'meta_desc'    => 'Bantubersama adalah platform penggalang dana untuk membantu bersama secara online',
+    'meta_desc'    => 'Bantusesama adalah platform penggalang dana untuk membantu bersama secara online',
     'image'        => 'galang-dana-bantubersama.png',
 ])
 

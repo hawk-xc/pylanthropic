@@ -349,7 +349,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 window.open(url, 'name', 'width=600,height=400');
             } else if (name == 'email') {
                 let url = encodeURI(
-                    'mailto:Bantubersama.com<contact@bantubersama.com>?subject={{ $program->title }}&body=' +
+                    'mailto:Bantusesama.com<contact@bantubersama.com>?subject={{ $program->title }}&body=' +
                     txt2 + ' ' + uri);
                 window.open(url);
             } else {

@@ -26,14 +26,14 @@ class DonaturController extends Controller
     public function __construct()
     {
         $this->donaturColumn = ['donatur.id', 'donatur.name', 'donatur.telp', 'donatur.want_to_contact', 'donatur.wa_inactive_since', 'donatur.email', 'donatur.password', 'donatur.password_reset', 'donatur.created_at', 'donatur.wa_check', 'donatur.updated_at', 'donatur.last_donate_paid', 'donatur.count_donate_paid', 'donatur.sum_donate_paid', 'donatur.wa_campaign', 'donatur.ref_code', 'donatur.is_muslim', 'donatur.religion'];
-        
+
         $this->transactionColumn = ['transaction.program_id', 'transaction.donatur_id', 'transaction.payment_type_id', 'transaction.status', 'transaction.nominal', 'transaction.nominal_final', 'transaction.created_at'];
-        
+
         $this->donaturLoyalColumn = ['donatur_loyal.id', 'donatur_loyal.donatur_id', 'donatur_loyal.program_id', 'donatur_loyal.nominal', 'donatur_loyal.payment_type_id', 'donatur_loyal.desc', 'donatur_loyal.every_period', 'donatur_loyal.every_time', 'donatur_loyal.every_date_period', 'donatur_loyal.every_month_period', 'donatur_loyal.every_date', 'donatur_loyal.every_day', 'donatur_loyal.is_active', 'donatur_loyal.created_at', 'donatur_loyal.created_by', 'donatur_loyal.updated_at', 'donatur_loyal.updated_by'];
-        
+
         $this->rwa_token = \App\Models\TokenConfig::first()->token ?? env('RWA_TOKEN');
     }
-    
+
     /**
      * Display a listing of the resource.
      */
@@ -1032,7 +1032,7 @@ class DonaturController extends Controller
             $trans = \App\Models\Transaction::select('program.id', 'title', 'slug')->join('program', 'program_id', 'program.id')->where('transaction.status', 'success')->where('donatur_id', $v->id)->orderBy('transaction.created_at', 'DESC')->first();
 
             $chat =
-                'Perkenalkan saya Isna dari *Bantubersama*, semoga sehat selalu buat Kak *' .
+                'Perkenalkan saya Isna dari *Bantusesama*, semoga sehat selalu buat Kak *' .
                 ucwords($v->name) .
                 '* aamiin..
 
@@ -1119,7 +1119,7 @@ Kepedulian kita masih terus dinantikan, oleh mereka yang membutuhkan.';
             $chat =
                 'Salam peduli, sehat dan bahagia selalu buat Anda
 
-Terima kasih atas donasi yang telah diberikan dan sudah menjadi bagian dari pelopor *Misi Kebaikan Bantubersama.com*
+Terima kasih atas donasi yang telah diberikan dan sudah menjadi bagian dari pelopor *Misi Kebaikan Bantusesama.com*
 
 Rekap donasi Anda bulan Agustus 2023 sebesar *Rp.' .
                 str_replace(',', '.', number_format($nominal_final)) .
@@ -1224,7 +1224,7 @@ Terimakash';
             $chat =
                 'Salam *' .
                 ucwords($v->name) .
-                '* Donatur #Bantubersama,
+                '* Donatur #Bantusesama,
 *Darurat kemanusiaan masih berlanjut sampai hari ini di Gaza, Palestina*
 
 Korban telah mencapai 9.277 yang 3.677 merupakan anak-anak meninggal dunia, 2.405 perempuan serta 1.200 anak-anak masih tertimbun reruntuhan.
@@ -1341,9 +1341,9 @@ https://bantubersama.com/bantupalestina';
         $query = Donatur::query()->select('id', 'name', 'email', 'telp');
 
         if ($request->has('search') && $request->search != '') {
-            $query->where(function($q) use ($request) {
+            $query->where(function ($q) use ($request) {
                 $q->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('telp', 'like', '%' . $request->search . '%');
+                    ->orWhere('telp', 'like', '%' . $request->search . '%');
             });
         }
 
@@ -1613,7 +1613,7 @@ https://bantubersama.com/bantupalestina';
     public function refreshCache()
     {
         Cache::forget('donatur-cache-data');
-    
+
         return redirect()->route('adm.donatur.index')->with('message', ['status' => 'success', 'message' => 'Cache data donatur berhasil di-refresh.']);
-   }
+    }
 }

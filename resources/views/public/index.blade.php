@@ -173,7 +173,7 @@
                         <div class="swiper-slide">
                             <a href="{{ route('program.list') . '/?kategori=' . $vc->slug }}" class="food-categories">
                                 <img class="img-fluid categories-img"
-                                    src="{{ asset('public/images/categories') . '/' . $vc->icon }}"
+                                    src="{{ asset('images/categories') . '/' . $vc->icon }}"
                                     alt="{{ ucwords($vc->name) }}" />
                             </a>
                             <h6 class="fs-12">{{ ucwords($vc->name) }}</h6>
@@ -189,7 +189,7 @@
     <section class="section-t-space">
         <div class="custom-container">
             <div class="title">
-                <h3 class="mt-0">Pilihan Bantubersama</h3>
+                <h3 class="mt-0">Pilihan Bantusesama</h3>
                 <a href="{{ route('program.list') }}">Semua</a>
             </div>
             <div class="swiper products pt-0 pb-2">
@@ -201,7 +201,7 @@
                                     <!-- gambar tetap di atas -->
                                     <div class="ratio ratio-16x9">
                                         <img class="img-fluid rounded-top lazyload object-fit-cover"
-                                            data-original="{{ asset('public/images/program') . '/' . $vsl->thumbnail }}"
+                                            data-original="{{ asset('images/program') . '/' . $vsl->thumbnail }}"
                                             alt="{{ ucwords($vsl->title) }}" />
                                     </div>
 
@@ -268,7 +268,7 @@
                             <a href="{{ url('/') . '/' . $vu->slug }}" class="">
                                 <div class="product-box">
                                     <img class="img-fluid rounded-top lazyload"
-                                        data-original="{{ asset('public/images/program') . '/' . $vu->thumbnail }}"
+                                        data-original="{{ asset('images/program') . '/' . $vu->thumbnail }}"
                                         alt="{{ ucwords($vu->title) }}" />
                                     <div class="product-box-detail product-box-bg">
                                         <h5 class="two-line mt-1 mb-1 fs-11 lh-14">{{ ucwords($vu->title) }}</h5>
@@ -314,7 +314,7 @@
         <div class="custom-container">
             <a href="https://wa.me/628155555849" target="_blank">
                 <img class="img-fluid lazyload"
-                    data-original="{{ asset('public/images/banner/Banner campaign 2 terang 580x280.jpg') }}">
+                    data-original="{{ asset('images/banner/Banner campaign 2 terang 580x280.jpg') }}">
             </a>
         </div>
     </section>
@@ -324,7 +324,7 @@
     <section class="section-t-space pt-3">
         <div class="custom-container">
             <div class="title">
-                <h3 class="mt-0">Terbaru di Bantubersama</h3>
+                <h3 class="mt-0">Terbaru di Bantusesama</h3>
                 <a href="{{ route('program.list') }}">Semua</a>
             </div>
             <div class="row gy-2">
@@ -334,7 +334,7 @@
                             <div class="vertical-box-img">
                                 <a href="{{ url('/') . '/' . $vn->slug }}">
                                     <img class="img-fluid img lazyload"
-                                        data-original="{{ asset('public/images/program') . '/' . $vn->thumbnail }}"
+                                        data-original="{{ asset('images/program') . '/' . $vn->thumbnail }}"
                                         alt="{{ ucwords($vn->title) }}" />
                                 </a>
                             </div>
@@ -428,7 +428,7 @@
                         </svg>
                         <span class="screen-reader-text">Twitter</span>
                     </a>
-                    <a rel="noreferrer" href="https://www.youtube.com/@Bantubersama-de2vi" target="_blank"
+                    <a rel="noreferrer" href="https://www.youtube.com/@Bantusesama-de2vi" target="_blank"
                         class="socmed-item rounded-circle">
                         <svg class="mx-auto" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
                             viewBox="0 0 24 24">
@@ -603,9 +603,9 @@
                                       <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
                                       <div class="offcanvas-body small">
                                         <div class="app-info">
-                                          <img src="{{ asset('Logo Bantubersama.png') }}" class="img-fluid" alt="" />
+                                          <img src="{{ asset('Logo Bantusesama.png') }}" class="img-fluid" alt="" />
                                           <div class="content">
-                                            <h3>Bantubersama</h3>
+                                            <h3>Bantusesama</h3>
                                             <a href="#">www.bantubersama.com</a>
                                           </div>
                                         </div>
@@ -619,7 +619,7 @@
 
 @section('js_plugins')
     <!-- JQuery -->
-    <script src="{{ asset('public/js/jquery-3.6.4.min.js') }}"></script>
+    <script src="{{ asset('js/jquery-3.6.4.min.js') }}"></script>
     <!-- bootstrap js -->
     <script src="{{ asset('public') }}/js/bootstrap.bundle.min.js"></script>
 

@@ -1,6 +1,6 @@
 @extends('layouts.public', [
     'second_title' => 'Berhasil Pengajuan Program - LAZISNU DIY x BANTUBERSAMA',
-    'meta_desc'    => 'Bantubersama adalah platform penggalang dana untuk membantu bersama secara online',
+    'meta_desc'    => 'Bantusesama adalah platform penggalang dana untuk membantu bersama secara online',
     'image'        => 'pengajuan_bantubersama_lazisnu_diy.jpg',
 ])
 
@@ -43,7 +43,7 @@
         </div>
         <h5 class="text-center fw-medium mt-4">Terimakasih</h5>
         <div class="fs-15 mt-3 text-center">
-            <p style="color:#212529;">Sudah peduli dan ingin membantu warga sekitar yang mempercayakannya kepada <strong>Bantubersama.com</strong></p>
+            <p style="color:#212529;">Sudah peduli dan ingin membantu warga sekitar yang mempercayakannya kepada <strong>Bantusesama.com</strong></p>
             <p style="color:#212529;">Pengajuan Anda sudah kami terima dan segera kami lakukan verifikasi. Agar berkenan dalam waktu dekat akan kami hubungi untuk mengerti lebih detail program yang diajukan.</p>
             <p style="color:#212529;">Semangat Peduli Sesama, Berkah Buat Kita Semua</p>
         </div>

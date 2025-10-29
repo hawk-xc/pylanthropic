@@ -1,6 +1,6 @@
 @extends('layouts.public', [
     'second_title' => 'Qurban - BANTUBERSAMA.com',
-    'meta_desc'    => 'Qurban Bantubersama adalah platform pembelian qurban secara online',
+    'meta_desc'    => 'Qurban Bantusesama adalah platform pembelian qurban secara online',
     'image'        => 'promo-qurban-bantubersama.png',
 ])
 
@@ -128,14 +128,14 @@
 
 @section('content')
   <div class="">
-    <img alt="Pengajuan Program Bantubersama.com" class="h-auto w-100" src="{{ asset('public/images/qurban/promo-qurban-bantubersama.png') }}">
+    <img alt="Pengajuan Program Bantusesama.com" class="h-auto w-100" src="{{ asset('public/images/qurban/promo-qurban-bantubersama.png') }}">
   </div>
   <!-- header end -->
 
   <!-- Detail section start  -->
   <section class="pb-2 top-section">
     <div class="custom-container text-center">
-        <h4 class="donate-collect">Qurban di Bantubersama</h4>
+        <h4 class="donate-collect">Qurban di Bantusesama</h4>
         <div class="short-desc mt-1">
             <span class="badge badge-promo">Sesuai Syariat</span>
             <span class="badge badge-promo">Terpercaya</span>
@@ -163,7 +163,7 @@
         <div class="col-6">
           <div class="box-product">
             <a href="{{ route('payment', 1).$uri_param }}">
-              <img class="img-product" src="{{ asset('public/images/qurban/kambing-qurban-bantubersama.png') }}" alt="Qurban Kambing di Bantubersama">
+              <img class="img-product" src="{{ asset('public/images/qurban/kambing-qurban-bantubersama.png') }}" alt="Qurban Kambing di Bantusesama">
             </a>
             <div class="box-desc">
                 <div class="mt-2">
@@ -182,7 +182,7 @@
         <div class="col-6">
           <div class="box-product">
             <a href="{{ route('payment', 2).$uri_param }}">
-              <img class="img-product" src="{{ asset('public/images/qurban/domba-qurban-bantubersama.png') }}" alt="Qurban Domba di Bantubersama">
+              <img class="img-product" src="{{ asset('public/images/qurban/domba-qurban-bantubersama.png') }}" alt="Qurban Domba di Bantusesama">
             </a>
             <div class="box-desc">
                 <div class="mt-2">
@@ -201,7 +201,7 @@
         <div class="col-6">
           <div class="box-product">
             <a href="{{ route('payment', 3).$uri_param }}">
-              <img class="img-product" src="{{ asset('public/images/qurban/sapi17-qurban-bantubersama.png') }}" alt="Qurban Sapi 1/7 Bantubersama">
+              <img class="img-product" src="{{ asset('public/images/qurban/sapi17-qurban-bantubersama.png') }}" alt="Qurban Sapi 1/7 Bantusesama">
             </a>
             <div class="box-desc">
                 <div class="mt-2">
@@ -220,7 +220,7 @@
         <div class="col-6">
           <div class="box-product">
             <a href="{{ route('payment', 4).$uri_param }}">
-              <img class="img-product" src="{{ asset('public/images/qurban/sapi-qurban-bantubersama.png') }}" alt="Qurban Sapi Bantubersama">
+              <img class="img-product" src="{{ asset('public/images/qurban/sapi-qurban-bantubersama.png') }}" alt="Qurban Sapi Bantusesama">
             </a>
             <div class="box-desc">
                 <div class="mt-2">
@@ -251,34 +251,34 @@
       <h4 class="donate-collect mb-3">Dokumentasi Qurban</h4>
       <div class="row g-1">
           <div class="col-6">
-              <img class="img-product" src="{{ asset('public/images/qurban/2.png') }}" alt="Dokumentasi Qurban 1 Bantubersama">
+              <img class="img-product" src="{{ asset('public/images/qurban/2.png') }}" alt="Dokumentasi Qurban 1 Bantusesama">
           </div>
           <div class="col-6">
-              <img class="img-product" src="{{ asset('public/images/qurban/5.png') }}" alt="Dokumentasi Qurban 2 Bantubersama">
+              <img class="img-product" src="{{ asset('public/images/qurban/5.png') }}" alt="Dokumentasi Qurban 2 Bantusesama">
           </div>
           <div class="col-6">
-              <img class="img-product" src="{{ asset('public/images/qurban/7.png') }}" alt="Dokumentasi Qurban 3 Bantubersama">
+              <img class="img-product" src="{{ asset('public/images/qurban/7.png') }}" alt="Dokumentasi Qurban 3 Bantusesama">
           </div>
           <div class="col-6">
-              <img class="img-product" src="{{ asset('public/images/qurban/8.png') }}" alt="Dokumentasi Qurban 4 Bantubersama">
+              <img class="img-product" src="{{ asset('public/images/qurban/8.png') }}" alt="Dokumentasi Qurban 4 Bantusesama">
           </div>
           <div class="col-6">
-              <img class="img-product" src="{{ asset('public/images/qurban/9.png') }}" alt="Dokumentasi Qurban 5 Bantubersama">
+              <img class="img-product" src="{{ asset('public/images/qurban/9.png') }}" alt="Dokumentasi Qurban 5 Bantusesama">
           </div>
           <div class="col-6">
-              <img class="img-product" src="{{ asset('public/images/qurban/10.png') }}" alt="Dokumentasi Qurban 6 Bantubersama">
+              <img class="img-product" src="{{ asset('public/images/qurban/10.png') }}" alt="Dokumentasi Qurban 6 Bantusesama">
           </div>
           <div class="col-6">
-              <img class="img-product" src="{{ asset('public/images/qurban/12.png') }}" alt="Dokumentasi Qurban 7 Bantubersama">
+              <img class="img-product" src="{{ asset('public/images/qurban/12.png') }}" alt="Dokumentasi Qurban 7 Bantusesama">
           </div>
           <div class="col-6">
-              <img class="img-product" src="{{ asset('public/images/qurban/13.png') }}" alt="Dokumentasi Qurban 8 Bantubersama">
+              <img class="img-product" src="{{ asset('public/images/qurban/13.png') }}" alt="Dokumentasi Qurban 8 Bantusesama">
           </div>
           <div class="col-6">
-              <img class="img-product" src="{{ asset('public/images/qurban/14.png') }}" alt="Dokumentasi Qurban 9 Bantubersama">
+              <img class="img-product" src="{{ asset('public/images/qurban/14.png') }}" alt="Dokumentasi Qurban 9 Bantusesama">
           </div>
           <div class="col-6">
-              <img class="img-product" src="{{ asset('public/images/qurban/15.png') }}" alt="Dokumentasi Qurban 10 Bantubersama">
+              <img class="img-product" src="{{ asset('public/images/qurban/15.png') }}" alt="Dokumentasi Qurban 10 Bantusesama">
           </div>
       </div>
     </div>
@@ -292,7 +292,7 @@
   <!-- Detail section start  -->
   <section class="pb-2">
     <div class="custom-container text-center">
-      <h4 class="donate-collect mb-3">Proses Qurban di Bantubersama</h4>
+      <h4 class="donate-collect mb-3">Proses Qurban di Bantusesama</h4>
       <ul class="info-timeline">
         <li>
           <div class="content-preview1">
@@ -374,7 +374,7 @@
               </svg>
               <span class="screen-reader-text">Twitter</span>
           </a>
-          <a rel="noreferrer" href="https://www.youtube.com/@Bantubersama-de2vi" target="_blank" class="socmed-item rounded-circle">
+          <a rel="noreferrer" href="https://www.youtube.com/@Bantusesama-de2vi" target="_blank" class="socmed-item rounded-circle">
               <svg class="mx-auto" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24">
                   <path
                       d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"
@@ -386,7 +386,7 @@
         </div>
       </div>
       <div class="fs-14 fw-normal text-grey mt-3">
-        Copyright © 2024 Bantubersama
+        Copyright © 2024 Bantusesama
       </div>
     </div>
   </section>

@@ -31,10 +31,10 @@ class ProgramInfoController extends Controller
                     $url_delete = route('adm.program-info.destroy', $row->id);
                     $actionBtn =
                         '<a href="' . $url_edit . '" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
-                        <form action="' . $url_delete . '" method="POST" class="d-inline" id="delete-form-'.$row->id.'">
+                        <form action="' . $url_delete . '" method="POST" class="d-inline" id="delete-form-' . $row->id . '">
                             ' . csrf_field() . '
                             ' . method_field('DELETE') . '
-                            <button type="button" class="btn btn-danger btn-xs mb-1 delete-btn" data-id="'.$row->id.'" title="Delete"><i class="fa fa-trash"></i></button>
+                            <button type="button" class="btn btn-danger btn-xs mb-1 delete-btn" data-id="' . $row->id . '" title="Delete"><i class="fa fa-trash"></i></button>
                         </form>';
                     return $actionBtn;
                 })
@@ -102,7 +102,7 @@ class ProgramInfoController extends Controller
             'is_publish' => 'required|boolean',
         ]);
 
-        
+
         try {
             $data = ProgramInfo::findOrFail($id);
             $data->date = $request->date;
@@ -147,11 +147,13 @@ class ProgramInfoController extends Controller
 
         Storage::disk('public_uploads')->put($path, $image->stream());
 
-        $link_img = url('public/' . $path);
+        // PERBAIKAN: Menghapus 'public/' dari URL yang dibuat.
+        // Sebelumnya: $link_img = url('public/' . $path);
+        $link_img = url($path);
 
         return [
             'link' => $link_img,
-            'full' => '<img data-original="' . $link_img . '" class="lazyload" alt="' . ucwords($request->name) . ' - Bantubersama.com" />',
+            'full' => '<img data-original="' . $link_img . '" class="lazyload" alt="' . ucwords($request->name) . ' - Bantusesama.com" />',
         ];
     }
 
@@ -205,8 +207,9 @@ class ProgramInfoController extends Controller
 
             Storage::disk('public_uploads')->put($path, $image->stream());
 
-            // Generate URL
-            $url = url('public/' . $path);
+            // PERBAIKAN: Menghapus 'public/' dari URL yang dibuat.
+            // Sebelumnya: $url = url('public/' . $path);
+            $url = url($path);
 
             return response()->json([
                 'location' => $url,

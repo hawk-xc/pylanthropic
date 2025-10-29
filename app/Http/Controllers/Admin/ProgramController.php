@@ -67,11 +67,13 @@ class ProgramController extends Controller
         Storage::disk('public_uploads')->put($path, $image->stream());
 
         // Generate URL - tambahkan 'public/' di awal path
-        $link_img = url('public/' . $path);
+        // $link_img = url('public/' . $path);
+        // Generate URL yang benar
+        $link_img = asset($path);
 
         return [
             'link' => $link_img,
-            'full' => '<img data-original="' . $link_img . '" class="lazyload" alt="' . ucwords($request->name) . ' - Bantubersama.com" />',
+            'full' => '<img data-original="' . $link_img . '" class="lazyload" alt="' . ucwords($request->name) . ' - Bantusesama.com" />',
         ];
     }
 
@@ -126,7 +128,9 @@ class ProgramController extends Controller
             Storage::disk('public_uploads')->put($path, $image->stream());
 
             // Generate URL
-            $url = url('public/' . $path);
+            // $url = url('public/' . $path);
+            // Generate URL yang benar
+            $url = asset($path);
 
             return response()->json([
                 'location' => $url,
@@ -210,9 +214,9 @@ class ProgramController extends Controller
 
             $story = str_replace('&lt;', '<', $request->story);
             $story = str_replace('&gt;', '>', $story);
-            $story = str_replace('Bantubersama.com" /></p>', 'Bantubersama.com" />', $story);
+            $story = str_replace('Bantusesama.com" /></p>', 'Bantusesama.com" />', $story);
             $story = str_replace('<p><img', '<img', $story);
-            $data->about = $story . '<img class="lazyload" data-original="https://bantubersama.com/public/images/program/cara_donasi.webp" alt="Cara Berdonasi di Bantubersama.com" />';
+            $data->about = $story . '<img class="lazyload" data-original="https://bantubersama.com/public/images/program/cara_donasi.webp" alt="Cara Berdonasi di Bantusesama.com" />';
 
             // Handle show options
             if ($request->show == 1) {
@@ -412,12 +416,12 @@ class ProgramController extends Controller
 
                 $imageName = $filename . '.jpg';
                 $imagePath = 'images/program/' . $imageName;
-                
+
                 // Hapus gambar lama jika ada
                 if ($data->image) {
                     Storage::disk('public_uploads')->delete($data->image);
                 }
-                
+
                 Storage::disk('public_uploads')->put($imagePath, $image->stream());
                 $data->image = $imageName;
 
@@ -432,7 +436,7 @@ class ProgramController extends Controller
                                 $constraint->upsize();
                             })
                             ->encode('jpg', 60);
-                    } 
+                    }
                     // Jika tidak ada gambar baru, gunakan gambar utama yang sudah ada
                     elseif ($data->image) {
                         $imagePath = Storage::disk('public_uploads')->path($data->image);
@@ -447,16 +451,16 @@ class ProgramController extends Controller
                     if (isset($thumbnail)) {
                         $thumbnailName = 'thumbnail_' . $filename . '.jpg';
                         $thumbnailPath = 'images/program/' . $thumbnailName;
-                        
+
                         // Hapus thumbnail lama jika ada
                         if ($data->thumbnail) {
                             Storage::disk('public_uploads')->delete($data->thumbnail);
                         }
-                        
+
                         Storage::disk('public_uploads')->put($thumbnailPath, $thumbnail->stream());
                         $data->thumbnail = $thumbnailName;
                     }
-                    
+
                     $data->same_as_thumbnail = true;
                 } else {
                     // Upload thumbnail jika ada
@@ -471,16 +475,16 @@ class ProgramController extends Controller
 
                         $thumbnailName = 'thumbnail_' . $filename . '.jpg';
                         $thumbnailPath = 'images/program/' . $thumbnailName;
-                        
+
                         // Hapus thumbnail lama jika ada
                         if ($data->thumbnail) {
                             Storage::disk('public_uploads')->delete($data->thumbnail);
                         }
-                        
+
                         Storage::disk('public_uploads')->put($thumbnailPath, $thumbnail->stream());
                         $data->thumbnail = $thumbnailName;
                     }
-                    
+
                     $data->same_as_thumbnail = false;
                 }
             }
@@ -558,18 +562,30 @@ class ProgramController extends Controller
                 ]);
 
             // Flag filters (pakai ->when biar clean)
-            $data->when($request->query('active') === '1', fn($q) =>
+            $data->when(
+                $request->query('active') === '1',
+                fn($q) =>
                 $q->where('is_publish', 1)->where('end_date', '>=', $today)
-            )->when($request->query('inactive') === '1', fn($q) =>
+            )->when(
+                $request->query('inactive') === '1',
+                fn($q) =>
                 $q->where('is_publish', 0)
-            )->when($request->query('winning') === '1', fn($q) =>
+            )->when(
+                $request->query('winning') === '1',
+                fn($q) =>
                 // pakai HAVING untuk alias aggregate
                 $q->having('donate_total', '>=', 8000000)
-            )->when($request->query('recom') === '1', fn($q) =>
+            )->when(
+                $request->query('recom') === '1',
+                fn($q) =>
                 $q->where('is_recommended', 1)
-            )->when($request->query('urgent') === '1', fn($q) =>
+            )->when(
+                $request->query('urgent') === '1',
+                fn($q) =>
                 $q->where('is_urgent', 1)
-            )->when($request->query('newest') === '1', fn($q) =>
+            )->when(
+                $request->query('newest') === '1',
+                fn($q) =>
                 $q->where('is_show_home', 1)
             )->when($request->query('publish15day') === '1', function ($q) use ($d15ago) {
                 return $q->where('program.approved_at', '>=', $d15ago);
@@ -578,18 +594,26 @@ class ProgramController extends Controller
             });
 
             // Optional filters (search by field)
-            $data->when($request->filled('program_title'), fn($q) => 
-                $q->where('program.title', 'like', '%'.$request->program_title.'%')
-            )->when($request->filled('organization_name'), fn($q) => 
-                $q->where('organization.name', 'like', '%'.$request->organization_name.'%')
+            $data->when(
+                $request->filled('program_title'),
+                fn($q) =>
+                $q->where('program.title', 'like', '%' . $request->program_title . '%')
+            )->when(
+                $request->filled('organization_name'),
+                fn($q) =>
+                $q->where('organization.name', 'like', '%' . $request->organization_name . '%')
             );
 
             // Urutkan/sort
             $sort = $request->input('sort');                  // e.g. payout_sum
-            $dir  = strtolower($request->input('dir','desc'));// asc|desc
+            $dir  = strtolower($request->input('dir', 'desc')); // asc|desc
             $allowed = [
-                'payout_sum', 'donate_total', 'spend_sum', 'spend_ads_campaign',
-                'approved_at', 'end_date'
+                'payout_sum',
+                'donate_total',
+                'spend_sum',
+                'spend_ads_campaign',
+                'approved_at',
+                'end_date'
             ];
             if (in_array($sort, $allowed, true)) {
                 $dir = $dir === 'asc' ? 'asc' : 'desc';
@@ -610,7 +634,7 @@ class ProgramController extends Controller
 
                     // amanin tanda kutip biar onclick gak pecah
                     $safeTitle = ucwords(str_replace("'", '', $row->title));
-                    $param = $row->id.", '".e($safeTitle)."'";
+                    $param = $row->id . ", '" . e($safeTitle) . "'";
 
                     return '<span class="badge badge-light" style="cursor:pointer" onclick="showSummary(' . $param . ')">
                                 <i class="fa fa-check-double icon-gradient bg-happy-green"></i> Rp.' . str_replace(',', '.', number_format($row->nominal_approved)) . '
@@ -650,8 +674,8 @@ class ProgramController extends Controller
                 })
                 ->addColumn('donate', function ($row) { // ads_campaign
                     $sum = (float) $row->donate_total;
-                    $dss_ads_campaign   = $sum-$row->spend_ads_campaign-$row->payout_sum-(0.15*$sum)-(0.02*$sum);
-                    
+                    $dss_ads_campaign   = $sum - $row->spend_ads_campaign - $row->payout_sum - (0.15 * $sum) - (0.02 * $sum);
+
                     $spend_ads_campaign = number_format($row->spend_ads_campaign, 0, ',', '.');
                     $spend_ads_campaign_percent = ($sum > 0 && $row->spend_ads_campaign > 0) ? round(($sum / $row->spend_ads_campaign) * 100, 2) : 0;
 
@@ -668,17 +692,17 @@ class ProgramController extends Controller
                 ->addColumn('stats', function ($row) {  // spend
                     $sum = (float) $row->donate_total;
                     $spend = (float) $row->spend_sum;
-                    $dss_spend = $sum-$spend-$row->payout_sum-(0.15*$sum)-(0.02*$sum);
-                    
+                    $dss_spend = $sum - $spend - $row->payout_sum - (0.15 * $sum) - (0.02 * $sum);
+
                     $spend_show = number_format($spend, 0, ',', '.');
                     $spend_percent = ($spend > 0 && $sum > 0) ? round(($spend / $sum) * 100, 2) : 0;
 
                     $dss_spend_show    = number_format($dss_spend, 0, ',', '.');
-                    $dss_spend_percent = ($sum > 0 &&$dss_spend > 0) ? round(($sum / $dss_spend) * 100, 2) : 0;
+                    $dss_spend_percent = ($sum > 0 && $dss_spend > 0) ? round(($sum / $dss_spend) * 100, 2) : 0;
 
                     // amanin tanda kutip biar onclick gak pecah
                     $safeTitle = ucwords(str_replace("'", '', $row->title));
-                    $param = $row->id.", '".e($safeTitle)."'";
+                    $param = $row->id . ", '" . e($safeTitle) . "'";
 
                     return '<span class="badge badge-light" style="cursor:pointer" onclick="inpSpend(' . $param . ')">
                                 <i class="fa fa-credit-card icon-gradient bg-strong-bliss"></i> Rp.' . $spend_show . ' (' . $spend_percent . '%)
@@ -690,14 +714,14 @@ class ProgramController extends Controller
                 ->addColumn('action', function ($row) {
                     $url_edit = route('adm.program.edit', $row->id);
                     return
-                        '<a href="'. $url_edit .'" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
-                        <a href="'. route('adm.program.detail.stats', $row->id) .'" class="edit btn btn-info btn-xs mb-1" title="Statistik"><i class="fa fa-chart-line"></i></a>
-                        <a href="'. route('adm.program.detail.fundraiser', $row->id) .'" class="edit btn btn-info btn-xs mb-1" title="Donasi"><i class="fa fa-donate"></i></a>
-                        <a href="'. route('adm.program.detail.donatur', $row->id) .'" class="edit btn btn-info btn-xs mb-1" title="Donatur"><i class="fa fa-users"></i></a>
-                        <a href="'. route('adm.program.detail.fundraiser', $row->id) .'" class="edit btn btn-info btn-xs mb-1" title="Fundraiser"><i class="fa fa-people-carry"></i></a>
-                        <a href="'. route('adm.program.detail.fundraiser', $row->id) .'" class="edit btn btn-info btn-xs mb-1" title="Penyaluran"><i class="fa fa-hand-holding-heart"></i></a>
-                        <a href="'. route('adm.program.detail.fundraiser', $row->id) .'" class="edit btn btn-info btn-xs mb-1" title="Operasional"><i class="fa fa-file-invoice-dollar"></i></a>
-                        <a href="'. route('program.index', $row->slug) .'" class="edit btn btn-info btn-xs mb-1" title="Link" target="_blank"><i class="fa fa-external-link-alt"></i></a>';
+                        '<a href="' . $url_edit . '" class="edit btn btn-warning btn-xs mb-1" title="Edit"><i class="fa fa-edit"></i></a>
+                        <a href="' . route('adm.program.detail.stats', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Statistik"><i class="fa fa-chart-line"></i></a>
+                        <a href="' . route('adm.program.detail.fundraiser', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Donasi"><i class="fa fa-donate"></i></a>
+                        <a href="' . route('adm.program.detail.donatur', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Donatur"><i class="fa fa-users"></i></a>
+                        <a href="' . route('adm.program.detail.fundraiser', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Fundraiser"><i class="fa fa-people-carry"></i></a>
+                        <a href="' . route('adm.program.detail.fundraiser', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Penyaluran"><i class="fa fa-hand-holding-heart"></i></a>
+                        <a href="' . route('adm.program.detail.fundraiser', $row->id) . '" class="edit btn btn-info btn-xs mb-1" title="Operasional"><i class="fa fa-file-invoice-dollar"></i></a>
+                        <a href="' . route('program.index', $row->slug) . '" class="edit btn btn-info btn-xs mb-1" title="Link" target="_blank"><i class="fa fa-external-link-alt"></i></a>';
                 })
                 // Server-side global search (biar tetap scalable)
                 ->filter(function ($query) use ($request) {
@@ -705,13 +729,13 @@ class ProgramController extends Controller
                     if (!empty($search)) {
                         $query->where(function ($q) use ($search) {
                             $q->where('program.title', 'like', "%{$search}%")
-                            ->orWhere('program.slug', 'like', "%{$search}%")
-                            ->orWhere('program.short_desc', 'like', "%{$search}%")
-                            ->orWhere('organization.name', 'like', "%{$search}%");
+                                ->orWhere('program.slug', 'like', "%{$search}%")
+                                ->orWhere('program.short_desc', 'like', "%{$search}%")
+                                ->orWhere('organization.name', 'like', "%{$search}%");
                         });
                     }
                 }, true)
-                ->rawColumns(['action','nominal','status','stats','donate'])
+                ->rawColumns(['action', 'nominal', 'status', 'stats', 'donate'])
                 ->make(true);
         });
     }
