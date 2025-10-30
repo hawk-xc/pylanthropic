@@ -166,14 +166,14 @@
           <div class="w-100">
             @if($payment->key=='qris')
                 <div class="py-2 text-center">
-                    <img src="{{ $redirect_url }}" class="img-fluid" alt="QRIS Bantubersama">
+                    <img src="{{ $redirect_url }}" class="img-fluid" alt="QRIS Bantusesama">
                 </div>
                 <div class="text-center pb-1">
                     <a class="fw-semibold color-me" href="{{ $redirect_url }}" target="_blank">Download QRIS</a>
                 </div>
             @elseif($payment->key=='gopay')
                 <div class="py-2 text-center">
-                    <img src="{{ $link }}" class="img-fluid" alt="QRIS Bantubersama">
+                    <img src="{{ $link }}" class="img-fluid" alt="QRIS Bantusesama">
                 </div>
                 <div class="text-center pb-1">
                     <a class="fw-semibold color-me" href="{{ $link }}" id="download_qris1">Download QRIS</a>
@@ -225,11 +225,11 @@
                 <a href="{{ $redirect_url }}" class="w-100 payment-type" target="_blank">
                     <div class="payment-detail">
                         <div class="add-img">
-                          <img class="img" src="{{ asset('public/images/payment').'/'.$payment->key.'.png' }}" alt="{{ $payment->key }} Bantubersama.com" />
+                          <img class="img" src="{{ asset('public/images/payment').'/'.$payment->key.'.png' }}" alt="{{ $payment->key }} Bantusesama.com" />
                         </div>
                         <div class="add-content">
                           <div>
-                            <h5 class="fw-medium fs-15">Bantubersama.com</h5>
+                            <h5 class="fw-medium fs-15">Bantusesama.com</h5>
                           </div>
                         </div>
                         <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="24" height="24" viewBox="0 0 48 48">
@@ -539,7 +539,7 @@
         let url = encodeURI('https://www.linkedin.com/shareArticle?url='+uri+'&mini=true&title={{ $program->title }}&summary={{ $program->short_desc }}&source={{ url("/") }}');
         window.open(url, 'name', 'width=600,height=400');
       } else if(name=='email') {
-        let url = encodeURI('mailto:Bantubersama.com<contact@bantubersama.com>?subject={{ $program->title }}&body='+txt2+' '+uri);
+        let url = encodeURI('mailto:Bantusesama.com<contact@bantubersama.com>?subject={{ $program->title }}&body='+txt2+' '+uri);
         window.open(url);
       } else {
         let link_share = $(this).attr('data-clipboard-text');

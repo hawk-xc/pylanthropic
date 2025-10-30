@@ -446,7 +446,7 @@ class LeadsController extends Controller
     //             $actions = '';
     //             if ($row->user_id) {
     //                 $btn_edit = '<a href="' . route('adm.leads.org.edit', $row->user_id) . '" target="_blank" class="badge badge-sm badge-warning badge-square"><i class="fa fa-edit"></i></a>';
-                    
+
     //                 if ($row->add_leads === 1) {
     //                     $add_leads_crm = '<a href="javascript:void(0)" class="badge badge-sm badge-success badge-square" title="Sudah ditambahkan ke CRM"><i class="fa fa-handshake"></i></a>';
     //                 } else {
@@ -528,9 +528,9 @@ class LeadsController extends Controller
                 $like = "%{$term}%";
                 $query->where(function ($q) use ($like) {
                     $q->whereRaw('LOWER(name) LIKE ?', [$like])
-                      ->orWhereRaw('LOWER(address) LIKE ?', [$like])
-                      ->orWhereRaw('LOWER(email) LIKE ?', [$like])
-                      ->orWhereRaw('LOWER(phone) LIKE ?', [$like]);
+                        ->orWhereRaw('LOWER(address) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(email) LIKE ?', [$like])
+                        ->orWhereRaw('LOWER(phone) LIKE ?', [$like]);
                 });
             }
         }
@@ -578,7 +578,10 @@ class LeadsController extends Controller
                 return $telp . ' ' . $mail;
             })
             ->addColumn('socmed', function ($row) {
-                $i_fb = 'FB'; $i_tw = 'TW'; $i_ig = 'IG'; $i_yt = 'YT';
+                $i_fb = 'FB';
+                $i_tw = 'TW';
+                $i_ig = 'IG';
+                $i_yt = 'YT';
 
                 $fb = (is_null($row->facebook) || $row->facebook === '')
                     ? '<span class="badge badge-sm badge-secondary">' . $i_fb . '</span>'
@@ -688,7 +691,7 @@ class LeadsController extends Controller
                     "Assalamu'alaikum wr.wb, admin *" .
                     ucwords(trim($org->name)) .
                     "*.
-Saya Alifa dari tim Bantubersama.com (platform galang dana).
+Saya Alifa dari tim Bantusesama.com (platform galang dana).
 Kami lihat program Anda " .
                     ucwords(trim($org->name)) .
                     " sangat bagus dan menarik sesuai dengan minat donatur kami.
@@ -981,7 +984,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                 $count_inp_program = 0;
 
                 $curl = curl_init();
-                curl_setopt($curl, CURLOPT_URL, 'https://api.raihmimpi.id/campaign?page='.$page);
+                curl_setopt($curl, CURLOPT_URL, 'https://api.raihmimpi.id/campaign?page=' . $page);
                 curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
                 $response = curl_exec($curl);
                 $err = curl_error($curl);
@@ -1024,7 +1027,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                         $program = \App\Models\GrabProgram::where('grab_organization_id', $organization_id)->where('slug', $item->SLUG)->first();
 
                         if ($program === null) {
-                            $prog_url = 'https://raihmimpi.id/_next/data/-w0CWr_8QgtGBYmQTqU9N/campaign/'.$item->SLUG.'.json?SLUG='.$item->SLUG;
+                            $prog_url = 'https://raihmimpi.id/_next/data/-w0CWr_8QgtGBYmQTqU9N/campaign/' . $item->SLUG . '.json?SLUG=' . $item->SLUG;
 
                             $program_curl = curl_init();
                             curl_setopt($program_curl, CURLOPT_URL, $prog_url);
@@ -1454,7 +1457,7 @@ Bersedia kami bantu promosikan dan optimasi donasinya?🙏🏻✨";
                     'status' => 'error',
                     'message' => $res,
                 ]);
-                    //adasd
+                //adasd
 
                 $count_inp_org = 0;
                 $count_inp_program = 0;

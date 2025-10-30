@@ -391,7 +391,7 @@
 
             <div class="alert alert-secondary disclaimer-detail mt-3 mb-2">
                 <strong class="">Disclaimer :</strong> Informasi, opini dan foto yang ada di halaman program ini
-                adalah milik dan tanggung jawab penggalang dana dan tidak mewakili Bantubersama.com. Jika ada
+                adalah milik dan tanggung jawab penggalang dana dan tidak mewakili Bantusesama.com. Jika ada
                 masalah/kecurigaan silahkan <a href="https://wa.me/628155555849" target="_blank">lapor kepada kami
                     disini</a>
             </div>
@@ -732,7 +732,7 @@
                 window.open(url, 'name', 'width=600,height=400');
             } else if (name == 'email') {
                 let url = encodeURI(
-                    'mailto:Bantubersama.com<contact@bantubersama.com>?subject={{ $program->title }}&body=' +
+                    'mailto:Bantusesama.com<contact@bantubersama.com>?subject={{ $program->title }}&body=' +
                     txt2 + ' ' + uri);
                 window.open(url);
             } else {

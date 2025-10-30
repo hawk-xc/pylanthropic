@@ -6,41 +6,42 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=0" />
     <title>
-        {{ (isset($second_title) && !empty($second_title) ? $second_title . ' - ' : '') . ($title ?? env('APP_NAME')) . ' - Bantu Bersama Kebaikan' }}
+        {{ (isset($second_title) && !empty($second_title) ? $second_title . ' - ' : '') . ($title ?? env('APP_NAME')) . ' - Bantu Sesama Kebaikan' }}
     </title>
     <!-- <link rel="manifest" href="manifest.json" /> -->
 
     <!-- Meta SEO -->
     <meta name="description"
-        content="{{ isset($meta_desc) && !empty($meta_desc) ? $meta_desc . ' - ' : 'Bantubersama adalah platform penggalangan dana untuk membantu bersama secara online' }}" />
-    <meta name="keywords" content="{{ isset($meta_desc) && !empty($meta_desc) ? $meta_desc . ' - ' : 'bantubersama' }}" />
-    <meta name="author" content="{{ isset($meta_desc) && !empty($meta_desc) ? $meta_desc . ' - ' : 'bantubersama' }}" />
+        content="{{ isset($meta_desc) && !empty($meta_desc) ? $meta_desc . ' - ' : 'Bantusesama adalah platform penggalangan dana untuk membantu bersama secara online' }}" />
+    <meta name="keywords" content="{{ isset($meta_desc) && !empty($meta_desc) ? $meta_desc . ' - ' : 'bantusesama' }}" />
+    <meta name="author" content="{{ isset($meta_desc) && !empty($meta_desc) ? $meta_desc . ' - ' : 'bantusesama' }}" />
 
     <meta name="og:site_name"
-        content="{{ isset($second_title) && !empty($second_title) ? $second_title : ' Platform Penggalang Dana - Bantubersama.com' }}" />
+        content="{{ isset($second_title) && !empty($second_title) ? $second_title : ' Platform Penggalang Dana - Bantusesama.com' }}" />
     <meta property="og:title"
-        content="{{ isset($second_title) && !empty($second_title) ? $second_title : ' Platform Penggalang Dana - Bantubersama.com' }}" />
+        content="{{ isset($second_title) && !empty($second_title) ? $second_title : ' Platform Penggalang Dana - Bantusesama.com' }}" />
     @if (isset($image) && isset($image_type))
         <meta property="og:image" content="{{ asset('public/images/fundraiser/' . $image) }}" />
     @else
         <meta property="og:image"
-            content="{{ isset($image) ? asset('public/images/program/' . $image) : asset('public/images/logo/Bantubersama-preview.png') }}" />
+            content="{{ isset($image) ? asset('public/images/program/' . $image) : asset('public/images/logo/Bantusesama-preview.png') }}" />
     @endif
-    <meta property="og:url" content="https://www.bantubersama.com" />
+    <meta property="og:url" content="https://www.bantusesama.com" />
     <meta property="og:type" content="website" />
     <meta property="og:description"
-        content="{{ isset($meta_desc) && !empty($meta_desc) ? $meta_desc . ' - ' : 'Bantubersama adalah platform penggalangan dana untuk membantu bersama secara online' }}" />
+        content="{{ isset($meta_desc) && !empty($meta_desc) ? $meta_desc . ' - ' : 'Bantusesama adalah platform penggalangan dana untuk membantu bersama secara online' }}" />
 
     <!-- Style -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Bantubersama" />
-    <meta name="application-name" content="Bantubersama" />
-    <meta name="msapplication-TileImage" content="{{ asset('favicon-16x16.png') }}" />
+    <meta name="apple-mobile-web-app-title" content="Bantusesama" />
+    <meta name="application-name" content="Bantusesama" />
+    {{-- <meta name="msapplication-TileImage" content="{{ asset('favicon-16x16.png') }}" /> --}}
+    <meta name="msapplication-TileImage" content="{{ asset('Logo Bantubersama.png') }}" />
     <meta name="msapplication-TileColor" content="#3BA8DD" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-    <link rel="preconnect" href="https://bantubersama.com" crossorigin>
-    <link rel="dns-prefetch" href="https://bantubersama.com">
+    <link rel="preconnect" href="https://bantusesama.com" crossorigin>
+    <link rel="dns-prefetch" href="https://bantusesama.com">
     <link rel="preconnect" href="https://graph.facebook.com" />
 
     <!-- Chrome, Firefox OS and Opera -->
@@ -52,9 +53,12 @@
 
     <!-- favicons
     ================================================== -->
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('Logo Bantubersama.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('Logo Bantubersama.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('Logo Bantubersama.png') }}">
+    {{-- <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('apple-touch-icon.png') }}">
     <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon-32x32.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}"> --}}
 
     <!-- font link -->
     <link rel="stylesheet" href="{{ asset('public') }}/css/vendors/metropolis.min.css" />
@@ -95,7 +99,7 @@
         <!-- End Google Tag Manager -->
     @endif
 
-    <!-- Hotjar Tracking Code for https://bantubersama.com/ -->
+    <!-- Hotjar Tracking Code for https://bantusesama.com/ -->
     <script>
         (function(h, o, t, j, a, r) {
             h.hj = h.hj || function() {

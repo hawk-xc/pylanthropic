@@ -26,30 +26,30 @@ class DonationController extends Controller
     public function donateFu1Gopay()
     {
         $now        = date('Y-m-d H:i:s');
-        $date_start = date('Y-m-d H:i:s', strtotime($now.'-13 minutes'));
-        $date_end   = date('Y-m-d H:i:s', strtotime($now.'-3 minutes'));
+        $date_start = date('Y-m-d H:i:s', strtotime($now . '-13 minutes'));
+        $date_end   = date('Y-m-d H:i:s', strtotime($now . '-3 minutes'));
 
         $trans = Transaction::where('status', '<>', 'success')->where('payment_type_id', 6)
-                ->where('created_at', '>=', $date_start)->where('created_at', '<=', $date_end)
-                ->orderBy('created_at', 'asc')->get();
+            ->where('created_at', '>=', $date_start)->where('created_at', '<=', $date_end)
+            ->orderBy('created_at', 'asc')->get();
         $chat_count = 0;
         foreach ($trans as $key => $v) {
-            if($chat_count<5) {         // agar 4 chat maksimal dalam 1 waktu 
+            if ($chat_count < 5) {         // agar 4 chat maksimal dalam 1 waktu 
                 $count_fu = \App\Models\Chat::where('type', 'fu_trans')->where('transaction_id', $v->id)->select('id')->count();
-                if($count_fu==0){ // hanya yg belum di chat yg akan dikirim
+                if ($count_fu == 0) { // hanya yg belum di chat yg akan dikirim
 
                     $program = Program::where('id', $v->program_id)->select('id', 'title')->first();
                     $donatur = Donatur::where('id', $v->donatur_id)->select('id', 'name', 'telp')->first();
-                    $name    = ', *'.ucwords(trim($donatur->name)).'* ';
+                    $name    = ', *' . ucwords(trim($donatur->name)) . '* ';
 
-                    $chat    = 'Selangkah lagi kebaikan Anda'.$name.'akan dirasakan untuk program
-*'.ucwords($program->title).'*
-Dengan donasi yang Anda berikan sebesar *Rp '.str_replace(',', '.', number_format($v->nominal_final)).'*
+                    $chat    = 'Selangkah lagi kebaikan Anda' . $name . 'akan dirasakan untuk program
+*' . ucwords($program->title) . '*
+Dengan donasi yang Anda berikan sebesar *Rp ' . str_replace(',', '.', number_format($v->nominal_final)) . '*
 
 bisa melalui :
-Link Gopay : '.$v->midtrans_url;
+Link Gopay : ' . $v->midtrans_url;
 
-                    $chat2   = $chat.'
+                    $chat2   = $chat . '
 
 atau melalui :
 Transfer BSI - 7855555667
@@ -64,22 +64,22 @@ https://bantubersama.com/public/QRIS.png
 
 Kebaikan Anda sangat berarti bagi kami yang membutuhkan.
 Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah. Aamiin';
-                
-//                     $chat2   = $chat.'
 
-// atau melalui :
-// Transfer BSI - 7233152069
-// Transfer BRI - 041001000888302
-// Transfer BNI - 7060505013
-// Transfer Mandiri - 1370022225276
-// Transfer BCA - 4561363999
-// a/n *Yayasan Bantu Bersama Sejahtera*
+                    //                     $chat2   = $chat.'
 
-// melalui QRIS
-// https://bantubersama.com/public/qris-babe.png
+                    // atau melalui :
+                    // Transfer BSI - 7233152069
+                    // Transfer BRI - 041001000888302
+                    // Transfer BNI - 7060505013
+                    // Transfer Mandiri - 1370022225276
+                    // Transfer BCA - 4561363999
+                    // a/n *Yayasan Bantu Bersama Sejahtera*
 
-// Kebaikan Anda sangat berarti bagi kami yang membutuhkan.
-// Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah. Aamiin';
+                    // melalui QRIS
+                    // https://bantubersama.com/public/qris-babe.png
+
+                    // Kebaikan Anda sangat berarti bagi kami yang membutuhkan.
+                    // Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah. Aamiin';
 
                     (new WaBlastController)->sentWA($donatur->telp, $chat2, 'fu_trans', $v->id, $donatur->id, $program->id);
 
@@ -90,28 +90,30 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
         }
         echo "Finish";
     }
-    
-    
+
+
     /**
      * Auto FU Donasi untuk pembayaran selain gopay dan qris dan BCA, karena biasa gak lebih dari 20 menit sudah dicek oleh checkmutation
      */
     public function donateFu1BankTransfer()
     {
         $now        = date('Y-m-d H:i:s');
-        $date_start = date('Y-m-d H:i:s', strtotime($now.'-40 minutes'));
-        $date_end   = date('Y-m-d H:i:s', strtotime($now.'-20 minutes'));
+        $date_start = date('Y-m-d H:i:s', strtotime($now . '-40 minutes'));
+        $date_end   = date('Y-m-d H:i:s', strtotime($now . '-20 minutes'));
 
         $trans = Transaction::where('status', 'draft')
-                ->where('created_at', '>=', $date_start)->where('created_at', '<=', $date_end)
-                ->where('payment_type_id', '<>', 6)->where('payment_type_id', '<>', 5)->where('payment_type_id', '<>', 1);
+            ->where('created_at', '>=', $date_start)->where('created_at', '<=', $date_end)
+            ->where('payment_type_id', '<>', 6)->where('payment_type_id', '<>', 5)->where('payment_type_id', '<>', 1);
 
         // jika lebih dari jam 22 dan diatas jam 6:30 checkmutataion tidak bisa cek mutasi BSI
-        if(strtotime(date('H:i:s'))>=strtotime('21:45:00') && strtotime(date('H:i:s'))<=strtotime('06:30:00')) {echo 'IN BSI <br>';
+        if (strtotime(date('H:i:s')) >= strtotime('21:45:00') && strtotime(date('H:i:s')) <= strtotime('06:30:00')) {
+            echo 'IN BSI <br>';
             $trans = $trans->where('payment_type_id', '<>', 2);
         }
 
         // jika lebih dari jam 22 dan diatas jam 01:30 checkmutataion tidak bisa cek mutasi BRI
-        if(strtotime(date('H:i:s'))>=strtotime('21:45:00') && strtotime(date('H:i:s'))<=strtotime('01:30:00')) {echo 'IN BRI <br>';
+        if (strtotime(date('H:i:s')) >= strtotime('21:45:00') && strtotime(date('H:i:s')) <= strtotime('01:30:00')) {
+            echo 'IN BRI <br>';
             $trans = $trans->where('payment_type_id', '<>', 4);
         }
 
@@ -119,19 +121,19 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
 
         $chat_count = 0;
         foreach ($trans as $key => $v) {
-            if($chat_count<5) {         // agar 4 chat maksimal dalam 1 waktu 
+            if ($chat_count < 5) {         // agar 4 chat maksimal dalam 1 waktu 
                 $count_fu = \App\Models\Chat::where('type', 'fu_trans')->where('transaction_id', $v->id)->select('id')->count();
-                if($count_fu==0){ // hanya yg belum di chat yg akan dikirim
+                if ($count_fu == 0) { // hanya yg belum di chat yg akan dikirim
 
                     $program = Program::where('id', $v->program_id)->select('id', 'title')->first();
                     $donatur = Donatur::where('id', $v->donatur_id)->select('id', 'name', 'telp')->first();
-                    $name    = ', *'.ucwords(trim($donatur->name)).'* ';
+                    $name    = ', *' . ucwords(trim($donatur->name)) . '* ';
 
-                    $chat    = 'Selangkah lagi kebaikan Anda'.$name.'akan dirasakan untuk program
-*'.ucwords($program->title).'*
-Dengan donasi yang Anda berikan sebesar *Rp '.str_replace(',', '.', number_format($v->nominal_final)).'*';
+                    $chat    = 'Selangkah lagi kebaikan Anda' . $name . 'akan dirasakan untuk program
+*' . ucwords($program->title) . '*
+Dengan donasi yang Anda berikan sebesar *Rp ' . str_replace(',', '.', number_format($v->nominal_final)) . '*';
 
-                    $chat2   = $chat.'
+                    $chat2   = $chat . '
 
 atau melalui :
 Transfer BSI - 7855555667
@@ -146,22 +148,22 @@ https://bantubersama.com/public/QRIS.png
 
 Kebaikan Anda sangat berarti bagi kami yang membutuhkan.
 Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah. Aamiin';
-                
-//                     $chat2   = $chat.'
 
-// atau melalui :
-// Transfer BSI - 7233152069
-// Transfer BRI - 041001000888302
-// Transfer BNI - 7060505013
-// Transfer Mandiri - 1370022225276
-// Transfer BCA - 4561363999
-// a/n *Yayasan Bantu Bersama Sejahtera*
+                    //                     $chat2   = $chat.'
 
-// melalui QRIS
-// https://bantubersama.com/public/qris-babe.png
+                    // atau melalui :
+                    // Transfer BSI - 7233152069
+                    // Transfer BRI - 041001000888302
+                    // Transfer BNI - 7060505013
+                    // Transfer Mandiri - 1370022225276
+                    // Transfer BCA - 4561363999
+                    // a/n *Yayasan Bantu Bersama Sejahtera*
 
-// Kebaikan Anda sangat berarti bagi kami yang membutuhkan.
-// Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah. Aamiin';
+                    // melalui QRIS
+                    // https://bantubersama.com/public/qris-babe.png
+
+                    // Kebaikan Anda sangat berarti bagi kami yang membutuhkan.
+                    // Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah. Aamiin';
 
                     (new WaBlastController)->sentWA($donatur->telp, $chat2, 'fu_trans', $v->id, $donatur->id, $program->id);
 
@@ -180,27 +182,27 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
     public function donateFu2Sc()
     {
         $now        = date('Y-m-d H:i:s');
-        $now        = date('Y-m-d H:i:s', strtotime($now.'-1 days'));
-        $date_start = date('Y-m-d H:i:s', strtotime($now.'-10 minutes'));
-        $date_end   = date('Y-m-d H:i:s', strtotime($now.'+10 minutes'));
+        $now        = date('Y-m-d H:i:s', strtotime($now . '-1 days'));
+        $date_start = date('Y-m-d H:i:s', strtotime($now . '-10 minutes'));
+        $date_end   = date('Y-m-d H:i:s', strtotime($now . '+10 minutes'));
 
         $trans = Transaction::where('status', '<>', 'success')->where('created_at', '>=', $date_start)->where('created_at', '<=', $date_end)
-                ->orderBy('created_at', 'asc')->get();
+            ->orderBy('created_at', 'asc')->get();
         $chat_count = 0;
 
         foreach ($trans as $key => $v) {
-            if($chat_count<5) {         // agar 4 chat maksimal dalam 1 waktu 
+            if ($chat_count < 5) {         // agar 4 chat maksimal dalam 1 waktu 
                 $count_fu = \App\Models\Chat::where('type', 'fu_trans')->where('transaction_id', $v->id)->select('id')->count();
-                if($count_fu==1){
+                if ($count_fu == 1) {
 
                     // kirim chat FU ke-2
                     $program = Program::where('id', $v->program_id)->select('id', 'title')->first();
                     $donatur = Donatur::where('id', $v->donatur_id)->select('id', 'name', 'telp')->first();
-                    $name    = ', *'.ucwords(trim($donatur->name)).'* ';
+                    $name    = ', *' . ucwords(trim($donatur->name)) . '* ';
 
-                    $chat    = 'Selangkah lagi kebaikan Anda'.$name.'akan dirasakan untuk program
-*'.ucwords($program->title).'*
-Dengan donasi yang Anda berikan sebesar *Rp '.str_replace(',', '.', number_format($v->nominal_final)).'*
+                    $chat    = 'Selangkah lagi kebaikan Anda' . $name . 'akan dirasakan untuk program
+*' . ucwords($program->title) . '*
+Dengan donasi yang Anda berikan sebesar *Rp ' . str_replace(',', '.', number_format($v->nominal_final)) . '*
 
 bisa melalui :
 Transfer BSI - 7855555667
@@ -226,15 +228,15 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
         echo "Finish";
     }
 
-    
+
     /**
      * Cek WA Aktif
      */
     public function talentWACheck()
     {
-        $data = Donatur::select('id', 'telp')->whereNull('wa_check')->whereNull('wa_inactive_since')->orderBy('id','asc')->limit(4)->get();
+        $data = Donatur::select('id', 'telp')->whereNull('wa_check')->whereNull('wa_inactive_since')->orderBy('id', 'asc')->limit(4)->get();
 
-        foreach($data as $v){
+        foreach ($data as $v) {
             $telp = str_replace(['-', ' ', '(', ')', '+', '.'], '', $v->telp);
             if (substr($telp, 0, 1) == '0') {
                 $telp = '62' . substr($telp, 1, 20);
@@ -251,7 +253,7 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-            curl_setopt($curl, CURLOPT_TIMEOUT,30);
+            curl_setopt($curl, CURLOPT_TIMEOUT, 30);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, array(
                 'token'   => $this->rwa_token,
@@ -259,20 +261,20 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
             ));
             $response = curl_exec($curl);
             curl_close($curl);
-            
+
             $response = json_decode($response);
             $now      = date('Y-m-d H:i:s');
-            
-            if($response->result=='true'){
+
+            if ($response->result == 'true') {
                 $update = Donatur::select('id')->where('id', $v->id);
-                if($response->onwhatsapp=='true'){
+                if ($response->onwhatsapp == 'true') {
                     $update->update(['wa_check' => $now, 'wa_inactive_since' => null]);
                 } else {
                     $update->update(['wa_check' => $now, 'wa_inactive_since' => $now]);
                 }
             }
         }
-        
+
         echo 'FINISH';
     }
 
@@ -283,11 +285,11 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
     public function waDorman()
     {
         $data = Donatur::where('last_donate_paid', '<=', '2023-08-11 00:00:00')->where('last_donate_paid', '>=', '2023-03-01 00:00:00')
-                // ->where('wa_campaign', '!=', 'dorman-25-08-2023')
-                ->whereNull('wa_campaign')
-                ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->orderBy('last_donate_paid', 'asc')->limit(4)->get();
+            // ->where('wa_campaign', '!=', 'dorman-25-08-2023')
+            ->whereNull('wa_campaign')
+            ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->orderBy('last_donate_paid', 'asc')->limit(4)->get();
 
-        foreach($data as $v){
+        foreach ($data as $v) {
             $telp = str_replace(['-', ' ', '(', ')', '+', '.'], '', $v->telp);
             if (substr($telp, 0, 1) == '0') {
                 $telp = '62' . substr($telp, 1, 20);
@@ -297,19 +299,19 @@ Semoga Anda sekeluarga selalu diberi kesehatan dan dilimpahkan rizki yang berkah
 
             // belum dibuat logic jika ternyata program sebelumnya sudah berakhir / tidak publish
             $trans = \App\Models\Transaction::select('program.id', 'title', 'slug')->join('program', 'program_id', 'program.id')
-                    ->where('transaction.status', 'success')->where('donatur_id', $v->id)->orderBy('transaction.created_at', 'DESC')->first();
+                ->where('transaction.status', 'success')->where('donatur_id', $v->id)->orderBy('transaction.created_at', 'DESC')->first();
 
-            $chat  = 'Perkenalkan saya Isna dari *Bantubersama*, semoga sehat selalu buat Kak *'.ucwords($v->name).'* aamiin..
+            $chat  = 'Perkenalkan saya Isna dari *Bantusesama*, semoga sehat selalu buat Kak *' . ucwords($v->name) . '* aamiin..
 
 Program yang Anda donasikan sebelumnya :
-*'.ucwords($trans->title).'*
+*' . ucwords($trans->title) . '*
 
 Masih terus berjalan hingga hari ini
 
 Yuk kembali kita manfaatkan lagi kesempatan ini untuk terlibat aksi nyata dalam kebaikan.
 Melalui link dibawah ini
 
-https://bantubersama.com/'.$trans->slug.'
+https://bantubersama.com/' . $trans->slug . '
 
 Kepedulian kita masih terus dinantikan, oleh mereka yang membutuhkan.';
 
@@ -322,7 +324,7 @@ Kepedulian kita masih terus dinantikan, oleh mereka yang membutuhkan.';
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-            curl_setopt($curl, CURLOPT_TIMEOUT,30);
+            curl_setopt($curl, CURLOPT_TIMEOUT, 30);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, array(
                 'token'   => $this->rwa_token,
@@ -333,11 +335,11 @@ Kepedulian kita masih terus dinantikan, oleh mereka yang membutuhkan.';
             ));
             $response = curl_exec($curl);
             curl_close($curl);
-            
+
             $response = json_decode($response);
             $now      = date('Y-m-d H:i:s');
-            
-            if($response->result=='true'){
+
+            if ($response->result == 'true') {
                 $update = Donatur::select('id')->where('id', $v->id);
                 $update->update(['wa_campaign' => 'dorman-25-08-2023']);
             }
@@ -355,7 +357,7 @@ Kepedulian kita masih terus dinantikan, oleh mereka yang membutuhkan.';
                 'program_id'     => $trans->id
             ]);
         }
-        
+
         echo 'FINISH';
     }
 
@@ -366,9 +368,9 @@ Kepedulian kita masih terus dinantikan, oleh mereka yang membutuhkan.';
     public function waSummaryDonate()
     {
         $data = Donatur::where('sum_donate_paid', '>', 0)->whereNull('wa_campaign')
-                ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->orderBy('sum_donate_paid', 'desc')->limit(4)->get();
+            ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->orderBy('sum_donate_paid', 'desc')->limit(4)->get();
 
-        foreach($data as $v){
+        foreach ($data as $v) {
             $telp = str_replace(['-', ' ', '(', ')', '+', '.'], '', $v->telp);
             if (substr($telp, 0, 1) == '0') {
                 $telp = '62' . substr($telp, 1, 20);
@@ -378,13 +380,13 @@ Kepedulian kita masih terus dinantikan, oleh mereka yang membutuhkan.';
 
             // belum dibuat logic jika ternyata program sebelumnya sudah berakhir / tidak publish
             $nominal_final = \App\Models\Transaction::select('nominal_final')->where('created_at', '<', '2023-09-01 00:00:00')
-                            ->where('transaction.status', 'success')->where('donatur_id', $v->id)->sum('nominal_final');
+                ->where('transaction.status', 'success')->where('donatur_id', $v->id)->sum('nominal_final');
 
             $chat  = 'Salam peduli, sehat dan bahagia selalu buat Anda
 
-Terima kasih atas donasi yang telah diberikan dan sudah menjadi bagian dari pelopor *Misi Kebaikan Bantubersama.com*
+Terima kasih atas donasi yang telah diberikan dan sudah menjadi bagian dari pelopor *Misi Kebaikan Bantusesama.com*
 
-Rekap donasi Anda bulan Agustus 2023 sebesar *Rp.'.str_replace(',', '.', number_format($nominal_final)).'*
+Rekap donasi Anda bulan Agustus 2023 sebesar *Rp.' . str_replace(',', '.', number_format($nominal_final)) . '*
 Semoga jiwa kepedulian dan komitmen membantu sesama terus membersamai Anda
 
 Mari terus lanjutkan langkah positif ini untuk membantu sesama, kepedulian Anda masih terus dinantikan bagi mereka yang membutuhkan.
@@ -404,7 +406,7 @@ Terimakash';
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-            curl_setopt($curl, CURLOPT_TIMEOUT,30);
+            curl_setopt($curl, CURLOPT_TIMEOUT, 30);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, array(
                 'token'   => $this->rwa_token,
@@ -415,11 +417,11 @@ Terimakash';
             ));
             $response = curl_exec($curl);
             curl_close($curl);
-            
+
             $response = json_decode($response);
             $now      = date('Y-m-d H:i:s');
-            
-            if($response->result=='true'){
+
+            if ($response->result == 'true') {
                 $update = Donatur::select('id')->where('id', $v->id);
                 $update->update(['wa_campaign' => 'dorman-25-08-2023']);
             }
@@ -437,7 +439,7 @@ Terimakash';
                 'program_id'     => null
             ]);
         }
-        
+
         echo 'FINISH';
     }
 
@@ -449,13 +451,13 @@ Terimakash';
     {
         $donatur_done = \App\Models\Chat::where('program_id', 33)->where('text', 'like', 'salam%')->groupBy('donatur_id')->pluck('donatur_id');
         $donatur      = Donatur::whereNotIn('id', $donatur_done)
-                        // ->where('id', 201)->orWhere('id', 208)              // for testing send to Ulul & Isna
-                        // ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->get();
-                        ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->update([
-                            'wa_campaign' => '-'
-                        ]);
-                        
-                        
+            // ->where('id', 201)->orWhere('id', 208)              // for testing send to Ulul & Isna
+            // ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->get();
+            ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->update([
+                'wa_campaign' => '-'
+            ]);
+
+
         // print_r($donatur_done);
         // echo count($donatur).'<br>';
         // foreach($donatur as $k => $v) {
@@ -468,11 +470,11 @@ Terimakash';
         $program_id = 33;
         // $program    = \App\Models\Program::->where('id', $program_id)->first();
 
-        $donatur    = Donatur::where('wa_campaign', '<>', $campaign)->where('created_at', '<', date('Y-m-d', strtotime(date('Y-m-d').'-4 day')))
-                    // ->where('id', 201)->orWhere('id', 208)              // for testing send to Ulul & Isna
-                    ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->orderBy('id', 'asc')->limit(4)->get();
+        $donatur    = Donatur::where('wa_campaign', '<>', $campaign)->where('created_at', '<', date('Y-m-d', strtotime(date('Y-m-d') . '-4 day')))
+            // ->where('id', 201)->orWhere('id', 208)              // for testing send to Ulul & Isna
+            ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->orderBy('id', 'asc')->limit(4)->get();
 
-        foreach($donatur as $v){
+        foreach ($donatur as $v) {
             $telp = str_replace(['-', ' ', '(', ')', '+', '.'], '', $v->telp);
             if (substr($telp, 0, 1) == '0') {
                 $telp = '62' . substr($telp, 1, 20);
@@ -480,7 +482,7 @@ Terimakash';
                 $telp = '62' . substr($telp, 0, 20);
             }
 
-            $chat  = 'Salam *'.ucwords($v->name).'* Donatur #Bantubersama,
+            $chat  = 'Salam *' . ucwords($v->name) . '* Donatur #Bantusesama,
 *Darurat kemanusiaan masih berlanjut sampai hari ini di Gaza, Palestina*
 
 Korban telah mencapai 9.277 yang 3.677 merupakan anak-anak meninggal dunia, 2.405 perempuan serta 1.200 anak-anak masih tertimbun reruntuhan.
@@ -496,7 +498,7 @@ https://bantubersama.com/bantupalestina';
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-            curl_setopt($curl, CURLOPT_TIMEOUT,30);
+            curl_setopt($curl, CURLOPT_TIMEOUT, 30);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, array(
                 'token'   => $this->rwa_token,
@@ -507,13 +509,13 @@ https://bantubersama.com/bantupalestina';
             ));
             $response = curl_exec($curl);
             curl_close($curl);
-            
+
             $response = json_decode($response);
             $now      = date('Y-m-d H:i:s');
-            
-            if($response->result=='true'){
+
+            if ($response->result == 'true') {
                 Donatur::select('id')->where('id', $v->id)->update([
-                    'wa_campaign' => $campaign, 
+                    'wa_campaign' => $campaign,
                     'updated_at'  => date('Y-m-d H:i:s')
                 ]);
             }
@@ -531,7 +533,7 @@ https://bantubersama.com/bantupalestina';
                 'program_id'     => $program_id
             ]);
         }
-        
+
         echo 'FINISH';
     }
 
@@ -545,13 +547,13 @@ https://bantubersama.com/bantupalestina';
         $campaign     = 'ramadhan';
         // $donatur_done = \App\Models\Chat::where('program_id', $program_id)->where('text', 'like', 'salam%')->groupBy('donatur_id')->pluck('donatur_id');
         // $donatur      = Donatur::whereNotIn('id', $donatur_done)
-                        // ->where('id', 201)->orWhere('id', 28728)              // for testing send to Ulul & Alifah
-                        // ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->get();
-                        // ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->update([
-                            // 'wa_campaign' => '-'
-                        // ]);
-                        
-                        
+        // ->where('id', 201)->orWhere('id', 28728)              // for testing send to Ulul & Alifah
+        // ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->get();
+        // ->where('want_to_contact', '1')->whereNull('wa_inactive_since')->update([
+        // 'wa_campaign' => '-'
+        // ]);
+
+
         // print_r($donatur_done);
         // echo count($donatur).'<br>';
         // foreach($donatur as $k => $v) {
@@ -562,13 +564,13 @@ https://bantubersama.com/bantupalestina';
 
         // $program    = \App\Models\Program::->where('id', $program_id)->first();
 
-        $donatur    = Donatur::where('wa_campaign', '<>', $campaign)->where('created_at', '<', date('Y-m-d', strtotime(date('Y-m-d').'-4 day')))
-                    // ->where('id', 201)->orWhere('id', 28728)              // for testing send to Ulul & Alifah
-                    ->where('want_to_contact', '1')->whereNull('wa_inactive_since')
-                    ->where('is_muslim', '1')
-                    ->orderBy('id', 'asc')->limit(4)->get();
+        $donatur    = Donatur::where('wa_campaign', '<>', $campaign)->where('created_at', '<', date('Y-m-d', strtotime(date('Y-m-d') . '-4 day')))
+            // ->where('id', 201)->orWhere('id', 28728)              // for testing send to Ulul & Alifah
+            ->where('want_to_contact', '1')->whereNull('wa_inactive_since')
+            ->where('is_muslim', '1')
+            ->orderBy('id', 'asc')->limit(4)->get();
 
-        foreach($donatur as $v){
+        foreach ($donatur as $v) {
             $telp = str_replace(['-', ' ', '(', ')', '+', '.'], '', $v->telp);
             if (substr($telp, 0, 1) == '0') {
                 $telp = '62' . substr($telp, 1, 20);
@@ -578,7 +580,7 @@ https://bantubersama.com/bantupalestina';
 
             $chat  = '*📢 Hadirkan Kebahagiaan di Bulan Ramadhan✨*
 
-Assalamu’alaikum, *'.ucwords($v->name).'*
+Assalamu’alaikum, *' . ucwords($v->name) . '*
 Ramadhan kembali hadir, saatnya berbagi keberkahan! Mari ikut serta dalam:
 
 🍽️ Buka Puasa – Hidangan berbuka bagi yatim & dhuafa.
@@ -600,7 +602,7 @@ Jazakumullahu khairan, semoga berkah untuk kita semua. Aamiin✨';
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 0);
-            curl_setopt($curl, CURLOPT_TIMEOUT,30);
+            curl_setopt($curl, CURLOPT_TIMEOUT, 30);
             curl_setopt($curl, CURLOPT_POST, 1);
             curl_setopt($curl, CURLOPT_POSTFIELDS, array(
                 'token'   => $this->rwa_token,
@@ -611,13 +613,13 @@ Jazakumullahu khairan, semoga berkah untuk kita semua. Aamiin✨';
             ));
             $response = curl_exec($curl);
             curl_close($curl);
-            
+
             $response = json_decode($response);
             $now      = date('Y-m-d H:i:s');
-            
-            if($response->result=='true'){
+
+            if ($response->result == 'true') {
                 Donatur::select('id')->where('id', $v->id)->update([
-                    'wa_campaign' => $campaign, 
+                    'wa_campaign' => $campaign,
                     'updated_at'  => date('Y-m-d H:i:s')
                 ]);
             }
@@ -635,12 +637,13 @@ Jazakumullahu khairan, semoga berkah untuk kita semua. Aamiin✨';
                 'program_id'     => $program_id
             ]);
         }
-        
+
         echo 'FINISH';
     }
 
 
-    public function removeEmoji($text) {
+    public function removeEmoji($text)
+    {
         return preg_replace('/[\x{1F600}-\x{1F64F}    # Emoticon
                             \x{1F300}-\x{1F5FF}    # Simbol dan Pictographs
                             \x{1F680}-\x{1F6FF}    # Transportasi dan Simbol lainnya
@@ -657,12 +660,12 @@ Jazakumullahu khairan, semoga berkah untuk kita semua. Aamiin✨';
     {
         // $page = $request->page;     // load per 100 program
         $last_update = date('Y-m-d H:i:s', strtotime('-30 minutes'));
-        $program = Program::select('id')->where('is_publish', 1)->where('end_date', '>=', date('Y-m-d').' 00:00:00')
-                    ->where('donate_sum_last_updated', '<', $last_update)->limit(200)->get();
-        foreach($program as $v) {
+        $program = Program::select('id')->where('is_publish', 1)->where('end_date', '>=', date('Y-m-d') . ' 00:00:00')
+            ->where('donate_sum_last_updated', '<', $last_update)->limit(200)->get();
+        foreach ($program as $v) {
             $sum_donate = Transaction::where('program_id', $v->id)->where('status', 'success')->sum('nominal_final');
-            if($sum_donate > 0) {
-                Program::where('id', $v->id)->update([ 'donate_sum'=>$sum_donate, 'donate_sum_last_updated'=>date('Y-m-d H:i:s') ]);
+            if ($sum_donate > 0) {
+                Program::where('id', $v->id)->update(['donate_sum' => $sum_donate, 'donate_sum_last_updated' => date('Y-m-d H:i:s')]);
             }
         }
         echo "FINISH";
@@ -673,13 +676,13 @@ Jazakumullahu khairan, semoga berkah untuk kita semua. Aamiin✨';
      */
     public function updateTransactionStatus(Request $request)
     {
-        $day5ago = date('Y-m-d', strtotime('-5 days')).' 00:00:00';
+        $day5ago = date('Y-m-d', strtotime('-5 days')) . ' 00:00:00';
 
-        Transaction::where('status', 'draft')->where('created_at', '<=', $day5ago)->update(['status'=>'cancel']);
-        
+        Transaction::where('status', 'draft')->where('created_at', '<=', $day5ago)->update(['status' => 'cancel']);
+
         echo "FINISH";
     }
-    
+
     /**
      * Update summary donate last_donate_paid, count_donate_paid, sum)donate_paid
      */
@@ -693,26 +696,26 @@ Jazakumullahu khairan, semoga berkah untuk kita semua. Aamiin✨';
         //             ->orderBy('id','asc')
         //             ->limit(3200)
         //             ->get();
-        
-        // agar efisien hanya donatur yg melakukan donasi dibayar 5 hari terakhir saja, meski ada donatur yg akan dijalankan beberapa kali
-        $ld         = date('Y-m-d H:i:s', strtotime(date('Y-m-d H:i:s').'-5 days'));
-        $last_trans = \App\Models\Transaction::select('donatur_id')->where('status', 'success')->where('created_at', '>=', $ld)
-                        ->groupBy('donatur_id')->orderBy('donatur_id', 'ASC')->get()->toArray();
-        $donatur    = Donatur::select('id')->whereIn('id', $last_trans)->orderBy('id','asc')->get();
 
-        foreach($donatur as $v){
+        // agar efisien hanya donatur yg melakukan donasi dibayar 5 hari terakhir saja, meski ada donatur yg akan dijalankan beberapa kali
+        $ld         = date('Y-m-d H:i:s', strtotime(date('Y-m-d H:i:s') . '-5 days'));
+        $last_trans = \App\Models\Transaction::select('donatur_id')->where('status', 'success')->where('created_at', '>=', $ld)
+            ->groupBy('donatur_id')->orderBy('donatur_id', 'ASC')->get()->toArray();
+        $donatur    = Donatur::select('id')->whereIn('id', $last_trans)->orderBy('id', 'asc')->get();
+
+        foreach ($donatur as $v) {
             $trans = \App\Models\Transaction::selectRaw('count(id) as count_donate, sum(nominal_final) as sum_donate, MAX(created_at) as last_transaction')
-                    ->where('donatur_id', $v->id)->where('status', 'success')
-                    ->groupBy('donatur_id')
-                    ->orderBy('created_at', 'DESC')->first();
-            
-            Donatur::where('id', $v->id)->update([ 
-                    'sum_donate_paid'  => (isset($trans->sum_donate)) ? $trans->sum_donate : 0,
-                    'count_donate_paid'=> (isset($trans->count_donate)) ? $trans->count_donate : 0,
-                    'last_donate_paid' => (isset($trans->last_transaction)) ? $trans->last_transaction : null,
-                    'updated_at'       => date('Y-m-d H:i:s')
+                ->where('donatur_id', $v->id)->where('status', 'success')
+                ->groupBy('donatur_id')
+                ->orderBy('created_at', 'DESC')->first();
+
+            Donatur::where('id', $v->id)->update([
+                'sum_donate_paid'  => (isset($trans->sum_donate)) ? $trans->sum_donate : 0,
+                'count_donate_paid' => (isset($trans->count_donate)) ? $trans->count_donate : 0,
+                'last_donate_paid' => (isset($trans->last_transaction)) ? $trans->last_transaction : null,
+                'updated_at'       => date('Y-m-d H:i:s')
             ]);
         }
-        echo 'FINISH LAST DONATE PAID : '.count($donatur);
+        echo 'FINISH LAST DONATE PAID : ' . count($donatur);
     }
 }

@@ -81,9 +81,9 @@
                     <!-- Introduction Paragraph -->
                     <div class="mb-3 px-lg-2">
                         <p class="text-justify lh-md mb-3 text-slate-500" style="text-align: justify;">
-                            Bantubersama menetapkan Ketentuan Umum dan Khusus terkait program yang dibuat oleh Campaigner
+                            Bantusesama menetapkan Ketentuan Umum dan Khusus terkait program yang dibuat oleh Campaigner
                             dengan tujuan untuk menjaga keaslian, kebenaran, dan keamanan setiap program yang dipublikasi
-                            di situs Bantubersama.com.
+                            di situs Bantusesama.com.
                         </p>
                     </div>
                     <div class="mb-3 card-body p-2">
@@ -365,7 +365,7 @@
                         </svg>
                         <span class="screen-reader-text">Twitter</span>
                     </a>
-                    <a rel="noreferrer" href="https://www.youtube.com/@Bantubersama-de2vi" target="_blank"
+                    <a rel="noreferrer" href="https://www.youtube.com/@Bantusesama-de2vi" target="_blank"
                         class="socmed-item rounded-circle">
                         <svg class="mx-auto" xmlns="http://www.w3.org/2000/svg" width="12" height="12"
                             viewBox="0 0 24 24">

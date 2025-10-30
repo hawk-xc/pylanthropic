@@ -1,6 +1,6 @@
 @extends('layouts.public', [
     'second_title' => 'Metode Pembayaran',
-    'meta_desc'    => 'Qurban Bantubersama adalah platform pembelian qurban secara online',
+    'meta_desc'    => 'Qurban Bantusesama adalah platform pembelian qurban secara online',
     'image'        => 'promo-qurban-bantubersama.png',
 ])
 

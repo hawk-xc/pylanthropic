@@ -11,12 +11,12 @@ use Illuminate\Support\Facades\Log;
 
 class TelegramController extends Controller
 {
-    public function sendMessage($telegram_id='', $message_text='')
+    public function sendMessage($telegram_id = '', $message_text = '')
     {
-        // ID GROUP Telegram "Donate - Bantubersama"    = -4062835663
-        $token = '6985648237:AAH_MbbkBWUWZeUbwO-d9OKohP75siSeXsQ'; // Bantubersama Telegram Message
-        $url   = "https://api.telegram.org/bot".$token."/sendMessage?parse_mode=markdown";
-        $url   = $url."&chat_id=".$telegram_id."&text=".urlencode($message_text);
+        // ID GROUP Telegram "Donate - Bantusesama"    = -4062835663
+        $token = '6985648237:AAH_MbbkBWUWZeUbwO-d9OKohP75siSeXsQ'; // Bantusesama Telegram Message
+        $url   = "https://api.telegram.org/bot" . $token . "/sendMessage?parse_mode=markdown";
+        $url   = $url . "&chat_id=" . $telegram_id . "&text=" . urlencode($message_text);
 
         $curl  = curl_init();
         curl_setopt($curl, CURLOPT_URL, $url);
@@ -28,7 +28,7 @@ class TelegramController extends Controller
 
         if ($err) {
             echo 'Pesan gagal terkirim, error :' . $err;
-        }else{
+        } else {
             echo 'Pesan terkirim';
         }
     }

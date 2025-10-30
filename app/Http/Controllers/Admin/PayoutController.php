@@ -86,7 +86,7 @@ class PayoutController extends Controller
             $data->desc_request     = $request->desc_request;
             $data->status           = $request->status;
 
-            if($request->filled('date_paid')) {
+            if ($request->filled('date_paid')) {
                 $data->paid_at      = $request->date_paid;
             }
 
@@ -98,14 +98,14 @@ class PayoutController extends Controller
                     if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
                         $filename = $fileField . '.png';
                         $fullPath = $payoutPath . '/' . $filename;
-                        
+
                         $image = Image::make($file->getRealPath())
                             ->resize(800, null, function ($constraint) {
                                 $constraint->aspectRatio();
                                 $constraint->upsize();
                             })
                             ->encode('png');
-                        
+
                         Storage::disk('public_uploads')->put($fullPath, (string) $image);
                         $data->{$fileField} = $fullPath;
                     } else if ($extension === 'pdf') {
@@ -120,12 +120,12 @@ class PayoutController extends Controller
             $data->save();
 
             return redirect(route('adm.payout.index'))->with('message', [
-                'status' => 'success', 
+                'status' => 'success',
                 'message' => 'Berhasil tambah data Penyaluran Program'
             ]);
         } catch (\Exception $e) {
             return back()->with('message', [
-                'status' => 'error', 
+                'status' => 'error',
                 'message' => 'Gagal tambah data Penyaluran Program: ' . $e->getMessage()
             ]);
         }
@@ -191,7 +191,7 @@ class PayoutController extends Controller
 
         try {
             $data = Payout::findOrFail($id);
-            
+
             $programId = $request->program_id ?? $data->program_id;
             $program = \App\Models\Program::find($programId);
             if (!$program) {
@@ -209,7 +209,7 @@ class PayoutController extends Controller
             $data->desc_request     = $request->desc_request;
             $data->status           = $request->status;
 
-            if($request->filled('date_paid')) {
+            if ($request->filled('date_paid')) {
                 $data->paid_at      = $request->date_paid;
             } else {
                 $data->paid_at      = null;
@@ -225,7 +225,7 @@ class PayoutController extends Controller
                     if ($isImage || $isPdf) {
                         $newExtension = $isImage ? 'png' : 'pdf';
                         $baseFilename = $fileField;
-                        
+
                         $counter = 0;
                         $filename = $baseFilename . '.' . $newExtension;
                         $fullPath = $payoutPath . '/' . $filename;
@@ -239,13 +239,16 @@ class PayoutController extends Controller
 
                         if ($isImage) {
                             $image = Image::make($file->getRealPath())
-                                ->resize(800, null, function ($constraint) { $constraint->aspectRatio(); $constraint->upsize(); })
+                                ->resize(800, null, function ($constraint) {
+                                    $constraint->aspectRatio();
+                                    $constraint->upsize();
+                                })
                                 ->encode('png');
                             Storage::disk('public_uploads')->put($fullPath, (string) $image);
                         } else { // PDF
                             Storage::disk('public_uploads')->putFileAs($payoutPath, $file, $filename);
                         }
-                        
+
                         $data->{$fileField} = $fullPath;
                     }
                 }
@@ -255,12 +258,12 @@ class PayoutController extends Controller
             $data->save();
 
             return redirect(route('adm.payout.index'))->with('message', [
-                'status' => 'success', 
+                'status' => 'success',
                 'message' => 'Berhasil update data Penyaluran Program'
             ]);
         } catch (\Exception $e) {
             return back()->with('message', [
-                'status' => 'error', 
+                'status' => 'error',
                 'message' => 'Gagal update data Penyaluran Program: ' . $e->getMessage()
             ]);
         }
@@ -272,7 +275,7 @@ class PayoutController extends Controller
     public function payoutDatatables(Request $request)
     {
         $data = Payout::select('payout.*', 'program.title as program_title', 'slug')
-                ->join('program', 'program.id', 'payout.program_id')->orderBy('created_at', 'DESC');
+            ->join('program', 'program.id', 'payout.program_id')->orderBy('created_at', 'DESC');
 
         $order_column = $request->input('order.0.column');
         $order_dir    = ($request->input('order.0.dir')) ? $request->input('order.0.dir') : 'asc';
@@ -282,20 +285,20 @@ class PayoutController extends Controller
         $search       = $request->input('search.value');
 
         $count_filter = $count_total;
-        if($search != ''){
-            $data     = $data->where(function ($q) use ($search){
-                        $q->where('payout.desc_request', 'like', '%'.$search.'%')
-                            ->orWhere('program.title', 'like', '%'.$search.'%')
-                            ->orWhere('program.slug', 'like', '%'.$search.'%')
-                            ->orWhere('payout.nominal_request', 'like', '%'.str_replace([',', '.'], '', $search).'%')
-                            ->orWhere('payout.nominal_approved', 'like', '%'.str_replace([',', '.'], '', $search).'%')
-                            ->orWhere('payout.bank_fee', 'like', '%'.str_replace([',', '.'], '', $search).'%')
-                            ->orWhere('payout.optimation_fee', 'like', '%'.str_replace([',', '.'], '', $search).'%')
-                            ->orWhere('payout.platform_fee', 'like', '%'.str_replace([',', '.'], '', $search).'%')
-                            ->orWhere('payout.ads_fee', 'like', '%'.str_replace([',', '.'], '', $search).'%')
-                            ->orWhere('status', 'like', '%'.$search.'%')
-                            ->orWhere('paid_at', 'like', '%'.$search.'%');
-                        });
+        if ($search != '') {
+            $data     = $data->where(function ($q) use ($search) {
+                $q->where('payout.desc_request', 'like', '%' . $search . '%')
+                    ->orWhere('program.title', 'like', '%' . $search . '%')
+                    ->orWhere('program.slug', 'like', '%' . $search . '%')
+                    ->orWhere('payout.nominal_request', 'like', '%' . str_replace([',', '.'], '', $search) . '%')
+                    ->orWhere('payout.nominal_approved', 'like', '%' . str_replace([',', '.'], '', $search) . '%')
+                    ->orWhere('payout.bank_fee', 'like', '%' . str_replace([',', '.'], '', $search) . '%')
+                    ->orWhere('payout.optimation_fee', 'like', '%' . str_replace([',', '.'], '', $search) . '%')
+                    ->orWhere('payout.platform_fee', 'like', '%' . str_replace([',', '.'], '', $search) . '%')
+                    ->orWhere('payout.ads_fee', 'like', '%' . str_replace([',', '.'], '', $search) . '%')
+                    ->orWhere('status', 'like', '%' . $search . '%')
+                    ->orWhere('paid_at', 'like', '%' . $search . '%');
+            });
             $count_filter = $data->count();
         }
 
@@ -312,32 +315,32 @@ class PayoutController extends Controller
             ])
             ->setOffset($start)
             ->addIndexColumn()
-            ->addColumn('title', function($row){
+            ->addColumn('title', function ($row) {
                 return ucwords($row->desc_request);
             })
-            ->addColumn('program_title', function($row){
+            ->addColumn('program_title', function ($row) {
                 return ucwords($row->program_title);
             })
-            ->addColumn('nominal', function($row){
-                return '<i class="fa fa-file-signature icon-gradient bg-happy-green"></i> '.number_format($row->nominal_request).'<br><i class="fa fa-check-double icon-gradient bg-happy-green"></i> '.number_format($row->nominal_approved);
+            ->addColumn('nominal', function ($row) {
+                return '<i class="fa fa-file-signature icon-gradient bg-happy-green"></i> ' . number_format($row->nominal_request) . '<br><i class="fa fa-check-double icon-gradient bg-happy-green"></i> ' . number_format($row->nominal_approved);
             })
-            ->addColumn('date', function($row){
-                if(!is_null($row->paid_at)) {
+            ->addColumn('date', function ($row) {
+                if (!is_null($row->paid_at)) {
                     $paid_at = date('Y-m-d H:i', strtotime($row->paid_at));
                 } else {
                     $paid_at = 'not set';
                 }
 
-                return '<i class="fa fa-file-signature icon-gradient bg-happy-green"></i> '.date('Y-m-d H:i', strtotime($row->created_at)).'<br><i class="fa fa-check-double icon-gradient bg-happy-green"></i> '.$paid_at;
+                return '<i class="fa fa-file-signature icon-gradient bg-happy-green"></i> ' . date('Y-m-d H:i', strtotime($row->created_at)) . '<br><i class="fa fa-check-double icon-gradient bg-happy-green"></i> ' . $paid_at;
             })
-            ->addColumn('status', function($row){
-                if($row->status == 'request') {
+            ->addColumn('status', function ($row) {
+                if ($row->status == 'request') {
                     $status = '<span class="badge badge-info badge-sm">PENGAJUAN</span>';
-                } elseif($row->status == 'process') {
+                } elseif ($row->status == 'process') {
                     $status = '<span class="badge badge-warning badge-sm">DIPROSES</span>';
-                } elseif($row->status == 'paid') {
+                } elseif ($row->status == 'paid') {
                     $status = '<span class="badge badge-success badge-sm">SELESAI</span>';
-                } elseif($row->status == 'cancel') {
+                } elseif ($row->status == 'cancel') {
                     $status = '<span class="badge badge-secondary badge-sm">DIBATALKAN</span>';
                 } else {  // reject
                     $status = '<span class="badge badge-danger badge-sm">DITOLAK</span>';
@@ -345,10 +348,10 @@ class PayoutController extends Controller
 
                 return $status;
             })
-            ->addColumn('action', function($row){
-                $view = '<a href="'.route("program.payout", $row->slug).'" target="_blank" class="btn btn-info btn-xs"><i class="fa fa-eye"></i></a>';
-                $edit = '<a href="'.route("adm.payout.edit", $row->id).'" target="_blank" class="edit btn btn-warning btn-xs"><i class="fa fa-edit"></i></a>';
-                return $view.'<br>'.$edit;
+            ->addColumn('action', function ($row) {
+                $view = '<a href="' . route("program.payout", $row->slug) . '" target="_blank" class="btn btn-info btn-xs"><i class="fa fa-eye"></i></a>';
+                $edit = '<a href="' . route("adm.payout.edit", $row->id) . '" target="_blank" class="edit btn btn-warning btn-xs"><i class="fa fa-edit"></i></a>';
+                return $view . '<br>' . $edit;
             })
             ->rawColumns(['title', 'date', 'program_title', 'nominal', 'status', 'action'])
             ->make(true);
@@ -376,7 +379,7 @@ class PayoutController extends Controller
 
         return [
             'link' => $link_img,
-            'full' => '<img data-original="' . $link_img . '" class="lazyload" alt="' . ucwords($request->name) . ' - Bantubersama.com" />',
+            'full' => '<img data-original="' . $link_img . '" class="lazyload" alt="' . ucwords($request->name) . ' - Bantusesama.com" />',
         ];
     }
 

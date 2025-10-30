@@ -240,7 +240,7 @@
           </div>
         </div> --}}
         <div class="alert alert-secondary disclaimer-detail mt-4">
-          Nominal di atas sudah termasuk 5% donasi operasional Bantubersama. Jika nominal donasi tidak sesuai dengan angka unik yang tertera maka kami catat sebagai akad infak umum.
+          Nominal di atas sudah termasuk 5% donasi operasional Bantusesama. Jika nominal donasi tidak sesuai dengan angka unik yang tertera maka kami catat sebagai akad infak umum.
         </div>
         <input type="hidden" name="recaptcha_v3_token" id="recaptchaV3Token">
       </div>

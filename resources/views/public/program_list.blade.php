@@ -30,7 +30,7 @@
       <form class="auth-form search-head" method="get" action="#" id="search">
         <div class="form-group">
           <a href="{{ url('/') }}" class="logo-navbar">
-            <img class="" src="{{ asset('Logo Bantubersama.png') }}">
+            <img class="" src="{{ asset('Logo Bantusesama.png') }}">
           </a>
           <div class="form-input">
             <input type="text" class="form-control search typewrite" id="inputkey" placeholder="" />

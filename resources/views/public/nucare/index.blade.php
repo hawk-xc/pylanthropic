@@ -1,6 +1,6 @@
 @extends('layouts.public', [
     'second_title' => 'Pengajuan Program - LAZISNU SLEMAN x BANTUBERSAMA.com',
-    'meta_desc'    => 'Bantubersama adalah platform penggalang dana untuk membantu bersama secara online',
+    'meta_desc'    => 'Bantusesama adalah platform penggalang dana untuk membantu bersama secara online',
     'image'        => 'galang-dana-bantubersama.png',
 ])
 
@@ -18,7 +18,7 @@
 
 @section('content')
   <div class="">
-    <img alt="Pengajuan Program Bantubersama.com" class="h-auto w-100" src="{{ asset('public/images/banner/galang-dana-bantubersama.png') }}">
+    <img alt="Pengajuan Program Bantusesama.com" class="h-auto w-100" src="{{ asset('public/images/banner/galang-dana-bantubersama.png') }}">
   </div>
   <!-- header end -->
 
@@ -92,7 +92,7 @@
         <div class="col-6">
           <div class="text-center" style="">
             <a href="{{ route('nucare.form') }}?c=kesehatan" class="">
-              <img class="img-fluid categories-img" src="{{ asset('public/images/organization/kesehatan.png') }}" alt="Kesehatan Bantubersama">
+              <img class="img-fluid categories-img" src="{{ asset('public/images/organization/kesehatan.png') }}" alt="Kesehatan Bantusesama">
             </a>
             <h6 class="fs-15 mt-1 pt-1">Kesehatan</h6>
           </div>
@@ -100,7 +100,7 @@
         <div class="col-6">
           <div class="text-center" style="">
             <a href="{{ route('nucare.form') }}?c=rumahibadah" class="">
-              <img class="img-fluid" src="{{ asset('public/images/organization/tempat_ibadah.png') }}" alt="Tempat Ibadah Bantubersama">
+              <img class="img-fluid" src="{{ asset('public/images/organization/tempat_ibadah.png') }}" alt="Tempat Ibadah Bantusesama">
             </a>
             <h6 class="fs-15 mt-1 pt-1">Rumah Ibadan</h6>
           </div>
@@ -108,7 +108,7 @@
         <div class="col-6">
           <div class="text-center" style="">
             <a href="{{ route('nucare.form') }}?c=pendidikan" class="">
-              <img class="img-fluid" src="{{ asset('public/images/organization/pendidikan.png') }}" alt="Pendidikan Bantubersama">
+              <img class="img-fluid" src="{{ asset('public/images/organization/pendidikan.png') }}" alt="Pendidikan Bantusesama">
             </a>
             <h6 class="fs-15 mt-1 pt-1">Pendidikan</h6>
           </div>
@@ -116,7 +116,7 @@
         <div class="col-6">
           <div class="text-center" style="">
             <a href="{{ route('nucare.form') }}?c=kemanusiaan" class="">
-              <img class="img-fluid" src="{{ asset('public/images/organization/kemanusiaan.png') }}" alt="Kemanusiaan Bantubersama">
+              <img class="img-fluid" src="{{ asset('public/images/organization/kemanusiaan.png') }}" alt="Kemanusiaan Bantusesama">
             </a>
             <h6 class="fs-15 mt-1 pt-1">Kemanusiaan</h6>
           </div>
@@ -124,7 +124,7 @@
         <div class="col-6">
           <div class="text-center" style="">
             <a href="{{ route('nucare.form') }}?c=bencanaalam" class="">
-              <img class="img-fluid" src="{{ asset('public/images/organization/bencana_alam.png') }}" alt="Bencana Alam Bantubersama">
+              <img class="img-fluid" src="{{ asset('public/images/organization/bencana_alam.png') }}" alt="Bencana Alam Bantusesama">
             </a>
             <h6 class="fs-15 mt-1 pt-1">Bencana Alam</h6>
           </div>
@@ -132,7 +132,7 @@
         <div class="col-6">
           <div class="text-center" style="">
             <a href="{{ route('nucare.form') }}?c=lainnya" class="">
-              <img class="img-fluid" src="{{ asset('public/images/organization/lain_lain.png') }}" alt="Lainnya Bantubersama">
+              <img class="img-fluid" src="{{ asset('public/images/organization/lain_lain.png') }}" alt="Lainnya Bantusesama">
             </a>
             <h6 class="fs-15 mt-1 pt-1">Lainnya</h6>
           </div>
@@ -184,7 +184,7 @@
               </svg>
               <span class="screen-reader-text">Twitter</span>
           </a>
-          <a rel="noreferrer" href="https://www.youtube.com/@Bantubersama-de2vi" target="_blank" class="socmed-item rounded-circle">
+          <a rel="noreferrer" href="https://www.youtube.com/@Bantusesama-de2vi" target="_blank" class="socmed-item rounded-circle">
               <svg class="mx-auto" xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24">
                   <path
                       d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"
@@ -196,7 +196,7 @@
         </div>
       </div>  -->
       <div class="fs-14 fw-normal text-grey mt-3">
-        Support by Bantubersama.com
+        Support by Bantusesama.com
       </div>
     </div>
   </section>
