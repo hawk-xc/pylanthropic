@@ -1,6 +1,0 @@
-SELECT * FROM `transaction`
-WHERE created_at <= '2024-12-21' AND status='draft';
-
-
-UPDATE transaction SET status = 'cancel'
-WHERE created_at <= '2024-12-12' AND status='draft';
