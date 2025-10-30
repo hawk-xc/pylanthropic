@@ -64,11 +64,8 @@ class ProgramController extends Controller
         $path = 'images/program/content/' . $filename;
 
         // Simpan menggunakan Storage
-        Storage::disk('public_uploads')->put($path, $image->stream());
-
-        // Generate URL - tambahkan 'public/' di awal path
-        // $link_img = url('public/' . $path);
-        // Generate URL yang benar
+        Storage::disk('public')->put($path, $image->stream());
+        
         $link_img = asset($path);
 
         return [
@@ -102,7 +99,7 @@ class ProgramController extends Controller
             $contentDir = 'images/program/content';
 
             // Cari file yang sudah ada
-            $existingFiles = Storage::disk('public_uploads')->files($contentDir);
+            $existingFiles = Storage::disk('public')->files($contentDir);
             $existingFiles = preg_grep('/' . preg_quote($baseName, '/') . '_(\d+)\.jpg$/', $existingFiles);
 
             // Hitung counter berikutnya
@@ -125,12 +122,8 @@ class ProgramController extends Controller
                 ->fit(580, 780)
                 ->encode('jpg', 80);
 
-            Storage::disk('public_uploads')->put($path, $image->stream());
-
-            // Generate URL
-            // $url = url('public/' . $path);
-            // Generate URL yang benar
-            $url = asset($path);
+            Storage::disk('public')->put($path, $image->stream());
+            $url = asset('storage/' . $path);
 
             return response()->json([
                 'location' => $url,
@@ -251,7 +244,11 @@ class ProgramController extends Controller
 
             $imageName = $filename . '.jpg';
             $imagePath = 'images/program/' . $imageName;
-            Storage::disk('public_uploads')->put($imagePath, $image->stream());
+            try {
+                Storage::disk('public')->put($imagePath, $image->stream());
+            } catch (Exception $e) {
+                dd($e->getMessage());
+            }
             $data->image = $imageName;
 
             // Handle thumbnail
@@ -265,7 +262,7 @@ class ProgramController extends Controller
 
                 $thumbnailName = 'thumbnail_' . $filename . '.jpg';
                 $thumbnailPath = 'images/program/' . $thumbnailName;
-                Storage::disk('public_uploads')->put($thumbnailPath, $thumbnail->stream());
+                Storage::disk('public')->put($thumbnailPath, $thumbnail->stream());
                 $data->thumbnail = $thumbnailName;
                 $data->same_as_thumbnail = true;
             } else {
@@ -279,7 +276,7 @@ class ProgramController extends Controller
 
                 $thumbnailName = 'thumbnail_' . $filename . '.jpg';
                 $thumbnailPath = 'images/program/' . $thumbnailName;
-                Storage::disk('public_uploads')->put($thumbnailPath, $thumbnail->stream());
+                Storage::disk('public')->put($thumbnailPath, $thumbnail->stream());
                 $data->thumbnail = $thumbnailName;
                 $data->same_as_thumbnail = false;
             }
@@ -311,6 +308,7 @@ class ProgramController extends Controller
 
             return redirect(route('adm.program.index'))->with('success', 'Berhasil menambahkan program baru');
         } catch (Exception $e) {
+            dd($e->getMessage());
             return redirect()
                 ->back()
                 ->with('error', 'Gagal update, ada kesalahan teknis: ' . $e->getMessage());

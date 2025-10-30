@@ -261,7 +261,7 @@
                     <input type="file" class="form-control form-control-sm" name="img_primary">
                     <img id="primary_image_preview" src="" class="mt-2 img-preview w-100" style="display:none;">
                     @if (!$errors->any() && isset($program->image) && $program->image != '')
-                        <img id="primary_image_main" src="{{ asset('public/images/program/' . $program->image) }}"
+                        <img id="primary_image_main" src="{{ asset('images/program/' . $program->image) }}"
                             class="mt-2 img-preview w-100">
                     @elseif (!isset($program->image) || $program->image == '')
                         <div class="mt-2 text-danger">Belum ada gambar utama</div>
@@ -286,7 +286,7 @@
                     <input type="file" class="form-control form-control-sm" name="thumbnail">
                     <img id="thumbnail_image_preview" src="" class="mt-2 img-preview w-100" style="display:none;">
                     @if (!$errors->any() && isset($program->thumbnail) && $program->thumbnail != '')
-                        <img id="thumbnail_image_main" src="{{ asset('public/images/program/' . $program->thumbnail) }}"
+                        <img id="thumbnail_image_main" src="{{ asset('images/program/' . $program->thumbnail) }}"
                             class="mt-2 img-preview w-100">
                     @elseif (!isset($program->thumbnail) || $program->thumbnail == '')
                         <div class="mt-2 text-danger">Belum ada thumbnail</div>
@@ -759,12 +759,12 @@
                         
                         content = content.replace(
                             /(src|data-original)="(\.\.\/)+public\/images\/([^"]+)"/g,
-                            '$1="{{ url('/') }}/public/images/$3"'
+                            '$1="{{ url('/') }}/images/$3"'
                         );
                         
                         content = content.replace(
                             /(src|data-original)="(\.\.\/)+images\/([^"]+)"/g,
-                            '$1="{{ url('/') }}/public/images/$3"'
+                            '$1="{{ url('/') }}/images/$3"'
                         );
                         
                         content = content.replace(
