@@ -6,34 +6,6 @@
 @section('css_plugins')
     <!-- swiper css -->
     <link rel="stylesheet" type="text/css" href="{{ asset('public') }}/css/vendors/swiper-bundle.min.css" />
-
-    <!-- Meta Pixel Code -->
-    {{-- disable meta pixel code --}}
-    {{-- <script>
-        ! function(f, b, e, v, n, t, s) {
-            if (f.fbq) return;
-            n = f.fbq = function() {
-                n.callMethod ?
-                    n.callMethod.apply(n, arguments) : n.queue.push(arguments)
-            };
-            if (!f._fbq) f._fbq = n;
-            n.push = n;
-            n.loaded = !0;
-            n.version = '2.0';
-            n.queue = [];
-            t = b.createElement(e);
-            t.async = !0;
-            t.src = v;
-            s = b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t, s)
-        }(window, document, 'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-        fbq.disablePushState = true;
-        fbq('init', '1278491429470122');
-        fbq('track', 'PageView');
-        window.loadedPixel = []
-    </script> --}}
-    <!-- End Meta Pixel Code -->
 @endsection
 
 
@@ -100,7 +72,7 @@
 
                     <div class="card-body p-2">
                         <div class="d-flex align-items-center mb-3">
-                            <h3 class="card-title fw-bold text-primary mb-0">A. Ketentuan Umum untuk Campaigner BantuBersama
+                            <h3 class="card-title fw-bold text-primary mb-0">A. Ketentuan Umum untuk Campaigner Bantusesama
                             </h3>
                         </div>
 
@@ -115,7 +87,7 @@
                                 </li>
                                 <li class="mb-2 d-flex">
                                     <span class="badge-circle">2</span>
-                                    Campaigner harus memberikan informasi yang diminta oleh Bantu Bersama
+                                    Campaigner harus memberikan informasi yang diminta oleh Bantu Sesama
                                     untuk memenuhi persyaratan data hukum yang diperlukan.
                                 </li>
                             </ul>
@@ -128,7 +100,7 @@
                                 <li class="mb-2 d-flex">
                                     <span class="badge-circle">1</span>
                                     Campaigner menjamin bahwa semua teks, foto, dan video yang diunggah ke situs
-                                    BantuBersama adalah benar dan dapat dipertanggungjawabkan.
+                                    Bantusesama adalah benar dan dapat dipertanggungjawabkan.
                                 </li>
                                 <li class="mb-2 d-flex">
                                     <span class="badge-circle">2</span>
@@ -142,7 +114,7 @@
                                 <li class="mb-2 d-flex">
                                     <span class="badge-circle">4</span>
                                     Campaigner harus memberikan laporan terkini mengenai pelaksanaan program dengan cara
-                                    yang transparan dan dapat dipercaya di situs BantuBersama.
+                                    yang transparan dan dapat dipercaya di situs Bantusesama.
                                 </li>
                                 <li class="mb-2 d-flex">
                                     <span class="badge-circle">5</span>
@@ -176,7 +148,7 @@
                                 </li>
                                 <li class="mb-2 d-flex">
                                     <span class="badge-circle">V</span>
-                                    Konten atau aktivitas yang tidak dapat diterima oleh pengelola Bantu Bersama
+                                    Konten atau aktivitas yang tidak dapat diterima oleh pengelola Bantu Sesama
                                 </li>
                             </ul>
 
@@ -186,19 +158,19 @@
                     <div class="card-body p-2">
                         <div class="d-flex align-items-center mb-3">
                             <h3 class="card-title fw-bold text-primary mb-0">B. Ketentuan Khusus untuk Campaigner
-                                BantuBersama
+                                Bantusesama
                             </h3>
                         </div>
                         <div class="ms-2 mb-3">
                             <ul class="list-unstyled lh-md ps-2 text-slate-500">
                                 <li class="mb-2 d-flex">
                                     <span class="badge-circle">1</span>
-                                    Jika ada perjanjian kerjasama khusus antara Campaigner dan pengelola Bantu Bersama, maka
+                                    Jika ada perjanjian kerjasama khusus antara Campaigner dan pengelola Bantu Sesama, maka
                                     pengelola akan bertindak sesuai dengan ketentuan dalam perjanjian tersebut.
                                 </li>
                                 <li class="mb-2 d-flex">
                                     <span class="badge-circle">2</span>
-                                    Tim Bantu Bersama berhak untuk menolak atau menunda pencairan donasi jika:
+                                    Tim Bantu Sesama berhak untuk menolak atau menunda pencairan donasi jika:
                                 </li>
                                 <ul class="ps-5 text-slate-500">
                                     <!-- First Main Item -->
@@ -249,7 +221,7 @@
                                 Campaigner setuju untuk bertanggung jawab jika terjadi penyalahgunaan dana program yang
                                 telah diterima atau tindakan melanggar hukum lainnya, dan bersedia menerima tuntutan hukum
                                 jika hal tersebut terjadi. Oleh karena itu, Campaigner menyatakan dan setuju untuk mengganti
-                                semua kerugian yang dialami oleh pengelola Bantu Bersama, termasuk membebaskan pengelola
+                                semua kerugian yang dialami oleh pengelola Bantu Sesama, termasuk membebaskan pengelola
                                 dari tuntutan hukum di masa mendatang terkait hal-hal berikut, tetapi tidak terbatas pada:
                             </p>
                             <ul class="list-unstyled ps-0 mt-2 text-slate-500">
@@ -275,7 +247,7 @@
                             </ul>
 
                             <p class="mb-0 lh-md text-slate-500" style="text-align: justify;">
-                                Campaigner bersedia untuk mengikuti ketentuan yang ditetapkan oleh pengelola Bantu Bersama
+                                Campaigner bersedia untuk mengikuti ketentuan yang ditetapkan oleh pengelola Bantu Sesama
                                 jika terjadi hal-hal berikut, tetapi tidak terbatas pada:
                             </p>
 
@@ -309,7 +281,7 @@
                             </ul>
                             <p class="mb-0 lh-md text-slate-500" style="text-align: justify;">
                                 Dalam hal ini, kelebihan dana akan dialihkan untuk program lain yang menggalang dana melalui
-                                Bantu Bersama sesuai dengan kebutuhan dan kategori penggunaan dana. Hal ini dilakukan agar
+                                Bantu Sesama sesuai dengan kebutuhan dan kategori penggunaan dana. Hal ini dilakukan agar
                                 lebih banyak penerima manfaat dapat terbantu.
                             </p>
                         </div>
@@ -319,7 +291,6 @@
         </div>
     </section>
 
-    <!-- Footer section start -->
     <section class="empty-section section-t-space section-b-space pb-0">
         <div class="custom-container footer pb-3 pt-3">
             <div class="fw-medium text-grey pt-2 fs-14">
@@ -330,7 +301,7 @@
             <div class="mt-3 text-grey fs-14">
                 Temukan kami di <br>
                 <div class="socmed mb-3 mt-1">
-                    <a rel="noreferrer" href="https://www.facebook.com/profile.php?id=100091563649667" target="_blank"
+                    <a rel="noreferrer" href="https://www.facebook.com" target="_blank"
                         class="me-2 socmed-item rounded-circle">
                         <svg class="mx-auto" width="12" height="12" fill="none"
                             xmlns="http://www.w3.org/2000/svg">
@@ -340,7 +311,7 @@
                         </svg>
                         <span class="screen-reader-text">Facebook</span>
                     </a>
-                    <a rel="noreferrer" href="https://www.instagram.com/bantubersamacom/" target="_blank"
+                    <a rel="noreferrer" href="https://www.instagram.com/bantusesamacom/" target="_blank"
                         class="me-2 socmed-item rounded-circle">
                         <svg class="mx-auto" width="12" height="12" fill="none"
                             xmlns="http://www.w3.org/2000/svg">
@@ -353,7 +324,7 @@
                         </svg>
                         <span class="screen-reader-text">Instagram</span>
                     </a>
-                    <a rel="noreferrer" href="https://twitter.com/bantubersamacom" target="_blank"
+                    <a rel="noreferrer" href="https://twitter.com/bantusesamacom" target="_blank"
                         class="me-2 socmed-item rounded-circle">
                         <svg class="mx-auto" width="12" height="12" fill="none"
                             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
@@ -378,11 +349,10 @@
                 </div>
             </div>
             <div class="fs-14 fw-normal text-grey mt-3">
-                Copyright © 2023 Yayasan Bantu Beramal Bersama
+                Copyright © 2023 Bantusesama Organization
             </div>
         </div>
     </section>
-    <!-- footer section end -->
 
     <style>
         .hover-bg-lightblue {

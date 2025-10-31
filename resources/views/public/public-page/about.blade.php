@@ -4,36 +4,7 @@
 
 
 @section('css_plugins')
-    <!-- swiper css -->
     <link rel="stylesheet" type="text/css" href="{{ asset('public') }}/css/vendors/swiper-bundle.min.css" />
-
-    <!-- Meta Pixel Code -->
-    {{-- disable meta pixel code --}}
-    {{-- <script>
-        ! function(f, b, e, v, n, t, s) {
-            if (f.fbq) return;
-            n = f.fbq = function() {
-                n.callMethod ?
-                    n.callMethod.apply(n, arguments) : n.queue.push(arguments)
-            };
-            if (!f._fbq) f._fbq = n;
-            n.push = n;
-            n.loaded = !0;
-            n.version = '2.0';
-            n.queue = [];
-            t = b.createElement(e);
-            t.async = !0;
-            t.src = v;
-            s = b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t, s)
-        }(window, document, 'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-        fbq.disablePushState = true;
-        fbq('init', '1278491429470122');
-        fbq('track', 'PageView');
-        window.loadedPixel = []
-    </script> --}}
-    <!-- End Meta Pixel Code -->
 @endsection
 
 
@@ -67,36 +38,25 @@
                 </svg>
             </a>
             <h2 class="fs-16">Tentang Kami</h2>
-            <!-- </div> -->
         </div>
-        <!-- </div> -->
     </header>
-    <!-- header end -->
 
-    <!-- About Us Content Section -->
     <section class="about-content pt-5 pb-0">
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-11 col-md-11">
-                    <!-- Featured Image with Caption -->
-                    <figure class="text-center mb-5">
-                        <img src="{{ asset('aboutusbanner.png') }}" alt="Tim Bantu Bersama sedang beraktivitas"
-                            class="img-fluid rounded-4 shadow" style="max-height: 450px; object-fit: cover;">
-                        {{-- <figcaption class="mt-2 text-muted small">Komunitas Bantu Bersama dalam aksi sosial</figcaption> --}}
-                    </figure>
-
                     <!-- Introduction Paragraph -->
                     <div class="mb-3 px-lg-2 mb-4">
                         <p class="lead text-start fw-bold text-dark mb-4">
-                            Bantu Bersama hadir sebagai solusi digital untuk memudahkan berbagi kebaikan
+                            BantuSesama hadir sebagai solusi digital untuk memudahkan berbagi kebaikan
                         <p class="text-justify lh-md mb-4 text-slate-500" style="text-align: justify;">
-                            Melalui <a href="https://bantubersama.com" class="fw-bold"
-                                style="color: rgb(136, 88, 217);">bantubersama.com</a>, kami
+                            Melalui <a href="https://bantusesama.com" class="fw-bold"
+                                style="color: rgb(136, 88, 217);">bantusesama.com</a>, kami
                             menyediakan platform
                             digital yang memudahkan masyarakat
                             untuk
                             berbagi donasi bagi yang membutuhkan. Dengan nilai-nilai kepedulian dan solidaritas sebagai
-                            landasannya, Bantu Bersama berkomitmen menciptakan kesetaraan sosial dan membantu
+                            landasannya, BantuSesama berkomitmen menciptakan kesetaraan sosial dan membantu
                             peningkatan kualitas hidup masyarakat di seluruh Indonesia.
                         </p>
                         <p class="text-justify lh-md text-slate-500" style="text-align: justify;">
@@ -148,25 +108,10 @@
                         </ul>
                     </div>
                 </div>
-
-                {{-- Legalitas --}}
-                <div class="col-lg-11 col-md-11">
-                    <div class="mb-3 px-lg-2">
-                        <div class="d-flex align-items-center mb-2">
-                            <h3 class="card-title fw-bold text-primary mb-0">Legalitas</h3>
-                        </div>
-                        <div>
-                            <img src="{{ asset('legalitas_bantubersama.png') }}" alt="" class="img-fluid w-100">
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer section start -->
-    {{-- <section class="empty-section section-t-space section-b-space pb-0"> --}}
-    {{-- <section> --}}
     <div class="custom-container footer pb-3 pt-3">
         <div class="fw-medium text-grey pt-2 fs-14">
             <a class="text-grey" href="{{ route('aboutus') }}">Tentang Kami</a> |
@@ -176,7 +121,7 @@
         <div class="mt-3 text-grey fs-14">
             Temukan kami di <br>
             <div class="socmed mb-3 mt-1">
-                <a rel="noreferrer" href="https://www.facebook.com/profile.php?id=100091563649667" target="_blank"
+                <a rel="noreferrer" href="https://www.facebook.com" target="_blank"
                     class="me-2 socmed-item rounded-circle">
                     <svg class="mx-auto" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -185,7 +130,7 @@
                     </svg>
                     <span class="screen-reader-text">Facebook</span>
                 </a>
-                <a rel="noreferrer" href="https://www.instagram.com/bantubersamacom/" target="_blank"
+                <a rel="noreferrer" href="https://www.instagram.com/bantusesamacom/" target="_blank"
                     class="me-2 socmed-item rounded-circle">
                     <svg class="mx-auto" width="12" height="12" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -197,7 +142,7 @@
                     </svg>
                     <span class="screen-reader-text">Instagram</span>
                 </a>
-                <a rel="noreferrer" href="https://twitter.com/bantubersamacom" target="_blank"
+                <a rel="noreferrer" href="https://twitter.com/bantusesamacom" target="_blank"
                     class="me-2 socmed-item rounded-circle">
                     <svg class="mx-auto" width="12" height="12" fill="none"
                         xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
@@ -222,23 +167,18 @@
             </div>
         </div>
         <div class="fs-14 fw-normal text-grey mt-3">
-            Copyright © 2023 Yayasan Bantu Beramal Bersama
+            Copyright © 2023 Bantusesama Organization
         </div>
     </div>
-    {{-- </section> --}}
-    <!-- footer section end -->
 
     <style>
         .hover-bg-lightblue {
             width: 50px;
-            /* Set the width */
             height: 50px;
-            /* Set the height to be the same as width */
         }
 
         .hover-bg-lightblue:hover {
             background-color: #d0e3ff !important;
-            /* Warna biru muda */
             transition: background-color 0.2s ease-in-out;
         }
 

@@ -4,36 +4,7 @@
 
 
 @section('css_plugins')
-    <!-- swiper css -->
     <link rel="stylesheet" type="text/css" href="{{ asset('public') }}/css/vendors/swiper-bundle.min.css" />
-
-    <!-- Meta Pixel Code -->
-    {{-- disable meta pixel code --}}
-    {{-- <script>
-        ! function(f, b, e, v, n, t, s) {
-            if (f.fbq) return;
-            n = f.fbq = function() {
-                n.callMethod ?
-                    n.callMethod.apply(n, arguments) : n.queue.push(arguments)
-            };
-            if (!f._fbq) f._fbq = n;
-            n.push = n;
-            n.loaded = !0;
-            n.version = '2.0';
-            n.queue = [];
-            t = b.createElement(e);
-            t.async = !0;
-            t.src = v;
-            s = b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t, s)
-        }(window, document, 'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-        fbq.disablePushState = true;
-        fbq('init', '1278491429470122');
-        fbq('track', 'PageView');
-        window.loadedPixel = []
-    </script> --}}
-    <!-- End Meta Pixel Code -->
 @endsection
 
 
@@ -56,9 +27,7 @@
 @section('content')
     <!-- header start -->
     <header class="section-t-space pt-0">
-        <!-- <div class="custom-container"> -->
         <div class="header-panel bg-me header-title">
-            <!-- <div class="header-title"> -->
             <a href="{{ url('/') }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="#fff">
@@ -67,13 +36,9 @@
                 </svg>
             </a>
             <h2 class="fs-16">Pusat Bantuan</h2>
-            <!-- </div> -->
         </div>
-        <!-- </div> -->
     </header>
-    <!-- header end -->
 
-    <!-- Help Center Content Section -->
     <section class="help-content pt-5 pb-0">
         <div class="container">
             <div class="row justify-content-center">
@@ -97,8 +62,8 @@
 
                                     <div class="text-start">
                                         <h6 class="mb-1">WhatsApp</h6>
-                                        <a href="https://wa.me/628155555849" class="text-decoration-none"
-                                            target="_blank">+6281-55555-849</a>
+                                        <a href="https://wa.me/082139465611" class="text-decoration-none"
+                                            target="_blank">+62 82139465611</a>
                                     </div>
                                 </div>
 
@@ -111,8 +76,8 @@
                                     </svg>
                                     <div class="text-start">
                                         <h6 class="mb-1">Email</h6>
-                                        <a href="mailto:help@bantubersama.com" class="text-decoration-none"
-                                            target="_blank">bantuberamalbersama@gmail.com</a>
+                                        <a href="mailto:help@bantuSesama.com" class="text-decoration-none"
+                                            target="_blank">bantusesama.cc@gmail.com</a>
                                     </div>
                                 </div>
                             </div>
@@ -148,7 +113,7 @@
                                 <button class="accordion-button collapsed fw-semibold" type="button"
                                     data-bs-toggle="collapse" data-bs-target="#collapse2" aria-expanded="false"
                                     aria-controls="collapse2">
-                                    Bagaimana cara berdonasi di Bantu Bersama?
+                                    Bagaimana cara berdonasi di Bantu Sesama?
                                 </button>
                             </h3>
                             <div id="collapse2" class="accordion-collapse collapse" aria-labelledby="heading2"
@@ -700,7 +665,7 @@
             <div class="mt-3 text-grey fs-14">
                 Temukan kami di <br>
                 <div class="socmed mb-3 mt-1">
-                    <a rel="noreferrer" href="https://www.facebook.com/profile.php?id=100091563649667" target="_blank"
+                    <a rel="noreferrer" href="https://www.facebook.com" target="_blank"
                         class="me-2 socmed-item rounded-circle">
                         <svg class="mx-auto" width="12" height="12" fill="none"
                             xmlns="http://www.w3.org/2000/svg">
@@ -710,7 +675,7 @@
                         </svg>
                         <span class="screen-reader-text">Facebook</span>
                     </a>
-                    <a rel="noreferrer" href="https://www.instagram.com/bantubersamacom/" target="_blank"
+                    <a rel="noreferrer" href="https://www.instagram.com/bantusesamacom/" target="_blank"
                         class="me-2 socmed-item rounded-circle">
                         <svg class="mx-auto" width="12" height="12" fill="none"
                             xmlns="http://www.w3.org/2000/svg">
@@ -723,7 +688,7 @@
                         </svg>
                         <span class="screen-reader-text">Instagram</span>
                     </a>
-                    <a rel="noreferrer" href="https://twitter.com/bantubersamacom" target="_blank"
+                    <a rel="noreferrer" href="https://twitter.com/bantusesamacom" target="_blank"
                         class="me-2 socmed-item rounded-circle">
                         <svg class="mx-auto" width="12" height="12" fill="none"
                             xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
@@ -748,7 +713,7 @@
                 </div>
             </div>
             <div class="fs-14 fw-normal text-grey mt-3">
-                Copyright © 2023 Yayasan Bantu Beramal Bersama
+                Copyright © 2023 Bantusesama Organization
             </div>
         </div>
     </section>
