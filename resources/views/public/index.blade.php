@@ -119,77 +119,82 @@
     @endif
 
     <!-- search section starts -->
-    <section class="search-section pt-3">
-        <div class="custom-container">
+    <section class="search-section pt-6" style="background-color: #30C2FD;">
+        <div class="px-3">
             <form class="auth-form search-head" method="get" action="#" id="search">
-                <div class="form-group header-navbar">
+                <div class="form-group header-navbar d-flex align-items-center justify-content-between gap-3">
+                    <!-- Logo -->
                     <a href="{{ url('/') }}" class="logo-navbar">
-                        <img class="" src="{{ asset('Logo Bantubersama.png') }}">
+                        <img src="{{ asset('Logo Bantubersama.png') }}" alt="Logo Bantu Bersama" style="height: 40px;">
                     </a>
-                    <div class="form-input">
-                        <input type="text" class="form-control search typewrite" id="inputkey" placeholder="" />
-                        <i class="ri-search-line search-icon color-me"></i>
+
+                    <!-- Search input -->
+                    <div class="form-input position-relative flex-grow-1">
+                        <input type="text" class="form-control search typewrite" id="inputkey"
+                            placeholder="Cari bantuan, donasi, zakat..." style="border-radius: 20px; padding-left: 40px;" />
+                        <i class="ri-search-line search-icon color-me"
+                            style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #555;"></i>
                     </div>
 
-                    <a href="#search-filter" class="btn filter-button mt-0" data-bs-toggle="modal">
-                        <i class="ri-equalizer-line color-me"></i>
-                    </a>
+                    <!-- Filter icon -->
+                    {{-- <a href="#search-filter" class="btn filter-button mt-0" data-bs-toggle="modal">
+                        <i class="ri-equalizer-line color-me" style="font-size: 1.4rem; color: white;"></i>
+                    </a> --}}
                 </div>
             </form>
         </div>
     </section>
     <!-- search section end -->
 
-    <!-- banner section start -->
-    <section class="banner-section section-t-space pt-3">
-        <div class="custom-container">
-            <div class="swiper banner1">
-                <div class="swiper-wrapper">
-                    @foreach ($slider as $vs)
-                        <div class="swiper-slide">
-                            <a href="{{ $vs->url }}">
-                                <img class="img-fluid banner-img" src="{{ asset($vs->image) }}" alt="{{ $vs->alt }}" />
-                            </a>
-                        </div>
-                    @endforeach
+    <!-- hero section start -->
+    <section id="hero-section" class="hero pt-5 pb-0 text-center text-white"
+        style="background-color: #30C2FD; overflow: hidden; border-bottom-left-radius: 53px; border-bottom-right-radius: 53px;">
+
+        <div class="container mt-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-10 col-md-10">
+                    <h1 class="fw-semibold mb-3 text-white" style="font-size: 1.7rem;">
+                        Bantu Sesama hadir sebagai solusi digital untuk memudahkan berbagi kebaikan
+                    </h1>
+                    <p class="fw-semibold mb-4 text-white">
+                        Donasi, zakat, dan lindungi keluarga bersama jutaan orang baik melalui Bantu Sesama
+                    </p>
+
+                    <div id="download-button" class="mb-4 mt-4">
+                        <a href="https://play.google.com/store/apps/details?id=com.bantusesama.app" target="_blank">
+                            <img src="{{ asset('google-play-button.png') }}" alt="Download di Google Play"
+                                class="img-fluid mx-auto d-block" style="max-width: 180px;" />
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
-    </section>
 
-    <!-- banner section end -->
+        <!-- gambar hero full width -->
+        <div class="mt-4">
+            <img src="{{ asset('bg-hero.png') }}" alt="Bantu Sesama Hero" class="img-fluid w-100 d-block"
+                style="max-width: 100%; height: auto; object-fit: cover;" />
+        </div>
 
-    <!-- Categories section start -->
-    <section class="section-t-space">
-        <div class="custom-container">
-            <div class="title">
-                <h3 class="mt-0">Kategori</h3>
-                <!-- <a href="categories.html">Semua</a> -->
-            </div>
-
-            <div class="swiper categories">
-                <div class="swiper-wrapper ratio_square">
-                    @foreach ($category as $vc)
-                        <div class="swiper-slide">
-                            <a href="{{ route('program.list') . '/?kategori=' . $vc->slug }}" class="food-categories">
-                                <img class="img-fluid categories-img"
-                                    src="{{ asset('images/categories') . '/' . $vc->icon }}"
-                                    alt="{{ ucwords($vc->name) }}" />
-                            </a>
-                            <h6 class="fs-12">{{ ucwords($vc->name) }}</h6>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
+        <div class="position-absolute start-50 translate-middle-x bg-white shadow rounded-4 text-center p-3"
+            style="bottom: 180px; z-index: 10; max-width: 460px; width: 90%;">
+            <h3 class="fw-semibold mb-1 text-dark">Donasi Otomatis, di aplikasi BantuSesama</h3>
+            <p class="small text-muted mb-3">
+                Donasi rutin tanpa lupa dengan fitur Donasi Otomatis di aplikasi Kitabisa. Download sekarang.
+            </p>
+            <a href="https://play.google.com/store/apps/details?id=com.bantusesama.app" target="_blank"
+                class="btn btn-primary w-100 rounded-pill fw-semibold">
+                Download
+            </a>
         </div>
     </section>
-    <!-- Food Categories section end -->
+    <!-- hero section end -->
 
     <!-- Program Selection section start -->
-    <section class="section-t-space">
+    <section class="section-t-space" style="padding-top: 100px;">
         <div class="custom-container">
             <div class="title">
-                <h3 class="mt-0">Pilihan Bantusesama</h3>
+                <h2 class="mt-0">Program Pilihan</h2>
                 <a href="{{ route('program.list') }}">Semua</a>
             </div>
             <div class="swiper products pt-0 pb-2">
@@ -254,8 +259,34 @@
     </section>
     <!-- Program Selection section start -->
 
+    <!-- Categories section start -->
+    <section class="section-t-space">
+        <div class="custom-container">
+            <div class="title">
+                <h3 class="mt-0">Kategori</h3>
+                <!-- <a href="categories.html">Semua</a> -->
+            </div>
+
+            <div class="swiper categories">
+                <div class="swiper-wrapper ratio_square">
+                    @foreach ($category as $vc)
+                        <div class="swiper-slide">
+                            <a href="{{ route('program.list') . '/?kategori=' . $vc->slug }}" class="food-categories">
+                                <img class="img-fluid categories-img"
+                                    src="{{ asset('images/categories') . '/' . $vc->icon }}"
+                                    alt="{{ ucwords($vc->name) }}" />
+                            </a>
+                            <h6 class="fs-12">{{ ucwords($vc->name) }}</h6>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+    </section>
+    <!-- Food Categories section end -->
+
     <!-- Program Urgent section start -->
-    <section class="section-t-space pt-3">
+    {{-- <section class="section-t-space pt-3">
         <div class="custom-container pt-3 pb-2 mt-0" style="background-color: #fff9f5;">
             <div class="title">
                 <h3 class="mt-0">Penggalangan Dana Mendesak</h3>
@@ -306,7 +337,7 @@
                 </div>
             </div>
         </div>
-    </section>
+    </section> --}}
     <!-- Program Urgent section start -->
 
     <!-- Banner section start -->
@@ -321,7 +352,7 @@
     <!-- Banner section end -->
 
     <!-- Program Newest section start -->
-    <section class="section-t-space pt-3">
+    {{-- <section class="section-t-space pt-3">
         <div class="custom-container">
             <div class="title">
                 <h3 class="mt-0">Terbaru di Bantusesama</h3>
@@ -379,7 +410,7 @@
                 @endforeach
             </div>
         </div>
-    </section>
+    </section> --}}
     <!-- Explore Restaurants section end -->
 
     <!-- Footer section start -->
@@ -441,7 +472,7 @@
                 </div>
             </div>
             <div class="fs-14 fw-normal text-grey mt-3">
-                Copyright © 2023 Yayasan Bantu Beramal Bersama
+                Copyright © 2023 Yayasan Bantu Beramal Sesama
             </div>
         </div>
     </section>
@@ -510,11 +541,11 @@
                                 </div>
                                 <div class="order-type">
                                     <!-- <div class="auth-form search-form">
-                                                      <div class="form-check">
-                                                        <label class="form-check-label" for="fixed1">Sosial</label>
-                                                        <input class="form-check-input" type="radio" name="kategori" value="sosial" />
-                                                      </div>
-                                                    </div> -->
+                                                                              <div class="form-check">
+                                                                                <label class="form-check-label" for="fixed1">Sosial</label>
+                                                                                <input class="form-check-input" type="radio" name="kategori" value="sosial" />
+                                                                              </div>
+                                                                            </div> -->
                                     <div class="auth-form search-form">
                                         <div class="form-check">
                                             <label class="form-check-label" for="fixed1">Bencana Alam</label>
@@ -597,23 +628,6 @@
         </div>
     </div>
     <!-- filter offcanvas end -->
-
-    <!-- pwa install app popup start -->
-    <!-- <div class="offcanvas offcanvas-bottom addtohome-popup theme-offcanvas" tabindex="-1" id="offcanvas">
-                                      <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                                      <div class="offcanvas-body small">
-                                        <div class="app-info">
-                                          <img src="{{ asset('Logo Bantusesama.png') }}" class="img-fluid" alt="" />
-                                          <div class="content">
-                                            <h3>Bantusesama</h3>
-                                            <a href="#">www.bantubersama.com</a>
-                                          </div>
-                                        </div>
-                                        <a href="#!" class="btn theme-btn-me install-app btn-inline home-screen-btn m-0" id="installApp">Add to Home
-                                          Screen</a>
-                                      </div>
-                                    </div> -->
-    <!-- pwa install app popup start -->
 @endsection
 
 
