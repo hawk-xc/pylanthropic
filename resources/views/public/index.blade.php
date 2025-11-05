@@ -263,8 +263,7 @@
     <section class="section-t-space">
         <div class="custom-container">
             <div class="title">
-                <h3 class="mt-0">Kategori</h3>
-                <!-- <a href="categories.html">Semua</a> -->
+                <h2 class="mt-0">Pilih Kategori Favoritmu</h2>
             </div>
 
             <div class="swiper categories">
