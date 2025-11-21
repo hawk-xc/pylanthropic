@@ -6,6 +6,7 @@
 @section('css_plugins')
     <!-- swiper css -->
     <link rel="stylesheet" type="text/css" href="{{ asset('public') }}/css/vendors/swiper-bundle.min.css" />
+    <link href="{{ asset('css/lazyloads.css') }}" rel="stylesheet">
 
     <!-- Meta Pixel Code -->
     <script>
@@ -176,8 +177,8 @@
                 style="max-width: 100%; height: auto; object-fit: cover;" />
         </div>
 
-        <div class="position-absolute start-50 translate-middle-x bg-white shadow rounded-4 text-center p-3"
-            style="bottom: 180px; z-index: 10; max-width: 460px; width: 90%;">
+        <div class="position-absolute start-50 translate-middle-x bg-white shadow rounded-4 text-center"
+            style="bottom: 20rem; z-index: 10; max-width: 460px; width: 90%; padding: 1rem">
             <h3 class="fw-semibold mb-1 text-dark">Donasi Otomatis, di aplikasi BantuSesama</h3>
             <p class="small text-muted mb-3">
                 Donasi rutin tanpa lupa dengan fitur Donasi Otomatis di aplikasi Kitabisa. Download sekarang.
@@ -200,14 +201,16 @@
             <div class="swiper products pt-0 pb-2">
                 <div class="swiper-wrapper">
                     @foreach ($selected as $vsl)
-                        <div class="swiper-slide">
+                        <div key="{{ $vsl->id }}" class="swiper-slide">
                             <a href="{{ url('/') . '/' . $vsl->slug }}" class="">
                                 <div class="product-box d-flex flex-column">
                                     <!-- gambar tetap di atas -->
                                     <div class="ratio ratio-16x9">
-                                        <img class="img-fluid rounded-top lazyload object-fit-cover"
-                                            data-original="{{ asset('images/program') . '/' . $vsl->thumbnail }}"
-                                            alt="{{ ucwords($vsl->title) }}" />
+                                        <img alt="{{ ucwords($vsl->title) }}"
+                                            class="img-fluid rounded-top lazyload object-fit-cover"
+                                            src="{{ asset('public/images/program') . '/' . $vsl->thumbnail_blur }}"
+                                            data-src="{{ asset('public/images/program') . '/' . $vsl->thumbnail }}"
+                                            onerror="this.src='{{ $vsl->thumbnail_blur ? asset('public/images/program') . '/' . $vsl->thumbnail_blur : asset('not-found.png') }}';" />
                                     </div>
 
                                     <!-- detail card -->
@@ -284,61 +287,6 @@
     </section>
     <!-- Food Categories section end -->
 
-    <!-- Program Urgent section start -->
-    {{-- <section class="section-t-space pt-3">
-        <div class="custom-container pt-3 pb-2 mt-0" style="background-color: #fff9f5;">
-            <div class="title">
-                <h3 class="mt-0">Penggalangan Dana Mendesak</h3>
-                <a href="{{ route('program.list') }}">Semua</a>
-            </div>
-            <div class="swiper products pt-0 pb-2">
-                <div class="swiper-wrapper">
-                    @foreach ($urgent as $vu)
-                        <div class="swiper-slide">
-                            <a href="{{ url('/') . '/' . $vu->slug }}" class="">
-                                <div class="product-box">
-                                    <img class="img-fluid rounded-top lazyload"
-                                        data-original="{{ asset('images/program') . '/' . $vu->thumbnail }}"
-                                        alt="{{ ucwords($vu->title) }}" />
-                                    <div class="product-box-detail product-box-bg">
-                                        <h5 class="two-line mt-1 mb-1 fs-11 lh-14">{{ ucwords($vu->title) }}</h5>
-                                        <ul class="timing mt-2 mb-2">
-                                            <li class="fs-11 lh-14 two-line">
-                                                {{ ucwords($vu->name) }}
-                                                @if ($vu->status == 'verified' || $vu->status == 'verif_org')
-                                                    <span class="star"><i class="ri-star-s-fill"></i></span>
-                                                @endif
-                                            </li>
-                                        </ul>
-                                        <div class="progress mt-1" role="progressbar" aria-label="Basic example"
-                                            aria-valuenow="86" aria-valuemin="0" aria-valuemax="100"
-                                            style="height: 5px">
-                                            <div class="progress-bar"
-                                                style="width: {{ ceil(($vu->sum_amount / $vu->nominal_approved) * 100) }}%">
-                                            </div>
-                                        </div>
-                                        <div class="bottom-panel">
-                                            <div class="pe-0 fw-semibold fs-11 lh-16">Rp
-                                                {{ str_replace(',', '.', number_format($vu->sum_amount)) }}</div>
-                                            <div class="fw-semibold fs-11 lh-16 text-end">
-                                                {{ now()->diffInDays(substr($vu->end_date, 0, 10)) }}
-                                            </div>
-                                        </div>
-                                        <div class="bottom-panel mt-0">
-                                            <div class="fw-light fs-10 lh-14 pe-0">Donasi Terkumpul</div>
-                                            <div class="fw-light fs-10 lh-14 text-end">Hari Lagi</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </a>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        </div>
-    </section> --}}
-    <!-- Program Urgent section start -->
-
     <!-- Banner section start -->
     <section class="empty-section section-t-space section-b-space pt-3">
         <div class="custom-container">
@@ -349,68 +297,6 @@
         </div>
     </section>
     <!-- Banner section end -->
-
-    <!-- Program Newest section start -->
-    {{-- <section class="section-t-space pt-3">
-        <div class="custom-container">
-            <div class="title">
-                <h3 class="mt-0">Terbaru di Bantusesama</h3>
-                <a href="{{ route('program.list') }}">Semua</a>
-            </div>
-            <div class="row gy-2">
-                @foreach ($newest as $vn)
-                    <div class="col-12">
-                        <div class="vertical-product-box">
-                            <div class="vertical-box-img">
-                                <a href="{{ url('/') . '/' . $vn->slug }}">
-                                    <img class="img-fluid img lazyload"
-                                        data-original="{{ asset('images/program') . '/' . $vn->thumbnail }}"
-                                        alt="{{ ucwords($vn->title) }}" />
-                                </a>
-                            </div>
-                            <div class="vertical-box-details">
-                                <a href="{{ url('/') . '/' . $vn->slug }}">
-                                    <div class="vertical-box-head">
-                                        <div class="restaurant">
-                                            <h5 class="two-line fs-11 lh-14">{{ ucwords($vn->title) }}</h5>
-                                        </div>
-
-                                        <h6 class="rating-star mt-1 mb-1 fs-11">
-                                            {{ ucwords($vn->name) }}
-                                            @if ($vn->status == 'verified' || $vn->status == 'verif_org')
-                                                <span class="star"><i class="ri-star-s-fill"></i></span>
-                                            @endif
-                                        </h6>
-
-                                        <div class="progress mt-1 mb-2" role="progressbar" aria-label="Basic example"
-                                            aria-valuenow="89" aria-valuemin="0" aria-valuemax="100"
-                                            style="height: 5px">
-                                            <div class="progress-bar"
-                                                style="width: {{ ceil(($vn->sum_amount / $vn->nominal_approved) * 100) }}%">
-                                            </div>
-                                        </div>
-
-                                        <div class="d-flex justify-content-between mt-2">
-                                            <div class="fw-semibold fs-11 pe-0 lh-16">Rp
-                                                {{ str_replace(',', '.', number_format($vn->sum_amount)) }}</div>
-                                            <div class="fw-semibold fs-11 text-end ps-1 lh-16">
-                                                {{ now()->diffInDays(substr($vn->end_date, 0, 10)) }}
-                                            </div>
-                                        </div>
-                                        <div class="d-flex justify-content-between">
-                                            <div class="fw-light fs-10 lh-14 pe-0">Donasi Terkumpul</div>
-                                            <div class="fw-light fs-10 lh-14 text-end ps-1">Hari Lagi</div>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </section> --}}
-    <!-- Explore Restaurants section end -->
 
     <!-- Footer section start -->
     <section class="empty-section section-t-space section-b-space pb-0">
@@ -540,11 +426,11 @@
                                 </div>
                                 <div class="order-type">
                                     <!-- <div class="auth-form search-form">
-                                                                              <div class="form-check">
-                                                                                <label class="form-check-label" for="fixed1">Sosial</label>
-                                                                                <input class="form-check-input" type="radio" name="kategori" value="sosial" />
-                                                                              </div>
-                                                                            </div> -->
+                                                                                  <div class="form-check">
+                                                                                    <label class="form-check-label" for="fixed1">Sosial</label>
+                                                                                    <input class="form-check-input" type="radio" name="kategori" value="sosial" />
+                                                                                  </div>
+                                                                                </div> -->
                                     <div class="auth-form search-form">
                                         <div class="form-check">
                                             <label class="form-check-label" for="fixed1">Bencana Alam</label>

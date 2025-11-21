@@ -1,0 +1,38 @@
+/* Wrapper agar proporsi gambar konsisten seperti Kitabisa */
+.ratio-wrapper {
+    position: relative;
+    width: 100%;
+    padding: 8px;
+    /* padding seperti Kitabisa */
+    border-radius: 14px;
+    /* abu lembut seperti Kitabisa */
+    overflow: hidden;
+}
+
+/* Ratio 16:9 */
+.ratio-wrapper::before {
+    content: "";
+    display: block;
+    padding-top: 56.25%;
+}
+
+/* Gambar */
+.campaign-image {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: calc(100% - 16px);
+    height: calc(100% - 16px);
+    object-fit: cover;
+    border-radius: 12px;
+    transition: filter 0.3s ease-out;
+}
+
+/* Lazyload blur */
+.lazyload {
+    filter: blur(12px);
+}
+
+.lazyloaded {
+    filter: blur(0);
+}
