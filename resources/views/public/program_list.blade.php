@@ -7,7 +7,6 @@
     
 @endsection
 
-
 @section('css_inline')
   <style type="text/css">
     input:focus::-webkit-input-placeholder {
@@ -57,10 +56,10 @@
         @foreach($program as $vn)
           <div class="col-12">
             <div class="vertical-product-box">
-              <div class="vertical-box-img">
+              <div class="vertical-box-img"
                 <a href="{{ url('/').'/'.$vn->slug }}">
                   <img class="img-fluid img" 
-                    src="{{ asset('public/images/program').'/'.$vn->thumbnail }}" 
+                    src="{{ asset('storage/images/program/' . $vn->thumbnail) }}" 
                     alt="{{ ucwords($vn->title) }}" 
                     onerror="this.src='{{ asset('not-found.png') }}';" />
                 </a>

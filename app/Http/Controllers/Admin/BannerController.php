@@ -84,7 +84,7 @@ class BannerController extends Controller
                 if ($row->is_forever) {
                     return '<span class="badge bg-info">Selamanya</span>';
                 }
-                
+
                 if ($row->expire_date) {
                     $isPast = \Carbon\Carbon::parse($row->expire_date)->isPast();
                     $badgeColor = $isPast ? 'bg-secondary' : 'bg-success';
@@ -123,39 +123,18 @@ class BannerController extends Controller
         ]);
 
         try {
-            $file = $request->file('image');
 
-            // Tentukan extension asli
-            $extension = strtolower($file->getClientOriginalExtension());
+            // Simpan file dengan cara standar Laravel
+            // hasil: storage/app/public/images/banner/xxxxxx.png
+            $path = $request->file('image')->store(
+                'images/' . $request->type,
+                'public'
+            );
 
-            // Default ke png kalau mau simpan transparansi
-            if (!in_array($extension, ['png', 'webp'])) {
-                $extension = 'png';
-            }
-
-            $fileName = Str::slug($request->title) . '_' . time() . '.' . $extension;
-            $path = 'images/' . $request->type . '/' . $fileName;
-
-            $image = Image::make($file->getRealPath());
-
-            if ($request->type === 'popup') {
-                $image->fit(580, 580, function ($constraint) {
-                    $constraint->upsize();
-                });
-            } else {
-                $image->fit(580, 280, function ($constraint) {
-                    $constraint->upsize();
-                });
-            }
-
-            // Encode sesuai extension
-            $image->encode($extension, 90);
-
-            Storage::disk('public_uploads')->put($path, $image->stream());
-
+            // alt default
             $imageAlt = $request->alt ?? Str::slug($request->title);
 
-            // Hanya satu popup yang bisa aktif
+            // hanya satu popup aktif
             if ($request->type === 'popup' && $request->boolean('is_publish')) {
                 Banner::where('type', 'popup')
                     ->where('is_publish', true)
@@ -165,7 +144,7 @@ class BannerController extends Controller
             Banner::create([
                 'title' => $request->title,
                 'url' => $request->url,
-                'image' => 'public/' . $path,
+                'image' => $path, // ← path standar
                 'alt' => $imageAlt,
                 'is_publish' => $request->is_publish,
                 'description' => $request->description,
@@ -179,11 +158,18 @@ class BannerController extends Controller
 
             return redirect()
                 ->route('adm.banner.index')
-                ->with('message', ['type' => 'success', 'text' => 'Data berhasil ditambahkan.']);
+                ->with('message', [
+                    'type' => 'success',
+                    'text' => 'Data berhasil ditambahkan.'
+                ]);
         } catch (\Exception $e) {
+
             return redirect()
                 ->back()
-                ->with('message', ['type' => 'error', 'text' => 'Data gagal ditambahkan.'])
+                ->with('message', [
+                    'type' => 'error',
+                    'text' => 'Data gagal ditambahkan.'
+                ])
                 ->withInput();
         }
     }

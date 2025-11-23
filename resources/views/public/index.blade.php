@@ -208,8 +208,8 @@
                                     <div class="ratio ratio-16x9">
                                         <img alt="{{ ucwords($vsl->title) }}"
                                             class="img-fluid rounded-top lazyload object-fit-cover"
-                                            src="{{ asset('public/images/program') . '/' . $vsl->thumbnail_blur }}"
-                                            data-src="{{ asset('public/images/program') . '/' . $vsl->thumbnail }}"
+                                            src="{{ asset('storage/images/program/' . $vsl->thumbnail_blur) }}"
+                                            data-src="{{ asset('storage/images/program/' . $vsl->thumbnail) }}"
                                             onerror="this.src='{{ $vsl->thumbnail_blur ? asset('public/images/program') . '/' . $vsl->thumbnail_blur : asset('not-found.png') }}';" />
                                     </div>
 
@@ -274,9 +274,7 @@
                     @foreach ($category as $vc)
                         <div class="swiper-slide">
                             <a href="{{ route('program.list') . '/?kategori=' . $vc->slug }}" class="food-categories">
-                                <img class="img-fluid categories-img"
-                                    src="{{ asset('images/categories') . '/' . $vc->icon }}"
-                                    alt="{{ ucwords($vc->name) }}" />
+                                <img class="img-fluid categories-img" src="{{ asset('public/images/categories/' . $vc->icon) }}" alt="{{ ucwords($vc->name) }}" />
                             </a>
                             <h6 class="fs-12">{{ ucwords($vc->name) }}</h6>
                         </div>

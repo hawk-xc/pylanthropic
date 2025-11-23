@@ -29,7 +29,6 @@ return [
     */
 
     'disks' => [
-
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app'),
@@ -38,7 +37,7 @@ return [
 
         'public' => [
             'driver' => 'local',
-            'root' => storage_path(),
+            'root' => storage_path('app/public'),
             'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
             'throw' => false,
@@ -55,15 +54,8 @@ return [
             'use_path_style_endpoint' => env('AWS_USE_PATH_STYLE_ENDPOINT', false),
             'throw' => false,
         ],
-
-        // PERBAIKAN: Menggunakan public_path() untuk menunjuk ke folder public proyek Laravel Anda
-        'public_uploads' => [
-            'driver' => 'local',
-            'root' => public_path(), // ROOT SUDAH MENUNJUK KE public/
-            'url' => env('APP_URL'), // URL dasar
-            'visibility' => 'public',
-        ],
     ],
+
 
     /*
     |--------------------------------------------------------------------------

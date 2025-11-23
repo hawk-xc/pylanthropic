@@ -42,39 +42,39 @@ class Handler extends ExceptionHandler
         });
     }
 
-    public function render($request, Throwable $exception)
-    {
-        if ($exception instanceof \Illuminate\Auth\AuthenticationException) {
-            return $this->unauthenticated($request, $exception);
-        }
+    // public function render($request, Throwable $exception)
+    // {
+    //     if ($exception instanceof \Illuminate\Auth\AuthenticationException) {
+    //         return $this->unauthenticated($request, $exception);
+    //     }
 
-        if ($exception instanceof \Illuminate\Validation\ValidationException) {
-            return $this->convertValidationExceptionToResponse($exception, $request);
-        }
+    //     if ($exception instanceof \Illuminate\Validation\ValidationException) {
+    //         return $this->convertValidationExceptionToResponse($exception, $request);
+    //     }
 
-        if ($exception instanceof \Symfony\Component\HttpKernel\Exception\HttpException) {
-            $statusCode = $exception->getStatusCode();
-            $message = $exception->getMessage() ?: $this->getDefaultMessage($statusCode);
+    //     if ($exception instanceof \Symfony\Component\HttpKernel\Exception\HttpException) {
+    //         $statusCode = $exception->getStatusCode();
+    //         $message = $exception->getMessage() ?: $this->getDefaultMessage($statusCode);
 
-            return response()->view(
-                'errors.error',
-                [
-                    'code' => $statusCode,
-                    'message' => $message,
-                ],
-                $statusCode,
-            );
-        }
+    //         return response()->view(
+    //             'errors.error',
+    //             [
+    //                 'code' => $statusCode,
+    //                 'message' => $message,
+    //             ],
+    //             $statusCode,
+    //         );
+    //     }
 
-        return response()->view(
-            'errors.error',
-            [
-                'code' => 500,
-                'message' => $exception->getMessage() ?: 'Terjadi kesalahan pada server.',
-            ],
-            500,
-        );
-    }
+    //     return response()->view(
+    //         'errors.error',
+    //         [
+    //             'code' => 500,
+    //             'message' => $exception->getMessage() ?: 'Terjadi kesalahan pada server.',
+    //         ],
+    //         500,
+    //     );
+    // }
 
     protected function getDefaultMessage($code)
     {
