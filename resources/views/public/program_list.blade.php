@@ -60,8 +60,7 @@
                 <a href="{{ url('/').'/'.$vn->slug }}">
                   <img class="img-fluid img" 
                     src="{{ asset('public/images/program/' . $vn->thumbnail) }}" 
-                    alt="{{ ucwords($vn->title) }}" 
-                    onerror="this.src='{{ asset('not-found.png') }}';" />
+                    alt="{{ ucwords($vn->title) }}" />
                 </a>
               </div>
               <div class="vertical-box-details">

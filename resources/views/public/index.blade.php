@@ -209,8 +209,7 @@
                                         <img alt="{{ ucwords($vsl->title) }}"
                                             class="img-fluid rounded-top lazyload object-fit-cover"
                                             src="{{ asset('public/images/program/' . $vsl->thumbnail_blur) }}"
-                                            data-src="{{ asset('public/images/program/' . $vsl->thumbnail) }}"
-                                            onerror="this.src='{{ $vsl->thumbnail_blur ? asset('public/images/program') . '/' . $vsl->thumbnail_blur : asset('not-found.png') }}';" />
+                                            data-src="{{ asset('public/images/program/' . $vsl->thumbnail) }}" />
                                     </div>
 
                                     <!-- detail card -->
