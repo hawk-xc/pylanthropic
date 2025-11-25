@@ -47,13 +47,10 @@ class ProgramController extends Controller
 
     public function storeImagecontent(Request $request)
     {
+        $file = $request->file('file');
         $number = $request->number;
         $number = str_replace('img', '', $number);
-
-        $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->name));
-        $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
-        $file = $request->file('file');
-        $filename = $filename . '_' . $number . '.jpg';
+        $filename = time() . '_' . $number . '.' . $file->getClientOriginalExtension();
 
         $destinationPath = public_path('public/images/program/content');
         if (!file_exists($destinationPath)) {
@@ -91,28 +88,13 @@ class ProgramController extends Controller
             $file = $request->file('file');
             $programTitle = $request->input('program_title');
 
-            $baseName = str_replace([' ', '-', '&', ':'], '_', trim($programTitle));
-            $baseName = preg_replace('/[^A-Za-z0-9\_]/', '', $baseName);
-
             $destinationPath = public_path('public/images/program/content');
             if (!file_exists($destinationPath)) {
                 mkdir($destinationPath, 0755, true);
             }
 
-            // Cari file yang sudah ada untuk menentukan counter
-            $existingFiles = File::glob($destinationPath . '/' . $baseName . '_*.jpg');
-            
-            $counter = 1;
-            if (!empty($existingFiles)) {
-                $counters = array_map(function($file) use ($baseName) {
-                    preg_match('/' . preg_quote($baseName, '/') . '_(\d+)\.jpg$/', $file, $matches);
-                    return isset($matches[1]) ? (int)$matches[1] : 0;
-                }, $existingFiles);
-                $counter = max($counters) + 1;
-            }
-
             // Generate nama file baru
-            $filename = $baseName . '_' . $counter . '.jpg';
+            $filename = time() . '.' . $file->getClientOriginalExtension();
 
             // Proses dan simpan gambar
             Image::make($file)
@@ -227,8 +209,6 @@ class ProgramController extends Controller
             }
 
             $timestamp = time();
-            $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->title));
-            $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
             $destinationPath = public_path('public/images/program');
 
             if (!file_exists($destinationPath)) {
@@ -237,7 +217,7 @@ class ProgramController extends Controller
 
             // Upload image primary (Landing Page size)
             $filei = $request->file('img_primary');
-            $imageName = $filename . '_' . $timestamp . '.jpg';
+            $imageName = $timestamp . '.' . $filei->getClientOriginalExtension();
             Image::make($filei)
                 ->resize(600, 320, function ($constraint) {
                     $constraint->aspectRatio();
@@ -247,8 +227,8 @@ class ProgramController extends Controller
             $data->image = $imageName;
 
             // Handle thumbnail
-            $thumbnailName = 'thumbnail_' . $filename . '_' . $timestamp . '.jpg';
             if ($request->has('same_as_thumbnail')) {
+                $thumbnailName = 'thumbnail_' . $timestamp . '.' . $filei->getClientOriginalExtension();
                 Image::make($filei)
                     ->resize(292, 156, function ($constraint) {
                         $constraint->aspectRatio();
@@ -258,6 +238,7 @@ class ProgramController extends Controller
                 $data->same_as_thumbnail = true;
             } else {
                 $filet = $request->file('thumbnail');
+                $thumbnailName = 'thumbnail_' . $timestamp . '.' . $filet->getClientOriginalExtension();
                 Image::make($filet)
                     ->resize(292, 156, function ($constraint) {
                         $constraint->aspectRatio();

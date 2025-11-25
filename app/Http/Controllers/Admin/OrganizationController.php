@@ -80,7 +80,7 @@ class OrganizationController extends Controller
 
             if ($request->hasFile('logo')) {
                 $file = $request->file('logo');
-                $filename_logo = 'logo_' . $filename . '_' . time() . '.jpg';
+                $filename_logo = 'logo_' . time() . '.' . $file->getClientOriginalExtension();
                 $destinationPath = public_path('public/images/fundraiser');
 
                 if (!file_exists($destinationPath)) {
@@ -93,7 +93,7 @@ class OrganizationController extends Controller
 
             if ($request->hasFile('pic_image')) {
                 $filet = $request->file('pic_image');
-                $filename_vr = 'verified_' . $filename . '_' . time() . '.jpg';
+                $filename_vr = 'verified_' . time() . '.' . $filet->getClientOriginalExtension();
                 $destinationPath = public_path('public/images/fundraiser');
 
                 if (!file_exists($destinationPath)) {
@@ -175,7 +175,7 @@ class OrganizationController extends Controller
                 }
 
                 $file = $request->file('logo');
-                $filename_logo = 'logo_' . $filename . '_' . time() . '.jpg';
+                $filename_logo = 'logo_' . time() . '.' . $file->getClientOriginalExtension();
 
                 if (!file_exists($destinationPath)) {
                     mkdir($destinationPath, 0755, true);
@@ -193,7 +193,7 @@ class OrganizationController extends Controller
                 }
 
                 $filet = $request->file('pic_image');
-                $filename_vr = 'verified_' . $filename . '_' . time() . '.jpg';
+                $filename_vr = 'verified_' . time() . '.' . $filet->getClientOriginalExtension();
 
                 if (!file_exists($destinationPath)) {
                     mkdir($destinationPath, 0755, true);

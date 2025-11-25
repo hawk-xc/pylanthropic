@@ -157,17 +157,17 @@ class ProgramCategoryController extends Controller
 
             if ($request->hasFile('logo_image')) {
                 $logoImage = $request->file('logo_image');
-                $logoImageName = time() . '.' . $logoImage->getClientOriginalExtension();
+            $logoImageName = time() . '.' . $logoImage->getClientOriginalExtension();
 
-                $destinationPath = public_path('public/images/categories');
+            $destinationPath = public_path('public/images/categories');
 
-                if ($programCategory->icon && file_exists($destinationPath . '/' . $programCategory->icon)) {
-                    unlink($destinationPath . '/' . $programCategory->icon);
-                }
+            if ($programCategory->icon && file_exists($destinationPath . '/' . $programCategory->icon)) {
+                unlink($destinationPath . '/' . $programCategory->icon);
+            }
 
-                $logoImage->move($destinationPath, $logoImageName);
+            $logoImage->move($destinationPath, $logoImageName);
 
-                $programCategory->icon = $logoImageName;
+            $programCategory->icon = $logoImageName;
             }
 
             $programCategory->save();
