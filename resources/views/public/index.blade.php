@@ -208,8 +208,8 @@
                                     <div class="ratio ratio-16x9">
                                         <img alt="{{ ucwords($vsl->title) }}"
                                             class="img-fluid rounded-top lazyload object-fit-cover"
-                                            src="{{ asset('storage/images/program/' . $vsl->thumbnail_blur) }}"
-                                            data-src="{{ asset('storage/images/program/' . $vsl->thumbnail) }}"
+                                            src="{{ asset('public/images/program/' . $vsl->thumbnail_blur) }}"
+                                            data-src="{{ asset('public/images/program/' . $vsl->thumbnail) }}"
                                             onerror="this.src='{{ $vsl->thumbnail_blur ? asset('public/images/program') . '/' . $vsl->thumbnail_blur : asset('not-found.png') }}';" />
                                     </div>
 

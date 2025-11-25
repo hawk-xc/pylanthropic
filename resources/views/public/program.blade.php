@@ -222,7 +222,7 @@
 
     <div class="">
         <img alt="{{ ucwords($program->title) }}" class="h-auto w-100 lazyload"
-            data-original="{{ asset('storage/images/program/' . $program->image) }}">
+            data-original="{{ asset('public/images/program/' . $program->image) }}">
     </div>
 
     <!-- Detail section start  -->
