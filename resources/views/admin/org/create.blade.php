@@ -40,6 +40,22 @@
             </div>
             <div class="divider"></div>
 
+            @if ($errors->any())
+                <div class="alert alert-danger">
+                    <div style="display: flex; align-items: center;">
+                        <img src="{{ asset('server-error.png') }}" style="width: 80px; margin-right: 15px;" alt="Server Error">
+                        <div>
+                            <b>Oops, terjadi kesalahan validasi.</b>
+                            <ul style="margin-bottom: 0; padding-left: 20px;">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
             @if (session('success'))
                 <div class="alert alert-success" id="success-alert">
                     {{ session('success') }}
@@ -58,15 +74,15 @@
                             <div class="card-body">
                                 <div class="mb-3">
                                     <label class="form-label required fw-semibold">Nama Lembaga</label>
-                                    <input type="text" class="form-control form-control-sm" name="name" placeholder="Isi nama lembaga" required>
+                                    <input type="text" class="form-control form-control-sm" name="name" placeholder="Isi nama lembaga" value="{{ old('name') }}" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold required">Tentang Lembaga</label>
-                                    <textarea class="form-control form-control-sm" name="about" rows="6" placeholder="Bisa isi nama lembaga" required></textarea>
+                                    <textarea class="form-control form-control-sm" name="about" rows="6" placeholder="Bisa isi nama lembaga" required>{{ old('about') }}</textarea>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold">Alamat</label>
-                                    <input type="text" class="form-control form-control-sm" name="address" placeholder="Bisa isi Indonesia">
+                                    <input type="text" class="form-control form-control-sm" name="address" placeholder="Bisa isi Indonesia" value="{{ old('address') }}">
                                 </div>
                             </div>
                         </div>
@@ -78,11 +94,11 @@
                                 <div class="row">
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label fw-semibold">Nama PIC</label>
-                                        <input type="text" class="form-control form-control-sm" placeholder="Opsional" name="pic_name">
+                                        <input type="text" class="form-control form-control-sm" placeholder="Opsional" name="pic_name" value="{{ old('pic_name') }}">
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label fw-semibold">NIK PIC</label>
-                                        <input type="text" class="form-control form-control-sm" placeholder="Opsional" name="pic_nik">
+                                        <input type="text" class="form-control form-control-sm" placeholder="Opsional" name="pic_nik" value="{{ old('pic_nik') }}">
                                     </div>
                                     <div class="col-md-12">
                                         <label class="form-label fw-semibold">Gambar PIC</label>
@@ -99,20 +115,20 @@
                                 <div class="mb-3">
                                     <label class="form-label required fw-semibold">Status</label>
                                     <select class="form-control form-control-sm" name="status" required>
-                                        <option disabled selected value>--Pilih--</option>
-                                        <option value="regular">Biasa</option>
-                                        <option value="verified">Terverifikasi Perorangan</option>
-                                        <option value="verif_org">Terverifikasi Lembaga</option>
-                                        <option value="banned">Banned</option>
+                                        <option disabled {{ old('status') ? '' : 'selected' }} value>--Pilih--</option>
+                                        <option value="regular" {{ old('status') == 'regular' ? 'selected' : '' }}>Biasa</option>
+                                        <option value="verified" {{ old('status') == 'verified' ? 'selected' : '' }}>Terverifikasi Perorangan</option>
+                                        <option value="verif_org" {{ old('status') == 'verif_org' ? 'selected' : '' }}>Terverifikasi Lembaga</option>
+                                        <option value="banned" {{ old('status') == 'banned' ? 'selected' : '' }}>Banned</option>
                                     </select>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold required">Nomor Telpon</label>
-                                    <input type="text" class="form-control form-control-sm" name="phone" placeholder="08..." required>
+                                    <input type="text" class="form-control form-control-sm" name="phone" placeholder="08..." value="{{ old('phone') }}" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold required">Email</label>
-                                    <input type="email" class="form-control form-control-sm" name="mail" placeholder="Contoh: mail@mail.com" required>
+                                    <input type="email" class="form-control form-control-sm" name="mail" placeholder="Contoh: mail@mail.com" value="{{ old('mail') }}" required>
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold required">Logo</label>

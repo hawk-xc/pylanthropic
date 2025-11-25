@@ -80,35 +80,27 @@ class OrganizationController extends Controller
 
             if ($request->hasFile('logo')) {
                 $file = $request->file('logo');
-                $filename_logo = 'logo_' . $filename . '.jpg';
+                $filename_logo = 'logo_' . $filename . '_' . time() . '.jpg';
+                $destinationPath = public_path('images/fundraiser');
 
-                // Process image with Intervention Image
-                $image = Image::make($file->getRealPath())
-                    ->fit(50, 50) // Resize to 50x50
-                    ->encode('jpg', 80);
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
 
-                // Path for storage
-                $path = 'images/fundraiser/' . $filename_logo;
-
-                // Save using Storage
-                Storage::disk('public_uploads')->put($path, $image->stream());
-
+                Image::make($file)->fit(50, 50)->save($destinationPath . '/' . $filename_logo, 80);
                 $data->logo = $filename_logo;
             }
 
             if ($request->hasFile('pic_image')) {
                 $filet = $request->file('pic_image');
-                $filename_vr = 'verified_' . $filename . '.jpg';
+                $filename_vr = 'verified_' . $filename . '_' . time() . '.jpg';
+                $destinationPath = public_path('images/fundraiser');
 
-                // Process image with Intervention Image
-                $image = Image::make($filet->getRealPath())->encode('jpg', 80);
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
 
-                // Path for storage
-                $path = 'images/fundraiser/' . $filename_vr;
-
-                // Save using Storage
-                Storage::disk('public_uploads')->put($path, $image->stream());
-
+                Image::make($filet)->save($destinationPath . '/' . $filename_vr, 80);
                 $data->pic_image = $filename_vr;
             }
 
@@ -175,52 +167,39 @@ class OrganizationController extends Controller
             $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
 
             if ($request->hasFile('logo')) {
+                $destinationPath = public_path('images/fundraiser');
+
                 // Delete old logo if exists
-                if ($data->logo) {
-                    $oldPath = 'images/fundraiser/' . $data->logo;
-                    if (Storage::disk('public_uploads')->exists($oldPath)) {
-                        Storage::disk('public_uploads')->delete($oldPath);
-                    }
+                if ($data->logo && file_exists($destinationPath . '/' . $data->logo)) {
+                    unlink($destinationPath . '/' . $data->logo);
                 }
 
                 $file = $request->file('logo');
-                $filename_logo = 'logo_' . $filename . '.jpg';
+                $filename_logo = 'logo_' . $filename . '_' . time() . '.jpg';
 
-                // Process image with Intervention Image
-                $image = Image::make($file->getRealPath())
-                    ->fit(50, 50) // Resize to 50x50
-                    ->encode('jpg', 80);
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
 
-                // Path for storage
-                $path = 'images/fundraiser/' . $filename_logo;
-
-                // Save using Storage
-                Storage::disk('public_uploads')->put($path, $image->stream());
-
+                Image::make($file)->fit(50, 50)->save($destinationPath . '/' . $filename_logo, 80);
                 $data->logo = $filename_logo;
             }
 
             if ($request->hasFile('pic_image')) {
+                $destinationPath = public_path('images/fundraiser');
                 // Delete old pic_image if exists
-                if ($data->pic_image) {
-                    $oldPath = 'images/fundraiser/' . $data->pic_image;
-                    if (Storage::disk('public_uploads')->exists($oldPath)) {
-                        Storage::disk('public_uploads')->delete($oldPath);
-                    }
+                if ($data->pic_image && file_exists($destinationPath . '/' . $data->pic_image)) {
+                    unlink($destinationPath . '/' . $data->pic_image);
                 }
 
                 $filet = $request->file('pic_image');
-                $filename_vr = 'verified_' . $filename . '.jpg';
+                $filename_vr = 'verified_' . $filename . '_' . time() . '.jpg';
 
-                // Process image with Intervention Image
-                $image = Image::make($filet->getRealPath())->encode('jpg', 80);
+                if (!file_exists($destinationPath)) {
+                    mkdir($destinationPath, 0755, true);
+                }
 
-                // Path for storage
-                $path = 'images/fundraiser/' . $filename_vr;
-
-                // Save using Storage
-                Storage::disk('public_uploads')->put($path, $image->stream());
-
+                Image::make($filet)->save($destinationPath . '/' . $filename_vr, 80);
                 $data->pic_image = $filename_vr;
             }
 
