@@ -59,7 +59,7 @@
               <div class="vertical-box-img"
                 <a href="{{ url('/').'/'.$vn->slug }}">
                   <img class="img-fluid img" 
-                    src="{{ asset('storage/images/program/' . $vn->thumbnail) }}" 
+                    src="{{ asset('public/images/program/' . $vn->thumbnail) }}" 
                     alt="{{ ucwords($vn->title) }}" 
                     onerror="this.src='{{ asset('not-found.png') }}';" />
                 </a>
