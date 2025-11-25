@@ -57,10 +57,7 @@ class ProgramController extends Controller
             mkdir($destinationPath, 0755, true);
         }
 
-        // Format gambar dengan Intervention Image dan simpan
-        Image::make($file)
-            ->fit(580, 780)
-            ->save($destinationPath . '/' . $filename, 80);
+        $file->move($destinationPath, $filename);
 
         $link_img = asset('public/images/program/content/' . $filename);
 
@@ -86,20 +83,13 @@ class ProgramController extends Controller
 
         try {
             $file = $request->file('file');
-            $programTitle = $request->input('program_title');
-
             $destinationPath = public_path('public/images/program/content');
             if (!file_exists($destinationPath)) {
                 mkdir($destinationPath, 0755, true);
             }
 
-            // Generate nama file baru
             $filename = time() . '.' . $file->getClientOriginalExtension();
-
-            // Proses dan simpan gambar
-            Image::make($file)
-                ->fit(580, 780)
-                ->save($destinationPath . '/' . $filename, 80);
+            $file->move($destinationPath, $filename);
 
             $url = asset('public/images/program/content/' . $filename);
 
@@ -215,36 +205,22 @@ class ProgramController extends Controller
                 mkdir($destinationPath, 0755, true);
             }
 
-            // Upload image primary (Landing Page size)
+            // Upload image primary
             $filei = $request->file('img_primary');
             $imageName = $timestamp . '.' . $filei->getClientOriginalExtension();
-            Image::make($filei)
-                ->resize(600, 320, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                })
-                ->save($destinationPath . '/' . $imageName, 80);
+            $filei->move($destinationPath, $imageName);
             $data->image = $imageName;
 
             // Handle thumbnail
             if ($request->has('same_as_thumbnail')) {
-                $thumbnailName = 'thumbnail_' . $timestamp . '.' . $filei->getClientOriginalExtension();
-                Image::make($filei)
-                    ->resize(292, 156, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    })
-                    ->save($destinationPath . '/' . $thumbnailName, 60);
+                // Since we can't re-process, we have to copy the file
+                $thumbnailName = 'thumbnail_' . $imageName;
+                File::copy($destinationPath . '/' . $imageName, $destinationPath . '/' . $thumbnailName);
                 $data->same_as_thumbnail = true;
             } else {
                 $filet = $request->file('thumbnail');
                 $thumbnailName = 'thumbnail_' . $timestamp . '.' . $filet->getClientOriginalExtension();
-                Image::make($filet)
-                    ->resize(292, 156, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    })
-                    ->save($destinationPath . '/' . $thumbnailName, 60);
+                $filet->move($destinationPath, $thumbnailName);
                 $data->same_as_thumbnail = false;
             }
             $data->thumbnail = $thumbnailName;
@@ -383,51 +359,37 @@ class ProgramController extends Controller
 
                 $filei = $request->file('img_primary');
                 $imageName = $timestamp . '.' . $filei->getClientOriginalExtension();
-                Image::make($filei)
-                    ->resize(600, 320, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    })
-                    ->save($destinationPath . '/' . $imageName, 80);
+                $filei->move($destinationPath, $imageName);
                 $data->image = $imageName;
             }
 
             // Handle thumbnail
             if ($request->has('same_as_thumbnail')) {
-                // Delete old thumbnail
+                // If a new thumbnail is being generated from a primary image (new or old)
+                // we must first delete the old thumbnail
                 if ($data->thumbnail && file_exists($destinationPath . '/' . $data->thumbnail)) {
                     unlink($destinationPath . '/' . $data->thumbnail);
                 }
-
-                // Use new primary image if uploaded, otherwise use existing one
-                $sourceImage = $request->hasFile('img_primary') ? $request->file('img_primary') : $destinationPath . '/' . $data->image;
                 
-                if (($request->hasFile('img_primary')) || ($data->image && file_exists($sourceImage))) {
-                    $fileExtension = $request->hasFile('img_primary') ? $request->file('img_primary')->getClientOriginalExtension() : pathinfo($sourceImage, PATHINFO_EXTENSION);
-                    $thumbnailName = 'thumbnail_' . $timestamp . '.' . $fileExtension;
-                    Image::make($sourceImage)
-                        ->resize(292, 156, function ($constraint) {
-                            $constraint->aspectRatio();
-                            $constraint->upsize();
-                        })
-                        ->save($destinationPath . '/' . $thumbnailName, 60);
+                // The source for the copy is always the current primary image
+                $sourcePath = $destinationPath . '/' . $data->image;
+                if (file_exists($sourcePath)) {
+                    $thumbnailName = 'thumbnail_' . $data->image;
+                    File::copy($sourcePath, $destinationPath . '/' . $thumbnailName);
                     $data->thumbnail = $thumbnailName;
                 }
                 $data->same_as_thumbnail = true;
+
             } elseif ($request->hasFile('thumbnail')) {
-                // Delete old thumbnail
+                // A specific thumbnail file is being uploaded
                 if ($data->thumbnail && file_exists($destinationPath . '/' . $data->thumbnail)) {
                     unlink($destinationPath . '/' . $data->thumbnail);
                 }
 
                 $filet = $request->file('thumbnail');
-                $thumbnailName = 'thumbnail_' . $timestamp . '.' . $filet->getClientOriginalExtension();
-                Image::make($filet)
-                    ->resize(292, 156, function ($constraint) {
-                        $constraint->aspectRatio();
-                        $constraint->upsize();
-                    })
-                    ->save($destinationPath . '/' . $thumbnailName, 60);
+                // Use a different timestamp if it's a different upload operation
+                $thumbnailName = 'thumbnail_' . time() . '.' . $filet->getClientOriginalExtension();
+                $filet->move($destinationPath, $thumbnailName);
                 $data->thumbnail = $thumbnailName;
                 $data->same_as_thumbnail = false;
             }
