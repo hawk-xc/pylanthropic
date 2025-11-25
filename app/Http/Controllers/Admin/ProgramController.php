@@ -368,8 +368,6 @@ class ProgramController extends Controller
             }
 
             $timestamp = time();
-            $filename = str_replace([' ', '-', '&', ':'], '_', trim($request->title));
-            $filename = preg_replace('/[^A-Za-z0-9\_]/', '', $filename);
             $destinationPath = public_path('public/images/program');
 
             if (!file_exists($destinationPath)) {
@@ -384,7 +382,7 @@ class ProgramController extends Controller
                 }
 
                 $filei = $request->file('img_primary');
-                $imageName = $filename . '_' . $timestamp . '.jpg';
+                $imageName = $timestamp . '.' . $filei->getClientOriginalExtension();
                 Image::make($filei)
                     ->resize(600, 320, function ($constraint) {
                         $constraint->aspectRatio();
@@ -405,7 +403,8 @@ class ProgramController extends Controller
                 $sourceImage = $request->hasFile('img_primary') ? $request->file('img_primary') : $destinationPath . '/' . $data->image;
                 
                 if (($request->hasFile('img_primary')) || ($data->image && file_exists($sourceImage))) {
-                    $thumbnailName = 'thumbnail_' . $filename . '_' . $timestamp . '.jpg';
+                    $fileExtension = $request->hasFile('img_primary') ? $request->file('img_primary')->getClientOriginalExtension() : pathinfo($sourceImage, PATHINFO_EXTENSION);
+                    $thumbnailName = 'thumbnail_' . $timestamp . '.' . $fileExtension;
                     Image::make($sourceImage)
                         ->resize(292, 156, function ($constraint) {
                             $constraint->aspectRatio();
@@ -422,7 +421,7 @@ class ProgramController extends Controller
                 }
 
                 $filet = $request->file('thumbnail');
-                $thumbnailName = 'thumbnail_' . $filename . '_' . $timestamp . '.jpg';
+                $thumbnailName = 'thumbnail_' . $timestamp . '.' . $filet->getClientOriginalExtension();
                 Image::make($filet)
                     ->resize(292, 156, function ($constraint) {
                         $constraint->aspectRatio();
