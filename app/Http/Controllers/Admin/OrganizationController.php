@@ -32,33 +32,8 @@ class OrganizationController extends Controller
             ],
             'payout.nominal_approved',
         )
-            ->orderBy('id', 'asc') // ambil organisasi pertama
+            ->orderBy('id', 'asc')
             ->first();
-
-        $organization_total_pengeluaran_ads = \App\Models\Organization::withSum(
-            [
-                'program as total_ads_nominal' => function ($query) {
-                    $query->join('ads_campaign', 'ads_campaign.program_id', '=', 'program.id'); // kalau hanya mau yang status paid
-                },
-            ],
-            'ads_campaign.spend',
-        )
-            ->orderBy('id', 'asc') // ambil organisasi pertama
-            ->find(2);
-
-        $organization_total_donation = \App\Models\Organization::withSum(
-            [
-                'program as total_donation_nominal' => function ($query) {
-                    $query->join('transaction', 'transaction.program_id', '=', 'program.id'); // kalau hanya mau yang status paid
-                },
-            ],
-            'transaction.nominal_final',
-        )
-            ->orderBy('id', 'asc') // ambil organisasi pertama
-            ->latest()
-            ->first();
-
-        $organization_dss = $organization_total_donation->total_donation_nominal - $organization_total_pengeluaran_ads->total_ads_nominal;
 
         return view('admin.org.index');
     }
