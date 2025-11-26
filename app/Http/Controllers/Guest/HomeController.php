@@ -46,9 +46,8 @@ class HomeController extends Controller
             return compact('slider', 'popup');
         });
 
-        $programs = Cache::remember('program_public', 60 * 60, function () {
-            $category = Models\ProgramCategory::where('is_show', 1)->orderBy('sort_number', 'ASC')->get();
-            $selected = Models\Program::where('is_publish', 1)->select('program.*', 'organization.name', 'organization.status')->join('organization', 'program.organization_id', 'organization.id')->where('is_recommended', 1)->whereNotNull('program.approved_at')->where('end_date', '>', date('Y-m-d'))->orderBy('program.created_at', 'DESC')->limit(6)->get();
+        $programs = function () use ($category) {
+            $selected = Models\Program::where('is_publish', 1)->select('program.*', 'organization.name', 'organization.status')->join('organization', 'program.organization_id', 'organization.id')->whereNotNull('program.approved_at')->where('end_date', '>', date('Y-m-d'))->orderBy('program.created_at', 'DESC')->limit(6)->get();
             $selected->map(function ($selected, $key) {
                 $sum_amount = Models\Transaction::where('program_id', $selected->id)->where('status', 'success')->sum('nominal_final');
                 if ($selected->show_minus > 0 && !is_null($selected->show_minus) && $sum_amount > 0) {
@@ -78,7 +77,7 @@ class HomeController extends Controller
                 }
             });
             return compact('category', 'selected', 'newest', 'urgent');
-        });
+        }();
 
         $data = array_merge($banners, $programs);
 
