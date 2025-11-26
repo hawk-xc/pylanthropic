@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models;
 use App\Models\ShortLinkModel;
 use App\Models\DonaturShortLink;
+use App\Models\ProgramCategory;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Cache;
 
@@ -17,8 +18,14 @@ class HomeController extends Controller
      */
     public function index()
     {
-        $banners = Cache::remember('banner_public', 60 * 60, function () {
-            $today = Carbon::today();
+        $today = Carbon::today();
+
+        /**
+         * =============================
+         * BANNERS (CACHED 1 JAM)
+         * =============================
+         */
+        $banners = Cache::remember('banner_public', 60 * 60, function () use ($today) {
 
             $slider = Models\Banner::where('is_publish', 1)
                 ->where('type', 'banner')
@@ -43,46 +50,97 @@ class HomeController extends Controller
                 })
                 ->first();
 
-            return compact('slider', 'popup');
+            return compact('slider', 'popup'); // ⬅️ sudah array
         });
 
+
+        /**
+         * PROGRAM SECTION
+         */
+        $category = ProgramCategory::all(); // ⬅️ tidak perlu () saat merge nanti
+
         $programs = function () use ($category) {
-            $selected = Models\Program::where('is_publish', 1)->select('program.*', 'organization.name', 'organization.status')->join('organization', 'program.organization_id', 'organization.id')->whereNotNull('program.approved_at')->where('end_date', '>', date('Y-m-d'))->orderBy('program.created_at', 'DESC')->limit(6)->get();
-            $selected->map(function ($selected, $key) {
-                $sum_amount = Models\Transaction::where('program_id', $selected->id)->where('status', 'success')->sum('nominal_final');
-                if ($selected->show_minus > 0 && !is_null($selected->show_minus) && $sum_amount > 0) {
-                    return $selected->sum_amount = $sum_amount - ($sum_amount * $selected->show_minus) / 100;
-                } else {
-                    return $selected->sum_amount = $sum_amount;
-                }
-            });
 
-            $urgent = Models\Program::select('program.*', 'organization.name', 'organization.status')->join('organization', 'program.organization_id', 'organization.id')->where('is_publish', 1)->where('is_urgent', 1)->whereNotNull('program.approved_at')->where('end_date', '>', date('Y-m-d'))->orderBy('program.created_at', 'DESC')->limit(6)->get();
-            $urgent->map(function ($urgent, $key) {
-                $sum_amount = Models\Transaction::where('program_id', $urgent->id)->where('status', 'success')->sum('nominal_final');
-                if ($urgent->show_minus > 0 && !is_null($urgent->show_minus) && $sum_amount > 0) {
-                    return $urgent->sum_amount = $sum_amount - ($sum_amount * $urgent->show_minus) / 100;
-                } else {
-                    return $urgent->sum_amount = $sum_amount;
-                }
-            });
+            // SELECTED
+            $selected = Models\Program::select('program.*', 'organization.name', 'organization.status')
+                ->join('organization', 'program.organization_id', 'organization.id')
+                ->where('is_publish', 1)
+                ->whereNotNull('program.approved_at')
+                ->where('end_date', '>', date('Y-m-d'))
+                ->orderBy('program.created_at', 'DESC')
+                ->limit(6)
+                ->get()
+                ->map(function ($item) {
+                    $sum = Models\Transaction::where('program_id', $item->id)
+                        ->where('status', 'success')
+                        ->sum('nominal_final');
 
-            $newest = Models\Program::where('is_publish', 1)->select('program.*', 'organization.name', 'organization.status')->join('organization', 'program.organization_id', 'organization.id')->where('is_show_home', 1)->where('is_recommended', 0)->whereNotNull('program.approved_at')->where('end_date', '>', date('Y-m-d'))->orderBy('program.created_at', 'DESC')->limit(7)->get();
-            $newest->map(function ($newest, $key) {
-                $sum_amount = Models\Transaction::where('program_id', $newest->id)->where('status', 'success')->sum('nominal_final');
-                if ($newest->show_minus > 0 && !is_null($newest->show_minus) && $sum_amount > 0) {
-                    return $newest->sum_amount = $sum_amount - ($sum_amount * $newest->show_minus) / 100;
-                } else {
-                    return $newest->sum_amount = $sum_amount;
-                }
-            });
-            return compact('category', 'selected', 'newest', 'urgent');
-        }();
+                    $item->sum_amount = ($item->show_minus && $sum > 0)
+                        ? $sum - ($sum * $item->show_minus / 100)
+                        : $sum;
 
-        $data = array_merge($banners, $programs);
+                    return $item;
+                });
+
+            // URGENT
+            $urgent = Models\Program::select('program.*', 'organization.name', 'organization.status')
+                ->join('organization', 'program.organization_id', 'organization.id')
+                ->where('is_publish', 1)
+                ->where('is_urgent', 1)
+                ->whereNotNull('program.approved_at')
+                ->where('end_date', '>', date('Y-m-d'))
+                ->orderBy('program.created_at', 'DESC')
+                ->limit(6)
+                ->get()
+                ->map(function ($item) {
+                    $sum = Models\Transaction::where('program_id', $item->id)
+                        ->where('status', 'success')
+                        ->sum('nominal_final');
+
+                    $item->sum_amount = ($item->show_minus && $sum > 0)
+                        ? $sum - ($sum * $item->show_minus / 100)
+                        : $sum;
+
+                    return $item;
+                });
+
+
+            // NEWEST
+            $newest = Models\Program::select('program.*', 'organization.name', 'organization.status')
+                ->join('organization', 'program.organization_id', 'organization.id')
+                ->where('is_publish', 1)
+                ->where('is_show_home', 1)
+                ->where('is_recommended', 0)
+                ->whereNotNull('program.approved_at')
+                ->where('end_date', '>', date('Y-m-d'))
+                ->orderBy('program.created_at', 'DESC')
+                ->limit(7)
+                ->get()
+                ->map(function ($item) {
+                    $sum = Models\Transaction::where('program_id', $item->id)
+                        ->where('status', 'success')
+                        ->sum('nominal_final');
+
+                    $item->sum_amount = ($item->show_minus && $sum > 0)
+                        ? $sum - ($sum * $item->show_minus / 100)
+                        : $sum;
+
+                    return $item;
+                });
+
+            return compact('category', 'selected', 'urgent', 'newest');
+        };
+
+
+        /**
+         * MERGE DATA KE VIEW
+         */
+        $data = array_merge($banners, $programs()); // ⬅️ FIX
 
         return view('public.index', $data);
     }
+
+
 
     public function aboutUs()
     {
@@ -124,7 +182,7 @@ class HomeController extends Controller
             abort(404, 'Short link not found or inactive');
         }
 
-        $shortLink->click_counter = $shortLink->increment+1;
+        $shortLink->click_counter = $shortLink->increment + 1;
         $shortLink->last_accessed_at = now();
 
         $shortLink->save();
