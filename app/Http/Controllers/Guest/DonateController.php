@@ -948,9 +948,6 @@ Donasi Belum Dibayar : " . number_format($count_unpaid) . " - Rp." . str_replace
      */
     public function sentWA($telp = '', $chat = '')
     {
-        // $token = 'uyrY2vsVrVUcDyMJzGNBMsyABCbdnH2k3vcBQJB7eDQUitd5Y3'; // suitcareer
-        // $token = 'eUd6GcqCg4iA49hXuo5dT98CaJGpL1ACMgWjjYevZBVe1r62fU'; // bantubersama
-        // $token = 'eQybNY3m1wdwvaiymaid7fxhmmrtdjT6VbATPCscshpB197Fqb'; // bantubersama
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, 'https://app.ruangwa.id/api/send_message');
         curl_setopt($curl, CURLOPT_HEADER, 0);

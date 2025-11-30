@@ -593,7 +593,7 @@ Ramadhan kembali hadir, saatnya berbagi keberkahan! Mari ikut serta dalam:
 "Siapa berbuat kebaikan di bulan Ramadhan, ia seperti melakukan kewajiban di bulan lainnya." (HR. Ibn Khuzaimah)
 
 Yuk, berikan sedekah terbaikmu melalui :
-👉 bantubersama.com/sedekahramadhan?ref=WA&k=1
+👉 bantusesama.com/sedekahramadhan?ref=WA&k=1
 Jazakumullahu khairan, semoga berkah untuk kita semua. Aamiin✨';
 
             $curl  = curl_init();

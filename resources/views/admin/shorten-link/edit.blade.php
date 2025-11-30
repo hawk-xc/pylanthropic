@@ -74,7 +74,7 @@
                     <label class="form-label fw-semibold">URL/Link Tujuan {!! printRequired() !!}</label>
                     <div class="input-group input-group-sm">
                         <span class="input-group-text">
-                            https://bantubersama.com/</span>
+                            https://bantusesama.com/</span>
                         <input type="text" class="form-control form-control-sm" name="direct_link" id="direct_link"
                             name="direct_link" value="{{ old('direct_link', $data->direct_link) }}" placeholder="param=value&param2=value2"
                             required>
