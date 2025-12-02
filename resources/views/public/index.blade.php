@@ -126,7 +126,7 @@
                 <div class="form-group header-navbar d-flex align-items-center justify-content-between gap-3">
                     <!-- Logo -->
                     <a href="{{ url('/') }}" class="logo-navbar">
-                        <img src="{{ asset('Logo Bantubersama.png') }}" alt="Logo Bantu Bersama" style="height: 40px;">
+                        <img src="{{ asset('Logo Bantusesama.png') }}" alt="Logo Bantu Bersama" style="height: 40px;">
                     </a>
 
                     <!-- Search input -->
